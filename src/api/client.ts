@@ -1,7 +1,8 @@
 import axios from "axios";
 import { useAuthStore } from "@/stores/authStore";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080";
+const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
 const isDev = import.meta.env.DEV;
 
 // 인증 정보 초기화 및 로그인 페이지로 이동
@@ -35,12 +36,15 @@ apiClient.interceptors.request.use(
 
     // 개발 환경에서만 요청 로깅
     if (isDev) {
-      console.log(`🚀 [API] ${config.method?.toUpperCase()} ${config.url}`, config.data ?? "");
+      console.log(
+        `🚀 [API] ${config.method?.toUpperCase()} ${config.url}`,
+        config.data ?? "",
+      );
     }
 
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
 
 // 응답 인터셉터: 개발 로깅 + 토큰 만료 처리
@@ -48,7 +52,10 @@ apiClient.interceptors.response.use(
   (response) => {
     // 개발 환경에서만 응답 로깅
     if (isDev) {
-      console.log(`✅ [API] ${response.config.method?.toUpperCase()} ${response.config.url}`, response.data);
+      console.log(
+        `✅ [API] ${response.config.method?.toUpperCase()} ${response.config.url}`,
+        response.data,
+      );
     }
     return response;
   },
@@ -58,7 +65,7 @@ apiClient.interceptors.response.use(
       console.error(
         `❌ [API] ${error.config?.method?.toUpperCase()} ${error.config?.url}`,
         error.response?.status,
-        error.response?.data ?? error.message
+        error.response?.data ?? error.message,
       );
     }
 
@@ -73,9 +80,12 @@ apiClient.interceptors.response.use(
           if (isDev) {
             console.log("🔄 [API] Refreshing token...");
           }
-          const response = await axios.post(`${API_BASE_URL}/api/v1/auth/refresh`, {
-            refreshToken,
-          });
+          const response = await axios.post(
+            `${API_BASE_URL}/api/v1/auth/refresh`,
+            {
+              refreshToken,
+            },
+          );
 
           const { accessToken, refreshToken: newRefreshToken } = response.data;
           localStorage.setItem("accessToken", accessToken);
@@ -105,5 +115,5 @@ apiClient.interceptors.response.use(
     }
 
     return Promise.reject(error);
-  }
+  },
 );

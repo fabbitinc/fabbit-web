@@ -1,48 +1,49 @@
 import type { ItemData } from "@/features/items/types";
-import type { ItemDto, ItemListResponse } from "../types";
+import type { ItemTreeDto, ItemTreeListResponse } from "../types";
 
 /**
- * API ItemDto를 UI ItemData 형식으로 변환
+ * API ItemTreeDto를 UI ItemData 형식으로 변환
+ *
+ * API에서 제공하는 필드:
+ * - id, folderId, itemNumber, name, itemType, status, items, itemCount
  *
  * TODO: API에 없어서 mock으로 처리되는 필드:
- * - name: itemNumber를 사용
  * - material: undefined
- * - quantity: 1 (기본값)
+ * - quantity: 1 (기본값, BOM에서만 의미 있음)
  * - unit: "EA" (기본값)
- * - drawingStatus: "none"
+ * - drawingStatus: "none" (RevisionDto에서 조회 필요)
  * - drawingThumbnail: undefined
  * - aiAnalyzed: false
  * - conflicts: undefined
- * - children: undefined (BOM 조회 필요)
  */
-function convertItemDto(item: ItemDto): ItemData {
+function convertItemTreeDto(item: ItemTreeDto): ItemData {
   return {
     id: item.id,
     partNumber: item.itemNumber,
-    // TODO: name - API ItemDto에 없음, itemNumber로 대체
-    name: item.itemNumber,
-    // TODO: material - API에 없음
+    // API에서 name 제공 (최신 리비전의 품명), 없으면 itemNumber 사용
+    name: item.name ?? item.itemNumber,
+    // TODO: material - API에 없음 (RevisionDto.attributes에 있을 수 있음)
     material: undefined,
-    // TODO: quantity - API에 없음 (BOM에만 있음), 기본값 1
+    // 최상위 품목의 quantity는 1 (BOM에서만 의미 있음)
     quantity: 1,
-    // TODO: unit - API에 없음 (BOM에만 있음), 기본값 "EA"
+    // TODO: unit - API에 없음 (BOM에만 있음)
     unit: "EA",
-    // TODO: drawingStatus - API에 없음 (RevisionDto에 있음), 기본값 "none"
+    // TODO: drawingStatus - API에 없음 (RevisionDto에서 조회 필요)
     drawingStatus: "none",
-    // TODO: drawingThumbnail - API에 없음 (RevisionDto에 있음)
+    // TODO: drawingThumbnail - API에 없음
     drawingThumbnail: undefined,
     // TODO: aiAnalyzed - API에 없음
     aiAnalyzed: false,
     // TODO: conflicts - API에 없음
     conflicts: undefined,
-    // TODO: children - BOM API 조회 필요
-    children: undefined,
+    // 하위 품목 (items)을 재귀적으로 변환
+    children: item.items?.map(convertItemTreeDto),
   };
 }
 
 /**
- * ItemListResponse를 ItemData[] 배열로 변환
+ * ItemTreeListResponse를 ItemData[] 배열로 변환
  */
-export function convertItemListResponse(response: ItemListResponse): ItemData[] {
-  return response.items.map(convertItemDto);
+export function convertItemListResponse(response: ItemTreeListResponse): ItemData[] {
+  return response.items.map(convertItemTreeDto);
 }

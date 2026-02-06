@@ -34,7 +34,10 @@ function GoogleIcon({ className }: { className?: string }) {
 function NaverIcon({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24">
-      <path fill="#03C75A" d="M16.273 12.845L7.376 0H0v24h7.727V11.155L16.624 24H24V0h-7.727z" />
+      <path
+        fill="#03C75A"
+        d="M16.273 12.845L7.376 0H0v24h7.727V11.155L16.624 24H24V0h-7.727z"
+      />
     </svg>
   );
 }
@@ -55,8 +58,8 @@ export function LoginPage() {
   const { login, loginWithProvider, isLoading } = useAuthStore();
 
   // TODO: 개발용 기본값 제거
-  const [email, setEmail] = useState("user1@fabbitinc.com");
-  const [password, setPassword] = useState("user1");
+  const [email, setEmail] = useState("user1@gmail.com");
+  const [password, setPassword] = useState("admin");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
 
@@ -79,7 +82,9 @@ export function LoginPage() {
       await loginWithProvider(provider);
       navigate("/");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "소셜 로그인에 실패했습니다.");
+      setError(
+        err instanceof Error ? err.message : "소셜 로그인에 실패했습니다.",
+      );
     }
   };
 
@@ -117,30 +122,29 @@ export function LoginPage() {
 
           {/* Main Content */}
           <div className="space-y-6">
-          <h1 className="text-4xl font-bold text-white leading-tight">
-            AI 기반 초경량
-            <br />
-            PLM 시스템
-          </h1>
-          <p className="text-lg text-white/80 max-w-md">
-            도면을 업로드하면 AI가 자동으로 BOM을 생성합니다.
-            <br />
-            더 빠르고, 더 정확한 제품 관리를 경험하세요.
-          </p>
+            <h1 className="text-4xl font-bold text-white leading-tight">
+              AI 기반 초경량
+              <br />
+              PLM 시스템
+            </h1>
+            <p className="text-lg text-white/80 max-w-md">
+              도면을 업로드하면 AI가 자동으로 BOM을 생성합니다.
+              <br />더 빠르고, 더 정확한 제품 관리를 경험하세요.
+            </p>
 
-          {/* Feature Pills */}
-          <div className="flex flex-wrap gap-3 pt-4">
-            <span className="px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-sm text-white">
-              AI 도면 분석
-            </span>
-            <span className="px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-sm text-white">
-              자동 BOM 생성
-            </span>
-            <span className="px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-sm text-white">
-              실시간 협업
-            </span>
+            {/* Feature Pills */}
+            <div className="flex flex-wrap gap-3 pt-4">
+              <span className="px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-sm text-white">
+                AI 도면 분석
+              </span>
+              <span className="px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-sm text-white">
+                자동 BOM 생성
+              </span>
+              <span className="px-4 py-2 bg-white/20 backdrop-blur-sm rounded-full text-sm text-white">
+                실시간 협업
+              </span>
+            </div>
           </div>
-        </div>
 
           {/* Footer */}
           <div className="text-sm text-white/60">
@@ -277,7 +281,7 @@ export function LoginPage() {
               variant="outline"
               className={cn(
                 "h-12 border-[#e2e8f0] bg-white hover:bg-[#f8fafc]",
-                isLoading && "opacity-50 cursor-not-allowed"
+                isLoading && "opacity-50 cursor-not-allowed",
               )}
               onClick={() => handleSocialLogin("google")}
               disabled={isLoading}
@@ -289,7 +293,7 @@ export function LoginPage() {
               variant="outline"
               className={cn(
                 "h-12 border-[#e2e8f0] bg-white hover:bg-[#f8fafc]",
-                isLoading && "opacity-50 cursor-not-allowed"
+                isLoading && "opacity-50 cursor-not-allowed",
               )}
               onClick={() => handleSocialLogin("naver")}
               disabled={isLoading}
@@ -301,7 +305,7 @@ export function LoginPage() {
               variant="outline"
               className={cn(
                 "h-12 border-[#e2e8f0] bg-[#FEE500] hover:bg-[#FDD835] border-[#FEE500]",
-                isLoading && "opacity-50 cursor-not-allowed"
+                isLoading && "opacity-50 cursor-not-allowed",
               )}
               onClick={() => handleSocialLogin("kakao")}
               disabled={isLoading}

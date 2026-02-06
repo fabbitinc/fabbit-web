@@ -181,7 +181,7 @@ export function ProjectDetailPage() {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <Button className="bg-[#3b82f6] hover:bg-[#2563eb]" onClick={openUploadModal}>
+              <Button className="bg-[#3b82f6] hover:bg-[#2563eb]" onClick={() => openUploadModal("drawing", id)}>
                 <Upload className="mr-2 h-4 w-4" />
                 도면 업로드
               </Button>

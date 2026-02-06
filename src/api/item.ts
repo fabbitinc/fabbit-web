@@ -1,12 +1,14 @@
 import { apiClient } from "./client";
-import type { ItemDto, ItemListResponse, CreateItemRequest, MoveItemRequest } from "./types";
+import type { ItemDto, ItemTreeListResponse, CreateItemRequest, MoveItemRequest } from "./types";
 
 /**
- * 폴더 내 품목 목록 조회
+ * 폴더 내 품목 목록 조회 (트리 구조)
  * GET /api/v1/folders/{folderId}/items
+ *
+ * ASSEMBLY 품목의 경우 하위 품목(items)을 포함한 트리 구조로 반환
  */
-export async function getItems(folderId: string): Promise<ItemListResponse> {
-  const response = await apiClient.get<ItemListResponse>(
+export async function getItems(folderId: string): Promise<ItemTreeListResponse> {
+  const response = await apiClient.get<ItemTreeListResponse>(
     `/api/v1/folders/${folderId}/items`
   );
   return response.data;

@@ -35,14 +35,26 @@ export function ItemTree() {
 
   return (
     <div className="overflow-auto">
-      <table className="w-full text-sm">
+      <table className="w-full text-sm table-fixed">
+        <colgroup>
+          {/* 품명: 열기 버튼(28px) + 들여쓰기 여유(80px) + 텍스트 */}
+          <col className="w-[280px] min-w-[280px]" />
+          {/* 품번 */}
+          <col className="w-[160px]" />
+          {/* 재질 */}
+          <col className="w-[120px]" />
+          {/* 수량 */}
+          <col className="w-[100px]" />
+          {/* 도면 */}
+          <col className="w-[60px]" />
+        </colgroup>
         <thead>
           <tr className="border-b border-[#e2e8f0] bg-[#f8fafc] text-left">
             <th className="py-3 pl-4 pr-6 text-[11px] font-medium uppercase tracking-wider text-[#64748b]">
-              품번
+              품명
             </th>
             <th className="py-3 pr-6 text-[11px] font-medium uppercase tracking-wider text-[#64748b]">
-              품명
+              품번
             </th>
             <th className="py-3 pr-6 text-[11px] font-medium uppercase tracking-wider text-[#64748b]">
               재질

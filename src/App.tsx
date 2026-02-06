@@ -8,6 +8,7 @@ import { ProjectListPage } from "@/pages/projects/ProjectListPage";
 import { ProjectDetailPage } from "@/pages/projects/ProjectDetailPage";
 import { ProjectSettingsPage } from "@/pages/projects/ProjectSettingsPage";
 import { UploadModal } from "@/features/upload/components/UploadModal";
+import { SimpleBomImportModal } from "@/features/items/components/SimpleBomImportModal";
 import { Toaster } from "@/components/ui/sonner";
 import { useAuthStore } from "@/stores/authStore";
 
@@ -95,6 +96,7 @@ function App() {
         />
       </Routes>
       <UploadModal />
+      <SimpleBomImportModal />
       <Toaster position="bottom-right" />
     </>
   );

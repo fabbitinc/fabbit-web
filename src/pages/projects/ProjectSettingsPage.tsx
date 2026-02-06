@@ -8,6 +8,7 @@ import {
   Bell,
   Link2,
   AlertTriangle,
+  ListTree,
 } from "lucide-react";
 import { mockFolders } from "@/features/items/mock-data";
 import type { FolderData } from "@/features/items/types";
@@ -18,6 +19,7 @@ import {
   NotificationsSettings,
   IntegrationsSettings,
   DangerZone,
+  AttributeSettings,
 } from "@/features/projects/components/settings";
 
 function findProjectById(folders: FolderData[], id: string): FolderData | null {
@@ -33,6 +35,7 @@ function findProjectById(folders: FolderData[], id: string): FolderData | null {
 
 const settingsSections: SettingsSection[] = [
   { id: "general", label: "일반", icon: Settings },
+  { id: "attributes", label: "속성", icon: ListTree },
   { id: "members", label: "멤버", icon: Users },
   { id: "notifications", label: "알림", icon: Bell },
   { id: "integrations", label: "연동", icon: Link2 },
@@ -64,6 +67,8 @@ export function ProjectSettingsPage() {
     switch (activeTab) {
       case "general":
         return <GeneralSettings project={project} />;
+      case "attributes":
+        return <AttributeSettings projectId={id!} />;
       case "members":
         return <MembersSettings />;
       case "notifications":
@@ -133,7 +138,9 @@ export function ProjectSettingsPage() {
 
         {/* Settings Content */}
         <div className="flex-1 overflow-auto p-6">
-          <div className="mx-auto max-w-2xl">{renderContent()}</div>
+          <div className={activeTab === "attributes" ? "mx-auto max-w-4xl" : "mx-auto max-w-2xl"}>
+            {renderContent()}
+          </div>
         </div>
       </div>
     </div>

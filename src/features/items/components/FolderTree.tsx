@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { ChevronRight, Folder, FolderOpen, Plus, Layers, Search, X, Box, Cog, Loader2 } from "lucide-react";
+import { ChevronRight, Folder, FolderOpen, Plus, Layers, Search, X, Box, Cog, Loader2, FileSpreadsheet } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -18,8 +18,13 @@ import {
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { useItemStore } from "@/stores/itemStore";
+import { useBomImportStore } from "@/stores/bomImportStore";
 import { useProjectTree } from "@/api";
 import type { TreeNodeData } from "../types";
+
+// TODO: 검색 기능 개선 - es-hangul의 getChoseong으로 초성 검색 지원
+// import { getChoseong } from 'es-hangul';
+// matchesSearch("브라켓 A", "ㅂㄹㅋ") → true
 
 // 폴더 구조만 필터링 (프로젝트 > 폴더 > 아이템 1depth)
 // 아이템의 하위(BOM)는 트리에서 숨김 → 상세 페이지에서 확인
@@ -75,6 +80,7 @@ function findPathToNode(nodes: TreeNodeData[], targetId: string, path: string[] 
 export function FolderTree() {
   const navigate = useNavigate();
   const location = useLocation();
+  const openBomImportModal = useBomImportStore((state) => state.openModal);
 
   // API에서 트리 데이터 가져오기
   const { data: treeData, isLoading, error } = useProjectTree();
@@ -131,7 +137,12 @@ export function FolderTree() {
     if (targetId) {
       const path = findPathToNode(structureNodes, targetId);
       if (path) {
-        setExpandedNodes((prev) => new Set([...prev, ...path]));
+        setExpandedNodes((prev) => {
+          // 이미 모든 경로가 확장되어 있으면 상태 변경 안 함
+          const allExpanded = path.every((id) => prev.has(id));
+          if (allExpanded) return prev; // 같은 참조 반환 → 리렌더링 없음
+          return new Set([...prev, ...path]);
+        });
       }
     }
   }, [urlItemId, selectedFolderId, storeProjectId, structureNodes]);
@@ -280,6 +291,7 @@ export function FolderTree() {
                   searchTerm={searchTerm}
                   onAddNode={openNewNodeDialog}
                   onNodeClick={handleNodeClick}
+                  onBomImport={openBomImportModal}
                   urlProjectId={urlProjectId}
                   urlItemId={urlItemId}
                   expandedNodes={expandedNodes}
@@ -352,6 +364,7 @@ interface TreeNodeProps {
   searchTerm: string; // 검색어 (하이라이트용)
   onAddNode: (parentId: string, parentName: string, nodeType?: "project" | "folder" | "item") => void;
   onNodeClick: (node: TreeNodeData) => void;
+  onBomImport: (projectId: string, folderId: string) => void;
   urlProjectId?: string;
   urlItemId?: string;
   expandedNodes: Set<string>;
@@ -382,7 +395,7 @@ function HighlightedText({ text, searchTerm }: { text: string; searchTerm: strin
   );
 }
 
-function TreeNode({ node, level, projectId, searchTerm, onAddNode, onNodeClick, urlProjectId, urlItemId, expandedNodes, onToggleExpand }: TreeNodeProps) {
+function TreeNode({ node, level, projectId, searchTerm, onAddNode, onNodeClick, onBomImport, urlProjectId, urlItemId, expandedNodes, onToggleExpand }: TreeNodeProps) {
   const navigate = useNavigate();
   const expanded = expandedNodes.has(node.id);
   const { selectedFolderId, selectedProjectId: storeProjectId, selectFolder, selectProject, clearSelection } = useItemStore();
@@ -522,7 +535,25 @@ function TreeNode({ node, level, projectId, searchTerm, onAddNode, onNodeClick, 
         </div>
 
         {/* 오른쪽: 항상 고정된 버튼 영역 */}
-        <div className="shrink-0 ml-1">
+        <div className="shrink-0 ml-1 flex items-center gap-0.5">
+          {node.type === "folder" && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  className="flex h-5 w-5 items-center justify-center rounded text-[#64748b] opacity-0 transition-all hover:bg-[#334155] hover:text-white group-hover:opacity-100"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onBomImport(projectId, node.id);
+                  }}
+                >
+                  <FileSpreadsheet className="h-3.5 w-3.5" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="right" className="bg-[#1e293b] text-white border-[#334155]">
+                BOM 가져오기
+              </TooltipContent>
+            </Tooltip>
+          )}
           <Tooltip>
             <TooltipTrigger asChild>
               <button
@@ -555,6 +586,7 @@ function TreeNode({ node, level, projectId, searchTerm, onAddNode, onNodeClick, 
               searchTerm={searchTerm}
               onAddNode={onAddNode}
               onNodeClick={onNodeClick}
+              onBomImport={onBomImport}
               urlProjectId={urlProjectId}
               urlItemId={urlItemId}
               expandedNodes={expandedNodes}

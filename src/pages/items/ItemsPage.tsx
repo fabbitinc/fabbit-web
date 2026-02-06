@@ -1,11 +1,12 @@
 import { useNavigate } from "react-router-dom";
-import { ChevronRight, Upload } from "lucide-react";
+import { ChevronRight, Upload, FileSpreadsheet } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { ItemTree } from "@/features/items/components/ItemTree";
 import { ProjectHomeView } from "@/features/projects/components/ProjectHomeView";
 import { useItemStore } from "@/stores/itemStore";
 import { useUploadStore } from "@/stores/uploadStore";
+import { useBomImportStore } from "@/stores/bomImportStore";
 import { useProjectTree } from "@/api";
 import type { TreeNodeData } from "@/features/items/types";
 import { cn } from "@/lib/utils";
@@ -38,9 +39,13 @@ export function ItemsPage() {
   const setSelectedFolderId = useItemStore((state) => state.setSelectedFolderId);
   const setSelectedProjectId = useItemStore((state) => state.setSelectedProjectId);
   const openUploadModal = useUploadStore((state) => state.openModal);
+  const openBomImportModal = useBomImportStore((state) => state.openModal);
   const { data: treeData = [] } = useProjectTree();
 
   const breadcrumbPath = findNodePath(treeData, selectedFolderId) ?? [];
+
+  // breadcrumbPath에서 프로젝트 ID 추출
+  const currentProjectId = breadcrumbPath.find((node) => node.type === "project")?.id ?? null;
 
   // 브레드크럼 클릭 핸들러
   const handleBreadcrumbClick = (node: TreeNodeData | null) => {
@@ -103,13 +108,23 @@ export function ItemsPage() {
           })}
         </div>
 
-        <Button
-          onClick={openUploadModal}
-          className="bg-[#3b82f6] hover:bg-[#2563eb]"
-        >
-          <Upload className="mr-2 h-4 w-4" />
-          도면/BOM 업로드
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={() => currentProjectId && openBomImportModal(currentProjectId, selectedFolderId || undefined)}
+            disabled={!currentProjectId}
+          >
+            <FileSpreadsheet className="mr-2 h-4 w-4" />
+            BOM 가져오기
+          </Button>
+          <Button
+            onClick={() => openUploadModal("drawing", currentProjectId ?? undefined)}
+            className="bg-[#3b82f6] hover:bg-[#2563eb]"
+          >
+            <Upload className="mr-2 h-4 w-4" />
+            도면 업로드
+          </Button>
+        </div>
       </div>
 
       <div className="flex-1 overflow-hidden rounded-xl border border-[#e2e8f0] bg-white shadow-sm">

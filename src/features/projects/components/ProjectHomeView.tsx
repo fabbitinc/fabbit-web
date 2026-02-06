@@ -10,6 +10,7 @@ import {
   Search,
   FolderOpen,
   Upload,
+  FileSpreadsheet,
   Clock,
   Users,
 } from "lucide-react";
@@ -20,6 +21,7 @@ import { cn } from "@/lib/utils";
 import type { TreeNodeData } from "@/features/items/types";
 import { useItemStore } from "@/stores/itemStore";
 import { useUploadStore } from "@/stores/uploadStore";
+import { useBomImportStore } from "@/stores/bomImportStore";
 import { useProjectTree } from "@/api";
 
 // Mock 데이터
@@ -70,6 +72,7 @@ export function ProjectHomeView({ projectId }: ProjectHomeViewProps) {
   const setSelectedFolderId = useItemStore((state) => state.setSelectedFolderId);
   const setSelectedProjectId = useItemStore((state) => state.setSelectedProjectId);
   const openUploadModal = useUploadStore((state) => state.openModal);
+  const openBomImportModal = useBomImportStore((state) => state.openModal);
   const { data: treeData = [] } = useProjectTree();
 
   const project = findProjectById(treeData, projectId);
@@ -144,7 +147,11 @@ export function ProjectHomeView({ projectId }: ProjectHomeViewProps) {
             <ExternalLink className="mr-2 h-4 w-4" />
             전체 대시보드
           </Button>
-          <Button className="bg-[#3b82f6] hover:bg-[#2563eb]" onClick={openUploadModal}>
+          <Button variant="outline" onClick={() => openBomImportModal(projectId)}>
+            <FileSpreadsheet className="mr-2 h-4 w-4" />
+            BOM 가져오기
+          </Button>
+          <Button className="bg-[#3b82f6] hover:bg-[#2563eb]" onClick={() => openUploadModal("drawing", projectId)}>
             <Upload className="mr-2 h-4 w-4" />
             도면 업로드
           </Button>
