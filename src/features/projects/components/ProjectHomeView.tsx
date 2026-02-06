@@ -17,10 +17,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
-import { mockFolders } from "@/features/items/mock-data";
-import type { FolderData } from "@/features/items/types";
+import type { TreeNodeData } from "@/features/items/types";
 import { useItemStore } from "@/stores/itemStore";
 import { useUploadStore } from "@/stores/uploadStore";
+import { useProjectTree } from "@/api";
 
 // Mock 데이터
 import {
@@ -36,11 +36,11 @@ interface ProjectHomeViewProps {
   projectId: string;
 }
 
-function findProjectById(folders: FolderData[], id: string): FolderData | null {
-  for (const folder of folders) {
-    if (folder.id === id && folder.type === "project") return folder;
-    if (folder.children) {
-      const found = findProjectById(folder.children, id);
+function findProjectById(nodes: TreeNodeData[], id: string): TreeNodeData | null {
+  for (const node of nodes) {
+    if (node.id === id && node.type === "project") return node;
+    if (node.children) {
+      const found = findProjectById(node.children, id);
       if (found) return found;
     }
   }
@@ -49,16 +49,16 @@ function findProjectById(folders: FolderData[], id: string): FolderData | null {
 
 // 프로젝트까지의 경로 찾기 (브레드크럼용)
 function findProjectPath(
-  folders: FolderData[],
+  nodes: TreeNodeData[],
   targetId: string,
-  path: FolderData[] = []
-): FolderData[] | null {
-  for (const folder of folders) {
-    if (folder.id === targetId) {
-      return [...path, folder];
+  path: TreeNodeData[] = []
+): TreeNodeData[] | null {
+  for (const node of nodes) {
+    if (node.id === targetId) {
+      return [...path, node];
     }
-    if (folder.children) {
-      const result = findProjectPath(folder.children, targetId, [...path, folder]);
+    if (node.children) {
+      const result = findProjectPath(node.children, targetId, [...path, node]);
       if (result) return result;
     }
   }
@@ -70,9 +70,10 @@ export function ProjectHomeView({ projectId }: ProjectHomeViewProps) {
   const setSelectedFolderId = useItemStore((state) => state.setSelectedFolderId);
   const setSelectedProjectId = useItemStore((state) => state.setSelectedProjectId);
   const openUploadModal = useUploadStore((state) => state.openModal);
+  const { data: treeData = [] } = useProjectTree();
 
-  const project = findProjectById(mockFolders, projectId);
-  const projectPath = findProjectPath(mockFolders, projectId) ?? [];
+  const project = findProjectById(treeData, projectId);
+  const projectPath = findProjectPath(treeData, projectId) ?? [];
   const milestonesWithWarning = useMilestoneWarning(mockMilestones);
 
   // 현재/다음 마일스톤 찾기
@@ -104,7 +105,7 @@ export function ProjectHomeView({ projectId }: ProjectHomeViewProps) {
     navigate(`/projects/${projectId}`);
   };
 
-  const handleBreadcrumbClick = (node: FolderData | null) => {
+  const handleBreadcrumbClick = (node: TreeNodeData | null) => {
     if (!node) {
       // "모든 아이템" 클릭 - 선택 해제
       setSelectedFolderId("");

@@ -6,7 +6,7 @@ import { ItemTree } from "@/features/items/components/ItemTree";
 import { ProjectHomeView } from "@/features/projects/components/ProjectHomeView";
 import { useItemStore } from "@/stores/itemStore";
 import { useUploadStore } from "@/stores/uploadStore";
-import { mockFolders } from "@/features/items/mock-data";
+import { useProjectTree } from "@/api";
 import type { TreeNodeData } from "@/features/items/types";
 import { cn } from "@/lib/utils";
 
@@ -38,8 +38,9 @@ export function ItemsPage() {
   const setSelectedFolderId = useItemStore((state) => state.setSelectedFolderId);
   const setSelectedProjectId = useItemStore((state) => state.setSelectedProjectId);
   const openUploadModal = useUploadStore((state) => state.openModal);
+  const { data: treeData = [] } = useProjectTree();
 
-  const breadcrumbPath = findNodePath(mockFolders, selectedFolderId) ?? [];
+  const breadcrumbPath = findNodePath(treeData, selectedFolderId) ?? [];
 
   // 브레드크럼 클릭 핸들러
   const handleBreadcrumbClick = (node: TreeNodeData | null) => {
@@ -63,8 +64,8 @@ export function ItemsPage() {
     }
   };
 
-  // 프로젝트가 선택되면 ProjectHomeView 표시
-  if (selectedProjectId) {
+  // 프로젝트만 선택되고 폴더는 선택 안 됐을 때 ProjectHomeView 표시
+  if (selectedProjectId && !selectedFolderId) {
     return <ProjectHomeView projectId={selectedProjectId} />;
   }
 

@@ -54,8 +54,9 @@ export function LoginPage() {
   const navigate = useNavigate();
   const { login, loginWithProvider, isLoading } = useAuthStore();
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  // TODO: 개발용 기본값 제거
+  const [email, setEmail] = useState("user1@fabbitinc.com");
+  const [password, setPassword] = useState("user1");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
 

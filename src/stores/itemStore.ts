@@ -1,45 +1,5 @@
 import { create } from "zustand";
 import type { ItemData } from "@/features/items/types";
-import { mockItems, mockFolders, defaultFolderId } from "@/features/items/mock-data";
-import type { TreeNodeData } from "@/features/items/types";
-
-// 트리에서 특정 노드의 자식 아이템들을 찾는 헬퍼 함수
-function findNodeById(nodes: TreeNodeData[], id: string): TreeNodeData | null {
-  for (const node of nodes) {
-    if (node.id === id) return node;
-    if (node.children) {
-      const found = findNodeById(node.children, id);
-      if (found) return found;
-    }
-  }
-  return null;
-}
-
-// 트리 노드를 ItemData 형식으로 변환
-function treeNodeToItemData(node: TreeNodeData): ItemData {
-  return {
-    id: node.id,
-    partNumber: node.partNumber ?? "",
-    name: node.name,
-    material: "",
-    quantity: 1,
-    unit: "EA",
-    drawingStatus: node.status === "approved" ? "approved" : node.status === "draft" ? "draft" : "none",
-    children: node.children?.map(treeNodeToItemData),
-  };
-}
-
-// ItemData 배열에서 특정 ID를 가진 아이템 찾기
-function findItemById(items: ItemData[], id: string): ItemData | null {
-  for (const item of items) {
-    if (item.id === id) return item;
-    if (item.children) {
-      const found = findItemById(item.children, id);
-      if (found) return found;
-    }
-  }
-  return null;
-}
 
 interface ItemStore {
   selectedFolderId: string;
@@ -53,16 +13,19 @@ interface ItemStore {
   setSelectedFolderId: (id: string) => void;
   setSelectedItemId: (id: string | null) => void;
   setSelectedProjectId: (id: string | null) => void;
+  // 배치 업데이트 함수 (성능 최적화: 단일 리렌더링)
+  selectFolder: (folderId: string, projectId: string | null) => void;
+  selectProject: (projectId: string) => void;
+  clearSelection: () => void;
   toggleExpanded: (id: string) => void;
   selectItem: (item: ItemData | null) => void;
   openDrawer: () => void;
   closeDrawer: () => void;
   toggleDrawerExpand: () => void;
-  getItems: () => ItemData[];
 }
 
 export const useItemStore = create<ItemStore>((set, get) => ({
-  selectedFolderId: defaultFolderId,
+  selectedFolderId: "",
   selectedItemId: null,
   selectedProjectId: null,
   expandedIds: new Set<string>(),
@@ -73,6 +36,16 @@ export const useItemStore = create<ItemStore>((set, get) => ({
   setSelectedFolderId: (id) => set({ selectedFolderId: id }),
   setSelectedItemId: (id) => set({ selectedItemId: id }),
   setSelectedProjectId: (id) => set({ selectedProjectId: id }),
+
+  // 배치 업데이트 함수 (성능 최적화: 3번 → 1번 리렌더링)
+  selectFolder: (folderId, projectId) =>
+    set({ selectedFolderId: folderId, selectedItemId: null, selectedProjectId: projectId }),
+
+  selectProject: (projectId) =>
+    set({ selectedFolderId: "", selectedItemId: null, selectedProjectId: projectId }),
+
+  clearSelection: () =>
+    set({ selectedFolderId: "", selectedItemId: null, selectedProjectId: null }),
 
   toggleExpanded: (id) => {
     const current = get().expandedIds;
@@ -90,31 +63,4 @@ export const useItemStore = create<ItemStore>((set, get) => ({
   openDrawer: () => set({ drawerOpen: true }),
   closeDrawer: () => set({ drawerOpen: false, selectedItem: null, drawerExpanded: false }),
   toggleDrawerExpand: () => set({ drawerExpanded: !get().drawerExpanded }),
-
-  getItems: () => {
-    const folderId = get().selectedFolderId;
-
-    // 1. 먼저 mockItems에서 찾기 (폴더)
-    if (mockItems[folderId]) {
-      return mockItems[folderId];
-    }
-
-    // 2. mockItems의 아이템 중에서 해당 ID를 가진 어셈블리 찾기
-    for (const items of Object.values(mockItems)) {
-      const found = findItemById(items, folderId);
-      if (found && found.children) {
-        return found.children;
-      }
-    }
-
-    // 3. 트리 데이터에서 찾기 (어셈블리)
-    const node = findNodeById(mockFolders, folderId);
-    if (node && node.children) {
-      // 아이템 타입인 자식들만 반환 (폴더는 제외)
-      const itemChildren = node.children.filter((c) => c.type === "item");
-      return itemChildren.map(treeNodeToItemData);
-    }
-
-    return [];
-  },
 }));

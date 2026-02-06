@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { ChevronRight, Folder, FolderOpen, Plus, Layers, Search, X, Box } from "lucide-react";
+import { ChevronRight, Folder, FolderOpen, Plus, Layers, Search, X, Box, Cog, Loader2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -18,37 +18,22 @@ import {
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { useItemStore } from "@/stores/itemStore";
-import { mockFolders } from "../mock-data";
+import { useProjectTree } from "@/api";
 import type { TreeNodeData } from "../types";
 
-// 컨테이너 노드만 필터링 (프로젝트, 폴더, 하위 부품이 있는 어셈블리)
-// 단품(leaf item)은 트리에서 숨김
+// 폴더 구조만 필터링 (프로젝트 > 폴더 > 아이템 1depth)
+// 아이템의 하위(BOM)는 트리에서 숨김 → 상세 페이지에서 확인
 function filterContainerNodes(nodes: TreeNodeData[]): TreeNodeData[] {
-  return nodes
-    .filter((node) => {
-      // 프로젝트, 폴더는 항상 표시
-      if (node.type === "project" || node.type === "folder") return true;
-      // 아이템은 하위 부품이 있는 경우(어셈블리)만 표시
-      if (node.type === "item" && node.children && node.children.length > 0) return true;
-      return false;
-    })
-    .map((node) => ({
-      ...node,
-      children: node.children ? filterContainerNodes(node.children) : undefined,
-      // 하위 단품 개수 계산 (단품 = children이 없는 item)
-      itemCount: countLeafItems(node.children),
-    }));
-}
-
-// 단품(leaf item) 개수 계산
-function countLeafItems(children?: TreeNodeData[]): number {
-  if (!children) return 0;
-  return children.reduce((count, child) => {
-    if (child.type === "item" && (!child.children || child.children.length === 0)) {
-      return count + 1;
-    }
-    return count;
-  }, 0);
+  return nodes.map((node) => ({
+    ...node,
+    // 아이템은 leaf 노드로 처리 (하위 BOM은 상세에서 확인)
+    children:
+      node.type === "item"
+        ? undefined
+        : node.children
+          ? filterContainerNodes(node.children)
+          : undefined,
+  }));
 }
 
 // 검색어로 노드 필터링
@@ -91,6 +76,9 @@ export function FolderTree() {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // API에서 트리 데이터 가져오기
+  const { data: treeData, isLoading, error } = useProjectTree();
+
   // URL에서 프로젝트 ID 추출
   const projectMatch = location.pathname.match(/^\/projects\/(.+?)(?:\/|$)/);
   const urlProjectId = projectMatch ? projectMatch[1] : undefined;
@@ -101,15 +89,7 @@ export function FolderTree() {
 
   const [searchTerm, setSearchTerm] = useState("");
   // 초기에 프로젝트(최상위)는 모두 펼침
-  const [expandedNodes, setExpandedNodes] = useState<Set<string>>(() => {
-    const initial = new Set<string>();
-    mockFolders.forEach((node) => {
-      if (node.type === "project") {
-        initial.add(node.id);
-      }
-    });
-    return initial;
-  });
+  const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set<string>());
   const [newNodeDialog, setNewNodeDialog] = useState<{
     open: boolean;
     parentId: string | null;
@@ -118,8 +98,23 @@ export function FolderTree() {
   }>({ open: false, parentId: null, parentName: "", nodeType: "folder" });
   const [newNodeName, setNewNodeName] = useState("");
 
+  // treeData가 로드되면 프로젝트 노드 자동 펼침
+  useEffect(() => {
+    if (treeData) {
+      setExpandedNodes((prev) => {
+        const next = new Set(prev);
+        treeData.forEach((node) => {
+          if (node.type === "project") {
+            next.add(node.id);
+          }
+        });
+        return next;
+      });
+    }
+  }, [treeData]);
+
   // 컨테이너 노드만 필터링 (프로젝트, 폴더, 어셈블리)
-  const structureNodes = useMemo(() => filterContainerNodes(mockFolders), []);
+  const structureNodes = useMemo(() => filterContainerNodes(treeData ?? []), [treeData]);
 
   // 검색어로 필터링
   const displayNodes = useMemo(
@@ -184,8 +179,10 @@ export function FolderTree() {
   const handleNodeClick = (node: TreeNodeData) => {
     if (node.type === "project") {
       // 부품관리에서 프로젝트 클릭 시 요약 패널 표시
-      // navigate(`/projects/${node.id}`) 대신 /items로 이동하고 프로젝트 선택
-      navigate("/items");
+      // 다른 페이지에서 클릭한 경우에만 /items로 이동
+      if (location.pathname !== "/items") {
+        navigate("/items");
+      }
     }
   };
 
@@ -204,6 +201,26 @@ export function FolderTree() {
       case "item": return "아이템 이름";
     }
   };
+
+  // 로딩 상태
+  if (isLoading) {
+    return (
+      <div className="flex h-full flex-col items-center justify-center bg-[#0f172a]">
+        <Loader2 className="h-6 w-6 animate-spin text-[#3b82f6]" />
+        <p className="mt-2 text-xs text-[#64748b]">프로젝트 로딩 중...</p>
+      </div>
+    );
+  }
+
+  // 에러 상태
+  if (error) {
+    return (
+      <div className="flex h-full flex-col items-center justify-center bg-[#0f172a] p-4">
+        <p className="text-xs text-red-400">데이터를 불러오지 못했습니다</p>
+        <p className="mt-1 text-[10px] text-[#64748b]">{error.message}</p>
+      </div>
+    );
+  }
 
   return (
     <TooltipProvider delayDuration={0}>
@@ -259,6 +276,8 @@ export function FolderTree() {
                   key={node.id}
                   node={node}
                   level={0}
+                  projectId={node.id}
+                  searchTerm={searchTerm}
                   onAddNode={openNewNodeDialog}
                   onNodeClick={handleNodeClick}
                   urlProjectId={urlProjectId}
@@ -329,6 +348,8 @@ export function FolderTree() {
 interface TreeNodeProps {
   node: TreeNodeData;
   level: number;
+  projectId: string; // 이 노드가 속한 프로젝트 ID
+  searchTerm: string; // 검색어 (하이라이트용)
   onAddNode: (parentId: string, parentName: string, nodeType?: "project" | "folder" | "item") => void;
   onNodeClick: (node: TreeNodeData) => void;
   urlProjectId?: string;
@@ -337,10 +358,34 @@ interface TreeNodeProps {
   onToggleExpand: (nodeId: string) => void;
 }
 
-function TreeNode({ node, level, onAddNode, onNodeClick, urlProjectId, urlItemId, expandedNodes, onToggleExpand }: TreeNodeProps) {
+// 검색어 하이라이트 컴포넌트
+function HighlightedText({ text, searchTerm }: { text: string; searchTerm: string }) {
+  if (!searchTerm.trim()) {
+    return <>{text}</>;
+  }
+
+  const regex = new RegExp(`(${searchTerm.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`, "gi");
+  const parts = text.split(regex);
+
+  return (
+    <>
+      {parts.map((part, index) =>
+        regex.test(part) ? (
+          <mark key={index} className="bg-yellow-400/30 text-inherit rounded-sm px-0.5">
+            {part}
+          </mark>
+        ) : (
+          part
+        )
+      )}
+    </>
+  );
+}
+
+function TreeNode({ node, level, projectId, searchTerm, onAddNode, onNodeClick, urlProjectId, urlItemId, expandedNodes, onToggleExpand }: TreeNodeProps) {
   const navigate = useNavigate();
   const expanded = expandedNodes.has(node.id);
-  const { selectedFolderId, setSelectedFolderId, setSelectedItemId, selectedProjectId: storeProjectId, setSelectedProjectId } = useItemStore();
+  const { selectedFolderId, selectedProjectId: storeProjectId, selectFolder, selectProject, clearSelection } = useItemStore();
   // 구조 노드만 표시하므로 children에서 item 타입은 제외됨
   const hasChildren = node.children && node.children.length > 0;
 
@@ -351,12 +396,13 @@ function TreeNode({ node, level, onAddNode, onNodeClick, urlProjectId, urlItemId
   const isSelected = (() => {
     switch (node.type) {
       case "project":
-        return urlProjectId === node.id || storeProjectId === node.id;
+        // 프로젝트는 폴더가 선택되지 않았을 때만 하이라이트
+        return (urlProjectId === node.id || storeProjectId === node.id) && !selectedFolderId;
       case "folder":
         return selectedFolderId === node.id;
       case "item":
-        // 어셈블리: URL 아이템 ID 또는 store의 폴더 ID와 비교
-        return urlItemId === node.id || selectedFolderId === node.id;
+        // 아이템: URL 아이템 ID와 비교
+        return urlItemId === node.id;
       default:
         return false;
     }
@@ -365,24 +411,18 @@ function TreeNode({ node, level, onAddNode, onNodeClick, urlProjectId, urlItemId
   const handleClick = () => {
     switch (node.type) {
       case "project":
-        // 프로젝트 선택 시 폴더 선택 해제, 프로젝트 홈 표시
-        setSelectedFolderId("");
-        setSelectedItemId(null);
-        setSelectedProjectId(node.id);
+        // 프로젝트 선택 시 폴더 선택 해제, 프로젝트 홈 표시 (배치 업데이트)
+        selectProject(node.id);
         onNodeClick(node);
         break;
       case "folder":
-        // 폴더 선택 시 프로젝트 선택 해제
-        setSelectedFolderId(node.id);
-        setSelectedItemId(null);
-        setSelectedProjectId(null);
+        // 폴더 선택 시 해당 프로젝트 ID도 함께 저장 (배치 업데이트)
+        selectFolder(node.id, projectId);
         navigate("/items");
         break;
       case "item":
-        // 어셈블리 클릭 시 바로 상세 페이지로 이동
-        setSelectedFolderId("");
-        setSelectedItemId(null);
-        setSelectedProjectId(null);
+        // 어셈블리 클릭 시 바로 상세 페이지로 이동 (배치 업데이트)
+        clearSelection();
         navigate(`/items/${node.id}`);
         break;
     }
@@ -408,9 +448,11 @@ function TreeNode({ node, level, onAddNode, onNodeClick, urlProjectId, urlItemId
           <Folder className={cn("h-4 w-4 shrink-0", isSelected ? "text-[#60a5fa]" : "text-[#fbbf24]")} />
         );
       case "item":
-        // 어셈블리: 파란색 박스 아이콘
-        return (
+        // ASSEMBLY: Box, PART: Cog (기어)
+        return node.itemType === "ASSEMBLY" ? (
           <Box className={cn("h-4 w-4 shrink-0", isSelected ? "text-[#60a5fa]" : "text-[#3b82f6]")} />
+        ) : (
+          <Cog className={cn("h-4 w-4 shrink-0", isSelected ? "text-[#60a5fa]" : "text-[#64748b]")} />
         );
       default:
         return null;
@@ -467,7 +509,7 @@ function TreeNode({ node, level, onAddNode, onNodeClick, urlProjectId, urlItemId
 
           {/* Name with metadata */}
           <span className={cn("min-w-0 flex-1 truncate", isSelected && "font-medium")}>
-            {node.name}
+            <HighlightedText text={node.name} searchTerm={searchTerm} />
             {/* 어셈블리: 품번 표시 */}
             {node.type === "item" && node.partNumber && (
               <span className="ml-1 text-[10px] text-[#64748b]">{node.partNumber}</span>
@@ -509,6 +551,8 @@ function TreeNode({ node, level, onAddNode, onNodeClick, urlProjectId, urlItemId
               key={child.id}
               node={child}
               level={level + 1}
+              projectId={projectId}
+              searchTerm={searchTerm}
               onAddNode={onAddNode}
               onNodeClick={onNodeClick}
               urlProjectId={urlProjectId}

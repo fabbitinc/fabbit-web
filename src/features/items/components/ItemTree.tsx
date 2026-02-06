@@ -1,9 +1,29 @@
+import { Loader2 } from "lucide-react";
 import { useItemStore } from "@/stores/itemStore";
+import { useItems } from "@/api";
 import { ItemRow } from "./ItemRow";
 
 export function ItemTree() {
-  const getItems = useItemStore((state) => state.getItems);
-  const items = getItems();
+  const selectedFolderId = useItemStore((state) => state.selectedFolderId);
+  const { data: items = [], isLoading, error } = useItems(selectedFolderId || null);
+
+  if (isLoading) {
+    return (
+      <div className="flex h-64 items-center justify-center">
+        <Loader2 className="h-6 w-6 animate-spin text-[#3b82f6]" />
+        <span className="ml-2 text-[#64748b]">아이템 로딩 중...</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex h-64 flex-col items-center justify-center">
+        <p className="text-red-400">아이템을 불러오지 못했습니다</p>
+        <p className="mt-1 text-xs text-[#64748b]">{error.message}</p>
+      </div>
+    );
+  }
 
   if (items.length === 0) {
     return (
