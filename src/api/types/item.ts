@@ -26,9 +26,8 @@ export interface ItemTreeDto {
   itemCount: number;
 }
 
-export interface ItemTreeListResponse {
-  items: ItemTreeDto[];
-}
+// API는 ItemTreeDto[] 배열을 직접 반환
+export type ItemTreeListResponse = ItemTreeDto[];
 
 export interface CreateItemRequest {
   itemNumber: string;

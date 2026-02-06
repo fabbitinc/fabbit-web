@@ -45,5 +45,5 @@ function convertItemTreeDto(item: ItemTreeDto): ItemData {
  * ItemTreeListResponse를 ItemData[] 배열로 변환
  */
 export function convertItemListResponse(response: ItemTreeListResponse): ItemData[] {
-  return response.items.map(convertItemTreeDto);
+  return response.map(convertItemTreeDto);
 }
