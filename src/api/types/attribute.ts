@@ -29,20 +29,22 @@ export interface BatchCreateAttributeRequest {
   attributes: CreateAttributeRequest[];
 }
 
-// PUT /api/v1/projects/:projectId/attributes/sync
-export interface SyncAttributesRequest {
-  attributes: SyncAttributeItem[];
+// PUT /api/v1/projects/:projectId/attributes/definitions
+export interface BulkSaveDefinitionsRequest {
+  definitions: BulkDefinitionItem[];
 }
 
-export interface SyncAttributeItem {
-  /** 기존 속성이면 id, 신규면 undefined */
-  id?: string;
+export interface BulkDefinitionItem {
+  /** 기존 속성이면 id, 신규면 null/undefined */
+  id?: string | null;
   name: string;
   displayName: string;
   dataType: AttributeDataType;
   required?: boolean;
-  options?: string[];
-  sortOrder: number;
+  options?: string[] | null;
+  description?: string | null;
+  placeholder?: string | null;
+  isActive?: boolean;
 }
 
 // POST /api/v1/items/import/bom/simple

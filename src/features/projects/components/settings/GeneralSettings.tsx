@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Save, Upload, X } from "lucide-react";
+import { Save, Upload, X, Loader2, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -10,6 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useUpdateProject } from "@/api/hooks";
 import type { ProjectStatus } from "../../types/settings.types";
 
 interface GeneralSettingsProps {
@@ -26,6 +27,9 @@ export function GeneralSettings({ project }: GeneralSettingsProps) {
   const [projectCode, setProjectCode] = useState(project.id.toUpperCase());
   const [status, setStatus] = useState<ProjectStatus>("active");
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [saveSuccess, setSaveSuccess] = useState(false);
+
+  const updateMutation = useUpdateProject(project.id);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -43,8 +47,15 @@ export function GeneralSettings({ project }: GeneralSettingsProps) {
   };
 
   const handleSave = () => {
-    // TODO: API 연동
-    console.log("저장:", { name, description, projectCode, status });
+    updateMutation.mutate(
+      { name, description: description || null },
+      {
+        onSuccess: () => {
+          setSaveSuccess(true);
+          setTimeout(() => setSaveSuccess(false), 2000);
+        },
+      },
+    );
   };
 
   return (
@@ -170,12 +181,29 @@ export function GeneralSettings({ project }: GeneralSettingsProps) {
         </div>
       </div>
 
-      <div className="mt-6 flex justify-end">
+      {updateMutation.isError && (
+        <div className="mt-4 rounded-lg border border-[#fecaca] bg-[#fef2f2] p-3 text-sm text-[#dc2626]">
+          저장에 실패했습니다. 다시 시도해 주세요.
+        </div>
+      )}
+
+      <div className="mt-6 flex items-center justify-end gap-3">
+        {saveSuccess && (
+          <span className="flex items-center gap-1 text-sm text-[#22c55e]">
+            <CheckCircle2 className="h-4 w-4" />
+            저장되었습니다
+          </span>
+        )}
         <Button
           onClick={handleSave}
+          disabled={updateMutation.isPending}
           className="bg-[#3b82f6] hover:bg-[#2563eb]"
         >
-          <Save className="mr-2 h-4 w-4" />
+          {updateMutation.isPending ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <Save className="mr-2 h-4 w-4" />
+          )}
           저장
         </Button>
       </div>

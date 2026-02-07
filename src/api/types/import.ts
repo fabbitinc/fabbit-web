@@ -41,6 +41,12 @@ export interface BomAnalyzeResponse {
   sampleRows: Record<string, string>[];
 }
 
+// POST /api/v1/attributes/definitions/suggest
+export interface SuggestAttributesResponse {
+  existsAttributes: AttributeDefinitionDto[];
+  suggestedAttributes: SuggestedAttributeResponse[];
+}
+
 // POST /api/v1/items/import/bom/execute
 
 export interface ParentItemRequest {

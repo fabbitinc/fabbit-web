@@ -5,13 +5,13 @@ import {
   updateAttribute,
   deleteAttribute,
   batchCreateAttributes,
-  syncAttributes,
+  bulkSaveDefinitions,
 } from "../attribute";
 import type {
   CreateAttributeRequest,
   UpdateAttributeRequest,
   BatchCreateAttributeRequest,
-  SyncAttributesRequest,
+  BulkSaveDefinitionsRequest,
 } from "../types";
 
 export const ATTRIBUTES_QUERY_KEY = ["attributes"] as const;
@@ -80,14 +80,16 @@ export function useDeleteAttribute(projectId: string) {
   });
 }
 
+
 /**
- * 속성 일괄 동기화 뮤테이션
+ * 속성 정의 일괄 저장 뮤테이션
+ * PUT /api/v1/projects/:projectId/attributes/definitions
  */
-export function useSyncAttributes(projectId: string) {
+export function useBulkSaveDefinitions(projectId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (request: SyncAttributesRequest) =>
-      syncAttributes(projectId, request),
+    mutationFn: (request: BulkSaveDefinitionsRequest) =>
+      bulkSaveDefinitions(projectId, request),
     onSuccess: () => {
       queryClient.invalidateQueries({
         queryKey: [...ATTRIBUTES_QUERY_KEY, projectId],

@@ -45,13 +45,10 @@ import {
 import { cn } from "@/lib/utils";
 import {
   useAttributes,
-  useSyncAttributes,
+  useBulkSaveDefinitions,
 } from "@/api/hooks/useAttributes";
-import {
-  generateTempPresignedUrl,
-  uploadFileToPresignedUrl,
-  analyzeBom,
-} from "@/api";
+import { suggestAttributes } from "@/api";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import {
   PROPERTY_TYPES,
   DATA_TYPE_MAP,
@@ -67,8 +64,7 @@ import type {
   ExistingProperty,
 } from "@/features/upload/components/PropertyMappingCards";
 import type { AttributeDefinitionDto } from "@/api/types/import";
-import type { CreateAttributeRequest } from "@/api/types/attribute";
-import type { SyncAttributeItem } from "@/api/types/attribute";
+import type { CreateAttributeRequest, BulkDefinitionItem } from "@/api/types/attribute";
 
 // 로컬 속성 타입
 interface LocalAttribute extends AttributeDefinitionDto {
@@ -83,19 +79,21 @@ function generateTempId(): string {
 
 interface AttributeSettingsProps {
   projectId: string;
+  onDirtyChange?: (isDirty: boolean) => void;
 }
 
-export function AttributeSettings({ projectId }: AttributeSettingsProps) {
+export function AttributeSettings({ projectId, onDirtyChange }: AttributeSettingsProps) {
   const { data: attributes, isLoading } = useAttributes(projectId);
-  const syncMutation = useSyncAttributes(projectId);
+  const saveMutation = useBulkSaveDefinitions(projectId);
 
   const [localAttributes, setLocalAttributes] = useState<LocalAttribute[]>([]);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingAttribute, setEditingAttribute] = useState<LocalAttribute | null>(null);
   const [isDetectDialogOpen, setIsDetectDialogOpen] = useState(false);
+  const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
 
   // 서버 데이터가 로드되면 로컬 상태 초기화
-  const prevDataRef = useRef(attributes);
+  const prevDataRef = useRef<typeof attributes>(undefined);
   useEffect(() => {
     if (attributes && attributes !== prevDataRef.current) {
       prevDataRef.current = attributes;
@@ -106,20 +104,18 @@ export function AttributeSettings({ projectId }: AttributeSettingsProps) {
   const serverAttributes = attributes ?? [];
 
   // 변경 감지
-  const { hasChanges, changeCount } = useMemo(() => {
+  const { hasChanges, changeCount, modifiedIds } = useMemo(() => {
     if (serverAttributes.length === 0 && localAttributes.length === 0) {
-      return { hasChanges: false, changeCount: 0 };
+      return { hasChanges: false, changeCount: 0, modifiedIds: new Set<string>() };
     }
 
     const serverMap = new Map(serverAttributes.map((a) => [a.id, a]));
-    let count = 0;
+    const modified = new Set<string>();
 
     const added = localAttributes.filter((la) => la._isNew);
-    count += added.length;
 
     const localIds = new Set(localAttributes.filter((la) => !la._isNew).map((la) => la.id));
     const deleted = serverAttributes.filter((a) => !a.isSystem && !localIds.has(a.id));
-    count += deleted.length;
 
     for (const la of localAttributes) {
       if (la._isNew) continue;
@@ -129,15 +125,32 @@ export function AttributeSettings({ projectId }: AttributeSettingsProps) {
         la.displayName !== server.displayName ||
         la.dataType !== server.dataType ||
         la.required !== server.required ||
-        la.sortOrder !== server.sortOrder ||
         JSON.stringify(la.options) !== JSON.stringify(server.options)
       ) {
-        count++;
+        modified.add(la.id);
       }
     }
 
-    return { hasChanges: count > 0, changeCount: count };
+    const count = added.length + deleted.length + modified.size;
+
+    // 순서 변경: hasChanges 트리거용 (카운트에는 미포함)
+    let orderChanged = false;
+    const serverIdOrder = serverAttributes.map((a) => a.id);
+    const localIdOrder = localAttributes.filter((la) => !la._isNew).map((la) => la.id);
+    if (
+      serverIdOrder.length !== localIdOrder.length ||
+      serverIdOrder.some((id, i) => id !== localIdOrder[i])
+    ) {
+      orderChanged = true;
+    }
+
+    return { hasChanges: count > 0 || orderChanged, changeCount: count, modifiedIds: modified };
   }, [serverAttributes, localAttributes]);
+
+  // 변경사항 상위 전파
+  useEffect(() => {
+    onDirtyChange?.(hasChanges);
+  }, [hasChanges, onDirtyChange]);
 
   // 기존 속성 이름 목록 (중복 검증용)
   const existingNames = useMemo(
@@ -148,23 +161,26 @@ export function AttributeSettings({ projectId }: AttributeSettingsProps) {
   // 되돌리기
   const handleReset = () => {
     setLocalAttributes(serverAttributes.map((attr) => ({ ...attr })));
+    setIsResetConfirmOpen(false);
   };
 
   // 저장
   const handleSave = () => {
-    const syncItems: SyncAttributeItem[] = localAttributes
+    const definitions: BulkDefinitionItem[] = localAttributes
       .filter((la) => !la.isSystem)
       .map((la) => ({
-        id: la._isNew ? undefined : la.id,
+        id: la._isNew ? null : la.id,
         name: la.name,
         displayName: la.displayName,
         dataType: la.dataType,
         required: la.required,
-        options: la.options ?? undefined,
-        sortOrder: la.sortOrder,
+        options: la.options,
+        description: la.description,
+        placeholder: la.placeholder,
+        isActive: la.isActive,
       }));
 
-    syncMutation.mutate({ attributes: syncItems });
+    saveMutation.mutate({ definitions });
   };
 
   // 속성 추가 (로컬)
@@ -306,7 +322,7 @@ export function AttributeSettings({ projectId }: AttributeSettingsProps) {
           {hasChanges && (
             <Button
               variant="outline"
-              onClick={handleReset}
+              onClick={() => setIsResetConfirmOpen(true)}
               className="text-[#64748b]"
             >
               <RotateCcw className="mr-2 h-4 w-4" />
@@ -315,15 +331,15 @@ export function AttributeSettings({ projectId }: AttributeSettingsProps) {
           )}
           <Button
             onClick={handleSave}
-            disabled={!hasChanges || syncMutation.isPending}
+            disabled={!hasChanges || saveMutation.isPending}
             className="bg-[#3b82f6] hover:bg-[#2563eb] disabled:opacity-50"
           >
-            {syncMutation.isPending ? (
+            {saveMutation.isPending ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : (
               <Save className="mr-2 h-4 w-4" />
             )}
-            저장{hasChanges ? ` (${changeCount}개 변경)` : ""}
+            저장{changeCount > 0 ? ` (${changeCount}개 변경)` : ""}
           </Button>
         </div>
       </div>
@@ -368,6 +384,7 @@ export function AttributeSettings({ projectId }: AttributeSettingsProps) {
                     <SortableRow
                       key={attr.id}
                       attr={attr}
+                      isModified={modifiedIds.has(attr.id)}
                       onEdit={() => setEditingAttribute(attr)}
                       onDelete={() => handleDeleteAttribute(attr.id)}
                     />
@@ -402,10 +419,20 @@ export function AttributeSettings({ projectId }: AttributeSettingsProps) {
       <DetectFromBomDialog
         isOpen={isDetectDialogOpen}
         onClose={() => setIsDetectDialogOpen(false)}
-        projectId={projectId}
         existingAttributes={localAttributes}
         onBatchCreate={handleBomDetected}
         isSubmitting={false}
+      />
+
+      {/* 되돌리기 확인 다이얼로그 */}
+      <ConfirmDialog
+        open={isResetConfirmOpen}
+        onOpenChange={setIsResetConfirmOpen}
+        title="변경사항 되돌리기"
+        description={`${changeCount}개의 변경사항이 모두 취소됩니다. 되돌리시겠습니까?`}
+        confirmLabel="되돌리기"
+        variant="destructive"
+        onConfirm={handleReset}
       />
     </div>
   );
@@ -416,11 +443,12 @@ export function AttributeSettings({ projectId }: AttributeSettingsProps) {
 // ============================================
 interface SortableRowProps {
   attr: LocalAttribute;
+  isModified: boolean;
   onEdit: () => void;
   onDelete: () => void;
 }
 
-function SortableRow({ attr, onEdit, onDelete }: SortableRowProps) {
+function SortableRow({ attr, isModified, onEdit, onDelete }: SortableRowProps) {
   const {
     attributes: dndAttributes,
     listeners,
@@ -447,6 +475,7 @@ function SortableRow({ attr, onEdit, onDelete }: SortableRowProps) {
       className={cn(
         "hover:bg-[#f8fafc]",
         attr._isNew && "border-l-2 border-l-[#22c55e] bg-[#f0fdf4]",
+        isModified && !attr._isNew && "border-l-2 border-l-[#f59e0b] bg-[#fffbeb]",
         isDragging && "opacity-50 bg-[#f1f5f9]",
       )}
     >
@@ -725,7 +754,6 @@ function AttributeFormDialog({
 interface DetectFromBomDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  projectId: string;
   existingAttributes: LocalAttribute[];
   onBatchCreate: (requests: CreateAttributeRequest[]) => void;
   isSubmitting: boolean;
@@ -736,7 +764,6 @@ type DetectStep = "upload" | "analyzing" | "review";
 function DetectFromBomDialog({
   isOpen,
   onClose,
-  projectId,
   existingAttributes,
   onBatchCreate,
   isSubmitting,
@@ -744,6 +771,7 @@ function DetectFromBomDialog({
   const [step, setStep] = useState<DetectStep>("upload");
   const [newMappings, setNewMappings] = useState<PropertyMapping[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [isCloseConfirmOpen, setIsCloseConfirmOpen] = useState(false);
 
   const existingPropertyList = useMemo<ExistingProperty[]>(
     () => existingAttributes.map(convertAttributeToExistingProperty),
@@ -764,23 +792,7 @@ function DetectFromBomDialog({
       setError(null);
 
       try {
-        const ext = file.name.toLowerCase().split(".").pop();
-        let contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-        if (ext === "csv") contentType = "text/csv";
-        else if (ext === "xls") contentType = "application/vnd.ms-excel";
-
-        const presigned = await generateTempPresignedUrl({
-          fileName: file.name,
-          contentType,
-          fileSizeBytes: file.size,
-        });
-
-        await uploadFileToPresignedUrl(presigned.uploadUrl, file);
-
-        const result = await analyzeBom(
-          { projectId },
-          { fileKey: presigned.fileKey },
-        );
+        const result = await suggestAttributes(file);
 
         const mappings = result.suggestedAttributes.map((suggested, index) =>
           convertSuggestedToPropertyMapping(suggested, index),
@@ -793,7 +805,7 @@ function DetectFromBomDialog({
         setStep("upload");
       }
     },
-    [projectId],
+    [],
   );
 
   const handleDrop = useCallback(
@@ -840,9 +852,31 @@ function DetectFromBomDialog({
   const unconfiguredCount = newMappings.filter((m) => !m.isConfigured).length;
   const createCount = newMappings.filter((m) => m.action === "create" && m.isConfigured).length;
 
+  // 닫기 시도 처리
+  const handleOpenChange = (open: boolean) => {
+    if (open) return;
+    if (step === "analyzing") return; // 분석 중 닫기 차단
+    if (step === "review" && newMappings.length > 0) {
+      setIsCloseConfirmOpen(true); // 리뷰 중 확인 요청
+      return;
+    }
+    onClose();
+  };
+
+  const handleForceClose = () => {
+    setIsCloseConfirmOpen(false);
+    onClose();
+  };
+
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-3xl w-[80vw] max-h-[80vh] overflow-hidden flex flex-col">
+    <>
+    <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+      <DialogContent
+        className="sm:max-w-3xl w-[80vw] max-h-[80vh] overflow-hidden flex flex-col"
+        showCloseButton={step !== "analyzing"}
+        onPointerDownOutside={(e) => { if (step === "analyzing") e.preventDefault(); }}
+        onEscapeKeyDown={(e) => { if (step === "analyzing") e.preventDefault(); }}
+      >
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-[#8b5cf6]" />
@@ -967,5 +1001,16 @@ function DetectFromBomDialog({
         )}
       </DialogContent>
     </Dialog>
+
+    <ConfirmDialog
+      open={isCloseConfirmOpen}
+      onOpenChange={setIsCloseConfirmOpen}
+      title="감지 결과 닫기"
+      description="감지된 속성 정보가 사라집니다. 닫으시겠습니까?"
+      confirmLabel="닫기"
+      variant="destructive"
+      onConfirm={handleForceClose}
+    />
+    </>
   );
 }

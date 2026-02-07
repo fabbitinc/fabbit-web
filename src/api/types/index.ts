@@ -2,6 +2,7 @@ export * from "./common";
 export * from "./auth";
 export * from "./item";
 export * from "./tree";
+export * from "./project";
 export * from "./file";
 export * from "./import";
 export * from "./attribute";

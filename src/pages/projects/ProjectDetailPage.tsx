@@ -15,6 +15,7 @@ import {
   ExternalLink,
   FolderPlus,
   Eye,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -23,6 +24,7 @@ import { useUploadStore } from "@/stores/uploadStore";
 import { mockFolders } from "@/features/items/mock-data";
 import type { FolderData } from "@/features/items/types";
 import { cn } from "@/lib/utils";
+import { useProject } from "@/api/hooks";
 
 // 대시보드 컴포넌트 임포트
 import {
@@ -109,15 +111,41 @@ export function ProjectDetailPage() {
   const [highlightedItemId, setHighlightedItemId] = useState<string | null>(null);
   const drawingsRef = useRef<HTMLDivElement>(null);
 
-  const project = findProjectById(mockFolders, id ?? "");
+  // Mock 데이터에서 먼저 찾기
+  const mockProject = findProjectById(mockFolders, id ?? "");
 
-  if (!project) {
+  // Mock에 없으면 API에서 조회
+  const { data: apiProject, isLoading, isError } = useProject(mockProject ? null : (id ?? null));
+
+  // API 프로젝트인 경우 간소화된 대시보드 표시
+  if (!mockProject) {
+    if (isLoading) {
+      return (
+        <div className="flex h-full items-center justify-center">
+          <Loader2 className="mr-2 h-5 w-5 animate-spin text-[#94a3b8]" />
+          <span className="text-sm text-[#94a3b8]">프로젝트를 불러오는 중...</span>
+        </div>
+      );
+    }
+
+    if (!apiProject || isError) {
+      return (
+        <div className="flex h-full items-center justify-center">
+          <p className="text-[#64748b]">프로젝트를 찾을 수 없습니다.</p>
+        </div>
+      );
+    }
+
     return (
-      <div className="flex h-full items-center justify-center">
-        <p className="text-[#64748b]">프로젝트를 찾을 수 없습니다.</p>
-      </div>
+      <ApiProjectDetailView
+        project={apiProject}
+        onUpload={() => openUploadModal("drawing", id)}
+        onSettings={() => navigate(`/projects/${id}/settings`)}
+      />
     );
   }
+
+  const project = mockProject;
 
   // AI 진도율 자동 계산 (Mock)
   const stats = {
@@ -487,5 +515,117 @@ export function ProjectDetailPage() {
       {/* 간트 차트 다이얼로그 */}
       <GanttChartDialog open={isGanttOpen} onClose={() => setIsGanttOpen(false)} items={mockGanttItems} />
     </TooltipProvider>
+  );
+}
+
+// API 프로젝트용 간소화된 상세 뷰
+function ApiProjectDetailView({
+  project,
+  onUpload,
+  onSettings,
+}: {
+  project: { id: string; name: string; description: string | null; status: string; createdAt: string; updatedAt: string };
+  onUpload: () => void;
+  onSettings: () => void;
+}) {
+  const navigate = useNavigate();
+
+  const formattedDate = project.updatedAt.length > 10
+    ? project.updatedAt.slice(0, 10)
+    : project.updatedAt;
+
+  return (
+    <div className="flex h-full flex-col bg-[#f8fafc]">
+      {/* Header */}
+      <div className="border-b border-[#e2e8f0] bg-white px-6 py-5">
+        <div className="flex items-start justify-between">
+          <div className="flex items-start gap-4">
+            <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-gradient-to-br from-[#8b5cf6] to-[#6366f1] shadow-lg shadow-[#8b5cf6]/25">
+              <Layers className="h-7 w-7 text-white" />
+            </div>
+            <div>
+              <div className="flex items-center gap-3">
+                <h1 className="text-xl font-semibold text-[#0f172a]">{project.name}</h1>
+                <span className="rounded-full bg-[#ecfdf5] px-2.5 py-0.5 text-xs font-medium text-[#059669]">
+                  {project.status === "ACTIVE" ? "진행중" : "보관됨"}
+                </span>
+              </div>
+              {project.description && (
+                <p className="mt-1 text-sm text-[#64748b]">{project.description}</p>
+              )}
+              <div className="mt-3 flex items-center gap-4 text-xs text-[#94a3b8]">
+                <span className="flex items-center gap-1.5">
+                  <Calendar className="h-3.5 w-3.5" />
+                  {formattedDate}
+                </span>
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button className="bg-[#3b82f6] hover:bg-[#2563eb]" onClick={onUpload}>
+              <Upload className="mr-2 h-4 w-4" />
+              도면 업로드
+            </Button>
+            <Button variant="outline" size="icon" onClick={onSettings}>
+              <Settings className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="flex-1 overflow-auto p-6">
+        <div className="mx-auto max-w-3xl space-y-6">
+          {/* 빠른 작업 */}
+          <div className="rounded-xl border border-[#e2e8f0] bg-white p-6">
+            <h3 className="font-semibold text-[#0f172a]">빠른 작업</h3>
+            <div className="mt-4 grid grid-cols-3 gap-3">
+              <Button
+                variant="outline"
+                className="h-auto flex-col gap-2 py-4"
+                onClick={onUpload}
+              >
+                <Upload className="h-5 w-5 text-[#3b82f6]" />
+                <span className="text-sm">도면 업로드</span>
+              </Button>
+              <Button
+                variant="outline"
+                className="h-auto flex-col gap-2 py-4"
+                onClick={onSettings}
+              >
+                <Settings className="h-5 w-5 text-[#8b5cf6]" />
+                <span className="text-sm">프로젝트 설정</span>
+              </Button>
+              <Button
+                variant="outline"
+                className="h-auto flex-col gap-2 py-4"
+                onClick={() => navigate("/items")}
+              >
+                <Package className="h-5 w-5 text-[#22c55e]" />
+                <span className="text-sm">아이템 목록</span>
+              </Button>
+            </div>
+          </div>
+
+          {/* 폴더 - 빈 상태 */}
+          <div className="rounded-xl border border-[#e2e8f0] bg-white p-6">
+            <h3 className="font-semibold text-[#0f172a]">폴더</h3>
+            <div className="mt-4 flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-[#e2e8f0] py-8">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#f1f5f9]">
+                <FolderPlus className="h-6 w-6 text-[#94a3b8]" />
+              </div>
+              <p className="mt-3 text-sm font-medium text-[#64748b]">아직 폴더가 없습니다</p>
+              <p className="mt-1 text-xs text-[#94a3b8]">
+                도면을 업로드하면 폴더와 아이템이 자동으로 생성됩니다
+              </p>
+              <Button className="mt-4 bg-[#3b82f6] hover:bg-[#2563eb]" size="sm" onClick={onUpload}>
+                <Upload className="mr-2 h-4 w-4" />
+                도면 업로드하기
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 }

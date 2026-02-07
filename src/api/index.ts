@@ -3,6 +3,7 @@ export { queryClient } from "./queryClient";
 export * from "./types";
 export * from "./auth";
 export * from "./tree";
+export * from "./project";
 export * from "./item";
 export * from "./file";
 export * from "./import";
