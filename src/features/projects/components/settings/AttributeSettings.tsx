@@ -360,25 +360,25 @@ export function AttributeSettings({ projectId, onDirtyChange }: AttributeSetting
           </p>
         </div>
       ) : (
-        <div className="rounded-lg border border-[#e2e8f0] overflow-hidden">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b border-[#e2e8f0] bg-[#f8fafc]">
-                <th className="w-10 px-2 py-3" />
-                <th className="px-4 py-3 text-left text-xs font-medium text-[#64748b]">이름</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-[#64748b]">표시 이름</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-[#64748b]">타입</th>
-                <th className="px-4 py-3 text-center text-xs font-medium text-[#64748b]">필수</th>
-                <th className="px-4 py-3 text-center text-xs font-medium text-[#64748b]">시스템</th>
-                <th className="px-4 py-3 text-right text-xs font-medium text-[#64748b]">작업</th>
-              </tr>
-            </thead>
-            <DndContext
-              sensors={sensors}
-              collisionDetection={closestCenter}
-              onDragEnd={handleDragEnd}
-            >
-              <SortableContext items={sortableIds} strategy={verticalListSortingStrategy}>
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext items={sortableIds} strategy={verticalListSortingStrategy}>
+            <div className="rounded-lg border border-[#e2e8f0] overflow-hidden">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-[#e2e8f0] bg-[#f8fafc]">
+                    <th className="w-10 px-2 py-3" />
+                    <th className="px-4 py-3 text-left text-xs font-medium text-[#64748b]">이름</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-[#64748b]">표시 이름</th>
+                    <th className="px-4 py-3 text-left text-xs font-medium text-[#64748b]">타입</th>
+                    <th className="px-4 py-3 text-center text-xs font-medium text-[#64748b]">필수</th>
+                    <th className="px-4 py-3 text-center text-xs font-medium text-[#64748b]">시스템</th>
+                    <th className="px-4 py-3 text-right text-xs font-medium text-[#64748b]">작업</th>
+                  </tr>
+                </thead>
                 <tbody className="divide-y divide-[#f1f5f9]">
                   {localAttributes.map((attr) => (
                     <SortableRow
@@ -390,10 +390,10 @@ export function AttributeSettings({ projectId, onDirtyChange }: AttributeSetting
                     />
                   ))}
                 </tbody>
-              </SortableContext>
-            </DndContext>
-          </table>
-        </div>
+              </table>
+            </div>
+          </SortableContext>
+        </DndContext>
       )}
 
       {/* 속성 추가/수정 다이얼로그 */}
