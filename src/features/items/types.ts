@@ -44,6 +44,7 @@ export interface TreeNodeData {
   partNumber?: string;
   status?: TreeNodeStatus;
   hasDrawing?: boolean;
+  itemType?: "PART" | "ASSEMBLY";
 }
 
 // 기존 FolderData는 TreeNodeData의 별칭으로 유지 (호환성)

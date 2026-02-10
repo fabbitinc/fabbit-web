@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { loginUser, logout as logoutApi, queryClient } from "@/api";
 
 interface Organization {
   id: string;
@@ -28,7 +29,7 @@ interface AuthState {
   // Actions
   login: (email: string, password: string) => Promise<void>;
   loginWithProvider: (provider: "google" | "naver" | "kakao") => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
   setUser: (user: User | null) => void;
   switchOrganization: (organizationId: string) => void;
 }
@@ -52,11 +53,15 @@ export const useAuthStore = create<AuthState>()(
       login: async (email: string, password: string) => {
         set({ isLoading: true });
 
-        // Mock login - 실제로는 API 호출
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        try {
+          const response = await loginUser({ email, password });
 
-        // Mock 성공 응답
-        if (email && password) {
+          // 토큰 저장
+          localStorage.setItem("accessToken", response.accessToken);
+          localStorage.setItem("refreshToken", response.refreshToken);
+
+          // TODO: API에서 user 정보를 반환하지 않음
+          // 임시로 email에서 추출하여 사용
           const mockUser: User = {
             id: "user-1",
             email: email,
@@ -65,6 +70,7 @@ export const useAuthStore = create<AuthState>()(
             organizationId: "org-1",
             organizationName: "Fabbit Demo",
           };
+
           set({
             user: mockUser,
             isAuthenticated: true,
@@ -72,9 +78,9 @@ export const useAuthStore = create<AuthState>()(
             organizations: mockOrganizations,
             currentOrganization: mockOrganizations[0],
           });
-        } else {
+        } catch (error) {
           set({ isLoading: false });
-          throw new Error("이메일과 비밀번호를 입력해주세요.");
+          throw error instanceof Error ? error : new Error("로그인에 실패했습니다.");
         }
       },
 
@@ -108,8 +114,29 @@ export const useAuthStore = create<AuthState>()(
         });
       },
 
-      logout: () => {
-        set({ user: null, isAuthenticated: false, currentOrganization: null });
+      logout: async () => {
+        const refreshToken = localStorage.getItem("refreshToken");
+
+        try {
+          if (refreshToken) {
+            await logoutApi({ refreshToken });
+          }
+        } finally {
+          // 서버 응답 상관없이 로컬 정리
+          localStorage.removeItem("accessToken");
+          localStorage.removeItem("refreshToken");
+
+          // React Query 캐시 초기화
+          queryClient.clear();
+
+          // 상태 초기화
+          set({
+            user: null,
+            isAuthenticated: false,
+            currentOrganization: null,
+            organizations: [],
+          });
+        }
       },
 
       setUser: (user) => {

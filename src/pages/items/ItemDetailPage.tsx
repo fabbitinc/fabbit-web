@@ -108,6 +108,10 @@ export function ItemDetailPage() {
   const allItems = getAllItems();
   const item = findItemById(allItems, id ?? "");
   const breadcrumbPath = findFullPath(id ?? "");
+
+  // breadcrumbPath에서 프로젝트 ID 추출
+  const currentProjectId = breadcrumbPath.find((node) => node.type === "project")?.id ?? null;
+
   const parentItems = useMemo(
     () => findParentItems(id ?? "", allItems),
     [id, allItems]
@@ -189,13 +193,15 @@ export function ItemDetailPage() {
           })}
         </div>
 
-        <Button
-          onClick={openUploadModal}
-          className="bg-[#3b82f6] hover:bg-[#2563eb]"
-        >
-          <Upload className="mr-2 h-4 w-4" />
-          도면/BOM 업로드
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            onClick={() => openUploadModal("drawing", currentProjectId ?? undefined)}
+            className="bg-[#3b82f6] hover:bg-[#2563eb]"
+          >
+            <Upload className="mr-2 h-4 w-4" />
+            도면 업로드
+          </Button>
+        </div>
       </div>
 
       {/* Item Info Card */}

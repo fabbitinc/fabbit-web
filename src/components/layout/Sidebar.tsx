@@ -28,7 +28,7 @@ export function Sidebar() {
   const location = useLocation();
   const files = useUploadStore((state) => state.files);
   const activeUploads = files.filter(
-    (f) => f.status === "uploading" || f.status === "processing"
+    (f) => f.status === "uploading" || f.status === "analyzing"
   );
   const hasActiveUploads = activeUploads.length > 0;
 

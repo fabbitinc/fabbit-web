@@ -36,36 +36,41 @@ export function ItemRow({ item, level }: ItemRowProps) {
         )}
         onClick={() => selectItem(isSelected ? null : item)}
       >
+        {/* 품명 (열기 버튼 포함) */}
         <td className="py-3.5 pr-6" style={{ paddingLeft: `${level * 20 + 16}px` }}>
           <div className="flex items-center gap-2">
-            <button
-              className={cn(
-                "flex h-5 w-5 shrink-0 items-center justify-center rounded transition-colors",
-                hasChildren && "hover:bg-[#e2e8f0]",
-                !hasChildren && "invisible"
+            {/* 열기 버튼 - 항상 같은 공간 차지 */}
+            <div className="w-5 shrink-0">
+              {hasChildren && (
+                <button
+                  className="flex h-5 w-5 items-center justify-center rounded transition-colors hover:bg-[#e2e8f0]"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleExpanded(item.id);
+                  }}
+                >
+                  <ChevronRight
+                    className={cn(
+                      "h-3.5 w-3.5 text-[#94a3b8] transition-transform",
+                      isExpanded && "rotate-90"
+                    )}
+                  />
+                </button>
               )}
-              onClick={(e) => {
-                e.stopPropagation();
-                toggleExpanded(item.id);
-              }}
-            >
-              <ChevronRight
-                className={cn(
-                  "h-3.5 w-3.5 text-[#94a3b8] transition-transform",
-                  isExpanded && "rotate-90"
-                )}
-              />
-            </button>
-            <span className="font-semibold text-[#0f172a]">{item.partNumber}</span>
+            </div>
+            <span className="truncate text-[#334155]">{item.name}</span>
             {hasConflicts && (
-              <span className="ml-2 inline-flex items-center gap-1 rounded bg-[#fef2f2] px-1.5 py-0.5 text-[10px] font-medium text-[#dc2626]">
+              <span className="ml-2 inline-flex shrink-0 items-center gap-1 rounded bg-[#fef2f2] px-1.5 py-0.5 text-[10px] font-medium text-[#dc2626]">
                 <AlertTriangle className="h-3 w-3" />
                 {item.conflicts!.length}
               </span>
             )}
           </div>
         </td>
-        <td className="py-3.5 pr-6 text-[#334155]">{item.name}</td>
+        {/* 품번 */}
+        <td className="py-3.5 pr-6">
+          <span className="font-semibold text-[#0f172a]">{item.partNumber}</span>
+        </td>
         <td className="py-3.5 pr-6">
           {item.material && (
             <span className="inline-flex items-center rounded-full bg-[#f1f5f9] px-3 py-1 text-[11px] font-medium text-[#475569]">

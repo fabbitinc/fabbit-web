@@ -5,7 +5,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import {
   Upload,
@@ -15,7 +14,6 @@ import {
   Loader2,
   X,
   Sparkles,
-  RefreshCw,
 } from "lucide-react";
 import { useUploadStore, type UploadFile } from "@/stores/uploadStore";
 import { cn } from "@/lib/utils";
@@ -23,21 +21,18 @@ import { cn } from "@/lib/utils";
 export function UploadModal() {
   const { isModalOpen, closeModal, files, addFiles, removeFile } = useUploadStore();
 
+  const filterFile = (file: File) =>
+    file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf");
+
   const handleDrop = useCallback(
     (e: React.DragEvent) => {
       e.preventDefault();
-      const droppedFiles = Array.from(e.dataTransfer.files).filter(
-        (file) =>
-          file.type === "application/pdf" ||
-          file.name.endsWith(".xlsx") ||
-          file.name.endsWith(".xls") ||
-          file.name.endsWith(".dwg")
-      );
+      const droppedFiles = Array.from(e.dataTransfer.files).filter(filterFile);
       if (droppedFiles.length > 0) {
         addFiles(droppedFiles);
       }
     },
-    [addFiles]
+    [addFiles],
   );
 
   const handleFileSelect = useCallback(
@@ -48,7 +43,7 @@ export function UploadModal() {
       }
       e.target.value = "";
     },
-    [addFiles]
+    [addFiles],
   );
 
   return (
@@ -57,7 +52,7 @@ export function UploadModal() {
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-lg">
             <Upload className="h-5 w-5 text-[#3b82f6]" />
-            도면/BOM 업로드
+            도면 업로드
           </DialogTitle>
         </DialogHeader>
 
@@ -70,7 +65,7 @@ export function UploadModal() {
           <input
             type="file"
             multiple
-            accept=".pdf,.xlsx,.xls,.dwg"
+            accept=".pdf"
             className="absolute inset-0 cursor-pointer opacity-0"
             onChange={handleFileSelect}
           />
@@ -83,7 +78,7 @@ export function UploadModal() {
                 파일을 드래그하거나 클릭하여 선택
               </p>
               <p className="mt-1 text-xs text-[#64748b]">
-                PDF, Excel, DWG 파일 지원 · 최대 50MB
+                PDF 파일 지원 · 최대 50MB
               </p>
             </div>
           </div>
@@ -98,8 +93,7 @@ export function UploadModal() {
             <div>
               <p className="text-sm font-medium text-[#0f172a]">AI 자동 분석</p>
               <p className="mt-0.5 text-xs text-[#64748b]">
-                업로드된 도면에서 표제란과 부품표를 자동으로 인식하여 BOM을 생성합니다.
-                기존 데이터와 충돌이 발생하면 알려드립니다.
+                업로드된 도면에서 표제란과 부품표를 자동으로 인식하여 BOM을 생성합니다. 기존 데이터와 충돌이 발생하면 알려드립니다.
               </p>
             </div>
           </div>
@@ -109,13 +103,17 @@ export function UploadModal() {
         {files.length > 0 && (
           <div className="max-h-64 space-y-2 overflow-y-auto">
             {files.map((file) => (
-              <FileItem key={file.id} file={file} onRemove={removeFile} />
+              <FileItem
+                key={file.id}
+                file={file}
+                onRemove={removeFile}
+              />
             ))}
           </div>
         )}
 
         {/* Footer */}
-        <div className="flex justify-end gap-2 border-t border-[#f1f5f9] pt-4">
+        <div className="flex justify-end border-t border-[#f1f5f9] pt-4">
           <Button variant="outline" onClick={closeModal}>
             닫기
           </Button>
@@ -132,85 +130,56 @@ function FileItem({
   file: UploadFile;
   onRemove: (id: string) => void;
 }) {
-  const statusConfig: Record<
-    string,
-    { icon: typeof CheckCircle2; color: string; bg: string; label: string }
-  > = {
-    pending: { icon: FileText, color: "text-[#64748b]", bg: "bg-[#f1f5f9]", label: "대기 중" },
-    uploading: { icon: Loader2, color: "text-[#3b82f6]", bg: "bg-[#eff6ff]", label: "업로드 중" },
-    processing: { icon: Sparkles, color: "text-[#8b5cf6]", bg: "bg-[#f5f3ff]", label: "AI 분석 중" },
-    completed: { icon: CheckCircle2, color: "text-[#22c55e]", bg: "bg-[#f0fdf4]", label: "완료" },
-    failed: { icon: AlertTriangle, color: "text-[#ef4444]", bg: "bg-[#fef2f2]", label: "실패" },
-    conflict: { icon: AlertTriangle, color: "text-[#f59e0b]", bg: "bg-[#fffbeb]", label: "충돌 감지" },
-  };
-
-  const config = statusConfig[file.status];
-  const StatusIcon = config.icon;
-  const isLoading = file.status === "uploading" || file.status === "processing";
+  const isLoading = file.status === "uploading" || file.status === "analyzing";
+  const isCompleted = file.status === "completed";
+  const isFailed = file.status === "failed";
 
   return (
     <div className="rounded-lg border border-[#e2e8f0] bg-white p-3">
       <div className="flex items-center gap-3">
-        <div className={cn("flex h-10 w-10 items-center justify-center rounded-lg", config.bg)}>
-          <StatusIcon
-            className={cn("h-5 w-5", config.color, isLoading && "animate-spin")}
-          />
+        {/* Icon */}
+        <div
+          className={cn(
+            "flex h-10 w-10 items-center justify-center rounded-lg transition-colors",
+            isLoading && "bg-[#8b5cf6]/10",
+            isCompleted && "bg-[#22c55e]/10",
+            isFailed && "bg-[#ef4444]/10",
+            !isLoading && !isCompleted && !isFailed && "bg-[#f1f5f9]",
+          )}
+        >
+          {isLoading ? (
+            <Loader2 className="h-5 w-5 text-[#8b5cf6] animate-spin" />
+          ) : isCompleted ? (
+            <CheckCircle2 className="h-5 w-5 text-[#22c55e]" />
+          ) : isFailed ? (
+            <AlertTriangle className="h-5 w-5 text-[#ef4444]" />
+          ) : (
+            <FileText className="h-5 w-5 text-[#64748b]" />
+          )}
         </div>
 
+        {/* Content */}
         <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between">
-            <p className="truncate text-sm font-medium text-[#0f172a]">{file.name}</p>
-            <span className={cn("ml-2 shrink-0 text-xs font-medium", config.color)}>
-              {config.label}
-            </span>
-          </div>
+          <p className="truncate text-sm font-medium text-[#0f172a]">{file.name}</p>
 
-          {/* Progress */}
-          {file.status === "uploading" && (
-            <div className="mt-2">
-              <Progress value={file.progress} className="h-1.5" />
-              <p className="mt-1 text-[10px] text-[#64748b]">
-                {Math.round(file.progress)}% 업로드됨
-              </p>
-            </div>
-          )}
-
-          {/* AI Progress */}
-          {file.status === "processing" && file.aiProgress && (
-            <div className="mt-2">
-              <Progress value={file.aiProgress.percentage} className="h-1.5" />
-              <p className="mt-1 text-[10px] text-[#64748b]">{file.aiProgress.step}</p>
-            </div>
-          )}
-
-          {/* Result */}
-          {file.status === "completed" && file.result && (
-            <p className="mt-1 text-xs text-[#22c55e]">
-              {file.result.itemsFound}개 아이템 추출 완료
-            </p>
-          )}
-
-          {/* Conflict */}
-          {file.status === "conflict" && file.result && (
-            <div className="mt-2 flex items-center gap-2">
-              <p className="text-xs text-[#f59e0b]">
-                {file.result.conflictsFound}건 충돌 · {file.result.itemsFound}개 아이템
-              </p>
-              <Button size="sm" variant="outline" className="h-7 text-xs">
-                <RefreshCw className="mr-1 h-3 w-3" />
-                해결하기
-              </Button>
-            </div>
-          )}
-
-          {/* Error */}
-          {file.status === "failed" && file.error && (
-            <p className="mt-1 text-xs text-[#ef4444]">{file.error}</p>
-          )}
+          <p
+            key={`${file.status}-${file.statusMessage}`}
+            className={cn(
+              "mt-0.5 text-xs animate-fade-in-up",
+              isLoading && "text-[#8b5cf6]",
+              isCompleted && "text-[#22c55e]",
+              isFailed && "text-[#ef4444]",
+              !isLoading && !isCompleted && !isFailed && "text-[#64748b]",
+            )}
+          >
+            {file.status === "pending" && "대기 중..."}
+            {isLoading && file.statusMessage}
+            {isCompleted && (file.statusMessage ?? "분석 완료")}
+            {isFailed && (file.error ?? "오류 발생")}
+          </p>
         </div>
 
-        {/* Remove Button */}
-        {(file.status === "completed" || file.status === "failed") && (
+        {isFailed && (
           <Button
             variant="ghost"
             size="icon"
