@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { Eye, EyeOff, Loader2, User } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Eye, EyeOff, Loader2, Check, X } from "lucide-react";
 import { Turnstile } from "@marsidev/react-turnstile";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -55,27 +55,79 @@ function KakaoIcon({ className }: { className?: string }) {
   );
 }
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const mockTakenEmails = ["admin@fabbit.com", "test@company.com", "demo@maker.co.kr"];
+type EmailStatus = "idle" | "invalid" | "checking" | "available" | "taken";
+
 export function SignupPage() {
   const navigate = useNavigate();
-  const { signup, loginWithProvider, isLoading } = useAuthStore();
-  const { setStep } = useOnboardingStore();
+  const { loginWithProvider, isLoading } = useAuthStore();
+  const { setStep, signupData, setSignupData } = useOnboardingStore();
 
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [name, setName] = useState(signupData.name);
+  const [email, setEmail] = useState(signupData.email);
+  const [password, setPassword] = useState(signupData.password);
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState("");
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
+  const [emailStatus, setEmailStatus] = useState<EmailStatus>("idle");
+  const [emailError, setEmailError] = useState<string>("");
 
   useEffect(() => {
     setStep(1);
   }, [setStep]);
 
+  useEffect(() => {
+    const normalizedEmail = email.trim().toLowerCase();
+
+    if (!normalizedEmail) {
+      setEmailStatus("idle");
+      setEmailError("");
+      return;
+    }
+
+    if (!EMAIL_REGEX.test(normalizedEmail)) {
+      setEmailStatus("invalid");
+      setEmailError("올바른 이메일 형식을 입력해 주세요.");
+      return;
+    }
+
+    setEmailStatus("checking");
+    setEmailError("");
+
+    const timer = setTimeout(() => {
+      if (mockTakenEmails.includes(normalizedEmail)) {
+        setEmailStatus("taken");
+        setEmailError("이미 사용 중인 이메일입니다. (mock)");
+        return;
+      }
+
+      setEmailStatus("available");
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [email]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
+    if (!name.trim() || !email.trim() || !password || !confirmPassword) {
+      setError("필수 정보를 모두 입력해 주세요.");
+      return;
+    }
+
+    if (password.length < 8) {
+      setError("비밀번호는 8자 이상 입력해 주세요.");
+      return;
+    }
+
+    if (emailStatus !== "available") {
+      setError(emailError || "이메일을 확인해 주세요.");
+      return;
+    }
 
     if (password !== confirmPassword) {
       setError("비밀번호가 일치하지 않습니다.");
@@ -87,13 +139,12 @@ export function SignupPage() {
       return;
     }
 
-    try {
-      // TODO: turnstileToken을 백엔드로 전달하여 검증
-      await signup(name, email, password);
-      navigate("/onboarding/workspace");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "회원가입에 실패했습니다.");
-    }
+    setSignupData({
+      name: name.trim(),
+      email: email.trim().toLowerCase(),
+      password,
+    });
+    navigate("/onboarding/workspace");
   };
 
   const handleSocialSignup = async (provider: "google" | "naver" | "kakao") => {
@@ -109,66 +160,117 @@ export function SignupPage() {
     }
   };
 
+  const canProceed =
+    name.trim().length > 0 &&
+    emailStatus === "available" &&
+    password.length >= 8 &&
+    confirmPassword.length > 0 &&
+    confirmPassword === password &&
+    !!turnstileToken;
+
   return (
-    <div className="w-full max-w-lg mx-auto space-y-6">
-      {/* 상단 헤더 */}
-      <div className="text-center space-y-2">
-        <div className="flex justify-center">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-[#3b82f6] to-[#8b5cf6]">
-            <User className="h-6 w-6 text-white" />
+    <div className="flex w-full max-w-[1000px] overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-2xl shadow-gray-200/50 md:grid md:grid-cols-2">
+      {/* Left Column: Branding / Marketing */}
+      <div className="relative hidden flex-col justify-between overflow-hidden bg-slate-900 p-10 text-white md:flex">
+        {/* Background Gradients/Patterns */}
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-600 to-indigo-700" />
+        <div className="absolute top-0 left-0 h-full w-full bg-[url('/grid-pattern.svg')] opacity-10" />
+        <div className="absolute -right-20 -top-20 h-[300px] w-[300px] rounded-full bg-blue-500 blur-3xl opacity-20" />
+        <div className="absolute -left-20 -bottom-20 h-[300px] w-[300px] rounded-full bg-indigo-500 blur-3xl opacity-20" />
+
+        {/* Content */}
+        <div className="relative z-10">
+          <div className="mb-8 flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 backdrop-blur-sm border border-white/20">
+              <svg className="h-6 w-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                <path d="M2 17l10 5 10-5" />
+                <path d="M2 12l10 5 10-5" />
+              </svg>
+            </div>
+            <span className="text-xl font-bold tracking-tight">Fabbit</span>
           </div>
+
+          <h2 className="mb-4 text-3xl font-bold leading-tight">
+            스마트한 제조 관리의 시작,<br />
+            지금 바로 경험해보세요.
+          </h2>
+          <p className="text-blue-100 leading-relaxed opacity-90">
+            복잡한 BOM 관리부터 실시간 공정 모니터링까지.<br />
+            Fabbit 하나로 모든 제조 데이터를 연결하세요.
+          </p>
         </div>
-        <h1 className="text-2xl font-bold text-[#0f172a]">계정 생성</h1>
-        <p className="text-sm text-[#64748b]">
-          Fabbit으로 제품 관리를 시작하세요
-        </p>
+
       </div>
 
-      {/* 카드 */}
-      <div className="bg-white rounded-xl border border-[#e2e8f0] p-8 shadow-sm">
-        {/* Error Message */}
+      {/* Right Column: Sign Up Form */}
+      <div className="flex flex-col justify-center p-8 md:p-12 bg-white">
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold text-gray-900">계정 만들기</h1>
+          <p className="mt-2 text-sm text-gray-500">
+            30초만에 가입하고 무료로 시작하세요.
+          </p>
+        </div>
+
         {error && (
-          <div className="rounded-lg bg-red-50 border border-red-200 p-4 text-sm text-red-600 mb-6">
+          <div className="mb-6 rounded-lg bg-red-50 p-4 text-sm text-red-600 border border-red-100 flex items-center gap-2">
+            <div className="h-1.5 w-1.5 rounded-full bg-red-500" />
             {error}
           </div>
         )}
 
-        {/* Signup Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-5">
           <div className="space-y-1.5">
-            <Label htmlFor="name" className="text-sm font-medium text-[#0f172a]">
-              이름
-            </Label>
+            <Label htmlFor="name" className="text-sm font-medium text-gray-700">이름</Label>
             <Input
               id="name"
               type="text"
               placeholder="홍길동"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="h-11 bg-white border-[#e2e8f0]"
+              className="h-12 bg-gray-50 border-gray-200 focus:bg-white transition-colors"
               disabled={isLoading}
             />
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="email" className="text-sm font-medium text-[#0f172a]">
-              이메일
-            </Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="name@company.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="h-11 bg-white border-[#e2e8f0]"
-              disabled={isLoading}
-            />
+            <Label htmlFor="email" className="text-sm font-medium text-gray-700">이메일</Label>
+            <div className="relative">
+              <Input
+                id="email"
+                type="email"
+                placeholder="name@company.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className={cn(
+                  "h-12 pr-10 bg-gray-50 border-gray-200 focus:bg-white transition-colors",
+                  (emailStatus === "invalid" || emailStatus === "taken") &&
+                    "border-red-300 focus:border-red-400 focus:ring-red-400/20",
+                  emailStatus === "available" &&
+                    "border-green-500 focus:border-green-500 focus:ring-green-500/20",
+                )}
+                disabled={isLoading}
+              />
+              <div className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2">
+                {emailStatus === "checking" && (
+                  <Loader2 className="h-4 w-4 animate-spin text-gray-400" />
+                )}
+                {emailStatus === "available" && <Check className="h-4 w-4 text-green-600" />}
+                {(emailStatus === "invalid" || emailStatus === "taken") && (
+                  <X className="h-4 w-4 text-red-500" />
+                )}
+              </div>
+            </div>
+            {(emailStatus === "invalid" || emailStatus === "taken") && (
+              <p className="text-xs text-red-500 mt-1">{emailError}</p>
+            )}
+            {emailStatus === "available" && (
+              <p className="text-xs text-green-600 mt-1">사용 가능한 이메일입니다. (mock)</p>
+            )}
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="password" className="text-sm font-medium text-[#0f172a]">
-              비밀번호
-            </Label>
+            <Label htmlFor="password" className="text-sm font-medium text-gray-700">비밀번호</Label>
             <div className="relative">
               <Input
                 id="password"
@@ -177,30 +279,28 @@ export function SignupPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className={cn(
-                  "h-11 pr-10 bg-white",
+                  "h-12 pr-10 bg-gray-50 border-gray-200 focus:bg-white transition-colors",
                   password && password.length < 8
                     ? "border-red-300 focus:border-red-400 focus:ring-red-400/20"
-                    : "border-[#e2e8f0]",
+                    : ""
                 )}
                 disabled={isLoading}
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#94a3b8] hover:text-[#64748b]"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
               >
-                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
               </button>
             </div>
             {password && password.length < 8 && (
-              <p className="text-xs text-red-500">8자 이상 입력해 주세요</p>
+              <p className="text-xs text-red-500 mt-1">8자 이상 입력해 주세요</p>
             )}
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="confirmPassword" className="text-sm font-medium text-[#0f172a]">
-              비밀번호 확인
-            </Label>
+            <Label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700">비밀번호 확인</Label>
             <div className="relative">
               <Input
                 id="confirmPassword"
@@ -209,33 +309,35 @@ export function SignupPage() {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 className={cn(
-                  "h-11 pr-10 bg-white",
+                  "h-12 pr-10 bg-gray-50 border-gray-200 focus:bg-white transition-colors",
                   confirmPassword && confirmPassword !== password
                     ? "border-red-300 focus:border-red-400 focus:ring-red-400/20"
                     : confirmPassword && password.length >= 8 && confirmPassword === password
-                      ? "border-[#22c55e] focus:border-[#22c55e] focus:ring-[#22c55e]/20"
-                      : "border-[#e2e8f0]",
+                      ? "border-green-500 focus:border-green-500 focus:ring-green-500/20"
+                      : ""
                 )}
                 disabled={isLoading}
               />
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#94a3b8] hover:text-[#64748b]"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
               >
-                {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
               </button>
             </div>
             {confirmPassword && confirmPassword !== password && (
-              <p className="text-xs text-red-500">비밀번호가 일치하지 않습니다</p>
+              <p className="text-xs text-red-500 mt-1">비밀번호가 일치하지 않습니다</p>
             )}
             {confirmPassword && password.length >= 8 && confirmPassword === password && (
-              <p className="text-xs text-[#22c55e]">비밀번호가 일치합니다</p>
+              <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
+                <Check className="w-3 h-3" /> 비밀번호가 일치합니다
+              </p>
             )}
           </div>
 
           {/* Turnstile CAPTCHA */}
-          <div className="flex justify-center">
+          <div className="flex justify-center py-2">
             <Turnstile
               siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
               onSuccess={(token) => setTurnstileToken(token)}
@@ -247,13 +349,13 @@ export function SignupPage() {
 
           <Button
             type="submit"
-            className="w-full h-12 bg-[#3b82f6] hover:bg-[#2563eb] text-base font-medium"
-            disabled={isLoading || !turnstileToken}
+            className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-base font-semibold shadow-lg shadow-blue-600/20 transition-all hover:shadow-blue-600/30"
+            disabled={isLoading || !canProceed}
           >
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                가입 중...
+                처리 중...
               </>
             ) : (
               "다음"
@@ -261,27 +363,22 @@ export function SignupPage() {
           </Button>
         </form>
 
-        {/* Divider */}
-        <div className="relative my-6">
+        <div className="relative my-8">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-[#e2e8f0]" />
+            <div className="w-full border-t border-gray-200" />
           </div>
-          <div className="relative flex justify-center text-xs">
-            <span className="bg-white px-4 text-[#94a3b8]">
-              또는 소셜 계정으로 가입
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-white px-4 text-gray-500 font-medium">
+              Social Login
             </span>
           </div>
         </div>
 
-        {/* Social Login Buttons */}
         <div className="grid grid-cols-3 gap-3">
           <Button
             type="button"
             variant="outline"
-            className={cn(
-              "h-12 border-[#e2e8f0] bg-white hover:bg-[#f8fafc]",
-              isLoading && "opacity-50 cursor-not-allowed",
-            )}
+            className="h-12 border-gray-200 bg-white hover:bg-gray-50 hover:border-gray-300 transition-all"
             onClick={() => handleSocialSignup("google")}
             disabled={isLoading}
           >
@@ -290,22 +387,16 @@ export function SignupPage() {
           <Button
             type="button"
             variant="outline"
-            className={cn(
-              "h-12 border-[#e2e8f0] bg-white hover:bg-[#f8fafc]",
-              isLoading && "opacity-50 cursor-not-allowed",
-            )}
+            className="h-12 border-gray-200 bg-white hover:bg-gray-50 hover:border-gray-300 transition-all"
             onClick={() => handleSocialSignup("naver")}
             disabled={isLoading}
           >
-            <NaverIcon className="h-5 w-5" />
+            <NaverIcon className="h-4 w-4" />
           </Button>
           <Button
             type="button"
             variant="outline"
-            className={cn(
-              "h-12 border-[#e2e8f0] bg-[#FEE500] hover:bg-[#FDD835] border-[#FEE500]",
-              isLoading && "opacity-50 cursor-not-allowed",
-            )}
+            className="h-12 border-gray-200 bg-white hover:bg-gray-50 hover:border-gray-300 transition-all"
             onClick={() => handleSocialSignup("kakao")}
             disabled={isLoading}
           >
@@ -313,17 +404,6 @@ export function SignupPage() {
           </Button>
         </div>
       </div>
-
-      {/* 로그인 링크 */}
-      <p className="text-center text-sm text-[#64748b]">
-        이미 계정이 있으신가요?{" "}
-        <Link
-          to="/login"
-          className="font-medium text-[#3b82f6] hover:text-[#2563eb] transition-colors"
-        >
-          로그인
-        </Link>
-      </p>
     </div>
   );
 }

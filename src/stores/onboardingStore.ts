@@ -2,6 +2,7 @@ import { create } from "zustand";
 import type {
   OnboardingStep,
   PlanTier,
+  SignupFormData,
   WorkspaceFormData,
   UploadedFile,
   MappingConnection,
@@ -21,6 +22,9 @@ interface OnboardingState {
 
   // Step 2: 워크스페이스
   workspaceData: WorkspaceFormData;
+
+  // Step 1: 계정 생성
+  signupData: SignupFormData;
 
   // Step 3: 플랜
   selectedPlan: PlanTier;
@@ -45,6 +49,7 @@ interface OnboardingState {
 
   // Actions
   setStep: (step: OnboardingStep) => void;
+  setSignupData: (data: Partial<SignupFormData>) => void;
   setWorkspaceData: (data: Partial<WorkspaceFormData>) => void;
   setSelectedPlan: (plan: PlanTier) => void;
 
@@ -84,6 +89,12 @@ export const useOnboardingStore = create<OnboardingState>()((set, get) => ({
     role: "",
   },
 
+  signupData: {
+    name: "",
+    email: "",
+    password: "",
+  },
+
   selectedPlan: "free",
 
   uploadedFiles: [],
@@ -101,6 +112,11 @@ export const useOnboardingStore = create<OnboardingState>()((set, get) => ({
   chatMessages: [],
 
   setStep: (step) => set({ currentStep: step }),
+
+  setSignupData: (data) =>
+    set((state) => ({
+      signupData: { ...state.signupData, ...data },
+    })),
 
   setWorkspaceData: (data) =>
     set((state) => ({

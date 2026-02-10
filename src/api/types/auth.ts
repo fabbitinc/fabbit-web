@@ -23,3 +23,22 @@ export interface RefreshTokenRequest {
 export interface LogoutRequest {
   refreshToken: string;
 }
+
+// POST /api/v1/admin/organizations
+export type OrganizationPlanTier = "FREE_TIER" | "STARTER" | "PROFESSIONAL" | "ELITE";
+
+export interface CreateOrganizationRequest {
+  organizationName: string;
+  subdomain: string;
+  planTier?: OrganizationPlanTier;
+  ownerEmail: string;
+  ownerPassword: string;
+  ownerName: string;
+}
+
+export interface CreateOrganizationResponse {
+  organizationId: string;
+  subdomain: string;
+  ownerAccountId: string;
+  ownerEmail: string;
+}
