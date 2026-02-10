@@ -69,6 +69,7 @@ export interface DeleteConfirmDialogProps {
 // 설정 탭 ID
 export type SettingsTabId =
   | "general"
+  | "attributes"
   | "members"
   | "notifications"
   | "integrations"

@@ -1,5 +1,102 @@
 import type { ItemData, TreeNodeData } from "./types";
 
+// ========================================
+// Mock 프로젝트 (항상 트리에 표시 - UI 설계 확인용)
+// ========================================
+export const mockProject: TreeNodeData = {
+  id: "mock-project",
+  name: "[Mock] 엔진 프로젝트",
+  type: "project",
+  description: "UI 설계 확인용 Mock 프로젝트",
+  lastUpdated: "2024-01-15",
+  children: [
+    {
+      id: "mock-f1",
+      name: "V6 엔진",
+      type: "folder",
+      itemCount: 4,
+      children: [
+        {
+          id: "mock-assy-1",
+          name: "V6 엔진 ASS'Y",
+          type: "item",
+          partNumber: "ENG-V6-001",
+          itemType: "ASSEMBLY",
+          status: "conflict",
+          hasDrawing: true,
+          children: [
+            {
+              id: "mock-part-1",
+              name: "실린더 블록",
+              type: "item",
+              partNumber: "ENG-V6-001-01",
+              itemType: "PART",
+              status: "approved",
+              hasDrawing: true,
+            },
+            {
+              id: "mock-part-2",
+              name: "피스톤 ASS'Y",
+              type: "item",
+              partNumber: "ENG-V6-001-02",
+              itemType: "ASSEMBLY",
+              status: "approved",
+              hasDrawing: true,
+              children: [
+                {
+                  id: "mock-part-2-1",
+                  name: "피스톤",
+                  type: "item",
+                  partNumber: "ENG-V6-001-02-01",
+                  itemType: "PART",
+                  status: "approved",
+                  hasDrawing: true,
+                },
+                {
+                  id: "mock-part-2-2",
+                  name: "피스톤 링",
+                  type: "item",
+                  partNumber: "ENG-V6-001-02-02",
+                  itemType: "PART",
+                  status: "draft",
+                  hasDrawing: false,
+                },
+              ],
+            },
+            {
+              id: "mock-part-3",
+              name: "크랭크샤프트",
+              type: "item",
+              partNumber: "ENG-V6-001-03",
+              itemType: "PART",
+              status: "draft",
+              hasDrawing: true,
+            },
+            {
+              id: "mock-part-4",
+              name: "커넥팅 로드",
+              type: "item",
+              partNumber: "ENG-V6-001-04",
+              itemType: "PART",
+              status: "none",
+              hasDrawing: false,
+            },
+          ],
+        },
+      ],
+    },
+    {
+      id: "mock-f2",
+      name: "V8 엔진",
+      type: "folder",
+      itemCount: 0,
+    },
+  ],
+};
+
+// ========================================
+// 기존 mock 데이터 (레거시 - 참조용)
+// ========================================
 // 통합 트리 구조: 프로젝트 > 폴더 > 아이템
 export const mockFolders: TreeNodeData[] = [
   {
@@ -20,6 +117,7 @@ export const mockFolders: TreeNodeData[] = [
             name: "V6 엔진 ASS'Y",
             type: "item",
             partNumber: "ENG-V6-001",
+            itemType: "ASSEMBLY",
             status: "conflict",
             hasDrawing: true,
             children: [
@@ -28,6 +126,7 @@ export const mockFolders: TreeNodeData[] = [
                 name: "실린더 블록",
                 type: "item",
                 partNumber: "ENG-V6-001-01",
+                itemType: "PART",
                 status: "approved",
                 hasDrawing: true,
               },
@@ -36,6 +135,7 @@ export const mockFolders: TreeNodeData[] = [
                 name: "피스톤 ASS'Y",
                 type: "item",
                 partNumber: "ENG-V6-001-02",
+                itemType: "ASSEMBLY",
                 status: "approved",
                 hasDrawing: true,
               },
@@ -44,6 +144,7 @@ export const mockFolders: TreeNodeData[] = [
                 name: "크랭크샤프트",
                 type: "item",
                 partNumber: "ENG-V6-001-03",
+                itemType: "PART",
                 status: "draft",
                 hasDrawing: true,
               },
@@ -52,6 +153,7 @@ export const mockFolders: TreeNodeData[] = [
                 name: "커넥팅 로드",
                 type: "item",
                 partNumber: "ENG-V6-001-04",
+                itemType: "PART",
                 status: "none",
                 hasDrawing: false,
               },
@@ -85,6 +187,7 @@ export const mockFolders: TreeNodeData[] = [
             name: "6단 자동변속기 ASS'Y",
             type: "item",
             partNumber: "TRN-6AT-001",
+            itemType: "ASSEMBLY",
             status: "draft",
             hasDrawing: true,
             children: [
@@ -93,6 +196,7 @@ export const mockFolders: TreeNodeData[] = [
                 name: "토크 컨버터",
                 type: "item",
                 partNumber: "TRN-6AT-001-01",
+                itemType: "PART",
                 status: "approved",
                 hasDrawing: true,
               },
@@ -101,6 +205,7 @@ export const mockFolders: TreeNodeData[] = [
                 name: "유성 기어 세트",
                 type: "item",
                 partNumber: "TRN-6AT-001-02",
+                itemType: "PART",
                 status: "draft",
                 hasDrawing: false,
               },
@@ -126,6 +231,89 @@ export const mockFolders: TreeNodeData[] = [
 ];
 
 export const mockItems: Record<string, ItemData[]> = {
+  // Mock 프로젝트 폴더용 아이템 데이터
+  "mock-f1": [
+    {
+      id: "mock-assy-1",
+      partNumber: "ENG-V6-001",
+      name: "V6 엔진 ASS'Y",
+      material: "SUS304",
+      quantity: 1,
+      unit: "EA",
+      drawingStatus: "approved",
+      drawingThumbnail: "/drawing-placeholder.svg",
+      aiAnalyzed: true,
+      conflicts: [
+        {
+          id: "mc1",
+          type: "material",
+          field: "재질",
+          drawingValue: "SUS304",
+          excelValue: "SUS316",
+          severity: "error",
+        },
+      ],
+      children: [
+        {
+          id: "mock-part-1",
+          partNumber: "ENG-V6-001-01",
+          name: "실린더 블록",
+          material: "FC250",
+          quantity: 1,
+          unit: "EA",
+          drawingStatus: "approved",
+        },
+        {
+          id: "mock-part-2",
+          partNumber: "ENG-V6-001-02",
+          name: "피스톤 ASS'Y",
+          material: "AL6061",
+          quantity: 6,
+          unit: "SET",
+          drawingStatus: "approved",
+          children: [
+            {
+              id: "mock-part-2-1",
+              partNumber: "ENG-V6-001-02-01",
+              name: "피스톤",
+              material: "AL6061-T6",
+              quantity: 1,
+              unit: "EA",
+              drawingStatus: "approved",
+            },
+            {
+              id: "mock-part-2-2",
+              partNumber: "ENG-V6-001-02-02",
+              name: "피스톤 링",
+              material: "STKM13A",
+              quantity: 1,
+              unit: "SET",
+              drawingStatus: "draft",
+            },
+          ],
+        },
+        {
+          id: "mock-part-3",
+          partNumber: "ENG-V6-001-03",
+          name: "크랭크샤프트",
+          material: "S45C",
+          quantity: 1,
+          unit: "EA",
+          drawingStatus: "draft",
+        },
+        {
+          id: "mock-part-4",
+          partNumber: "ENG-V6-001-04",
+          name: "커넥팅 로드",
+          material: "SCM440",
+          quantity: 6,
+          unit: "EA",
+          drawingStatus: "none",
+        },
+      ],
+    },
+  ],
+  // 기존 mock 폴더용 아이템 데이터
   "f1-1": [
     {
       id: "item-1",
