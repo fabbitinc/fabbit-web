@@ -31,6 +31,13 @@ export interface WorkspaceFormData {
   role: string;
 }
 
+// Step 1: 계정 생성
+export interface SignupFormData {
+  name: string;
+  email: string;
+  password: string;
+}
+
 // Step 4: 데이터 업로드
 export type FileCategory = "bom" | "drawing";
 

@@ -19,6 +19,8 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { useOnboardingStore } from "@/stores/onboardingStore";
+import { useAuthStore } from "@/stores/authStore";
+import { createOrganization } from "@/api";
 import { planOptions } from "@/features/onboarding/mock-data/onboarding-mock";
 import { cn } from "@/lib/utils";
 import type { PlanTier } from "@/features/onboarding/types/onboarding.types";
@@ -32,13 +34,26 @@ const creationSteps = [
   "초기 설정 완료",
 ];
 
+function toApiPlanTier(plan: PlanTier) {
+  switch (plan) {
+    case "free":
+      return "FREE_TIER" as const;
+    case "pro":
+      return "PROFESSIONAL" as const;
+    case "elite":
+      return "ELITE" as const;
+  }
+}
+
 export function PlanSelectionPage() {
   const navigate = useNavigate();
-  const { setStep, selectedPlan, setSelectedPlan, workspaceData } =
+  const { setStep, selectedPlan, setSelectedPlan, workspaceData, signupData } =
     useOnboardingStore();
+  const { signup } = useAuthStore();
 
   const [dialogPhase, setDialogPhase] = useState<DialogPhase>("idle");
   const [completedSteps, setCompletedSteps] = useState<number>(0);
+  const [createError, setCreateError] = useState<string>("");
 
   useEffect(() => {
     setStep(3);
@@ -51,25 +66,44 @@ export function PlanSelectionPage() {
   };
 
   const handleContinue = () => {
+    if (!signupData.name || !signupData.email || !signupData.password) {
+      navigate("/onboarding/signup");
+      return;
+    }
+
+    if (!workspaceData.organizationName.trim() || !workspaceData.slug.trim()) {
+      navigate("/onboarding/workspace");
+      return;
+    }
+
+    setCreateError("");
     setDialogPhase("confirming");
   };
 
-  const handleConfirm = useCallback(() => {
+  const handleConfirm = useCallback(async () => {
     setDialogPhase("creating");
     setCompletedSteps(0);
+    setCreateError("");
 
-    // 각 단계를 1초 간격으로 순차 진행
-    creationSteps.forEach((_, index) => {
-      setTimeout(() => {
-        setCompletedSteps(index + 1);
-      }, (index + 1) * 1000);
-    });
+    try {
+      await createOrganization({
+        organizationName: workspaceData.organizationName.trim(),
+        subdomain: workspaceData.slug.trim(),
+        planTier: toApiPlanTier(selectedPlan),
+        ownerEmail: signupData.email,
+        ownerPassword: signupData.password,
+        ownerName: signupData.name,
+      });
 
-    // 모든 단계 완료 후 1초 대기 → 이동
-    setTimeout(() => {
+      setCompletedSteps(creationSteps.length);
+      await signup(signupData.name, signupData.email, signupData.password);
       navigate("/onboarding/upload");
-    }, creationSteps.length * 1000 + 1000);
-  }, [navigate]);
+    } catch (error) {
+      setCompletedSteps(0);
+      setDialogPhase("confirming");
+      setCreateError(error instanceof Error ? error.message : "조직 생성에 실패했습니다.");
+    }
+  }, [navigate, selectedPlan, signup, signupData, workspaceData]);
 
   const handleDialogClose = () => {
     // 생성 중에는 닫기 방지
@@ -196,9 +230,7 @@ export function PlanSelectionPage() {
           className="h-12 px-8 bg-[#3b82f6] hover:bg-[#2563eb] text-base font-medium"
           onClick={handleContinue}
         >
-          {selectedPlan === "free"
-            ? "무료로 시작하기"
-            : `${selectedPlanInfo?.name} 플랜으로 시작`}
+          다음
         </Button>
       </div>
 
@@ -228,10 +260,21 @@ export function PlanSelectionPage() {
               </DialogHeader>
 
               <div className="space-y-3 py-2">
+                {createError && (
+                  <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+                    {createError}
+                  </div>
+                )}
                 <div className="flex items-center justify-between rounded-lg border border-[#e2e8f0] px-4 py-3">
                   <span className="text-sm text-[#64748b]">조직명</span>
                   <span className="text-sm font-medium text-[#0f172a]">
                     {workspaceData.organizationName || "—"}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between rounded-lg border border-[#e2e8f0] px-4 py-3">
+                  <span className="text-sm text-[#64748b]">이메일</span>
+                  <span className="text-sm font-medium text-[#0f172a]">
+                    {signupData.email || "—"}
                   </span>
                 </div>
                 <div className="flex items-center justify-between rounded-lg border border-[#e2e8f0] px-4 py-3">
@@ -283,8 +326,7 @@ export function PlanSelectionPage() {
                 {creationSteps.map((step, index) => {
                   const isCompleted = index < completedSteps;
                   const isActive =
-                    index === completedSteps &&
-                    completedSteps < creationSteps.length;
+                    index === completedSteps && completedSteps < creationSteps.length;
 
                   return (
                     <div
@@ -315,11 +357,9 @@ export function PlanSelectionPage() {
                 })}
               </div>
 
-              {completedSteps === creationSteps.length && (
-                <div className="text-center text-sm text-[#22c55e] font-medium">
-                  완료! 잠시 후 이동합니다...
-                </div>
-              )}
+              <div className="text-center text-sm text-[#3b82f6] font-medium">
+                서버에서 조직을 생성하고 있습니다...
+              </div>
             </>
           )}
         </DialogContent>

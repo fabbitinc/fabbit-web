@@ -1,5 +1,12 @@
 import { apiClient } from "./client";
-import type { LoginRequest, AuthResponse, RefreshTokenRequest, LogoutRequest } from "./types";
+import type {
+  LoginRequest,
+  AuthResponse,
+  RefreshTokenRequest,
+  LogoutRequest,
+  CreateOrganizationRequest,
+  CreateOrganizationResponse,
+} from "./types";
 
 /**
  * User 로그인
@@ -34,4 +41,18 @@ export async function refreshToken(request: RefreshTokenRequest): Promise<AuthRe
  */
 export async function logout(request: LogoutRequest): Promise<void> {
   await apiClient.post("/api/v1/auth/logout", request);
+}
+
+/**
+ * 조직 생성 (회원가입 + 워크스페이스 + 플랜 선택)
+ * POST /api/v1/admin/organizations
+ */
+export async function createOrganization(
+  request: CreateOrganizationRequest,
+): Promise<CreateOrganizationResponse> {
+  const response = await apiClient.post<CreateOrganizationResponse>(
+    "/api/v1/admin/organizations",
+    request,
+  );
+  return response.data;
 }

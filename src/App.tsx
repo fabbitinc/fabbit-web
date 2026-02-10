@@ -91,7 +91,12 @@ function OnboardingRoute({ children }: { children: React.ReactNode }) {
   }
 
   // 미인증 사용자가 signup 외 페이지 접근 시 → signup으로
-  if (!isAuthenticated && !location.pathname.includes("/signup")) {
+  const isPreSignupFlow =
+    location.pathname.includes("/signup") ||
+    location.pathname.includes("/workspace") ||
+    location.pathname.includes("/plan");
+
+  if (!isAuthenticated && !isPreSignupFlow) {
     return <Navigate to="/onboarding/signup" replace />;
   }
 
