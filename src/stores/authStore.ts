@@ -25,13 +25,16 @@ interface AuthState {
   currentOrganization: Organization | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  onboardingCompleted: boolean;
 
   // Actions
   login: (email: string, password: string) => Promise<void>;
   loginWithProvider: (provider: "google" | "naver" | "kakao") => Promise<void>;
+  signup: (name: string, email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   setUser: (user: User | null) => void;
   switchOrganization: (organizationId: string) => void;
+  completeOnboarding: () => void;
 }
 
 // Mock organization data
@@ -49,6 +52,7 @@ export const useAuthStore = create<AuthState>()(
       currentOrganization: mockOrganizations[0],
       isAuthenticated: false,
       isLoading: false,
+      onboardingCompleted: true,
 
       login: async (email: string, password: string) => {
         set({ isLoading: true });
@@ -82,6 +86,31 @@ export const useAuthStore = create<AuthState>()(
           set({ isLoading: false });
           throw error instanceof Error ? error : new Error("로그인에 실패했습니다.");
         }
+      },
+
+      signup: async (name: string, email: string, _password: string) => {
+        set({ isLoading: true });
+
+        // Mock signup - 실제로는 API 호출
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+
+        const mockUser: User = {
+          id: `user-${Date.now()}`,
+          email,
+          name,
+          role: "admin",
+          organizationId: "",
+          organizationName: "",
+        };
+
+        set({
+          user: mockUser,
+          isAuthenticated: true,
+          isLoading: false,
+          onboardingCompleted: false,
+          organizations: [],
+          currentOrganization: null,
+        });
       },
 
       loginWithProvider: async (provider) => {
@@ -143,6 +172,14 @@ export const useAuthStore = create<AuthState>()(
         set({ user, isAuthenticated: !!user });
       },
 
+      completeOnboarding: () => {
+        set({
+          onboardingCompleted: true,
+          organizations: mockOrganizations,
+          currentOrganization: mockOrganizations[0],
+        });
+      },
+
       switchOrganization: (organizationId: string) => {
         const { organizations, user } = get();
         const organization = organizations.find((o) => o.id === organizationId);
@@ -165,6 +202,7 @@ export const useAuthStore = create<AuthState>()(
         user: state.user,
         isAuthenticated: state.isAuthenticated,
         currentOrganization: state.currentOrganization,
+        onboardingCompleted: state.onboardingCompleted,
       }),
     }
   )

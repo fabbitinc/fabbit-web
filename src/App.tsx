@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { LoginPage } from "@/pages/auth/LoginPage";
 import { ItemsPage } from "@/pages/items/ItemsPage";
@@ -11,6 +11,16 @@ import { UploadModal } from "@/features/upload/components/UploadModal";
 import { SimpleBomImportModal } from "@/features/items/components/SimpleBomImportModal";
 import { Toaster } from "@/components/ui/sonner";
 import { useAuthStore } from "@/stores/authStore";
+
+// 온보딩 관련 임포트
+import { OnboardingLayout } from "@/features/onboarding/components/OnboardingLayout";
+import { SignupPage } from "@/features/onboarding/pages/SignupPage";
+import { WorkspaceSetupPage } from "@/features/onboarding/pages/WorkspaceSetupPage";
+import { DataUploadPage } from "@/features/onboarding/pages/DataUploadPage";
+import { AIMappingPage } from "@/features/onboarding/pages/AIMappingPage";
+import { DataProcessingPage } from "@/features/onboarding/pages/DataProcessingPage";
+import { PlanSelectionPage } from "@/features/onboarding/pages/PlanSelectionPage";
+import { ExplorePage } from "@/features/onboarding/pages/ExplorePage";
 
 function DashboardPage() {
   return (
@@ -36,12 +46,17 @@ function ConflictsPage() {
   );
 }
 
-// 인증된 사용자만 접근 가능한 라우트
+// 인증된 사용자만 접근 가능한 라우트 (온보딩 완료 필수)
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const onboardingCompleted = useAuthStore((state) => state.onboardingCompleted);
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
+  }
+
+  if (!onboardingCompleted) {
+    return <Navigate to="/onboarding/workspace" replace />;
   }
 
   return <>{children}</>;
@@ -50,9 +65,34 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 // 비인증 사용자만 접근 가능한 라우트 (로그인 페이지)
 function PublicRoute({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const onboardingCompleted = useAuthStore((state) => state.onboardingCompleted);
 
-  if (isAuthenticated) {
+  if (isAuthenticated && onboardingCompleted) {
     return <Navigate to="/" replace />;
+  }
+
+  if (isAuthenticated && !onboardingCompleted) {
+    return <Navigate to="/onboarding/workspace" replace />;
+  }
+
+  return <>{children}</>;
+}
+
+// 온보딩 플로우 라우트 (회원가입 ~ 온보딩 전체)
+// 미인증 사용자는 signup만, 인증 사용자는 전체 접근 가능
+function OnboardingRoute({ children }: { children: React.ReactNode }) {
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const onboardingCompleted = useAuthStore((state) => state.onboardingCompleted);
+  const location = useLocation();
+
+  // 온보딩 완료된 사용자 → 메인으로
+  if (isAuthenticated && onboardingCompleted) {
+    return <Navigate to="/" replace />;
+  }
+
+  // 미인증 사용자가 signup 외 페이지 접근 시 → signup으로
+  if (!isAuthenticated && !location.pathname.includes("/signup")) {
+    return <Navigate to="/onboarding/signup" replace />;
   }
 
   return <>{children}</>;
@@ -71,6 +111,28 @@ function App() {
             </PublicRoute>
           }
         />
+
+        {/* /signup → /onboarding/signup 리다이렉트 */}
+        <Route path="/signup" element={<Navigate to="/onboarding/signup" replace />} />
+
+        {/* Onboarding Routes (회원가입 + 온보딩 통합) */}
+        <Route
+          path="/onboarding"
+          element={
+            <OnboardingRoute>
+              <OnboardingLayout />
+            </OnboardingRoute>
+          }
+        >
+          <Route path="signup" element={<SignupPage />} />
+          <Route path="workspace" element={<WorkspaceSetupPage />} />
+          <Route path="plan" element={<PlanSelectionPage />} />
+          <Route path="upload" element={<DataUploadPage />} />
+          <Route path="mapping" element={<AIMappingPage />} />
+          <Route path="processing" element={<DataProcessingPage />} />
+          <Route path="explore" element={<ExplorePage />} />
+          <Route index element={<Navigate to="signup" replace />} />
+        </Route>
 
         {/* Protected Routes */}
         <Route

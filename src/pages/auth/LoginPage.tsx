@@ -315,10 +315,8 @@ export function LoginPage() {
           </div>
 
           {/* Footer Note */}
-          <p className="text-center text-xs text-[#94a3b8]">
-            Fabbit 이용을 위해서는 관리자의 초대가 필요합니다.
-            <br />
-            문의: support@fabbit.io
+          <p className="text-center text-sm text-[#64748b]">
+            &copy; 2024 Fabbit. All rights reserved.
           </p>
         </div>
       </div>
