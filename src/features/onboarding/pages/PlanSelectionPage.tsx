@@ -1,10 +1,8 @@
 import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  CreditCard,
   Check,
   Sparkles,
-  ArrowLeft,
   Loader2,
   Rocket,
   CircleDot,
@@ -106,28 +104,36 @@ export function PlanSelectionPage() {
   }, [navigate, selectedPlan, signup, signupData, workspaceData]);
 
   const handleDialogClose = () => {
-    // 생성 중에는 닫기 방지
     if (dialogPhase === "creating") return;
     setDialogPhase("idle");
   };
 
   return (
-    <div className="w-full max-w-4xl mx-auto space-y-8">
-      {/* 헤더 */}
-      <div className="text-center space-y-2">
-        <div className="flex justify-center">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-[#3b82f6] to-[#8b5cf6]">
-            <CreditCard className="h-6 w-6 text-white" />
+    <div className="flex w-full max-w-[960px] flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-2xl shadow-gray-200/50">
+      {/* 상단 헤더 */}
+      <div className="px-8 pt-10 pb-6 text-center lg:px-10">
+        <h1 className="text-2xl font-bold text-gray-900">요금제 선택</h1>
+        <p className="mt-2 text-sm text-gray-500">
+          팀 규모와 필요에 맞는 플랜을 선택하세요. 언제든 변경할 수 있습니다.
+        </p>
+        <div className="mt-4 flex items-center justify-center gap-6">
+          <div className="flex items-center gap-1.5 text-xs text-gray-500">
+            <Check className="size-3.5 text-blue-500" />
+            무료로 시작
+          </div>
+          <div className="flex items-center gap-1.5 text-xs text-gray-500">
+            <Check className="size-3.5 text-blue-500" />
+            언제든 업그레이드
+          </div>
+          <div className="flex items-center gap-1.5 text-xs text-gray-500">
+            <Check className="size-3.5 text-blue-500" />
+            카드 없이 시작
           </div>
         </div>
-        <h1 className="text-2xl font-bold text-[#0f172a]">요금제 선택</h1>
-        <p className="text-sm text-[#64748b]">
-          팀에 맞는 플랜을 선택하세요. 언제든 변경할 수 있습니다.
-        </p>
       </div>
 
       {/* 플랜 카드 */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 px-8 lg:px-10 mb-8">
         {planOptions.map((plan) => {
           const isSelected = selectedPlan === plan.tier;
 
@@ -137,11 +143,11 @@ export function PlanSelectionPage() {
               type="button"
               onClick={() => handleSelect(plan.tier)}
               className={cn(
-                "relative text-left bg-white rounded-2xl border-2 p-6 transition-all hover:shadow-md",
+                "relative text-left rounded-xl border-2 p-5 transition-all hover:shadow-md",
                 isSelected
-                  ? "border-[#3b82f6] shadow-md ring-2 ring-[#3b82f6]/20"
-                  : "border-[#e2e8f0] hover:border-[#94a3b8]",
-                plan.highlighted && !isSelected && "border-[#8b5cf6]/30",
+                  ? "border-blue-500 shadow-md ring-2 ring-blue-500/20 bg-blue-50/30"
+                  : "border-gray-200 hover:border-gray-300 bg-gray-50/50",
+                plan.highlighted && !isSelected && "border-purple-200 bg-purple-50/20",
               )}
             >
               {/* 배지 */}
@@ -151,8 +157,8 @@ export function PlanSelectionPage() {
                     className={cn(
                       "inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold",
                       plan.highlighted
-                        ? "bg-gradient-to-r from-[#3b82f6] to-[#8b5cf6] text-white"
-                        : "bg-[#0f172a] text-white",
+                        ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white"
+                        : "bg-gray-900 text-white",
                     )}
                   >
                     {plan.highlighted && <Sparkles className="size-3" />}
@@ -161,41 +167,41 @@ export function PlanSelectionPage() {
                 </div>
               )}
 
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {/* 플랜명 + 가격 */}
                 <div className="space-y-1 pt-1">
-                  <h3 className="text-lg font-bold text-[#0f172a]">
+                  <h3 className="text-base font-bold text-gray-900">
                     {plan.name}
                   </h3>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-2xl font-bold text-[#0f172a]">
+                    <span className="text-xl font-bold text-gray-900">
                       {plan.price === 0
                         ? "무료"
                         : `₩${plan.price.toLocaleString()}`}
                     </span>
                     {plan.price > 0 && (
-                      <span className="text-sm text-[#64748b]">/월</span>
+                      <span className="text-xs text-gray-500">/월</span>
                     )}
                   </div>
-                  <p className="text-sm text-[#64748b]">{plan.description}</p>
+                  <p className="text-xs text-gray-500 leading-relaxed">{plan.description}</p>
                 </div>
 
                 {/* 구분선 */}
-                <div className="h-px bg-[#e2e8f0]" />
+                <div className="h-px bg-gray-200" />
 
                 {/* 기능 목록 */}
-                <ul className="space-y-2.5">
+                <ul className="space-y-2">
                   {plan.features.map((feature) => (
                     <li
                       key={feature}
-                      className="flex items-start gap-2 text-sm text-[#334155]"
+                      className="flex items-start gap-2 text-xs text-gray-600"
                     >
                       <Check
                         className={cn(
-                          "size-4 shrink-0 mt-0.5",
+                          "size-3.5 shrink-0 mt-0.5",
                           plan.highlighted
-                            ? "text-[#8b5cf6]"
-                            : "text-[#3b82f6]",
+                            ? "text-purple-500"
+                            : "text-blue-500",
                         )}
                       />
                       {feature}
@@ -206,9 +212,9 @@ export function PlanSelectionPage() {
 
               {/* 선택 표시 */}
               {isSelected && (
-                <div className="absolute top-4 right-4">
-                  <div className="w-6 h-6 rounded-full bg-[#3b82f6] flex items-center justify-center">
-                    <Check className="size-3.5 text-white" />
+                <div className="absolute top-3 right-3">
+                  <div className="w-5 h-5 rounded-full bg-blue-600 flex items-center justify-center">
+                    <Check className="size-3 text-white" />
                   </div>
                 </div>
               )}
@@ -218,19 +224,20 @@ export function PlanSelectionPage() {
       </div>
 
       {/* 하단 버튼 */}
-      <div className="flex justify-between">
+      <div className="flex items-center justify-between px-8 pb-8 pt-2 lg:px-10">
         <Button
+          type="button"
           variant="outline"
+          className="h-12 px-8 text-base font-semibold border-gray-200 hover:bg-gray-50 hover:border-gray-300 transition-all"
           onClick={() => navigate("/onboarding/workspace")}
         >
-          <ArrowLeft className="size-4" />
           이전
         </Button>
         <Button
-          className="h-12 px-8 bg-[#3b82f6] hover:bg-[#2563eb] text-base font-medium"
+          className="h-12 px-8 bg-blue-600 hover:bg-blue-700 text-base font-semibold shadow-lg shadow-blue-600/20 transition-all hover:shadow-blue-600/30"
           onClick={handleContinue}
         >
-          다음
+          시작하기
         </Button>
       </div>
 
@@ -265,31 +272,31 @@ export function PlanSelectionPage() {
                     {createError}
                   </div>
                 )}
-                <div className="flex items-center justify-between rounded-lg border border-[#e2e8f0] px-4 py-3">
-                  <span className="text-sm text-[#64748b]">조직명</span>
-                  <span className="text-sm font-medium text-[#0f172a]">
+                <div className="flex items-center justify-between rounded-lg border border-gray-200 px-4 py-3">
+                  <span className="text-sm text-gray-500">조직명</span>
+                  <span className="text-sm font-medium text-gray-900">
                     {workspaceData.organizationName || "—"}
                   </span>
                 </div>
-                <div className="flex items-center justify-between rounded-lg border border-[#e2e8f0] px-4 py-3">
-                  <span className="text-sm text-[#64748b]">이메일</span>
-                  <span className="text-sm font-medium text-[#0f172a]">
+                <div className="flex items-center justify-between rounded-lg border border-gray-200 px-4 py-3">
+                  <span className="text-sm text-gray-500">이메일</span>
+                  <span className="text-sm font-medium text-gray-900">
                     {signupData.email || "—"}
                   </span>
                 </div>
-                <div className="flex items-center justify-between rounded-lg border border-[#e2e8f0] px-4 py-3">
-                  <span className="text-sm text-[#64748b]">
+                <div className="flex items-center justify-between rounded-lg border border-gray-200 px-4 py-3">
+                  <span className="text-sm text-gray-500">
                     워크스페이스 주소
                   </span>
-                  <span className="text-sm font-medium text-[#0f172a]">
+                  <span className="text-sm font-medium text-gray-900">
                     {workspaceData.slug
-                      ? `${workspaceData.slug}.fabbitinc.com`
+                      ? `${workspaceData.slug}.fabbit.app`
                       : "—"}
                   </span>
                 </div>
-                <div className="flex items-center justify-between rounded-lg border border-[#e2e8f0] px-4 py-3">
-                  <span className="text-sm text-[#64748b]">선택 플랜</span>
-                  <span className="text-sm font-medium text-[#0f172a]">
+                <div className="flex items-center justify-between rounded-lg border border-gray-200 px-4 py-3">
+                  <span className="text-sm text-gray-500">선택 플랜</span>
+                  <span className="text-sm font-medium text-gray-900">
                     {selectedPlanInfo?.name} —{" "}
                     {selectedPlanInfo?.price === 0
                       ? "무료"
@@ -303,7 +310,7 @@ export function PlanSelectionPage() {
                   취소
                 </Button>
                 <Button
-                  className="bg-[#3b82f6] hover:bg-[#2563eb]"
+                  className="bg-blue-600 hover:bg-blue-700"
                   onClick={handleConfirm}
                 >
                   <Rocket className="size-4" />
@@ -334,20 +341,20 @@ export function PlanSelectionPage() {
                       className="flex items-center gap-3 px-2"
                     >
                       {isCompleted ? (
-                        <div className="flex h-5 w-5 items-center justify-center rounded-full bg-[#22c55e]">
+                        <div className="flex h-5 w-5 items-center justify-center rounded-full bg-green-500">
                           <Check className="size-3 text-white" />
                         </div>
                       ) : isActive ? (
-                        <Loader2 className="size-5 text-[#3b82f6] animate-spin" />
+                        <Loader2 className="size-5 text-blue-600 animate-spin" />
                       ) : (
-                        <CircleDot className="size-5 text-[#cbd5e1]" />
+                        <CircleDot className="size-5 text-gray-300" />
                       )}
                       <span
                         className={cn(
                           "text-sm",
-                          isCompleted && "text-[#0f172a] font-medium",
-                          isActive && "text-[#3b82f6] font-medium",
-                          !isCompleted && !isActive && "text-[#94a3b8]",
+                          isCompleted && "text-gray-900 font-medium",
+                          isActive && "text-blue-600 font-medium",
+                          !isCompleted && !isActive && "text-gray-400",
                         )}
                       >
                         {step}
@@ -357,7 +364,7 @@ export function PlanSelectionPage() {
                 })}
               </div>
 
-              <div className="text-center text-sm text-[#3b82f6] font-medium">
+              <div className="text-center text-sm text-blue-600 font-medium">
                 서버에서 조직을 생성하고 있습니다...
               </div>
             </>

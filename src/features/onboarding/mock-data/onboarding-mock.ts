@@ -113,7 +113,7 @@ export const industryOptions = [
   { value: "aerospace", label: "항공/우주" },
   { value: "shipbuilding", label: "조선/해양" },
   { value: "construction", label: "건설/플랜트" },
-  { value: "other", label: "기타" },
+  { value: "custom", label: "직접입력" },
 ];
 
 // 팀 규모 옵션
@@ -131,7 +131,7 @@ export const roleOptions = [
   { value: "quality", label: "품질 관리" },
   { value: "procurement", label: "구매/조달" },
   { value: "executive", label: "경영진" },
-  { value: "other", label: "기타" },
+  { value: "custom", label: "직접입력" },
 ];
 
 // Step 4: 원본 컬럼 (Source Data)

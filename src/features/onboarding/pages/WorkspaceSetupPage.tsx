@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { Building2, Loader2, Check, X, Globe } from "lucide-react";
+import { Loader2, Check, X, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -25,7 +25,6 @@ function toSlug(name: string): string {
     .trim()
     .toLowerCase()
     .replace(/[가-힣]+/g, (match) => {
-      // 간단한 한글→영문 매핑 (실제로는 서버 API 호출)
       const map: Record<string, string> = {
         삼성: "samsung",
         현대: "hyundai",
@@ -102,24 +101,31 @@ type SlugStatus = "idle" | "checking" | "available" | "taken" | "invalid";
 export function WorkspaceSetupPage() {
   const navigate = useNavigate();
   const { setStep, workspaceData, setWorkspaceData } = useOnboardingStore();
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [slugStatus, setSlugStatus] = useState<SlugStatus>("idle");
   const [slugError, setSlugError] = useState<string>();
   const [slugTouched, setSlugTouched] = useState(false);
+  const [isCustomIndustry, setIsCustomIndustry] = useState(false);
+  const [isCustomRole, setIsCustomRole] = useState(false);
+  const checkTimeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   useEffect(() => {
     setStep(2);
   }, [setStep]);
 
-  // 서브도메인 유효성 + 중복 체크
   const validateAndCheck = useCallback((slug: string) => {
     setSlugError(undefined);
+
+    // 이전 API 체크 취소
+    if (checkTimeoutRef.current) {
+      clearTimeout(checkTimeoutRef.current);
+    }
 
     if (!slug) {
       setSlugStatus("idle");
       return;
     }
 
+    // 1단계: 로컬 검증 (형식 + 예약어)
     const validation = validateSubdomain(slug);
     if (!validation.valid) {
       setSlugStatus("invalid");
@@ -127,9 +133,9 @@ export function WorkspaceSetupPage() {
       return;
     }
 
-    // 유효성 통과 → 중복 체크
+    // 2단계: API 중복 체크 (mock)
     setSlugStatus("checking");
-    setTimeout(() => {
+    checkTimeoutRef.current = setTimeout(() => {
       if (takenSlugs.includes(slug)) {
         setSlugStatus("taken");
         setSlugError("이미 사용 중인 주소입니다");
@@ -139,7 +145,6 @@ export function WorkspaceSetupPage() {
     }, 500);
   }, []);
 
-  // 조직명 변경 시 slug 자동 추천
   const handleOrgNameChange = (value: string) => {
     setWorkspaceData({ organizationName: value });
 
@@ -150,7 +155,6 @@ export function WorkspaceSetupPage() {
     }
   };
 
-  // slug 직접 변경
   const handleSlugChange = (value: string) => {
     const cleaned = value.toLowerCase().replace(/[^a-z0-9-]/g, "");
     setSlugTouched(true);
@@ -158,19 +162,13 @@ export function WorkspaceSetupPage() {
     validateAndCheck(cleaned);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!workspaceData.organizationName.trim() || !workspaceData.slug.trim()) return;
     if (slugStatus !== "available") return;
 
-    setIsSubmitting(true);
-
-    // mock 시뮬레이션
-    setTimeout(() => {
-      setIsSubmitting(false);
-      navigate("/onboarding/plan");
-    }, 1000);
+    navigate("/onboarding/plan");
   };
 
   const isFormValid =
@@ -179,90 +177,144 @@ export function WorkspaceSetupPage() {
     slugStatus === "available";
 
   return (
-    <div className="w-full max-w-lg mx-auto space-y-6">
-      {/* 상단 헤더 */}
-        <div className="text-center space-y-2">
-          <div className="flex justify-center">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-[#3b82f6] to-[#8b5cf6]">
-              <Building2 className="h-6 w-6 text-white" />
+    <div className="flex w-full max-w-[1000px] overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-2xl shadow-gray-200/50 md:grid md:grid-cols-2">
+      {/* Left Column: Branding */}
+      <div className="relative hidden flex-col justify-between overflow-hidden bg-slate-900 p-10 text-white md:flex">
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-600 to-indigo-700" />
+        <div className="absolute top-0 left-0 h-full w-full bg-[url('/grid-pattern.svg')] opacity-10" />
+        <div className="absolute -right-20 -top-20 h-[300px] w-[300px] rounded-full bg-blue-500 blur-3xl opacity-20" />
+        <div className="absolute -left-20 -bottom-20 h-[300px] w-[300px] rounded-full bg-indigo-500 blur-3xl opacity-20" />
+
+        <div className="relative z-10">
+          <div className="mb-8 flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 backdrop-blur-sm border border-white/20">
+              <svg className="h-6 w-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M12 2L2 7l10 5 10-5-10-5z" />
+                <path d="M2 17l10 5 10-5" />
+                <path d="M2 12l10 5 10-5" />
+              </svg>
             </div>
+            <span className="text-xl font-bold tracking-tight">Fabbit</span>
           </div>
-          <h1 className="text-2xl font-bold text-[#0f172a]">워크스페이스 설정</h1>
-          <p className="text-sm text-[#64748b]">조직 정보를 입력해 주세요</p>
+
+          <h2 className="mb-4 text-3xl font-bold leading-tight">
+            팀의 공간을<br />
+            만들어보세요.
+          </h2>
+          <p className="text-blue-100 leading-relaxed opacity-90">
+            워크스페이스는 팀의 모든 활동이 이루어지는<br />
+            공간입니다. 조직에 맞게 설정하세요.
+          </p>
+        </div>
+      </div>
+
+      {/* Right Column: Form */}
+      <div className="flex flex-col justify-center p-8 md:p-12 bg-white">
+        <div className="mb-6">
+          <h1 className="text-2xl font-bold text-gray-900">워크스페이스 설정</h1>
+          <p className="mt-2 text-sm text-gray-500">
+            조직 정보를 입력해 주세요.
+          </p>
         </div>
 
-        {/* 카드 */}
-        <div className="bg-white rounded-xl border border-[#e2e8f0] p-8 shadow-sm">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* 조직명 */}
-            <div className="space-y-2">
-              <Label htmlFor="orgName" className="text-[#334155]">
-                조직명 <span className="text-red-500">*</span>
-              </Label>
-              <div className="relative">
-                <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-[#94a3b8]" />
-                <Input
-                  id="orgName"
-                  type="text"
-                  placeholder="회사명 또는 팀명을 입력하세요"
-                  value={workspaceData.organizationName}
-                  onChange={(e) => handleOrgNameChange(e.target.value)}
-                  className="pl-10 h-12 bg-white border-[#e2e8f0]"
-                  disabled={isSubmitting}
-                />
-              </div>
-            </div>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* 조직명 */}
+          <div className="space-y-1.5">
+            <Label htmlFor="orgName" className="text-sm font-medium text-gray-700">
+              조직명
+            </Label>
+            <Input
+              id="orgName"
+              type="text"
+              placeholder="회사명 또는 팀명을 입력하세요"
+              value={workspaceData.organizationName}
+              onChange={(e) => handleOrgNameChange(e.target.value)}
+              className="h-11 bg-gray-50 border-gray-200 focus:bg-white transition-colors"
+            />
+          </div>
 
-            {/* 워크스페이스 주소 (slug) */}
-            <div className="space-y-2">
-              <Label htmlFor="slug" className="text-[#334155]">
-                워크스페이스 주소 <span className="text-red-500">*</span>
+          {/* 워크스페이스 주소 (slug) */}
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="slug" className="text-sm font-medium text-gray-700">
+                워크스페이스 주소
               </Label>
-              <div
-                className={cn(
-                  "flex items-center h-12 rounded-md border bg-white transition-[color,box-shadow] focus-within:border-ring focus-within:ring-ring/50 focus-within:ring-[3px]",
-                  slugStatus === "available" && "border-[#22c55e] focus-within:border-[#22c55e] focus-within:ring-[#22c55e]/20",
-                  (slugStatus === "taken" || slugStatus === "invalid") && "border-red-400 focus-within:border-red-400 focus-within:ring-red-400/20",
-                  slugStatus !== "available" && slugStatus !== "taken" && slugStatus !== "invalid" && "border-[#e2e8f0]",
-                )}
-              >
-                <Globe className="ml-3 h-5 w-5 text-[#94a3b8] shrink-0" />
-                <input
-                  id="slug"
-                  type="text"
-                  placeholder="my-workspace"
-                  value={workspaceData.slug}
-                  onChange={(e) => handleSlugChange(e.target.value)}
-                  className="flex-1 h-full px-2 bg-transparent text-sm outline-none placeholder:text-[#94a3b8]"
-                  disabled={isSubmitting}
-                />
-                <div className="flex items-center gap-2 pr-3 text-sm text-[#94a3b8] whitespace-nowrap select-none border-l border-[#e2e8f0] pl-3 h-full bg-[#f8fafc] rounded-r-md">
-                  .fabbitinc.com
-                  {slugStatus === "checking" && (
-                    <Loader2 className="h-4 w-4 text-[#94a3b8] animate-spin" />
-                  )}
-                  {slugStatus === "available" && (
-                    <Check className="h-4 w-4 text-[#22c55e]" />
-                  )}
-                  {(slugStatus === "taken" || slugStatus === "invalid") && (
-                    <X className="h-4 w-4 text-red-400" />
-                  )}
-                </div>
-              </div>
               {slugError && (
-                <p className="text-xs text-red-400">{slugError}</p>
+                <span className="text-xs text-red-500">{slugError}</span>
+              )}
+              {slugStatus === "available" && (
+                <span className="text-xs text-green-600">사용 가능</span>
               )}
             </div>
+            <div
+              className={cn(
+                "flex items-center h-11 rounded-md border bg-gray-50 transition-all focus-within:bg-white focus-within:ring-[3px]",
+                slugStatus === "available" && "border-green-500 focus-within:border-green-500 focus-within:ring-green-500/20",
+                (slugStatus === "taken" || slugStatus === "invalid") && "border-red-300 focus-within:border-red-400 focus-within:ring-red-400/20",
+                slugStatus !== "available" && slugStatus !== "taken" && slugStatus !== "invalid" && "border-gray-200 focus-within:border-blue-500 focus-within:ring-blue-500/20",
+              )}
+            >
+              <input
+                id="slug"
+                type="text"
+                placeholder="my-workspace"
+                value={workspaceData.slug}
+                onChange={(e) => handleSlugChange(e.target.value)}
+                className="flex-1 h-full px-3 bg-transparent text-sm outline-none placeholder:text-gray-400"
+                />
+              <div className="flex items-center gap-2 pr-3 text-sm text-gray-400 whitespace-nowrap select-none border-l border-gray-200 pl-3 h-full bg-gray-100 rounded-r-md">
+                .fabbit.app
+                {slugStatus === "checking" && (
+                  <Loader2 className="h-4 w-4 text-gray-400 animate-spin" />
+                )}
+                {slugStatus === "available" && (
+                  <Check className="h-4 w-4 text-green-600" />
+                )}
+                {(slugStatus === "taken" || slugStatus === "invalid") && (
+                  <X className="h-4 w-4 text-red-500" />
+                )}
+              </div>
+            </div>
+          </div>
 
-            {/* 산업 분야 */}
-            <div className="space-y-2">
-              <Label className="text-[#334155]">산업 분야</Label>
+          {/* 산업 분야 */}
+          <div className="space-y-1.5">
+            <Label className="text-sm font-medium text-gray-700">산업 분야</Label>
+            {isCustomIndustry ? (
+              <div className="relative">
+                <Input
+                  type="text"
+                  placeholder="산업 분야를 입력하세요"
+                  value={workspaceData.industry}
+                  onChange={(e) => setWorkspaceData({ industry: e.target.value })}
+                  className="h-11 pr-9 bg-gray-50 border-gray-200 focus:bg-white transition-colors"
+                      autoFocus
+                />
+                <button
+                  type="button"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  onClick={() => {
+                    setIsCustomIndustry(false);
+                    setWorkspaceData({ industry: "" });
+                  }}
+                  title="목록에서 선택"
+                >
+                  <RotateCcw className="h-4 w-4" />
+                </button>
+              </div>
+            ) : (
               <Select
                 value={workspaceData.industry}
-                onValueChange={(value) => setWorkspaceData({ industry: value })}
-                disabled={isSubmitting}
-              >
-                <SelectTrigger className="h-12 bg-white border-[#e2e8f0]">
+                onValueChange={(value) => {
+                  if (value === "custom") {
+                    setIsCustomIndustry(true);
+                    setWorkspaceData({ industry: "" });
+                  } else {
+                    setWorkspaceData({ industry: value });
+                  }
+                }}
+                >
+                <SelectTrigger className="h-11 bg-gray-50 border-gray-200 focus:bg-white transition-colors">
                   <SelectValue placeholder="산업 분야를 선택하세요" />
                 </SelectTrigger>
                 <SelectContent>
@@ -273,40 +325,69 @@ export function WorkspaceSetupPage() {
                   ))}
                 </SelectContent>
               </Select>
-            </div>
+            )}
+          </div>
 
-            {/* 팀 규모 */}
-            <div className="space-y-2">
-              <Label className="text-[#334155]">팀 규모</Label>
-              <div className="grid grid-cols-4 gap-2">
-                {teamSizeOptions.map((option) => (
-                  <button
-                    key={option.value}
-                    type="button"
-                    onClick={() => setWorkspaceData({ teamSize: option.value })}
-                    disabled={isSubmitting}
-                    className={cn(
-                      "h-10 rounded-lg border text-sm font-medium transition-colors",
-                      workspaceData.teamSize === option.value
-                        ? "bg-[#3b82f6] text-white border-[#3b82f6]"
-                        : "bg-white text-[#334155] border-[#e2e8f0] hover:border-[#3b82f6] hover:text-[#3b82f6]",
-                    )}
-                  >
-                    {option.label}
-                  </button>
-                ))}
+          {/* 팀 규모 */}
+          <div className="space-y-1.5">
+            <Label className="text-sm font-medium text-gray-700">팀 규모</Label>
+            <div className="grid grid-cols-4 gap-2">
+              {teamSizeOptions.map((option) => (
+                <button
+                  key={option.value}
+                  type="button"
+                  onClick={() => setWorkspaceData({ teamSize: option.value })}
+                      className={cn(
+                    "h-10 rounded-lg border text-sm font-medium transition-all",
+                    workspaceData.teamSize === option.value
+                      ? "bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-600/20"
+                      : "bg-gray-50 text-gray-600 border-gray-200 hover:border-blue-300 hover:text-blue-600",
+                  )}
+                >
+                  {option.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* 직무 */}
+          <div className="space-y-1.5">
+            <Label className="text-sm font-medium text-gray-700">직무</Label>
+            {isCustomRole ? (
+              <div className="relative">
+                <Input
+                  type="text"
+                  placeholder="직무를 입력하세요"
+                  value={workspaceData.role}
+                  onChange={(e) => setWorkspaceData({ role: e.target.value })}
+                  className="h-11 pr-9 bg-gray-50 border-gray-200 focus:bg-white transition-colors"
+                      autoFocus
+                />
+                <button
+                  type="button"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  onClick={() => {
+                    setIsCustomRole(false);
+                    setWorkspaceData({ role: "" });
+                  }}
+                  title="목록에서 선택"
+                >
+                  <RotateCcw className="h-4 w-4" />
+                </button>
               </div>
-            </div>
-
-            {/* 직무 */}
-            <div className="space-y-2">
-              <Label className="text-[#334155]">직무</Label>
+            ) : (
               <Select
                 value={workspaceData.role}
-                onValueChange={(value) => setWorkspaceData({ role: value })}
-                disabled={isSubmitting}
-              >
-                <SelectTrigger className="h-12 bg-white border-[#e2e8f0]">
+                onValueChange={(value) => {
+                  if (value === "custom") {
+                    setIsCustomRole(true);
+                    setWorkspaceData({ role: "" });
+                  } else {
+                    setWorkspaceData({ role: value });
+                  }
+                }}
+                >
+                <SelectTrigger className="h-11 bg-gray-50 border-gray-200 focus:bg-white transition-colors">
                   <SelectValue placeholder="직무를 선택하세요" />
                 </SelectTrigger>
                 <SelectContent>
@@ -317,25 +398,29 @@ export function WorkspaceSetupPage() {
                   ))}
                 </SelectContent>
               </Select>
-            </div>
+            )}
+          </div>
 
-            {/* 다음 버튼 */}
+          {/* 버튼 */}
+          <div className="flex items-center justify-between pt-2">
+            <Button
+              type="button"
+              variant="outline"
+              className="h-12 px-8 text-base font-semibold border-gray-200 hover:bg-gray-50 hover:border-gray-300 transition-all"
+              onClick={() => navigate("/onboarding/signup")}
+            >
+              이전
+            </Button>
             <Button
               type="submit"
-              className="w-full h-12 bg-[#3b82f6] hover:bg-[#2563eb] text-base font-medium"
-              disabled={!isFormValid || isSubmitting}
+              className="h-12 px-8 bg-blue-600 hover:bg-blue-700 text-base font-semibold shadow-lg shadow-blue-600/20 transition-all hover:shadow-blue-600/30"
+              disabled={!isFormValid}
             >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                  설정 중...
-                </>
-              ) : (
-                "다음"
-              )}
+              다음
             </Button>
-          </form>
-        </div>
+          </div>
+        </form>
+      </div>
     </div>
   );
 }

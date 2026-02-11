@@ -219,7 +219,7 @@ export function SignupPage() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1.5">
             <Label htmlFor="name" className="text-sm font-medium text-gray-700">이름</Label>
             <Input
@@ -228,13 +228,21 @@ export function SignupPage() {
               placeholder="홍길동"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="h-12 bg-gray-50 border-gray-200 focus:bg-white transition-colors"
+              className="h-11 bg-gray-50 border-gray-200 focus:bg-white transition-colors"
               disabled={isLoading}
             />
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="email" className="text-sm font-medium text-gray-700">이메일</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="email" className="text-sm font-medium text-gray-700">이메일</Label>
+              {(emailStatus === "invalid" || emailStatus === "taken") && (
+                <span className="text-xs text-red-500">{emailError}</span>
+              )}
+              {emailStatus === "available" && (
+                <span className="text-xs text-green-600">사용 가능 (mock)</span>
+              )}
+            </div>
             <div className="relative">
               <Input
                 id="email"
@@ -243,7 +251,7 @@ export function SignupPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className={cn(
-                  "h-12 pr-10 bg-gray-50 border-gray-200 focus:bg-white transition-colors",
+                  "h-11 pr-10 bg-gray-50 border-gray-200 focus:bg-white transition-colors",
                   (emailStatus === "invalid" || emailStatus === "taken") &&
                     "border-red-300 focus:border-red-400 focus:ring-red-400/20",
                   emailStatus === "available" &&
@@ -261,16 +269,15 @@ export function SignupPage() {
                 )}
               </div>
             </div>
-            {(emailStatus === "invalid" || emailStatus === "taken") && (
-              <p className="text-xs text-red-500 mt-1">{emailError}</p>
-            )}
-            {emailStatus === "available" && (
-              <p className="text-xs text-green-600 mt-1">사용 가능한 이메일입니다. (mock)</p>
-            )}
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="password" className="text-sm font-medium text-gray-700">비밀번호</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="password" className="text-sm font-medium text-gray-700">비밀번호</Label>
+              {password && password.length < 8 && (
+                <span className="text-xs text-red-500">8자 이상 입력해 주세요</span>
+              )}
+            </div>
             <div className="relative">
               <Input
                 id="password"
@@ -279,7 +286,7 @@ export function SignupPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className={cn(
-                  "h-12 pr-10 bg-gray-50 border-gray-200 focus:bg-white transition-colors",
+                  "h-11 pr-10 bg-gray-50 border-gray-200 focus:bg-white transition-colors",
                   password && password.length < 8
                     ? "border-red-300 focus:border-red-400 focus:ring-red-400/20"
                     : ""
@@ -291,16 +298,23 @@ export function SignupPage() {
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
               >
-                {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
-            {password && password.length < 8 && (
-              <p className="text-xs text-red-500 mt-1">8자 이상 입력해 주세요</p>
-            )}
           </div>
 
           <div className="space-y-1.5">
-            <Label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700">비밀번호 확인</Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700">비밀번호 확인</Label>
+              {confirmPassword && confirmPassword !== password && (
+                <span className="text-xs text-red-500">비밀번호가 일치하지 않습니다</span>
+              )}
+              {confirmPassword && password.length >= 8 && confirmPassword === password && (
+                <span className="text-xs text-green-600 flex items-center gap-1">
+                  <Check className="w-3 h-3" /> 일치
+                </span>
+              )}
+            </div>
             <div className="relative">
               <Input
                 id="confirmPassword"
@@ -309,7 +323,7 @@ export function SignupPage() {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 className={cn(
-                  "h-12 pr-10 bg-gray-50 border-gray-200 focus:bg-white transition-colors",
+                  "h-11 pr-10 bg-gray-50 border-gray-200 focus:bg-white transition-colors",
                   confirmPassword && confirmPassword !== password
                     ? "border-red-300 focus:border-red-400 focus:ring-red-400/20"
                     : confirmPassword && password.length >= 8 && confirmPassword === password
@@ -323,21 +337,13 @@ export function SignupPage() {
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
               >
-                {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </button>
             </div>
-            {confirmPassword && confirmPassword !== password && (
-              <p className="text-xs text-red-500 mt-1">비밀번호가 일치하지 않습니다</p>
-            )}
-            {confirmPassword && password.length >= 8 && confirmPassword === password && (
-              <p className="text-xs text-green-600 mt-1 flex items-center gap-1">
-                <Check className="w-3 h-3" /> 비밀번호가 일치합니다
-              </p>
-            )}
           </div>
 
           {/* Turnstile CAPTCHA */}
-          <div className="flex justify-center py-2">
+          <div className="flex justify-center pt-1">
             <Turnstile
               siteKey={import.meta.env.VITE_TURNSTILE_SITE_KEY}
               onSuccess={(token) => setTurnstileToken(token)}
@@ -363,7 +369,7 @@ export function SignupPage() {
           </Button>
         </form>
 
-        <div className="relative my-8">
+        <div className="relative my-6">
           <div className="absolute inset-0 flex items-center">
             <div className="w-full border-t border-gray-200" />
           </div>
