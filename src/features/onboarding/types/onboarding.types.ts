@@ -1,44 +1,7 @@
-// 온보딩 스텝 정의
-export type OnboardingStep = 1 | 2 | 3 | 4 | 5 | 6 | 7;
+// 온보딩 스텝 정의 (4단계: 업로드, 매핑, 처리, 탐색)
+export type OnboardingStep = 1 | 2 | 3 | 4;
 
-// Step 3: 플랜 선택
-export type PlanTier = "free" | "pro" | "elite";
-
-export interface PlanOption {
-  tier: PlanTier;
-  name: string;
-  price: number;
-  priceLabel: string;
-  description: string;
-  features: string[];
-  highlighted?: boolean;
-  badge?: string;
-}
-
-export interface OnboardingStepInfo {
-  step: OnboardingStep;
-  title: string;
-  description: string;
-  path: string;
-}
-
-// Step 2: 워크스페이스 설정
-export interface WorkspaceFormData {
-  organizationName: string;
-  slug: string;
-  industry: string;
-  teamSize: string;
-  role: string;
-}
-
-// Step 1: 계정 생성
-export interface SignupFormData {
-  name: string;
-  email: string;
-  password: string;
-}
-
-// Step 4: 데이터 업로드
+// Step 1: 데이터 업로드
 export type FileCategory = "bom" | "drawing";
 
 export interface UploadedFile {
@@ -62,7 +25,7 @@ export interface UploadLimits {
   storageLabel: string;
 }
 
-// Step 4: AI 매핑
+// Step 2: AI 매핑
 export type ConfidenceLevel = "high" | "medium" | "low";
 
 export interface SourceColumn {
@@ -91,7 +54,7 @@ export interface MappingConnection {
   approved: boolean;
 }
 
-// Step 5: 데이터 처리
+// Step 3: 데이터 처리
 export type ProcessingPhase = "parsing" | "normalizing" | "connecting" | "validating";
 
 export interface ProcessingStep {
@@ -114,7 +77,7 @@ export interface LogEntry {
   type: "info" | "success" | "warning" | "error";
 }
 
-// Step 6: 탐색
+// Step 4: 탐색
 export interface HealthCheckItem {
   category: string;
   label: string;

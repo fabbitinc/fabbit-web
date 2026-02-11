@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { Loader2, Check, X, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,12 +11,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useOnboardingStore } from "@/stores/onboardingStore";
+import { useRegistrationStore } from "@/stores/registrationStore";
 import {
   industryOptions,
   teamSizeOptions,
   roleOptions,
-} from "@/features/onboarding/mock-data/onboarding-mock";
+} from "@/features/registration/mock-data/registration-mock";
 import { cn } from "@/lib/utils";
 
 // 한글 → 영문 slug 변환
@@ -100,17 +100,13 @@ type SlugStatus = "idle" | "checking" | "available" | "taken" | "invalid";
 
 export function WorkspaceSetupPage() {
   const navigate = useNavigate();
-  const { setStep, workspaceData, setWorkspaceData } = useOnboardingStore();
+  const { workspaceData, setWorkspaceData } = useRegistrationStore();
   const [slugStatus, setSlugStatus] = useState<SlugStatus>("idle");
   const [slugError, setSlugError] = useState<string>();
   const [slugTouched, setSlugTouched] = useState(false);
   const [isCustomIndustry, setIsCustomIndustry] = useState(false);
   const [isCustomRole, setIsCustomRole] = useState(false);
   const checkTimeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
-
-  useEffect(() => {
-    setStep(2);
-  }, [setStep]);
 
   const validateAndCheck = useCallback((slug: string) => {
     setSlugError(undefined);
@@ -168,7 +164,7 @@ export function WorkspaceSetupPage() {
     if (!workspaceData.organizationName.trim() || !workspaceData.slug.trim()) return;
     if (slugStatus !== "available") return;
 
-    navigate("/onboarding/plan");
+    navigate("/register/plan");
   };
 
   const isFormValid =
@@ -407,7 +403,7 @@ export function WorkspaceSetupPage() {
               type="button"
               variant="outline"
               className="h-12 px-8 text-base font-semibold border-gray-200 hover:bg-gray-50 hover:border-gray-300 transition-all"
-              onClick={() => navigate("/onboarding/signup")}
+              onClick={() => navigate("/register/signup")}
             >
               이전
             </Button>

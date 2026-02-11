@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Check,
@@ -16,12 +16,11 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { useOnboardingStore } from "@/stores/onboardingStore";
+import { useRegistrationStore } from "@/stores/registrationStore";
 import { useAuthStore } from "@/stores/authStore";
-import { createOrganization } from "@/api";
-import { planOptions } from "@/features/onboarding/mock-data/onboarding-mock";
+import { planOptions } from "@/features/registration/mock-data/registration-mock";
 import { cn } from "@/lib/utils";
-import type { PlanTier } from "@/features/onboarding/types/onboarding.types";
+import type { PlanTier } from "@/features/registration/types/registration.types";
 
 type DialogPhase = "idle" | "confirming" | "creating";
 
@@ -32,30 +31,15 @@ const creationSteps = [
   "초기 설정 완료",
 ];
 
-function toApiPlanTier(plan: PlanTier) {
-  switch (plan) {
-    case "free":
-      return "FREE_TIER" as const;
-    case "pro":
-      return "PROFESSIONAL" as const;
-    case "elite":
-      return "ELITE" as const;
-  }
-}
-
 export function PlanSelectionPage() {
   const navigate = useNavigate();
-  const { setStep, selectedPlan, setSelectedPlan, workspaceData, signupData } =
-    useOnboardingStore();
+  const { selectedPlan, setSelectedPlan, workspaceData, signupData } =
+    useRegistrationStore();
   const { signup } = useAuthStore();
 
   const [dialogPhase, setDialogPhase] = useState<DialogPhase>("idle");
   const [completedSteps, setCompletedSteps] = useState<number>(0);
   const [createError, setCreateError] = useState<string>("");
-
-  useEffect(() => {
-    setStep(3);
-  }, [setStep]);
 
   const selectedPlanInfo = planOptions.find((p) => p.tier === selectedPlan);
 
@@ -65,12 +49,12 @@ export function PlanSelectionPage() {
 
   const handleContinue = () => {
     if (!signupData.name || !signupData.email || !signupData.password) {
-      navigate("/onboarding/signup");
+      navigate("/register/signup");
       return;
     }
 
     if (!workspaceData.organizationName.trim() || !workspaceData.slug.trim()) {
-      navigate("/onboarding/workspace");
+      navigate("/register/workspace");
       return;
     }
 
@@ -84,24 +68,21 @@ export function PlanSelectionPage() {
     setCreateError("");
 
     try {
-      await createOrganization({
-        organizationName: workspaceData.organizationName.trim(),
-        subdomain: workspaceData.slug.trim(),
-        planTier: toApiPlanTier(selectedPlan),
-        ownerEmail: signupData.email,
-        ownerPassword: signupData.password,
-        ownerName: signupData.name,
-      });
+      // progress 단계별 250ms 딜레이 (총 ~1초)
+      for (let i = 0; i < creationSteps.length; i++) {
+        await new Promise((resolve) => setTimeout(resolve, 250));
+        setCompletedSteps(i + 1);
+      }
 
-      setCompletedSteps(creationSteps.length);
-      await signup(signupData.name, signupData.email, signupData.password);
+      // mock 로그인
+      await signup(signupData.name, signupData.email, signupData.password, selectedPlan);
       navigate("/onboarding/upload");
     } catch (error) {
       setCompletedSteps(0);
       setDialogPhase("confirming");
-      setCreateError(error instanceof Error ? error.message : "조직 생성에 실패했습니다.");
+      setCreateError(error instanceof Error ? error.message : "가입에 실패했습니다.");
     }
-  }, [navigate, selectedPlan, signup, signupData, workspaceData]);
+  }, [navigate, selectedPlan, signup, signupData]);
 
   const handleDialogClose = () => {
     if (dialogPhase === "creating") return;
@@ -229,7 +210,7 @@ export function PlanSelectionPage() {
           type="button"
           variant="outline"
           className="h-12 px-8 text-base font-semibold border-gray-200 hover:bg-gray-50 hover:border-gray-300 transition-all"
-          onClick={() => navigate("/onboarding/workspace")}
+          onClick={() => navigate("/register/workspace")}
         >
           이전
         </Button>
@@ -365,7 +346,7 @@ export function PlanSelectionPage() {
               </div>
 
               <div className="text-center text-sm text-blue-600 font-medium">
-                서버에서 조직을 생성하고 있습니다...
+                워크스페이스를 준비하고 있습니다...
               </div>
             </>
           )}

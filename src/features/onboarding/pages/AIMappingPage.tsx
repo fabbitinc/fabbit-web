@@ -27,7 +27,7 @@ export function AIMappingPage() {
   } = useOnboardingStore();
 
   useEffect(() => {
-    setStep(5);
+    setStep(2);
   }, [setStep]);
 
   // ref 관리

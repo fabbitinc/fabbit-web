@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { loginUser, logout as logoutApi, queryClient } from "@/api";
+import type { PlanTier } from "@/features/registration/types/registration.types";
 
 interface Organization {
   id: string;
@@ -26,11 +27,12 @@ interface AuthState {
   isAuthenticated: boolean;
   isLoading: boolean;
   onboardingCompleted: boolean;
+  selectedPlan: PlanTier;
 
   // Actions
   login: (email: string, password: string) => Promise<void>;
   loginWithProvider: (provider: "google" | "naver" | "kakao") => Promise<void>;
-  signup: (name: string, email: string, password: string) => Promise<void>;
+  signup: (name: string, email: string, password: string, selectedPlan?: PlanTier) => Promise<void>;
   logout: () => Promise<void>;
   setUser: (user: User | null) => void;
   switchOrganization: (organizationId: string) => void;
@@ -53,6 +55,7 @@ export const useAuthStore = create<AuthState>()(
       isAuthenticated: false,
       isLoading: false,
       onboardingCompleted: true,
+      selectedPlan: "free",
 
       login: async (email: string, password: string) => {
         set({ isLoading: true });
@@ -88,7 +91,7 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      signup: async (name: string, email: string, _password: string) => {
+      signup: async (name: string, email: string, _password: string, plan?: PlanTier) => {
         set({ isLoading: true });
 
         // Mock signup - 실제로는 API 호출
@@ -108,6 +111,7 @@ export const useAuthStore = create<AuthState>()(
           isAuthenticated: true,
           isLoading: false,
           onboardingCompleted: false,
+          selectedPlan: plan ?? "free",
           organizations: [],
           currentOrganization: null,
         });
@@ -203,6 +207,7 @@ export const useAuthStore = create<AuthState>()(
         isAuthenticated: state.isAuthenticated,
         currentOrganization: state.currentOrganization,
         onboardingCompleted: state.onboardingCompleted,
+        selectedPlan: state.selectedPlan,
       }),
     }
   )
