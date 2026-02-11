@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import { MainLayout } from "@/components/layout/MainLayout";
 import { LoginPage } from "@/pages/auth/LoginPage";
 import { ItemsPage } from "@/pages/items/ItemsPage";
@@ -12,14 +12,17 @@ import { SimpleBomImportModal } from "@/features/items/components/SimpleBomImpor
 import { Toaster } from "@/components/ui/sonner";
 import { useAuthStore } from "@/stores/authStore";
 
+// Registration 관련 임포트
+import { RegistrationLayout } from "@/features/registration/components/RegistrationLayout";
+import { SignupPage } from "@/features/registration/pages/SignupPage";
+import { WorkspaceSetupPage } from "@/features/registration/pages/WorkspaceSetupPage";
+import { PlanSelectionPage } from "@/features/registration/pages/PlanSelectionPage";
+
 // 온보딩 관련 임포트
 import { OnboardingLayout } from "@/features/onboarding/components/OnboardingLayout";
-import { SignupPage } from "@/features/onboarding/pages/SignupPage";
-import { WorkspaceSetupPage } from "@/features/onboarding/pages/WorkspaceSetupPage";
 import { DataUploadPage } from "@/features/onboarding/pages/DataUploadPage";
 import { AIMappingPage } from "@/features/onboarding/pages/AIMappingPage";
 import { DataProcessingPage } from "@/features/onboarding/pages/DataProcessingPage";
-import { PlanSelectionPage } from "@/features/onboarding/pages/PlanSelectionPage";
 import { ExplorePage } from "@/features/onboarding/pages/ExplorePage";
 
 function DashboardPage() {
@@ -56,7 +59,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   }
 
   if (!onboardingCompleted) {
-    return <Navigate to="/onboarding/workspace" replace />;
+    return <Navigate to="/onboarding/upload" replace />;
   }
 
   return <>{children}</>;
@@ -72,32 +75,43 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
   }
 
   if (isAuthenticated && !onboardingCompleted) {
-    return <Navigate to="/onboarding/workspace" replace />;
+    return <Navigate to="/onboarding/upload" replace />;
   }
 
   return <>{children}</>;
 }
 
-// 온보딩 플로우 라우트 (회원가입 ~ 온보딩 전체)
-// 미인증 사용자는 signup만, 인증 사용자는 전체 접근 가능
+// Registration 라우트 (회원가입 플로우 1-3단계)
+// 미인증 사용자만 접근 가능
+function RegistrationRoute({ children }: { children: React.ReactNode }) {
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const onboardingCompleted = useAuthStore((state) => state.onboardingCompleted);
+
+  if (isAuthenticated && onboardingCompleted) {
+    return <Navigate to="/" replace />;
+  }
+
+  if (isAuthenticated && !onboardingCompleted) {
+    return <Navigate to="/onboarding/upload" replace />;
+  }
+
+  return <>{children}</>;
+}
+
+// 온보딩 플로우 라우트 (데이터 온보딩 4-7단계)
+// 인증 + 온보딩 미완료 사용자만 접근 가능
 function OnboardingRoute({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const onboardingCompleted = useAuthStore((state) => state.onboardingCompleted);
-  const location = useLocation();
 
   // 온보딩 완료된 사용자 → 메인으로
   if (isAuthenticated && onboardingCompleted) {
     return <Navigate to="/" replace />;
   }
 
-  // 미인증 사용자가 signup 외 페이지 접근 시 → signup으로
-  const isPreSignupFlow =
-    location.pathname.includes("/signup") ||
-    location.pathname.includes("/workspace") ||
-    location.pathname.includes("/plan");
-
-  if (!isAuthenticated && !isPreSignupFlow) {
-    return <Navigate to="/onboarding/signup" replace />;
+  // 미인증 사용자 → 회원가입으로
+  if (!isAuthenticated) {
+    return <Navigate to="/register/signup" replace />;
   }
 
   return <>{children}</>;
@@ -117,10 +131,25 @@ function App() {
           }
         />
 
-        {/* /signup → /onboarding/signup 리다이렉트 */}
-        <Route path="/signup" element={<Navigate to="/onboarding/signup" replace />} />
+        {/* /signup → /register/signup 리다이렉트 */}
+        <Route path="/signup" element={<Navigate to="/register/signup" replace />} />
 
-        {/* Onboarding Routes (회원가입 + 온보딩 통합) */}
+        {/* Registration Routes (회원가입 1-3단계) */}
+        <Route
+          path="/register"
+          element={
+            <RegistrationRoute>
+              <RegistrationLayout />
+            </RegistrationRoute>
+          }
+        >
+          <Route path="signup" element={<SignupPage />} />
+          <Route path="workspace" element={<WorkspaceSetupPage />} />
+          <Route path="plan" element={<PlanSelectionPage />} />
+          <Route index element={<Navigate to="signup" replace />} />
+        </Route>
+
+        {/* Onboarding Routes (데이터 온보딩 4-7단계) */}
         <Route
           path="/onboarding"
           element={
@@ -129,14 +158,11 @@ function App() {
             </OnboardingRoute>
           }
         >
-          <Route path="signup" element={<SignupPage />} />
-          <Route path="workspace" element={<WorkspaceSetupPage />} />
-          <Route path="plan" element={<PlanSelectionPage />} />
           <Route path="upload" element={<DataUploadPage />} />
           <Route path="mapping" element={<AIMappingPage />} />
           <Route path="processing" element={<DataProcessingPage />} />
           <Route path="explore" element={<ExplorePage />} />
-          <Route index element={<Navigate to="signup" replace />} />
+          <Route index element={<Navigate to="upload" replace />} />
         </Route>
 
         {/* Protected Routes */}

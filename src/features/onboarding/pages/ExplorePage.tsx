@@ -21,7 +21,7 @@ export function ExplorePage() {
   const initializedRef = useRef(false);
 
   useEffect(() => {
-    setStep(7);
+    setStep(4);
   }, [setStep]);
 
   // 초기 메시지 추가 (한 번만)

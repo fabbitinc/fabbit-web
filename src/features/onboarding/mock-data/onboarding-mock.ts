@@ -1,7 +1,4 @@
 import type {
-  OnboardingStepInfo,
-  PlanOption,
-  PlanTier,
   UploadLimits,
   SourceColumn,
   TargetProperty,
@@ -12,69 +9,14 @@ import type {
   SuggestedQuestion,
   ChatMessage,
 } from "../types/onboarding.types";
+import type { PlanTier } from "@/features/registration/types/registration.types";
 
 // 온보딩 스텝 정보
-export const onboardingSteps: OnboardingStepInfo[] = [
-  { step: 1, title: "계정 생성", description: "계정을 생성합니다", path: "/onboarding/signup" },
-  { step: 2, title: "워크스페이스", description: "조직을 설정합니다", path: "/onboarding/workspace" },
-  { step: 3, title: "플랜 선택", description: "요금제를 선택합니다", path: "/onboarding/plan" },
-  { step: 4, title: "데이터 업로드", description: "데이터를 업로드합니다", path: "/onboarding/upload" },
-  { step: 5, title: "AI 매핑", description: "데이터를 매핑합니다", path: "/onboarding/mapping" },
-  { step: 6, title: "데이터 처리", description: "지식화를 진행합니다", path: "/onboarding/processing" },
-  { step: 7, title: "탐색", description: "데이터를 탐색합니다", path: "/onboarding/explore" },
-];
-
-// 플랜 옵션
-export const planOptions: PlanOption[] = [
-  {
-    tier: "free",
-    name: "Free",
-    price: 0,
-    priceLabel: "무료",
-    description: "소규모 팀의 첫 시작에 적합합니다",
-    features: [
-      "최대 3명 사용자",
-      "1GB 스토리지",
-      "BOM 100건",
-      "기본 AI 매핑",
-      "이메일 지원",
-    ],
-  },
-  {
-    tier: "pro",
-    name: "Pro",
-    price: 49000,
-    priceLabel: "₩49,000/월",
-    description: "성장하는 팀을 위한 전문 PLM",
-    features: [
-      "최대 20명 사용자",
-      "50GB 스토리지",
-      "BOM 무제한",
-      "고급 AI 매핑 + 자동 분류",
-      "도면 AI 파싱 (월 500건)",
-      "우선 기술 지원",
-    ],
-    highlighted: true,
-    badge: "추천",
-  },
-  {
-    tier: "elite",
-    name: "Elite",
-    price: 149000,
-    priceLabel: "₩149,000/월",
-    description: "대규모 조직을 위한 엔터프라이즈급",
-    features: [
-      "사용자 무제한",
-      "500GB 스토리지",
-      "BOM 무제한",
-      "AI 매핑 + 자동 분류 + 이상 탐지",
-      "도면 AI 파싱 무제한",
-      "전담 매니저 + SLA 보장",
-      "SSO / SAML 인증",
-      "온프레미스 배포 옵션",
-    ],
-    badge: "Enterprise",
-  },
+export const onboardingSteps = [
+  { step: 1 as const, title: "데이터 업로드", description: "데이터를 업로드합니다", path: "/onboarding/upload" },
+  { step: 2 as const, title: "AI 매핑", description: "데이터를 매핑합니다", path: "/onboarding/mapping" },
+  { step: 3 as const, title: "데이터 처리", description: "지식화를 진행합니다", path: "/onboarding/processing" },
+  { step: 4 as const, title: "탐색", description: "데이터를 탐색합니다", path: "/onboarding/explore" },
 ];
 
 // 플랜별 업로드 제한
@@ -105,36 +47,7 @@ export const uploadLimitsByPlan: Record<PlanTier, UploadLimits> = {
   },
 };
 
-// 산업 분야 옵션
-export const industryOptions = [
-  { value: "manufacturing", label: "제조업" },
-  { value: "automotive", label: "자동차" },
-  { value: "electronics", label: "전자/반도체" },
-  { value: "aerospace", label: "항공/우주" },
-  { value: "shipbuilding", label: "조선/해양" },
-  { value: "construction", label: "건설/플랜트" },
-  { value: "custom", label: "직접입력" },
-];
-
-// 팀 규모 옵션
-export const teamSizeOptions = [
-  { value: "1-10", label: "1~10명" },
-  { value: "11-50", label: "11~50명" },
-  { value: "51-200", label: "51~200명" },
-  { value: "201+", label: "200명 이상" },
-];
-
-// 직무 옵션
-export const roleOptions = [
-  { value: "engineer", label: "설계 엔지니어" },
-  { value: "manager", label: "프로젝트 관리자" },
-  { value: "quality", label: "품질 관리" },
-  { value: "procurement", label: "구매/조달" },
-  { value: "executive", label: "경영진" },
-  { value: "custom", label: "직접입력" },
-];
-
-// Step 4: 원본 컬럼 (Source Data)
+// Step 1: 원본 컬럼 (Source Data)
 export const mockSourceColumns: SourceColumn[] = [
   { id: "src-1", name: "Part No.", sampleData: ["ASM-001", "PCB-102", "M-BOLT-03"] },
   { id: "src-2", name: "품명", sampleData: ["메인 프레임", "제어 보드", "고정 볼트"] },
@@ -148,7 +61,7 @@ export const mockSourceColumns: SourceColumn[] = [
   { id: "src-10", name: "열처리 규격", sampleData: ["HRC 45-50", "", "HRC 38-42"] },
 ];
 
-// Step 4: 표준 속성 (Target Ontology)
+// Step 1: 표준 속성 (Target Ontology)
 export const mockTargetProperties: TargetProperty[] = [
   { id: "tgt-1", name: "part_number", label: "Part", category: "Part", required: true, description: "품번" },
   { id: "tgt-2", name: "name", label: "Part", category: "Part", required: true, description: "품명" },
@@ -162,7 +75,7 @@ export const mockTargetProperties: TargetProperty[] = [
   { id: "tgt-10", name: "_ext_heat_treatment", label: "Part", category: "확장 속성", required: false, description: "열처리 규격 (확장)" },
 ];
 
-// Step 4: AI 매핑 연결
+// Step 1: AI 매핑 연결
 export const mockMappingConnections: MappingConnection[] = [
   { id: "conn-1", sourceId: "src-1", targetId: "tgt-1", confidence: 98, confidenceLevel: "high", approved: true },
   { id: "conn-2", sourceId: "src-2", targetId: "tgt-2", confidence: 95, confidenceLevel: "high", approved: true },
@@ -176,7 +89,7 @@ export const mockMappingConnections: MappingConnection[] = [
   { id: "conn-10", sourceId: "src-10", targetId: "tgt-10", confidence: 60, confidenceLevel: "medium", approved: false },
 ];
 
-// Step 5: 처리 단계
+// Step 2: 처리 단계
 export const mockProcessingSteps: ProcessingStep[] = [
   { phase: "parsing", label: "데이터 파싱", status: "pending" },
   { phase: "normalizing", label: "정규화 및 병합", status: "pending" },
@@ -184,7 +97,7 @@ export const mockProcessingSteps: ProcessingStep[] = [
   { phase: "validating", label: "검증 및 최적화", status: "pending" },
 ];
 
-// Step 5: 로그 메시지
+// Step 2: 로그 메시지
 export const mockLogMessages: LogEntry[] = [
   { id: "log-1", timestamp: "00:00", message: "데이터 파싱을 시작합니다...", type: "info" },
   { id: "log-2", timestamp: "00:02", message: "BOM_Master.xlsx: 1,247행 감지", type: "info" },
@@ -201,7 +114,7 @@ export const mockLogMessages: LogEntry[] = [
   { id: "log-13", timestamp: "00:36", message: "지식 그래프 구축이 완료되었습니다!", type: "success" },
 ];
 
-// Step 6: 헬스 체크 리포트
+// Step 3: 헬스 체크 리포트
 export const mockHealthCheckReport: HealthCheckReport = {
   score: 85,
   totalNodes: 3450,
@@ -215,7 +128,7 @@ export const mockHealthCheckReport: HealthCheckReport = {
   ],
 };
 
-// Step 6: 추천 질문
+// Step 3: 추천 질문
 export const mockSuggestedQuestions: SuggestedQuestion[] = [
   { id: "q-1", question: "단가가 가장 높은 상위 5개 품목을 보여주세요", category: "비용 분석" },
   { id: "q-2", question: "공급사가 1곳뿐인 핵심 부품은 몇 개인가요?", category: "리스크 분석" },
@@ -225,7 +138,7 @@ export const mockSuggestedQuestions: SuggestedQuestion[] = [
   { id: "q-6", question: "A 공급사가 공급 중단되면 영향받는 프로젝트는?", category: "영향도 분석" },
 ];
 
-// Step 6: AI 채팅 초기 메시지
+// Step 3: AI 채팅 초기 메시지
 export const mockInitialChatMessages: ChatMessage[] = [
   {
     id: "chat-1",

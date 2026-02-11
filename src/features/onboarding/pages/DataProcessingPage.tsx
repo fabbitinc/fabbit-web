@@ -50,7 +50,7 @@ export function DataProcessingPage() {
   } = useOnboardingStore();
 
   useEffect(() => {
-    setStep(6);
+    setStep(3);
   }, [setStep]);
 
   // 시뮬레이션

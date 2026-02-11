@@ -1,9 +1,6 @@
 import { create } from "zustand";
 import type {
   OnboardingStep,
-  PlanTier,
-  SignupFormData,
-  WorkspaceFormData,
   UploadedFile,
   MappingConnection,
   ProcessingStep,
@@ -20,38 +17,26 @@ interface OnboardingState {
   // 현재 스텝
   currentStep: OnboardingStep;
 
-  // Step 2: 워크스페이스
-  workspaceData: WorkspaceFormData;
-
-  // Step 1: 계정 생성
-  signupData: SignupFormData;
-
-  // Step 3: 플랜
-  selectedPlan: PlanTier;
-
-  // Step 4: 업로드
+  // Step 1: 업로드
   uploadedFiles: UploadedFile[];
 
-  // Step 5: 매핑
+  // Step 2: 매핑
   connections: MappingConnection[];
   selectedSourceId: string | null;
   selectedTargetId: string | null;
 
-  // Step 6: 처리
+  // Step 3: 처리
   processingSteps: ProcessingStep[];
   processingStats: ProcessingStats;
   processingProgress: number;
   processingLogs: LogEntry[];
   isProcessing: boolean;
 
-  // Step 7: 탐색
+  // Step 4: 탐색
   chatMessages: ChatMessage[];
 
   // Actions
   setStep: (step: OnboardingStep) => void;
-  setSignupData: (data: Partial<SignupFormData>) => void;
-  setWorkspaceData: (data: Partial<WorkspaceFormData>) => void;
-  setSelectedPlan: (plan: PlanTier) => void;
 
   // 파일 업로드
   addFiles: (files: UploadedFile[]) => void;
@@ -81,22 +66,6 @@ interface OnboardingState {
 export const useOnboardingStore = create<OnboardingState>()((set, get) => ({
   currentStep: 1,
 
-  workspaceData: {
-    organizationName: "",
-    slug: "",
-    industry: "",
-    teamSize: "",
-    role: "",
-  },
-
-  signupData: {
-    name: "",
-    email: "",
-    password: "",
-  },
-
-  selectedPlan: "free",
-
   uploadedFiles: [],
 
   connections: [...mockMappingConnections],
@@ -112,18 +81,6 @@ export const useOnboardingStore = create<OnboardingState>()((set, get) => ({
   chatMessages: [],
 
   setStep: (step) => set({ currentStep: step }),
-
-  setSignupData: (data) =>
-    set((state) => ({
-      signupData: { ...state.signupData, ...data },
-    })),
-
-  setWorkspaceData: (data) =>
-    set((state) => ({
-      workspaceData: { ...state.workspaceData, ...data },
-    })),
-
-  setSelectedPlan: (plan) => set({ selectedPlan: plan }),
 
   addFiles: (files) =>
     set((state) => ({

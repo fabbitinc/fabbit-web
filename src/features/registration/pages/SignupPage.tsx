@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuthStore } from "@/stores/authStore";
-import { useOnboardingStore } from "@/stores/onboardingStore";
+import { useRegistrationStore } from "@/stores/registrationStore";
 import { cn } from "@/lib/utils";
 
 // 소셜 로그인 아이콘 SVG
@@ -62,7 +62,7 @@ type EmailStatus = "idle" | "invalid" | "checking" | "available" | "taken";
 export function SignupPage() {
   const navigate = useNavigate();
   const { loginWithProvider, isLoading } = useAuthStore();
-  const { setStep, signupData, setSignupData } = useOnboardingStore();
+  const { signupData, setSignupData } = useRegistrationStore();
 
   const [name, setName] = useState(signupData.name);
   const [email, setEmail] = useState(signupData.email);
@@ -74,10 +74,6 @@ export function SignupPage() {
   const [turnstileToken, setTurnstileToken] = useState<string | null>(null);
   const [emailStatus, setEmailStatus] = useState<EmailStatus>("idle");
   const [emailError, setEmailError] = useState<string>("");
-
-  useEffect(() => {
-    setStep(1);
-  }, [setStep]);
 
   useEffect(() => {
     const normalizedEmail = email.trim().toLowerCase();
@@ -144,7 +140,7 @@ export function SignupPage() {
       email: email.trim().toLowerCase(),
       password,
     });
-    navigate("/onboarding/workspace");
+    navigate("/register/workspace");
   };
 
   const handleSocialSignup = async (provider: "google" | "naver" | "kakao") => {
@@ -152,7 +148,7 @@ export function SignupPage() {
 
     try {
       await loginWithProvider(provider);
-      navigate("/onboarding/workspace");
+      navigate("/register/workspace");
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "소셜 가입에 실패했습니다.",

@@ -16,6 +16,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useOnboardingStore } from "@/stores/onboardingStore";
+import { useAuthStore } from "@/stores/authStore";
 import { uploadLimitsByPlan } from "@/features/onboarding/mock-data/onboarding-mock";
 import { cn } from "@/lib/utils";
 import type {
@@ -66,12 +67,12 @@ export function DataUploadPage() {
   const navigate = useNavigate();
   const {
     setStep,
-    selectedPlan,
     uploadedFiles,
     addFiles,
     updateFileProgress,
     removeFile,
   } = useOnboardingStore();
+  const selectedPlan = useAuthStore((s) => s.selectedPlan);
 
   const [dragOverCategory, setDragOverCategory] = useState<FileCategory | null>(
     null,
@@ -85,7 +86,7 @@ export function DataUploadPage() {
   const limits = uploadLimitsByPlan[selectedPlan];
 
   useEffect(() => {
-    setStep(4);
+    setStep(1);
   }, [setStep]);
 
   const bomFiles = uploadedFiles.filter((f) => f.category === "bom");
