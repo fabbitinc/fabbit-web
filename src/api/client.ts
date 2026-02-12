@@ -12,8 +12,8 @@ function clearAuthAndRedirect() {
   useAuthStore.setState({
     user: null,
     isAuthenticated: false,
-    currentOrganization: null,
-    organizations: [],
+    memberships: [],
+    currentMembership: null,
   });
   window.location.href = "/login";
 }
@@ -83,19 +83,19 @@ apiClient.interceptors.response.use(
           const response = await axios.post(
             `${API_BASE_URL}/api/v1/auth/refresh`,
             {
-              refreshToken,
+              refresh_token: refreshToken,
             },
           );
 
-          const { accessToken, refreshToken: newRefreshToken } = response.data;
-          localStorage.setItem("accessToken", accessToken);
-          localStorage.setItem("refreshToken", newRefreshToken);
+          const { access_token, refresh_token } = response.data;
+          localStorage.setItem("accessToken", access_token);
+          localStorage.setItem("refreshToken", refresh_token);
 
           if (isDev) {
             console.log("✅ [API] Token refreshed successfully");
           }
 
-          originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+          originalRequest.headers.Authorization = `Bearer ${access_token}`;
           return apiClient(originalRequest);
         } catch {
           if (isDev) {

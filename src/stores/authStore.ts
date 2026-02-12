@@ -1,150 +1,190 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { loginUser, logout as logoutApi, queryClient } from "@/api";
+import {
+  login as loginApi,
+  logout as logoutApi,
+  register as registerApi,
+  getMe,
+  queryClient,
+} from "@/api";
 import type { PlanTier } from "@/features/registration/types/registration.types";
-
-interface Organization {
-  id: string;
-  name: string;
-  logo?: string;
-  role: "owner" | "admin" | "member";
-}
+import type {
+  RegisterRequest,
+  MembershipResponse,
+} from "@/api/types/auth";
 
 interface User {
   id: string;
   email: string;
   name: string;
-  avatar?: string;
-  role: "admin" | "manager" | "member";
-  organizationId: string;
-  organizationName: string;
+}
+
+interface Organization {
+  id: string;
+  slug: string;
+  name: string;
+  planType: string;
+  onboardedAt: string | null;
+}
+
+interface Membership {
+  orgId: string;
+  role: string;
+  organization: Organization;
+}
+
+export interface AuthResult {
+  onboarded: boolean;
+  isAdmin: boolean;
+}
+
+export interface RegisterResult extends AuthResult {
+  slug: string;
+  accessToken: string;
+  refreshToken: string;
 }
 
 interface AuthState {
   user: User | null;
-  organizations: Organization[];
-  currentOrganization: Organization | null;
+  memberships: Membership[];
+  currentMembership: Membership | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   onboardingCompleted: boolean;
   selectedPlan: PlanTier;
 
   // Actions
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<AuthResult>;
   loginWithProvider: (provider: "google" | "naver" | "kakao") => Promise<void>;
-  signup: (name: string, email: string, password: string, selectedPlan?: PlanTier) => Promise<void>;
+  register: (data: RegisterRequest) => Promise<RegisterResult>;
   logout: () => Promise<void>;
+  fetchMe: () => Promise<void>;
   setUser: (user: User | null) => void;
-  switchOrganization: (organizationId: string) => void;
   completeOnboarding: () => void;
 }
 
-// Mock organization data
-const mockOrganizations: Organization[] = [
-  { id: "org-1", name: "Fabbit Demo", role: "owner" },
-  { id: "org-2", name: "삼성전자", logo: "S", role: "admin" },
-  { id: "org-3", name: "현대자동차", logo: "H", role: "member" },
-];
+function mapMembership(m: MembershipResponse): Membership {
+  return {
+    orgId: m.org_id,
+    role: m.role,
+    organization: {
+      id: m.organization.id,
+      slug: m.organization.slug,
+      name: m.organization.name,
+      planType: m.organization.plan_type,
+      onboardedAt: m.organization.onboarded_at ?? null,
+    },
+  };
+}
+
+function storeTokens(accessToken: string, refreshToken: string) {
+  localStorage.setItem("accessToken", accessToken);
+  localStorage.setItem("refreshToken", refreshToken);
+}
+
+function clearTokens() {
+  localStorage.removeItem("accessToken");
+  localStorage.removeItem("refreshToken");
+}
+
+function isAdminRole(role: string | undefined): boolean {
+  const upper = role?.toUpperCase();
+  return upper === "ADMIN" || upper === "OWNER";
+}
 
 export const useAuthStore = create<AuthState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       user: null,
-      organizations: mockOrganizations,
-      currentOrganization: mockOrganizations[0],
+      memberships: [],
+      currentMembership: null,
       isAuthenticated: false,
       isLoading: false,
       onboardingCompleted: true,
-      selectedPlan: "free",
+      selectedPlan: "starter",
 
       login: async (email: string, password: string) => {
         set({ isLoading: true });
 
         try {
-          const response = await loginUser({ email, password });
+          const response = await loginApi({ email, password });
 
-          // 토큰 저장
-          localStorage.setItem("accessToken", response.accessToken);
-          localStorage.setItem("refreshToken", response.refreshToken);
+          storeTokens(response.tokens.access_token, response.tokens.refresh_token);
 
-          // TODO: API에서 user 정보를 반환하지 않음
-          // 임시로 email에서 추출하여 사용
-          const mockUser: User = {
-            id: "user-1",
-            email: email,
-            name: email.split("@")[0],
-            role: "admin",
-            organizationId: "org-1",
-            organizationName: "Fabbit Demo",
-          };
+          const meResponse = await getMe();
+          const memberships = meResponse.memberships.map(mapMembership);
+          const current = memberships[0] ?? null;
+          const onboarded = !!current?.organization.onboardedAt;
+          const isAdmin = isAdminRole(current?.role);
+
+          // 비관리자 + 온보딩 미완료 → 인증 차단
+          if (!onboarded && !isAdmin) {
+            clearTokens();
+            set({ isLoading: false });
+            return { onboarded, isAdmin };
+          }
 
           set({
-            user: mockUser,
+            user: {
+              id: meResponse.user.id,
+              email: meResponse.user.email,
+              name: meResponse.user.full_name,
+            },
+            memberships,
+            currentMembership: current,
             isAuthenticated: true,
             isLoading: false,
-            organizations: mockOrganizations,
-            currentOrganization: mockOrganizations[0],
+            onboardingCompleted: onboarded,
+            selectedPlan: (current?.organization.planType?.toLowerCase() as PlanTier) ?? "starter",
           });
+
+          return { onboarded, isAdmin };
         } catch (error) {
           set({ isLoading: false });
           throw error instanceof Error ? error : new Error("로그인에 실패했습니다.");
         }
       },
 
-      signup: async (name: string, email: string, _password: string, plan?: PlanTier) => {
+      register: async (data: RegisterRequest) => {
         set({ isLoading: true });
 
-        // Mock signup - 실제로는 API 호출
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+        try {
+          // 1. 회원가입
+          const regResponse = await registerApi(data);
 
-        const mockUser: User = {
-          id: `user-${Date.now()}`,
-          email,
-          name,
-          role: "admin",
-          organizationId: "",
-          organizationName: "",
-        };
+          // 2. 토큰 저장 (현재 origin의 localStorage)
+          storeTokens(regResponse.tokens.access_token, regResponse.tokens.refresh_token);
 
-        set({
-          user: mockUser,
-          isAuthenticated: true,
-          isLoading: false,
-          onboardingCompleted: false,
-          selectedPlan: plan ?? "free",
-          organizations: [],
-          currentOrganization: null,
-        });
+          // 3. /me 호출로 멤버십 정보 조회
+          const meResponse = await getMe();
+          const memberships = meResponse.memberships.map(mapMembership);
+          const current = memberships[0] ?? null;
+          const onboarded = !!current?.organization.onboardedAt;
+          const isAdmin = isAdminRole(current?.role);
+
+          // isAuthenticated를 설정하지 않음 — route guard가 동작하지 않도록
+          // 서브도메인 리다이렉트 후 fetchMe()로 인증 상태를 복원
+          set({ isLoading: false });
+
+          return {
+            onboarded,
+            isAdmin,
+            slug: current?.organization.slug ?? "",
+            accessToken: regResponse.tokens.access_token,
+            refreshToken: regResponse.tokens.refresh_token,
+          };
+        } catch (error) {
+          set({ isLoading: false });
+          throw error instanceof Error ? error : new Error("회원가입에 실패했습니다.");
+        }
       },
 
-      loginWithProvider: async (provider) => {
+      loginWithProvider: async (_provider) => {
+        // TODO: OAuth 플로우 구현
         set({ isLoading: true });
-
-        // Mock OAuth login - 실제로는 OAuth 플로우 시작
         await new Promise((resolve) => setTimeout(resolve, 1000));
-
-        const providerNames = {
-          google: "Google",
-          naver: "Naver",
-          kakao: "Kakao",
-        };
-
-        const mockUser: User = {
-          id: `user-${provider}-1`,
-          email: `user@${provider}.com`,
-          name: `${providerNames[provider]} User`,
-          role: "member",
-          organizationId: "org-1",
-          organizationName: "Fabbit Demo",
-        };
-
-        set({
-          user: mockUser,
-          isAuthenticated: true,
-          isLoading: false,
-          organizations: mockOrganizations,
-          currentOrganization: mockOrganizations[0],
-        });
+        set({ isLoading: false });
+        throw new Error("소셜 로그인은 준비 중입니다.");
       },
 
       logout: async () => {
@@ -152,22 +192,49 @@ export const useAuthStore = create<AuthState>()(
 
         try {
           if (refreshToken) {
-            await logoutApi({ refreshToken });
+            await logoutApi(refreshToken);
           }
         } finally {
-          // 서버 응답 상관없이 로컬 정리
-          localStorage.removeItem("accessToken");
-          localStorage.removeItem("refreshToken");
-
-          // React Query 캐시 초기화
+          clearTokens();
           queryClient.clear();
 
-          // 상태 초기화
           set({
             user: null,
+            memberships: [],
+            currentMembership: null,
             isAuthenticated: false,
-            currentOrganization: null,
-            organizations: [],
+            onboardingCompleted: true,
+          });
+        }
+      },
+
+      fetchMe: async () => {
+        try {
+          const meResponse = await getMe();
+          const memberships = meResponse.memberships.map(mapMembership);
+          const current = memberships[0] ?? null;
+          const onboarded = !!current?.organization.onboardedAt;
+
+          set({
+            user: {
+              id: meResponse.user.id,
+              email: meResponse.user.email,
+              name: meResponse.user.full_name,
+            },
+            memberships,
+            currentMembership: current,
+            isAuthenticated: true,
+            onboardingCompleted: onboarded,
+            selectedPlan: (current?.organization.planType?.toLowerCase() as PlanTier) ?? "starter",
+          });
+        } catch {
+          // /me 실패 시 로그아웃 처리
+          clearTokens();
+          set({
+            user: null,
+            memberships: [],
+            currentMembership: null,
+            isAuthenticated: false,
           });
         }
       },
@@ -177,35 +244,16 @@ export const useAuthStore = create<AuthState>()(
       },
 
       completeOnboarding: () => {
-        set({
-          onboardingCompleted: true,
-          organizations: mockOrganizations,
-          currentOrganization: mockOrganizations[0],
-        });
-      },
-
-      switchOrganization: (organizationId: string) => {
-        const { organizations, user } = get();
-        const organization = organizations.find((o) => o.id === organizationId);
-        if (organization && user) {
-          set({
-            currentOrganization: organization,
-            user: {
-              ...user,
-              organizationId: organization.id,
-              organizationName: organization.name,
-              role: organization.role === "owner" ? "admin" : organization.role === "admin" ? "manager" : "member",
-            },
-          });
-        }
+        set({ onboardingCompleted: true });
       },
     }),
     {
       name: "fabbit-auth",
       partialize: (state) => ({
         user: state.user,
+        memberships: state.memberships,
+        currentMembership: state.currentMembership,
         isAuthenticated: state.isAuthenticated,
-        currentOrganization: state.currentOrganization,
         onboardingCompleted: state.onboardingCompleted,
         selectedPlan: state.selectedPlan,
       }),

@@ -68,7 +68,13 @@ export function LoginPage() {
     setError("");
 
     try {
-      await login(email, password);
+      const result = await login(email, password);
+
+      if (!result.onboarded && !result.isAdmin) {
+        setError("워크스페이스 초기 설정이 완료되지 않았습니다. 관리자에게 문의해 주세요.");
+        return;
+      }
+
       navigate("/");
     } catch (err) {
       setError(err instanceof Error ? err.message : "로그인에 실패했습니다.");

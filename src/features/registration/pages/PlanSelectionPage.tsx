@@ -20,9 +20,10 @@ import { useRegistrationStore } from "@/stores/registrationStore";
 import { useAuthStore } from "@/stores/authStore";
 import { planOptions } from "@/features/registration/mock-data/registration-mock";
 import { cn } from "@/lib/utils";
+import { setAuthCookies } from "@/lib/auth-cookies";
 import type { PlanTier } from "@/features/registration/types/registration.types";
 
-type DialogPhase = "idle" | "confirming" | "creating";
+type DialogPhase = "idle" | "confirming" | "creating" | "denied";
 
 const creationSteps = [
   "워크스페이스 생성 중...",
@@ -31,11 +32,22 @@ const creationSteps = [
   "초기 설정 완료",
 ];
 
+const APP_DOMAIN = import.meta.env.VITE_APP_DOMAIN;
+
+function toApiPlanType(tier: PlanTier): string {
+  return tier.toUpperCase();
+}
+
+function buildSubdomainUrl(slug: string, path: string): string {
+  const protocol = window.location.protocol;
+  return `${protocol}//${slug}.${APP_DOMAIN}${path}`;
+}
+
 export function PlanSelectionPage() {
   const navigate = useNavigate();
   const { selectedPlan, setSelectedPlan, workspaceData, signupData } =
     useRegistrationStore();
-  const { signup } = useAuthStore();
+  const { register, logout } = useAuthStore();
 
   const [dialogPhase, setDialogPhase] = useState<DialogPhase>("idle");
   const [completedSteps, setCompletedSteps] = useState<number>(0);
@@ -44,6 +56,8 @@ export function PlanSelectionPage() {
   const selectedPlanInfo = planOptions.find((p) => p.tier === selectedPlan);
 
   const handleSelect = (tier: PlanTier) => {
+    const plan = planOptions.find((p) => p.tier === tier);
+    if (plan?.disabled) return;
     setSelectedPlan(tier);
   };
 
@@ -68,24 +82,54 @@ export function PlanSelectionPage() {
     setCreateError("");
 
     try {
-      // progress 단계별 250ms 딜레이 (총 ~1초)
-      for (let i = 0; i < creationSteps.length; i++) {
-        await new Promise((resolve) => setTimeout(resolve, 250));
+      // progress 1단계: 워크스페이스 생성 중
+      setCompletedSteps(1);
+
+      // 실제 회원가입 API 호출
+      const result = await register({
+        email: signupData.email,
+        password: signupData.password,
+        full_name: signupData.name,
+        org_name: workspaceData.organizationName,
+        slug: workspaceData.slug || null,
+        industry: workspaceData.industry || null,
+        team_size: workspaceData.teamSize || null,
+        job_role: workspaceData.role || null,
+        plan_type: toApiPlanType(selectedPlan),
+      });
+
+      // progress 나머지 단계 완료
+      for (let i = 1; i < creationSteps.length; i++) {
+        await new Promise((resolve) => setTimeout(resolve, 200));
         setCompletedSteps(i + 1);
       }
 
-      // mock 로그인
-      await signup(signupData.name, signupData.email, signupData.password, selectedPlan);
-      navigate("/onboarding/upload");
+      // 서브도메인으로 토큰 전달 (cross-subdomain 쿠키)
+      setAuthCookies(result.accessToken, result.refreshToken);
+
+      // 온보딩 상태 + 권한 체크 → 서브도메인으로 리다이렉트
+      if (result.onboarded) {
+        window.location.href = buildSubdomainUrl(result.slug, "/");
+      } else if (!result.isAdmin) {
+        setDialogPhase("denied");
+      } else {
+        window.location.href = buildSubdomainUrl(result.slug, "/onboarding/upload");
+      }
     } catch (error) {
       setCompletedSteps(0);
       setDialogPhase("confirming");
       setCreateError(error instanceof Error ? error.message : "가입에 실패했습니다.");
     }
-  }, [navigate, selectedPlan, signup, signupData]);
+  }, [register, selectedPlan, signupData, workspaceData]);
+
+  const handleDeniedClose = async () => {
+    await logout();
+    setDialogPhase("idle");
+    navigate("/register/signup");
+  };
 
   const handleDialogClose = () => {
-    if (dialogPhase === "creating") return;
+    if (dialogPhase === "creating" || dialogPhase === "denied") return;
     setDialogPhase("idle");
   };
 
@@ -114,21 +158,26 @@ export function PlanSelectionPage() {
       </div>
 
       {/* 플랜 카드 */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 px-8 lg:px-10 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 px-8 lg:px-10 mb-8">
         {planOptions.map((plan) => {
           const isSelected = selectedPlan === plan.tier;
+          const isDisabled = plan.disabled;
 
           return (
             <button
               key={plan.tier}
               type="button"
               onClick={() => handleSelect(plan.tier)}
+              disabled={isDisabled}
               className={cn(
-                "relative text-left rounded-xl border-2 p-5 transition-all hover:shadow-md",
-                isSelected
+                "relative text-left rounded-xl border-2 px-6 pt-7 pb-6 transition-all h-full flex flex-col",
+                isDisabled
+                  ? "border-gray-200 bg-gray-50/80 opacity-60 cursor-not-allowed"
+                  : "hover:shadow-md",
+                !isDisabled && isSelected
                   ? "border-blue-500 shadow-md ring-2 ring-blue-500/20 bg-blue-50/30"
-                  : "border-gray-200 hover:border-gray-300 bg-gray-50/50",
-                plan.highlighted && !isSelected && "border-purple-200 bg-purple-50/20",
+                  : !isDisabled && "border-gray-200 hover:border-gray-300 bg-gray-50/50",
+                !isDisabled && plan.highlighted && !isSelected && "border-purple-200 bg-purple-50/20",
               )}
             >
               {/* 배지 */}
@@ -148,41 +197,50 @@ export function PlanSelectionPage() {
                 </div>
               )}
 
-              <div className="space-y-3">
+              {/* 준비중 오버레이 */}
+              {isDisabled && (
+                <div className="absolute top-4 right-4">
+                  <span className="text-[10px] font-medium text-gray-400 bg-gray-200 px-2 py-0.5 rounded-full">
+                    준비중
+                  </span>
+                </div>
+              )}
+
+              <div className="flex flex-col flex-1 gap-5">
                 {/* 플랜명 + 가격 */}
-                <div className="space-y-1 pt-1">
-                  <h3 className="text-base font-bold text-gray-900">
+                <div className="space-y-2">
+                  <h3 className={cn("text-lg font-bold", isDisabled ? "text-gray-400" : "text-gray-900")}>
                     {plan.name}
                   </h3>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-xl font-bold text-gray-900">
-                      {plan.price === 0
-                        ? "무료"
-                        : `₩${plan.price.toLocaleString()}`}
+                    <span className={cn("text-2xl font-bold tracking-tight", isDisabled ? "text-gray-400" : "text-gray-900")}>
+                      {plan.priceLabel}
                     </span>
                     {plan.price > 0 && (
-                      <span className="text-xs text-gray-500">/월</span>
+                      <span className="text-sm text-gray-400">/월</span>
                     )}
                   </div>
-                  <p className="text-xs text-gray-500 leading-relaxed">{plan.description}</p>
+                  <p className={cn("text-sm leading-relaxed", isDisabled ? "text-gray-400" : "text-gray-500")}>{plan.description}</p>
                 </div>
 
                 {/* 구분선 */}
                 <div className="h-px bg-gray-200" />
 
                 {/* 기능 목록 */}
-                <ul className="space-y-2">
+                <ul className="space-y-3 flex-1">
                   {plan.features.map((feature) => (
                     <li
                       key={feature}
-                      className="flex items-start gap-2 text-xs text-gray-600"
+                      className={cn("flex items-start gap-2.5 text-sm", isDisabled ? "text-gray-400" : "text-gray-600")}
                     >
                       <Check
                         className={cn(
-                          "size-3.5 shrink-0 mt-0.5",
-                          plan.highlighted
-                            ? "text-purple-500"
-                            : "text-blue-500",
+                          "size-4 shrink-0 mt-0.5",
+                          isDisabled
+                            ? "text-gray-300"
+                            : plan.highlighted
+                              ? "text-purple-500"
+                              : "text-blue-500",
                         )}
                       />
                       {feature}
@@ -192,10 +250,10 @@ export function PlanSelectionPage() {
               </div>
 
               {/* 선택 표시 */}
-              {isSelected && (
-                <div className="absolute top-3 right-3">
-                  <div className="w-5 h-5 rounded-full bg-blue-600 flex items-center justify-center">
-                    <Check className="size-3 text-white" />
+              {isSelected && !isDisabled && (
+                <div className="absolute top-4 right-4">
+                  <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center">
+                    <Check className="size-3.5 text-white" />
                   </div>
                 </div>
               )}
@@ -222,7 +280,7 @@ export function PlanSelectionPage() {
         </Button>
       </div>
 
-      {/* 확인 / 생성 다이얼로그 */}
+      {/* 확인 / 생성 / 권한 없음 다이얼로그 */}
       <Dialog
         open={dialogPhase !== "idle"}
         onOpenChange={(open) => {
@@ -230,12 +288,12 @@ export function PlanSelectionPage() {
         }}
       >
         <DialogContent
-          showCloseButton={dialogPhase !== "creating"}
+          showCloseButton={dialogPhase === "confirming"}
           onPointerDownOutside={(e) => {
-            if (dialogPhase === "creating") e.preventDefault();
+            if (dialogPhase !== "confirming") e.preventDefault();
           }}
           onEscapeKeyDown={(e) => {
-            if (dialogPhase === "creating") e.preventDefault();
+            if (dialogPhase !== "confirming") e.preventDefault();
           }}
         >
           {dialogPhase === "confirming" && (
@@ -278,10 +336,7 @@ export function PlanSelectionPage() {
                 <div className="flex items-center justify-between rounded-lg border border-gray-200 px-4 py-3">
                   <span className="text-sm text-gray-500">선택 플랜</span>
                   <span className="text-sm font-medium text-gray-900">
-                    {selectedPlanInfo?.name} —{" "}
-                    {selectedPlanInfo?.price === 0
-                      ? "무료"
-                      : `₩${selectedPlanInfo?.price.toLocaleString()}/월`}
+                    {selectedPlanInfo?.name} — {selectedPlanInfo?.priceLabel}
                   </span>
                 </div>
               </div>
@@ -348,6 +403,33 @@ export function PlanSelectionPage() {
               <div className="text-center text-sm text-blue-600 font-medium">
                 워크스페이스를 준비하고 있습니다...
               </div>
+            </>
+          )}
+
+          {dialogPhase === "denied" && (
+            <>
+              <DialogHeader>
+                <DialogTitle>온보딩 권한이 없습니다</DialogTitle>
+                <DialogDescription>
+                  워크스페이스 초기 설정은 관리자만 진행할 수 있습니다.
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="py-4">
+                <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+                  조직의 관리자에게 온보딩 완료를 요청해 주세요.
+                  관리자가 초기 설정을 완료한 후 서비스를 이용할 수 있습니다.
+                </div>
+              </div>
+
+              <DialogFooter>
+                <Button
+                  className="bg-blue-600 hover:bg-blue-700"
+                  onClick={handleDeniedClose}
+                >
+                  확인
+                </Button>
+              </DialogFooter>
             </>
           )}
         </DialogContent>

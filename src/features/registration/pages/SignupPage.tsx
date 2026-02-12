@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuthStore } from "@/stores/authStore";
 import { useRegistrationStore } from "@/stores/registrationStore";
+import { checkEmail } from "@/api";
 import { cn } from "@/lib/utils";
 
 // 소셜 로그인 아이콘 SVG
@@ -56,7 +57,6 @@ function KakaoIcon({ className }: { className?: string }) {
 }
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const mockTakenEmails = ["admin@fabbit.com", "test@company.com", "demo@maker.co.kr"];
 type EmailStatus = "idle" | "invalid" | "checking" | "available" | "taken";
 
 export function SignupPage() {
@@ -93,17 +93,30 @@ export function SignupPage() {
     setEmailStatus("checking");
     setEmailError("");
 
-    const timer = setTimeout(() => {
-      if (mockTakenEmails.includes(normalizedEmail)) {
-        setEmailStatus("taken");
-        setEmailError("이미 사용 중인 이메일입니다. (mock)");
-        return;
-      }
+    let cancelled = false;
 
-      setEmailStatus("available");
+    const timer = setTimeout(async () => {
+      try {
+        const result = await checkEmail(normalizedEmail);
+        if (cancelled) return;
+
+        if (result.available) {
+          setEmailStatus("available");
+        } else {
+          setEmailStatus("taken");
+          setEmailError(result.message ?? "이미 사용 중인 이메일입니다.");
+        }
+      } catch {
+        if (cancelled) return;
+        setEmailStatus("taken");
+        setEmailError("이메일 확인에 실패했습니다.");
+      }
     }, 400);
 
-    return () => clearTimeout(timer);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
   }, [email]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -236,7 +249,7 @@ export function SignupPage() {
                 <span className="text-xs text-red-500">{emailError}</span>
               )}
               {emailStatus === "available" && (
-                <span className="text-xs text-green-600">사용 가능 (mock)</span>
+                <span className="text-xs text-green-600">사용 가능</span>
               )}
             </div>
             <div className="relative">

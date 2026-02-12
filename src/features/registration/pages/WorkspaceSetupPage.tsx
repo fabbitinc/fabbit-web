@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useRegistrationStore } from "@/stores/registrationStore";
+import { checkSlug } from "@/api";
 import {
   industryOptions,
   teamSizeOptions,
@@ -93,9 +94,6 @@ function validateSubdomain(value: string): SlugValidation {
   return { valid: true };
 }
 
-// Mock 중복 체크 (사용 중인 slug 목록)
-const takenSlugs = ["samsung", "hyundai", "fabbit"];
-
 type SlugStatus = "idle" | "checking" | "available" | "taken" | "invalid";
 
 export function WorkspaceSetupPage() {
@@ -107,9 +105,11 @@ export function WorkspaceSetupPage() {
   const [isCustomIndustry, setIsCustomIndustry] = useState(false);
   const [isCustomRole, setIsCustomRole] = useState(false);
   const checkTimeoutRef = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const abortRef = useRef(false);
 
   const validateAndCheck = useCallback((slug: string) => {
     setSlugError(undefined);
+    abortRef.current = true;
 
     // 이전 API 체크 취소
     if (checkTimeoutRef.current) {
@@ -129,14 +129,24 @@ export function WorkspaceSetupPage() {
       return;
     }
 
-    // 2단계: API 중복 체크 (mock)
+    // 2단계: API 중복 체크
     setSlugStatus("checking");
-    checkTimeoutRef.current = setTimeout(() => {
-      if (takenSlugs.includes(slug)) {
+    abortRef.current = false;
+    checkTimeoutRef.current = setTimeout(async () => {
+      try {
+        const result = await checkSlug(slug);
+        if (abortRef.current) return;
+
+        if (result.available) {
+          setSlugStatus("available");
+        } else {
+          setSlugStatus("taken");
+          setSlugError(result.message ?? "이미 사용 중인 주소입니다");
+        }
+      } catch {
+        if (abortRef.current) return;
         setSlugStatus("taken");
-        setSlugError("이미 사용 중인 주소입니다");
-      } else {
-        setSlugStatus("available");
+        setSlugError("주소 확인에 실패했습니다");
       }
     }, 500);
   }, []);

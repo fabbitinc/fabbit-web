@@ -64,22 +64,39 @@ export function ExplorePage() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto w-full space-y-6">
-      {/* 헤더 */}
-      <div className="text-center space-y-2">
-        <div className="flex justify-center">
-          <div className="w-12 h-12 rounded-xl bg-[#8b5cf6]/10 flex items-center justify-center">
-            <Compass className="size-6 text-[#8b5cf6]" />
-          </div>
+    <div className="relative flex w-full max-w-[1100px] flex-col">
+      {/* 워터마크 로고 */}
+      <div className="absolute top-[-40px] left-0 flex items-center gap-1.5">
+        <div className="flex h-5 w-5 items-center justify-center rounded bg-gradient-to-br from-[#3b82f6] to-[#8b5cf6]">
+          <svg
+            className="h-3 w-3 text-white"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <path d="M12 2L2 7l10 5 10-5-10-5z" />
+            <path d="M2 17l10 5 10-5" />
+            <path d="M2 12l10 5 10-5" />
+          </svg>
         </div>
-        <h1 className="text-2xl font-bold text-[#0f172a]">탐색 및 활성화</h1>
-        <p className="text-[#64748b]">
+        <span className="text-xs text-gray-300">Fabbit</span>
+      </div>
+
+      <div className="flex w-full flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-2xl shadow-gray-200/50">
+      {/* 상단 헤더 */}
+      <div className="px-8 pt-10 pb-6 text-center lg:px-10">
+        <div className="flex justify-center mb-3">
+          <Compass className="size-8 text-purple-500" />
+        </div>
+        <h1 className="text-2xl font-bold text-gray-900">탐색 및 활성화</h1>
+        <p className="mt-2 text-sm text-gray-500">
           구축된 지식 그래프를 탐색하고 통찰을 얻어보세요
         </p>
       </div>
 
       {/* 2컬럼 그리드 */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 px-8 lg:px-10">
         {/* 좌측: 헬스 체크 */}
         <div className="lg:col-span-2">
           <HealthCheckReport report={mockHealthCheckReport} />
@@ -95,14 +112,26 @@ export function ExplorePage() {
         </div>
       </div>
 
-      {/* 하단: Fabbit 시작하기 버튼 */}
-      <Button
-        className="w-full bg-gradient-to-r from-[#3b82f6] to-[#8b5cf6] hover:from-[#2563eb] hover:to-[#7c3aed] text-white h-14 text-lg font-semibold rounded-xl"
-        onClick={handleComplete}
-      >
-        <Rocket className="size-5" />
-        Fabbit 시작하기
-      </Button>
+      {/* 하단 버튼 */}
+      <div className="flex items-center justify-between px-8 pb-8 pt-6 lg:px-10">
+        <Button
+          type="button"
+          variant="outline"
+          className="h-12 px-8 text-base font-semibold border-gray-200 hover:bg-gray-50 hover:border-gray-300 transition-all"
+          onClick={() => navigate("/onboarding/mapping")}
+        >
+          이전
+        </Button>
+        <Button
+          type="button"
+          className="h-12 px-8 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-base font-semibold shadow-lg shadow-blue-600/20 transition-all hover:shadow-blue-600/30"
+          onClick={handleComplete}
+        >
+          <Rocket className="size-5 mr-1.5" />
+          Fabbit 시작하기
+        </Button>
+      </div>
+      </div>
     </div>
   );
 }
