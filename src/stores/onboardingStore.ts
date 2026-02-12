@@ -22,8 +22,6 @@ interface OnboardingState {
 
   // Step 2: 매핑
   connections: MappingConnection[];
-  selectedSourceId: string | null;
-  selectedTargetId: string | null;
 
   // Step 3: 처리
   processingSteps: ProcessingStep[];
@@ -44,13 +42,12 @@ interface OnboardingState {
   removeFile: (id: string) => void;
 
   // 매핑
-  setSelectedSource: (id: string | null) => void;
-  setSelectedTarget: (id: string | null) => void;
-  toggleConnection: (sourceId: string, targetId: string) => void;
   approveConnection: (connectionId: string) => void;
   approveAllConnections: () => void;
   removeConnection: (connectionId: string) => void;
   resetConnections: () => void;
+  changeConnectionTarget: (connectionId: string, newTargetId: string) => void;
+  createConnection: (sourceId: string, targetId: string) => void;
 
   // 처리
   startProcessing: () => void;
@@ -63,14 +60,12 @@ interface OnboardingState {
   addChatMessage: (message: ChatMessage) => void;
 }
 
-export const useOnboardingStore = create<OnboardingState>()((set, get) => ({
+export const useOnboardingStore = create<OnboardingState>()((set) => ({
   currentStep: 1,
 
   uploadedFiles: [],
 
   connections: [...mockMappingConnections],
-  selectedSourceId: null,
-  selectedTargetId: null,
 
   processingSteps: [...mockProcessingSteps],
   processingStats: { nodesCreated: 0, relationsCreated: 0, totalNodes: 3450, totalRelations: 8920 },
@@ -99,93 +94,6 @@ export const useOnboardingStore = create<OnboardingState>()((set, get) => ({
       uploadedFiles: state.uploadedFiles.filter((f) => f.id !== id),
     })),
 
-  setSelectedSource: (id) => {
-    const { selectedTargetId, connections } = get();
-    set({ selectedSourceId: id });
-
-    // 소스와 타겟이 모두 선택된 경우 연결/해제
-    if (id && selectedTargetId) {
-      const existing = connections.find(
-        (c) => c.sourceId === id && c.targetId === selectedTargetId
-      );
-      if (existing) {
-        // 이미 연결되어 있으면 해제
-        set({
-          connections: connections.filter((c) => c.id !== existing.id),
-          selectedSourceId: null,
-          selectedTargetId: null,
-        });
-      } else {
-        // 새로운 연결 생성
-        const newConnection: MappingConnection = {
-          id: `conn-${Date.now()}`,
-          sourceId: id,
-          targetId: selectedTargetId,
-          confidence: 100,
-          confidenceLevel: "high",
-          approved: true,
-        };
-        set({
-          connections: [...connections, newConnection],
-          selectedSourceId: null,
-          selectedTargetId: null,
-        });
-      }
-    }
-  },
-
-  setSelectedTarget: (id) => {
-    const { selectedSourceId, connections } = get();
-    set({ selectedTargetId: id });
-
-    if (selectedSourceId && id) {
-      const existing = connections.find(
-        (c) => c.sourceId === selectedSourceId && c.targetId === id
-      );
-      if (existing) {
-        set({
-          connections: connections.filter((c) => c.id !== existing.id),
-          selectedSourceId: null,
-          selectedTargetId: null,
-        });
-      } else {
-        const newConnection: MappingConnection = {
-          id: `conn-${Date.now()}`,
-          sourceId: selectedSourceId,
-          targetId: id,
-          confidence: 100,
-          confidenceLevel: "high",
-          approved: true,
-        };
-        set({
-          connections: [...connections, newConnection],
-          selectedSourceId: null,
-          selectedTargetId: null,
-        });
-      }
-    }
-  },
-
-  toggleConnection: (sourceId, targetId) => {
-    const { connections } = get();
-    const existing = connections.find(
-      (c) => c.sourceId === sourceId && c.targetId === targetId
-    );
-    if (existing) {
-      set({ connections: connections.filter((c) => c.id !== existing.id) });
-    } else {
-      const newConnection: MappingConnection = {
-        id: `conn-${Date.now()}`,
-        sourceId,
-        targetId,
-        confidence: 100,
-        confidenceLevel: "high",
-        approved: true,
-      };
-      set({ connections: [...connections, newConnection] });
-    }
-  },
-
   approveConnection: (connectionId) =>
     set((state) => ({
       connections: state.connections.map((c) =>
@@ -204,6 +112,30 @@ export const useOnboardingStore = create<OnboardingState>()((set, get) => ({
     })),
 
   resetConnections: () => set({ connections: [...mockMappingConnections] }),
+
+  changeConnectionTarget: (connectionId, newTargetId) =>
+    set((state) => ({
+      connections: state.connections.map((c) =>
+        c.id === connectionId
+          ? { ...c, targetId: newTargetId, approved: false, confidence: 100, confidenceLevel: "high" as const }
+          : c
+      ),
+    })),
+
+  createConnection: (sourceId, targetId) =>
+    set((state) => ({
+      connections: [
+        ...state.connections,
+        {
+          id: `conn-${Date.now()}`,
+          sourceId,
+          targetId,
+          confidence: 100,
+          confidenceLevel: "high" as const,
+          approved: false,
+        },
+      ],
+    })),
 
   startProcessing: () => set({ isProcessing: true }),
 

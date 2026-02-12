@@ -1,44 +1,102 @@
 // Auth API 타입 정의
 
-// POST /api/v1/auth/user/login
-// POST /api/v1/auth/admin/login
+// --- 공통 응답 타입 ---
+
+export interface TokenResponse {
+  access_token: string;
+  refresh_token: string;
+  token_type: string;
+}
+
+export interface UserResponse {
+  id: string;
+  email: string;
+  full_name: string;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface OrganizationResponse {
+  id: string;
+  slug: string;
+  name: string;
+  industry?: string | null;
+  team_size?: string | null;
+  plan_type: string;
+  onboarded_at?: string | null;
+}
+
+export interface MembershipResponse {
+  org_id: string;
+  role: string;
+  job_role?: string | null;
+  organization: OrganizationResponse;
+}
+
+// --- POST /api/v1/auth/register ---
+
+export interface RegisterRequest {
+  email: string;
+  password: string;
+  full_name: string;
+  org_name: string;
+  slug?: string | null;
+  industry?: string | null;
+  team_size?: string | null;
+  job_role?: string | null;
+  plan_type?: string;
+  turnstile_token?: string | null;
+}
+
+export interface RegisterResponse {
+  user: UserResponse;
+  organization: OrganizationResponse;
+  tokens: TokenResponse;
+}
+
+// --- POST /api/v1/auth/login ---
+
 export interface LoginRequest {
   email: string;
   password: string;
 }
 
-export interface AuthResponse {
-  accessToken: string;
-  refreshToken: string;
-  // TODO: API 스펙에 user 정보 포함 여부 불명확
-  // 필요시 /api/v1/users/me 같은 엔드포인트 필요
+export interface LoginResponse {
+  user: UserResponse;
+  tokens: TokenResponse;
 }
 
-// POST /api/v1/auth/refresh
-export interface RefreshTokenRequest {
-  refreshToken: string;
+// --- GET /api/v1/auth/me ---
+
+export interface MeResponse {
+  user: UserResponse;
+  memberships: MembershipResponse[];
 }
 
-// POST /api/v1/auth/logout
-export interface LogoutRequest {
-  refreshToken: string;
+// --- POST /api/v1/auth/refresh ---
+
+export interface RefreshRequest {
+  refresh_token: string;
 }
 
-// POST /api/v1/admin/organizations
-export type OrganizationPlanTier = "FREE_TIER" | "STARTER" | "PROFESSIONAL" | "ELITE";
+// --- GET /api/v1/auth/site ---
 
-export interface CreateOrganizationRequest {
-  organizationName: string;
-  subdomain: string;
-  planTier?: OrganizationPlanTier;
-  ownerEmail: string;
-  ownerPassword: string;
-  ownerName: string;
+export interface SiteResponse {
+  slug: string;
+  name: string;
 }
 
-export interface CreateOrganizationResponse {
-  organizationId: string;
-  subdomain: string;
-  ownerAccountId: string;
-  ownerEmail: string;
+// --- GET /api/v1/auth/check-email ---
+
+export interface CheckEmailResponse {
+  available: boolean;
+  message: string | null;
+}
+
+// --- GET /api/v1/auth/check-slug ---
+
+export interface CheckSlugResponse {
+  available: boolean;
+  message: string | null;
+  suggestion: string | null;
 }

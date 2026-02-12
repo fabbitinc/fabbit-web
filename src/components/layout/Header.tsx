@@ -21,16 +21,8 @@ function getInitials(name: string): string {
     .slice(0, 2);
 }
 
-function OrganizationAvatar({ name, logo, size = "sm" }: { name: string; logo?: string; size?: "sm" | "md" }) {
+function OrganizationAvatar({ name, size = "sm" }: { name: string; size?: "sm" | "md" }) {
   const sizeClasses = size === "sm" ? "h-6 w-6 text-xs" : "h-8 w-8 text-sm";
-
-  if (logo) {
-    return (
-      <div className={cn("flex items-center justify-center rounded bg-slate-100 font-semibold text-slate-700", sizeClasses)}>
-        {logo}
-      </div>
-    );
-  }
 
   return (
     <div className={cn("flex items-center justify-center rounded bg-blue-100 font-semibold text-blue-700", sizeClasses)}>
@@ -39,12 +31,8 @@ function OrganizationAvatar({ name, logo, size = "sm" }: { name: string; logo?: 
   );
 }
 
-function UserAvatar({ name, avatar, size = "sm" }: { name: string; avatar?: string; size?: "sm" | "md" }) {
+function UserAvatar({ name, size = "sm" }: { name: string; size?: "sm" | "md" }) {
   const sizeClasses = size === "sm" ? "h-7 w-7 text-xs" : "h-9 w-9 text-sm";
-
-  if (avatar) {
-    return <img src={avatar} alt={name} className={cn("rounded-full object-cover", sizeClasses)} />;
-  }
 
   return (
     <div className={cn("flex items-center justify-center rounded-full bg-slate-700 font-medium text-white", sizeClasses)}>
@@ -53,8 +41,17 @@ function UserAvatar({ name, avatar, size = "sm" }: { name: string; avatar?: stri
   );
 }
 
+function getRoleLabel(role: string): string {
+  switch (role) {
+    case "owner": return "소유자";
+    case "admin": return "관리자";
+    default: return "멤버";
+  }
+}
+
 export function Header() {
-  const { user, organizations, currentOrganization, switchOrganization, logout } = useAuthStore();
+  const { user, memberships, currentMembership, logout } = useAuthStore();
+  const currentOrg = currentMembership?.organization;
 
   return (
     <header className="flex h-14 items-center justify-between border-b border-slate-200 bg-white px-6">
@@ -76,16 +73,16 @@ export function Header() {
         </Button>
 
         {/* 조직 선택 */}
-        {currentOrganization && (
+        {currentOrg && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
                 className="h-9 gap-2 px-2 text-slate-700 hover:bg-slate-100"
               >
-                <OrganizationAvatar name={currentOrganization.name} logo={currentOrganization.logo} />
+                <OrganizationAvatar name={currentOrg.name} />
                 <span className="max-w-[120px] truncate text-sm font-medium">
-                  {currentOrganization.name}
+                  {currentOrg.name}
                 </span>
                 <ChevronDown className="h-4 w-4 text-slate-400" />
               </Button>
@@ -94,22 +91,21 @@ export function Header() {
               <DropdownMenuLabel className="text-xs font-normal text-slate-500">
                 조직 전환
               </DropdownMenuLabel>
-              {organizations.map((org) => (
+              {memberships.map((m) => (
                 <DropdownMenuItem
-                  key={org.id}
-                  onClick={() => switchOrganization(org.id)}
+                  key={m.orgId}
                   className="flex items-center gap-3 py-2"
                 >
-                  <OrganizationAvatar name={org.name} logo={org.logo} size="md" />
+                  <OrganizationAvatar name={m.organization.name} size="md" />
                   <div className="flex-1 min-w-0">
                     <p className="truncate text-sm font-medium text-slate-900">
-                      {org.name}
+                      {m.organization.name}
                     </p>
                     <p className="text-xs text-slate-500">
-                      {org.role === "owner" ? "소유자" : org.role === "admin" ? "관리자" : "멤버"}
+                      {getRoleLabel(m.role)}
                     </p>
                   </div>
-                  {currentOrganization.id === org.id && (
+                  {currentOrg.id === m.organization.id && (
                     <Check className="h-4 w-4 text-blue-600" />
                   )}
                 </DropdownMenuItem>
@@ -131,7 +127,7 @@ export function Header() {
                 variant="ghost"
                 className="h-9 gap-2 px-2 text-slate-700 hover:bg-slate-100"
               >
-                <UserAvatar name={user.name} avatar={user.avatar} />
+                <UserAvatar name={user.name} />
                 <div className="hidden md:block text-left">
                   <p className="max-w-[100px] truncate text-sm font-medium leading-none">
                     {user.name}

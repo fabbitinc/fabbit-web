@@ -30,7 +30,7 @@ export const useRegistrationStore = create<RegistrationState>()((set) => ({
     role: "",
   },
 
-  selectedPlan: "free",
+  selectedPlan: "starter",
 
   setSignupData: (data) =>
     set((state) => ({

@@ -14,36 +14,36 @@ import type { PlanTier } from "@/features/registration/types/registration.types"
 // 온보딩 스텝 정보
 export const onboardingSteps = [
   { step: 1 as const, title: "데이터 업로드", description: "데이터를 업로드합니다", path: "/onboarding/upload" },
-  { step: 2 as const, title: "AI 매핑", description: "데이터를 매핑합니다", path: "/onboarding/mapping" },
-  { step: 3 as const, title: "데이터 처리", description: "지식화를 진행합니다", path: "/onboarding/processing" },
+  { step: 2 as const, title: "데이터 처리", description: "지식화를 진행합니다", path: "/onboarding/processing" },
+  { step: 3 as const, title: "AI 매핑", description: "데이터를 매핑합니다", path: "/onboarding/mapping" },
   { step: 4 as const, title: "탐색", description: "데이터를 탐색합니다", path: "/onboarding/explore" },
 ];
 
 // 플랜별 업로드 제한
 export const uploadLimitsByPlan: Record<PlanTier, UploadLimits> = {
-  free: {
-    bomFiles: 10,
-    drawingFiles: 50,
-    totalStorageGB: 1,
-    bomLabel: "최대 10건",
-    drawingLabel: "최대 50장",
-    storageLabel: "1GB",
+  starter: {
+    bomFiles: 50,
+    drawingFiles: 10,
+    totalStorageGB: 2,
+    bomLabel: "50건/월",
+    drawingLabel: "10건/월",
+    storageLabel: "2GB",
   },
-  pro: {
-    bomFiles: null,
-    drawingFiles: 500,
-    totalStorageGB: 50,
-    bomLabel: "무제한",
-    drawingLabel: "월 500장",
-    storageLabel: "50GB",
+  team: {
+    bomFiles: 3000,
+    drawingFiles: 300,
+    totalStorageGB: 100,
+    bomLabel: "3,000건/월",
+    drawingLabel: "300건/월",
+    storageLabel: "100GB",
   },
-  elite: {
-    bomFiles: null,
-    drawingFiles: null,
-    totalStorageGB: 500,
-    bomLabel: "무제한",
-    drawingLabel: "무제한",
-    storageLabel: "500GB",
+  enterprise: {
+    bomFiles: 30000,
+    drawingFiles: 3000,
+    totalStorageGB: 1000,
+    bomLabel: "30,000건/월",
+    drawingLabel: "3,000건/월",
+    storageLabel: "1TB",
   },
 };
 
@@ -75,18 +75,16 @@ export const mockTargetProperties: TargetProperty[] = [
   { id: "tgt-10", name: "_ext_heat_treatment", label: "Part", category: "확장 속성", required: false, description: "열처리 규격 (확장)" },
 ];
 
-// Step 1: AI 매핑 연결
+// Step 1: AI 매핑 연결 (8개 매핑, 2개 미매핑: src-9 비고, src-10 열처리 규격)
 export const mockMappingConnections: MappingConnection[] = [
   { id: "conn-1", sourceId: "src-1", targetId: "tgt-1", confidence: 98, confidenceLevel: "high", approved: true },
   { id: "conn-2", sourceId: "src-2", targetId: "tgt-2", confidence: 95, confidenceLevel: "high", approved: true },
-  { id: "conn-3", sourceId: "src-3", targetId: "tgt-3", confidence: 92, confidenceLevel: "high", approved: true },
+  { id: "conn-3", sourceId: "src-3", targetId: "tgt-3", confidence: 92, confidenceLevel: "high", approved: false },
   { id: "conn-4", sourceId: "src-4", targetId: "tgt-5", confidence: 88, confidenceLevel: "medium", approved: false },
   { id: "conn-5", sourceId: "src-5", targetId: "tgt-4", confidence: 85, confidenceLevel: "medium", approved: false },
   { id: "conn-6", sourceId: "src-6", targetId: "tgt-6", confidence: 78, confidenceLevel: "medium", approved: false },
   { id: "conn-7", sourceId: "src-7", targetId: "tgt-7", confidence: 72, confidenceLevel: "medium", approved: false },
   { id: "conn-8", sourceId: "src-8", targetId: "tgt-8", confidence: 96, confidenceLevel: "high", approved: true },
-  { id: "conn-9", sourceId: "src-9", targetId: "tgt-9", confidence: 65, confidenceLevel: "medium", approved: false },
-  { id: "conn-10", sourceId: "src-10", targetId: "tgt-10", confidence: 60, confidenceLevel: "medium", approved: false },
 ];
 
 // Step 2: 처리 단계

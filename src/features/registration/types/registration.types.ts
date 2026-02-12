@@ -15,7 +15,7 @@ export interface WorkspaceFormData {
 }
 
 // 플랜 선택 (Step 3)
-export type PlanTier = "free" | "pro" | "elite";
+export type PlanTier = "starter" | "team" | "enterprise";
 
 export interface PlanOption {
   tier: PlanTier;
@@ -26,4 +26,5 @@ export interface PlanOption {
   features: string[];
   highlighted?: boolean;
   badge?: string;
+  disabled?: boolean;
 }
