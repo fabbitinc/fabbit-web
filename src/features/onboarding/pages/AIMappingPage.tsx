@@ -13,6 +13,7 @@ import {
 } from "@/api/onboarding";
 import type {
   ColumnMappingEntry,
+  ExtendedPropertyEntry,
   RelationMappingEntry,
   TargetPropertyOption,
 } from "@/features/onboarding/types/onboarding.types";
@@ -21,6 +22,8 @@ import { MappingSummaryBar } from "@/features/onboarding/components/mapping/Mapp
 import { MappingCard } from "@/features/onboarding/components/mapping/MappingCard";
 import { UnmappedCard } from "@/features/onboarding/components/mapping/UnmappedCard";
 import { RelationMappingCard } from "@/features/onboarding/components/mapping/RelationMappingCard";
+import { ExtendedMappingCard } from "@/features/onboarding/components/mapping/ExtendedMappingCard";
+import { MAPPING_TERMS } from "@/features/onboarding/constants/mappingTerminology";
 
 export function AIMappingPage() {
   const { t } = useTranslation(["common", "mapping"]);
@@ -28,6 +31,7 @@ export function AIMappingPage() {
   const {
     columnMappings,
     relationMappings,
+    extendedMappings,
     mappingHeaders,
     mappingSampleRows,
     targetPropertyOptions,
@@ -37,7 +41,7 @@ export function AIMappingPage() {
     setMappingId,
     setMappings,
     approveColumnMapping,
-    approveRelationMapping,
+    approveExtendedMapping,
     approveAllMappings,
     dismissRelationMapping,
     resetMappings,
@@ -78,19 +82,23 @@ export function AIMappingPage() {
       });
   }, [targetPropertyOptions.length, setTargetPropertyOptions]);
 
-  // 활성/무시 관계 매핑 분리
+  // 활성/제외 관계 매핑 분리
   const activeRelationMappings = relationMappings.filter((rm) => !rm.dismissed);
   const dismissedRelationMappings = relationMappings.filter((rm) => rm.dismissed);
 
-  // 미매핑 컬럼: 컬럼 매핑이 없는 원본 헤더 (관계 매핑 참조 여부와 무관)
-  const columnMappedCols = new Set(columnMappings.map((cm) => cm.source_column));
+  // 미매핑 원본 컬럼: 기본 매핑/확장 매핑에 모두 없는 원본 헤더
+  const columnMappedCols = new Set([
+    ...columnMappings.map((cm) => cm.source_column),
+    ...extendedMappings.map((ep) => ep.source_column),
+  ]);
   const unmappedColumns = mappingHeaders.filter((h) => !columnMappedCols.has(h));
 
   // 승인 상태 집계 (활성 매핑만)
   const approvedColumnCount = columnMappings.filter((cm) => cm.approved).length;
   const approvedRelationCount = activeRelationMappings.filter((rm) => rm.approved).length;
-  const totalMappings = columnMappings.length + activeRelationMappings.length;
-  const totalApproved = approvedColumnCount + approvedRelationCount;
+  const approvedExtendedCount = extendedMappings.filter((ep) => ep.approved).length;
+  const totalMappings = columnMappings.length + activeRelationMappings.length + extendedMappings.length;
+  const totalApproved = approvedColumnCount + approvedRelationCount + approvedExtendedCount;
   const totalCandidates = mappingHeaders.length + relationMappings.length;
   const excludedCount = unmappedColumns.length + dismissedRelationMappings.length;
 
@@ -108,7 +116,7 @@ export function AIMappingPage() {
   };
 
   // 매핑이 하나라도 있는지 확인 (다음 버튼 활성화 조건)
-  const hasMappings = columnMappings.length + activeRelationMappings.length > 0;
+  const hasMappings = columnMappings.length + activeRelationMappings.length + extendedMappings.length > 0;
 
   const getRelationKey = (rm: RelationMappingEntry) =>
     [
@@ -123,6 +131,7 @@ export function AIMappingPage() {
   const buildDraftMapping = (
     nextColumns: ColumnMappingEntry[],
     nextRelations: RelationMappingEntry[],
+    nextExtended: ExtendedPropertyEntry[],
   ): MappingResultDTO => ({
     column_mappings: nextColumns.map((cm) => ({
       source_column: cm.source_column,
@@ -143,12 +152,20 @@ export function AIMappingPage() {
         properties: rm.properties,
         property_types: rm.property_types,
       })),
-    extended_properties: [],
+    extended_properties: nextExtended.map((ep) => ({
+      source_column: ep.source_column,
+      target_label: ep.target_label,
+      property_name: ep.property_name,
+      data_type: ep.data_type,
+      confidence: ep.confidence,
+      reason: ep.reason,
+    })),
   });
 
   const applyValidatedState = async (
     nextColumns: ColumnMappingEntry[],
     nextRelations: RelationMappingEntry[],
+    nextExtended: ExtendedPropertyEntry[],
   ) => {
     if (!primaryUploadId) {
       toast.error("업로드 정보가 없습니다. 이전 단계를 다시 진행해주세요.");
@@ -158,7 +175,7 @@ export function AIMappingPage() {
     try {
       const validation = await validateMapping({
         upload_id: primaryUploadId,
-        mapping: buildDraftMapping(nextColumns, nextRelations),
+        mapping: buildDraftMapping(nextColumns, nextRelations, nextExtended),
       });
 
       const errors = validation.errors || [];
@@ -240,7 +257,34 @@ export function AIMappingPage() {
         };
       });
 
-      setMappings(finalColumns, finalRelations);
+      const finalExtended = normalized.extended_properties.map((ep, idx) => {
+        const existing =
+          nextExtended.find(
+            (item) =>
+              item.source_column === ep.source_column &&
+              item.target_label === ep.target_label &&
+              item.property_name === ep.property_name,
+          ) ||
+          extendedMappings.find(
+            (item) =>
+              item.source_column === ep.source_column &&
+              item.target_label === ep.target_label &&
+              item.property_name === ep.property_name,
+          );
+
+        return {
+          id: existing?.id || `ep-auto-${idx + 1}`,
+          source_column: ep.source_column,
+          target_label: ep.target_label,
+          property_name: ep.property_name,
+          data_type: ep.data_type,
+          confidence: ep.confidence,
+          reason: ep.reason,
+          approved: existing?.approved ?? false,
+        };
+      });
+
+      setMappings(finalColumns, finalRelations, finalExtended);
       return true;
     } catch (err) {
       console.error("Mapping validate failed:", err);
@@ -260,7 +304,7 @@ export function AIMappingPage() {
     const nextRelations = relationMappings.map((rm) => {
       const usedInFrom = Object.values(rm.from_columns).includes(removed.source_column);
       const usedInTo = Object.values(rm.to_columns).includes(removed.source_column);
-      // 관계 속성(properties)은 컬럼 매핑 존재 자체가 아니라
+      // 관계 속성(properties)은 기본 매핑 존재 자체가 아니라
       // 원본 헤더 존재 여부로 유효성을 판단하므로 여기서는 제외 처리하지 않음.
       if (!usedInFrom && !usedInTo) return rm;
 
@@ -275,9 +319,9 @@ export function AIMappingPage() {
       };
     });
 
-    const ok = await applyValidatedState(nextColumns, nextRelations);
+    const ok = await applyValidatedState(nextColumns, nextRelations, extendedMappings);
     if (ok && dismissedCount > 0) {
-      toast.warning(`참조 컬럼이 제거되어 관계 매핑 ${dismissedCount}건이 제외되었습니다.`);
+      toast.warning(`${MAPPING_TERMS.sourceColumn}이 제거되어 ${MAPPING_TERMS.relationMapping} ${dismissedCount}건이 제외되었습니다.`);
     }
   };
 
@@ -330,9 +374,9 @@ export function AIMappingPage() {
     });
 
     void (async () => {
-      const ok = await applyValidatedState(nextColumns, nextRelations);
+      const ok = await applyValidatedState(nextColumns, nextRelations, extendedMappings);
       if (ok && dismissedCount > 0) {
-        toast.warning(`참조 컬럼 대상이 변경되어 관계 매핑 ${dismissedCount}건이 제외되었습니다.`);
+        toast.warning(`${MAPPING_TERMS.baseMapping}이 변경되어 ${MAPPING_TERMS.relationMapping} ${dismissedCount}건이 제외되었습니다.`);
       }
     })();
   };
@@ -357,12 +401,12 @@ export function AIMappingPage() {
     ];
 
     void (async () => {
-      const ok = await applyValidatedState(nextColumns, relationMappings);
+      const ok = await applyValidatedState(nextColumns, relationMappings, extendedMappings);
       if (!ok) return;
 
       const dismissedCount = relationMappings.filter((rm) => rm.dismissed).length;
       if (dismissedCount > 0) {
-        toast.warning(`매핑 추가 후에도 제외된 관계 매핑 ${dismissedCount}건이 있습니다.`);
+        toast.warning(`${MAPPING_TERMS.baseMapping} 추가 후에도 제외된 ${MAPPING_TERMS.relationMapping} ${dismissedCount}건이 있습니다.`);
       }
     })();
   };
@@ -375,15 +419,116 @@ export function AIMappingPage() {
       rm.id === id ? { ...rm, dismissed: false, approved: false, dismissed_reason: null } : rm,
     );
 
-    const ok = await applyValidatedState(columnMappings, nextRelations);
+    const ok = await applyValidatedState(columnMappings, nextRelations, extendedMappings);
     if (!ok) {
       const fallbackReason = "missing_source_column";
       const revertedRelations = relationMappings.map((rm) =>
         rm.id === id ? { ...rm, dismissed: true, approved: false, dismissed_reason: fallbackReason } : rm,
       );
-      setMappings(columnMappings, revertedRelations);
-      toast.error("참조 컬럼 매핑이 유효하지 않아 관계 매핑을 복원할 수 없습니다.");
+      setMappings(columnMappings, revertedRelations, extendedMappings);
+      toast.error(`${MAPPING_TERMS.relationMapping}을 복원할 수 없습니다. ${MAPPING_TERMS.baseMapping}을 확인해주세요.`);
     }
+  };
+
+  const handleApproveRelationMapping = async (id: string) => {
+    const target = relationMappings.find((rm) => rm.id === id);
+    if (!target || target.dismissed) return;
+
+    const missingFrom = Object.entries(target.from_columns)
+      .filter(([prop, sourceColumn]) =>
+        !columnMappings.some(
+          (cm) =>
+            cm.source_column === sourceColumn &&
+            cm.target_label === target.from_label &&
+            cm.target_property === prop,
+        ),
+      )
+      .map(([, sourceColumn]) => sourceColumn);
+
+    const missingTo = Object.entries(target.to_columns)
+      .filter(([prop, sourceColumn]) =>
+        !columnMappings.some(
+          (cm) =>
+            cm.source_column === sourceColumn &&
+            cm.target_label === target.to_label &&
+            cm.target_property === prop,
+        ),
+      )
+      .map(([, sourceColumn]) => sourceColumn);
+
+    const missingEndpointColumns = [...new Set([...missingFrom, ...missingTo])];
+
+    if (missingEndpointColumns.length > 0) {
+      const nextRelations = relationMappings.map((rm) =>
+        rm.id === id
+          ? {
+              ...rm,
+              dismissed: true,
+              approved: false,
+              dismissed_reason: missingFrom.length > 0 ? "missing_from_endpoint" : "missing_to_endpoint",
+            }
+          : rm,
+      );
+
+      const ok = await applyValidatedState(columnMappings, nextRelations, extendedMappings);
+      if (!ok) return;
+
+      const mappedAsExtended = missingEndpointColumns.filter((col) =>
+        extendedMappings.some((ep) => ep.source_column === col),
+      );
+      if (mappedAsExtended.length > 0) {
+        toast.warning(
+          `${MAPPING_TERMS.relationMapping}의 연결 기준은 ${MAPPING_TERMS.baseMapping}에 있어야 합니다. ${MAPPING_TERMS.extendedMapping}에만 있는 ${MAPPING_TERMS.sourceColumn}: ${mappedAsExtended.join(", ")}`,
+        );
+      } else {
+        toast.warning(
+          `${MAPPING_TERMS.relationMapping} 승인에 필요한 연결 기준이 없어 자동 제외되었습니다. 누락된 ${MAPPING_TERMS.sourceColumn}: ${missingEndpointColumns.join(", ")}`,
+        );
+      }
+      return;
+    }
+
+    const nextRelations = relationMappings.map((rm) =>
+      rm.id === id ? { ...rm, approved: true, dismissed: false, dismissed_reason: null } : rm,
+    );
+    await applyValidatedState(columnMappings, nextRelations, extendedMappings);
+  };
+
+  const toExtendedPropertyName = (sourceColumn: string) => {
+    const hash = Array.from(sourceColumn).reduce(
+      (acc, ch) => ((acc * 31 + ch.charCodeAt(0)) >>> 0),
+      7,
+    );
+    const normalizeName = sourceColumn
+      .normalize("NFKD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "_")
+      .replace(/^_+|_+$/g, "");
+    return `_ext_${normalizeName || `col_${hash.toString(36)}`}`;
+  };
+
+  const handleCreateExtendedMapping = (sourceColumn: string, targetLabel: string) => {
+    const nextExtended = [
+      ...extendedMappings,
+      {
+        id: `ep-${Date.now()}`,
+        source_column: sourceColumn,
+        target_label: targetLabel,
+        property_name: toExtendedPropertyName(sourceColumn),
+        data_type: "string",
+        confidence: 100,
+        reason: "사용자 확장 속성 추가",
+        approved: false,
+      },
+    ];
+
+    void applyValidatedState(columnMappings, relationMappings, nextExtended);
+  };
+
+  const handleRemoveExtendedMapping = (id: string) => {
+    const nextExtended = extendedMappings.filter((ep) => ep.id !== id);
+    void applyValidatedState(columnMappings, relationMappings, nextExtended);
   };
 
   const handleNext = async () => {
@@ -491,6 +636,7 @@ export function AIMappingPage() {
           <MappingSummaryBar
             columnMappingCount={columnMappings.length}
             relationMappingCount={activeRelationMappings.length}
+            extendedMappingCount={extendedMappings.length}
             unmappedCount={excludedCount}
             totalCandidates={totalCandidates}
             approvedCount={totalApproved}
@@ -503,10 +649,10 @@ export function AIMappingPage() {
           <div className="max-h-[560px] overflow-y-auto pr-1">
             <div className="space-y-6 pb-2">
 
-              {/* -- 컬럼 매핑 섹션 -- */}
+              {/* -- 기본 매핑 섹션 -- */}
               <div className="space-y-3">
                 <h3 className="text-xs font-semibold uppercase tracking-wider text-blue-600">
-                  {t("mapping:columnMapping")} ({columnMappings.length})
+                  {MAPPING_TERMS.baseMapping} ({columnMappings.length})
                 </h3>
 
                 {columnMappings.length > 0 && (
@@ -525,7 +671,7 @@ export function AIMappingPage() {
                   </div>
                 )}
 
-                {/* 미매핑 (컬럼 매핑 하위) */}
+                {/* 미매핑 (기본/확장 매핑 하위) */}
                 {unmappedColumns.length > 0 && (
                   <div className="ml-3 space-y-2 border-l-2 border-dashed border-gray-200 pl-3">
                     <h4 className="text-[11px] font-medium uppercase tracking-wider text-gray-400">
@@ -533,15 +679,16 @@ export function AIMappingPage() {
                     </h4>
                     <div className="space-y-2">
                       {unmappedColumns.map((col) => (
-                        <UnmappedCard
-                          key={col}
-                          column={col}
-                          sampleData={getSampleData(col)}
-                          targetOptions={targetPropertyOptions}
-                          onCreate={handleCreateColumnMapping}
-                        />
-                      ))}
-                    </div>
+                          <UnmappedCard
+                            key={col}
+                            column={col}
+                            sampleData={getSampleData(col)}
+                            targetOptions={targetPropertyOptions}
+                            onCreateBase={handleCreateColumnMapping}
+                            onCreateExtended={handleCreateExtendedMapping}
+                          />
+                        ))}
+                      </div>
                   </div>
                 )}
               </div>
@@ -549,7 +696,7 @@ export function AIMappingPage() {
               {/* -- 관계 매핑 섹션 -- */}
               <div className="space-y-3">
                 <h3 className="text-xs font-semibold uppercase tracking-wider text-violet-600">
-                  {t("mapping:relationMapping")} ({activeRelationMappings.length})
+                  {MAPPING_TERMS.relationMapping} ({activeRelationMappings.length})
                 </h3>
 
                 {activeRelationMappings.length > 0 && (
@@ -558,7 +705,7 @@ export function AIMappingPage() {
                       <RelationMappingCard
                         key={rm.id}
                         mapping={rm}
-                        onApprove={approveRelationMapping}
+                        onApprove={handleApproveRelationMapping}
                         onDismiss={dismissRelationMapping}
                       />
                     ))}
@@ -576,12 +723,33 @@ export function AIMappingPage() {
                         <RelationMappingCard
                           key={rm.id}
                           mapping={rm}
-                        onApprove={approveRelationMapping}
-                        onDismiss={dismissRelationMapping}
+                          onApprove={handleApproveRelationMapping}
+                          onDismiss={dismissRelationMapping}
                           onRestore={handleRestoreRelationMapping}
                         />
                       ))}
                     </div>
+                  </div>
+                )}
+              </div>
+
+              {/* -- 확장 매핑 섹션 -- */}
+              <div className="space-y-3">
+                <h3 className="text-xs font-semibold uppercase tracking-wider text-amber-600">
+                  {MAPPING_TERMS.extendedMapping} ({extendedMappings.length})
+                </h3>
+
+                {extendedMappings.length > 0 && (
+                  <div className="space-y-2">
+                    {extendedMappings.map((ep) => (
+                      <ExtendedMappingCard
+                        key={ep.id}
+                        mapping={ep}
+                        sampleData={getSampleData(ep.source_column)}
+                        onApprove={approveExtendedMapping}
+                        onRemove={handleRemoveExtendedMapping}
+                      />
+                    ))}
                   </div>
                 )}
               </div>

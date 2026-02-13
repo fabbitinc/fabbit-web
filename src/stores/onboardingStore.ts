@@ -4,6 +4,7 @@ import type {
   UploadedFile,
   ColumnMappingEntry,
   RelationMappingEntry,
+  ExtendedPropertyEntry,
   ProcessingStep,
   ProcessingStats,
   LogEntry,
@@ -73,9 +74,11 @@ interface OnboardingState {
   // Step 2: 매핑
   columnMappings: ColumnMappingEntry[];
   relationMappings: RelationMappingEntry[];
+  extendedMappings: ExtendedPropertyEntry[];
   // preview API 기준 원본 스냅샷 (리셋용)
   initialColumnMappings: ColumnMappingEntry[];
   initialRelationMappings: RelationMappingEntry[];
+  initialExtendedMappings: ExtendedPropertyEntry[];
   mappingHeaders: string[];
   mappingSampleRows: Record<string, string>[];
   editableConstraints: Record<string, unknown> | null;
@@ -119,13 +122,20 @@ interface OnboardingState {
   ) => void;
   setTargetPropertyOptions: (options: TargetPropertyOption[]) => void;
   setMappingId: (id: string) => void;
-  setMappings: (columnMappings: ColumnMappingEntry[], relationMappings: RelationMappingEntry[]) => void;
+  setMappings: (
+    columnMappings: ColumnMappingEntry[],
+    relationMappings: RelationMappingEntry[],
+    extendedMappings: ExtendedPropertyEntry[],
+  ) => void;
 
   // 매핑 조작
   approveColumnMapping: (id: string) => void;
   approveRelationMapping: (id: string) => void;
   approveAllMappings: () => void;
   removeColumnMapping: (id: string) => number;
+  approveExtendedMapping: (id: string) => void;
+  removeExtendedMapping: (id: string) => void;
+  createExtendedMapping: (sourceColumn: string, targetLabel: string) => void;
   dismissRelationMapping: (id: string) => void;
   restoreRelationMapping: (id: string) => boolean;
   changeColumnMappingTarget: (id: string, targetLabel: string, targetProperty: string) => number;
@@ -159,8 +169,10 @@ export const useOnboardingStore = create<OnboardingState>()((set, get) => ({
 
   columnMappings: [],
   relationMappings: [],
+  extendedMappings: [],
   initialColumnMappings: [],
   initialRelationMappings: [],
+  initialExtendedMappings: [],
   mappingHeaders: [],
   mappingSampleRows: [],
   editableConstraints: null,
@@ -235,6 +247,17 @@ export const useOnboardingStore = create<OnboardingState>()((set, get) => ({
 
     const initialColumnMappings = columnMappings.map((cm) => ({ ...cm }));
     const initialRelationMappings = relationMappings.map(cloneRelationMapping);
+    const extendedMappings: ExtendedPropertyEntry[] = mapping.extended_properties.map((ep, idx) => ({
+      id: `ep-${idx + 1}`,
+      source_column: ep.source_column,
+      target_label: ep.target_label,
+      property_name: ep.property_name,
+      data_type: ep.data_type || "string",
+      confidence: ep.confidence || 0,
+      reason: ep.reason || "",
+      approved: ep.confidence >= 95,
+    }));
+    const initialExtendedMappings = extendedMappings.map((ep) => ({ ...ep }));
 
     set({
       mappingHeaders: headers,
@@ -242,8 +265,10 @@ export const useOnboardingStore = create<OnboardingState>()((set, get) => ({
       editableConstraints: editableConstraints || null,
       columnMappings: initialColumnMappings.map((cm) => ({ ...cm })),
       relationMappings: initialRelationMappings.map(cloneRelationMapping),
+      extendedMappings: initialExtendedMappings.map((ep) => ({ ...ep })),
       initialColumnMappings,
       initialRelationMappings,
+      initialExtendedMappings,
     });
   },
 
@@ -251,10 +276,11 @@ export const useOnboardingStore = create<OnboardingState>()((set, get) => ({
 
   setMappingId: (id) => set({ mappingId: id }),
 
-  setMappings: (columnMappings, relationMappings) =>
+  setMappings: (columnMappings, relationMappings, extendedMappings) =>
     set({
       columnMappings: columnMappings.map((cm) => ({ ...cm })),
       relationMappings: relationMappings.map(cloneRelationMapping),
+      extendedMappings: extendedMappings.map((ep) => ({ ...ep })),
     }),
 
   approveColumnMapping: (id) =>
@@ -280,6 +306,7 @@ export const useOnboardingStore = create<OnboardingState>()((set, get) => ({
   approveAllMappings: () =>
     set((state) => ({
       columnMappings: state.columnMappings.map((cm) => ({ ...cm, approved: true })),
+      extendedMappings: state.extendedMappings.map((ep) => ({ ...ep, approved: true })),
       relationMappings: state.relationMappings.map((rm) => {
         if (rm.dismissed) return rm;
 
@@ -320,6 +347,47 @@ export const useOnboardingStore = create<OnboardingState>()((set, get) => ({
     });
 
     return affectedRelationCount;
+  },
+
+  approveExtendedMapping: (id) =>
+    set((state) => ({
+      extendedMappings: state.extendedMappings.map((ep) =>
+        ep.id === id ? { ...ep, approved: true } : ep,
+      ),
+    })),
+
+  removeExtendedMapping: (id) =>
+    set((state) => ({
+      extendedMappings: state.extendedMappings.filter((ep) => ep.id !== id),
+    })),
+
+  createExtendedMapping: (sourceColumn, targetLabel) => {
+    const hash = Array.from(sourceColumn).reduce(
+      (acc, ch) => ((acc * 31 + ch.charCodeAt(0)) >>> 0),
+      7,
+    );
+    const normalizeName = sourceColumn
+      .normalize("NFKD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "_")
+      .replace(/^_+|_+$/g, "");
+
+    set((state) => ({
+      extendedMappings: [
+        ...state.extendedMappings,
+        {
+          id: `ep-${Date.now()}`,
+          source_column: sourceColumn,
+          target_label: targetLabel,
+          property_name: `_ext_${normalizeName || `col_${hash.toString(36)}`}`,
+          data_type: "string",
+          confidence: 100,
+          reason: "사용자 확장 속성 추가",
+          approved: false,
+        },
+      ],
+    }));
   },
 
   dismissRelationMapping: (id) =>
@@ -418,6 +486,7 @@ export const useOnboardingStore = create<OnboardingState>()((set, get) => ({
     set((state) => ({
       columnMappings: state.initialColumnMappings.map((cm) => ({ ...cm })),
       relationMappings: state.initialRelationMappings.map(cloneRelationMapping),
+      extendedMappings: state.initialExtendedMappings.map((ep) => ({ ...ep })),
     }));
   },
 
@@ -443,7 +512,14 @@ export const useOnboardingStore = create<OnboardingState>()((set, get) => ({
           properties: rm.properties,
           property_types: rm.property_types,
         })),
-      extended_properties: [],
+      extended_properties: state.extendedMappings.map((ep) => ({
+        source_column: ep.source_column,
+        target_label: ep.target_label,
+        property_name: ep.property_name,
+        data_type: ep.data_type,
+        confidence: ep.confidence,
+        reason: ep.reason,
+      })),
     };
   },
 

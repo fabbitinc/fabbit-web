@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import type { ColumnMappingEntry, TargetPropertyOption } from "@/features/onboarding/types/onboarding.types";
 import { getConfidenceLevel } from "@/features/onboarding/types/onboarding.types";
+import { MAPPING_TERMS } from "@/features/onboarding/constants/mappingTerminology";
 import { TargetSelector } from "./TargetSelector";
 import { cn, withOriginal } from "@/lib/utils";
 
@@ -59,15 +60,15 @@ export function MappingCard({
           : "border-gray-200 bg-white hover:border-gray-300 hover:shadow-sm"
       )}
     >
-      {/* 1행: 원본 → 타겟 */}
+      {/* 1행: 원본 컬럼 → 대상 라벨/속성 */}
       <div className="mb-3 grid grid-cols-[140px_16px_1fr] items-center gap-3">
         <div>
-          <div className="mb-0.5 text-[11px] font-semibold uppercase tracking-wider text-gray-400">원본</div>
+          <div className="mb-0.5 text-[11px] font-semibold uppercase tracking-wider text-gray-400">{MAPPING_TERMS.sourceColumn}</div>
           <div className="truncate text-[15px] font-bold text-gray-900" title={mapping.source_column}>{mapping.source_column}</div>
         </div>
         <ChevronRight className="mt-3 size-4 text-gray-300" />
         <div>
-          <div className="mb-0.5 text-[11px] font-semibold uppercase tracking-wider text-gray-400">타겟</div>
+          <div className="mb-0.5 text-[11px] font-semibold uppercase tracking-wider text-gray-400">{MAPPING_TERMS.targetLabel} / {MAPPING_TERMS.targetProperty}</div>
           <span className={cn(
             "inline-flex items-baseline gap-1 rounded-lg px-2.5 py-1 ring-1 ring-inset",
             labelBgColor[mapping.target_label] || "bg-gray-50 text-gray-600 ring-gray-200/60"
@@ -81,7 +82,7 @@ export function MappingCard({
 
       {/* 2행: 메타 + 액션 */}
       <div className="grid grid-cols-[minmax(140px,1fr)_100px_80px_auto] items-center gap-4 border-t border-gray-100 pt-3">
-        <div>
+        <div className="min-w-0">
           <div className="mb-0.5 text-[11px] font-semibold uppercase tracking-wider text-gray-400">샘플 데이터</div>
           <div className="truncate text-sm text-gray-500" title={sampleData.join(", ")}>{sampleData.join(", ")}</div>
         </div>
