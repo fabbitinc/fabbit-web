@@ -2,6 +2,10 @@ import { Check, ChevronRight, RotateCcw, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import type { RelationMappingEntry } from "@/features/onboarding/types/onboarding.types";
+import {
+  getDismissedReasonLabel,
+  MAPPING_TERMS,
+} from "@/features/onboarding/constants/mappingTerminology";
 import { cn, withOriginal } from "@/lib/utils";
 
 interface RelationMappingCardProps {
@@ -36,16 +40,6 @@ export function RelationMappingCard({
   const localTo = t(`mapping:nodeLabel.${mapping.to_label}`, mapping.to_label);
   const localRel = t(`mapping:relType.${mapping.rel_type}`, mapping.rel_type);
 
-  const getDismissedReasonLabel = (reason?: string | null) => {
-    if (!reason) return null;
-    if (reason === "missing_from_endpoint") return "from endpoint 컬럼 누락";
-    if (reason === "missing_to_endpoint") return "to endpoint 컬럼 누락";
-    if (reason === "missing_required_rel_property") return "필수 관계 속성 컬럼 누락";
-    if (reason === "missing_source_column") return "참조 컬럼 누락";
-    if (reason === "invalid_ext_property_name") return "확장 속성 이름 규칙 위반";
-    return reason;
-  };
-
   const dismissedReasonLabel = getDismissedReasonLabel(mapping.dismissed_reason);
 
   return (
@@ -59,14 +53,14 @@ export function RelationMappingCard({
             : "border-gray-200 bg-white hover:border-gray-300 hover:shadow-sm"
       )}
     >
-      {/* 1행: 매핑 컬럼 + 속성 */}
+      {/* 1행: 연결 기준 + 관계 속성 */}
       <div className="mb-3 grid grid-cols-[minmax(140px,1fr)_minmax(140px,1fr)] items-end gap-4">
         <div>
-          <div className="mb-0.5 text-[11px] font-semibold uppercase tracking-wider text-gray-400">매핑 컬럼</div>
+          <div className="mb-0.5 text-[11px] font-semibold uppercase tracking-wider text-gray-400">연결 기준</div>
           <div className="text-[15px] font-bold text-gray-900">{fromCols} → {toCols}</div>
         </div>
         <div>
-          <div className="mb-0.5 text-[11px] font-semibold uppercase tracking-wider text-gray-400">속성</div>
+          <div className="mb-0.5 text-[11px] font-semibold uppercase tracking-wider text-gray-400">{MAPPING_TERMS.relationProperty}</div>
           <div className="text-sm text-gray-600">
             {propEntries.length > 0
               ? propEntries.map(([src, rel]) => {

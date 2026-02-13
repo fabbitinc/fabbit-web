@@ -65,6 +65,17 @@ export interface RelationMappingEntry {
   dismissed_reason?: string | null;
 }
 
+export interface ExtendedPropertyEntry {
+  id: string;
+  source_column: string;
+  target_label: string;
+  property_name: string;
+  data_type: string;
+  confidence: number;
+  reason: string;
+  approved: boolean;
+}
+
 // 타겟 속성 옵션 (향후 온톨로지 API에서 로드)
 export interface TargetPropertyOption {
   label: string;

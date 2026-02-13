@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
 import type { TargetPropertyOption } from "@/features/onboarding/types/onboarding.types";
+import { MAPPING_TERMS } from "@/features/onboarding/constants/mappingTerminology";
 import {
   Select,
   SelectContent,
@@ -25,7 +26,7 @@ export function TargetSelector({
   value,
   targets,
   onChange,
-  placeholder = "타겟 선택",
+  placeholder = `${MAPPING_TERMS.targetProperty} 선택`,
   className,
 }: TargetSelectorProps) {
   const { t } = useTranslation(["mapping"]);

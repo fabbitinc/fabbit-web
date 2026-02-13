@@ -1,11 +1,13 @@
-import { CheckCircle2, Columns3, GitBranch, HelpCircle } from "lucide-react";
+import { CheckCircle2, Columns3, GitBranch, HelpCircle, ScrollText } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { MAPPING_TERMS } from "@/features/onboarding/constants/mappingTerminology";
 
 interface MappingSummaryBarProps {
   columnMappingCount: number;
   relationMappingCount: number;
+  extendedMappingCount: number;
   unmappedCount: number;
   totalCandidates: number;
   approvedCount: number;
@@ -17,6 +19,7 @@ interface MappingSummaryBarProps {
 export function MappingSummaryBar({
   columnMappingCount,
   relationMappingCount,
+  extendedMappingCount,
   unmappedCount,
   totalCandidates,
   approvedCount,
@@ -30,20 +33,27 @@ export function MappingSummaryBar({
 
   return (
     <div className="space-y-4 rounded-xl border border-gray-200 bg-gray-50/50 p-4">
-      {/* 4칸 통계 */}
-      <div className="grid grid-cols-4 gap-3">
+      {/* 5칸 통계 */}
+      <div className="grid grid-cols-5 gap-3">
         <div className="flex items-center gap-2.5 rounded-lg border border-blue-100 bg-white px-3 py-2.5">
           <Columns3 className="size-4 text-blue-500" />
           <div>
-            <p className="text-xs text-blue-600">{t("mapping:columnMapping")}</p>
+            <p className="text-xs text-blue-600">{MAPPING_TERMS.baseMapping}</p>
             <p className="text-lg font-bold text-blue-700">{columnMappingCount}</p>
           </div>
         </div>
         <div className="flex items-center gap-2.5 rounded-lg border border-violet-100 bg-white px-3 py-2.5">
           <GitBranch className="size-4 text-violet-500" />
           <div>
-            <p className="text-xs text-violet-600">{t("mapping:relationMapping")}</p>
+            <p className="text-xs text-violet-600">{MAPPING_TERMS.relationMapping}</p>
             <p className="text-lg font-bold text-violet-700">{relationMappingCount}</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-2.5 rounded-lg border border-amber-100 bg-white px-3 py-2.5">
+          <ScrollText className="size-4 text-amber-500" />
+          <div>
+            <p className="text-xs text-amber-600">{MAPPING_TERMS.extendedMapping}</p>
+            <p className="text-lg font-bold text-amber-700">{extendedMappingCount}</p>
           </div>
         </div>
         <div className="flex items-center gap-2.5 rounded-lg border border-green-100 bg-white px-3 py-2.5">

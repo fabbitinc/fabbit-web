@@ -14,6 +14,7 @@ import { Progress } from "@/components/ui/progress";
 import { useOnboardingStore } from "@/stores/onboardingStore";
 import { previewMapping } from "@/api/onboarding";
 import { LogStream } from "@/features/onboarding/components/processing/LogStream";
+import { MAPPING_TERMS } from "@/features/onboarding/constants/mappingTerminology";
 import type { LogEntry } from "@/features/onboarding/types/onboarding.types";
 
 const stepStatusConfig = {
@@ -40,12 +41,12 @@ const phaseLogMessages: Record<string, LogEntry[]> = {
   ],
   normalizing: [
     { id: "log-3", timestamp: "00:05", message: "데이터 정규화 시작...", type: "info" },
-    { id: "log-4", timestamp: "00:08", message: "컬럼 헤더 추출 완료", type: "success" },
+    { id: "log-4", timestamp: "00:08", message: "원본 컬럼 헤더 추출 완료", type: "success" },
     { id: "log-5", timestamp: "00:10", message: "샘플 데이터 추출 중...", type: "info" },
   ],
   connecting: [
     { id: "log-6", timestamp: "00:15", message: "AI 매핑 분석을 시작합니다...", type: "info" },
-    { id: "log-7", timestamp: "00:25", message: "컬럼-온톨로지 매핑 추론 중...", type: "info" },
+    { id: "log-7", timestamp: "00:25", message: "원본 컬럼-대상 속성 매핑 추론 중...", type: "info" },
     { id: "log-8", timestamp: "00:40", message: "관계 매핑 추론 중...", type: "info" },
   ],
   validating: [
@@ -136,9 +137,36 @@ export function DataProcessingPage() {
         addLog({
           id: "log-done",
           timestamp: "완료",
-          message: `매핑 분석 완료: 컬럼 ${response.mapping.column_mappings.length}개, 관계 ${response.mapping.relation_mappings.length}개 매핑됨`,
+          message: `매핑 분석 완료: ${MAPPING_TERMS.baseMapping} ${response.mapping.column_mappings.length}건, ${MAPPING_TERMS.relationMapping} ${response.mapping.relation_mappings.length}건, ${MAPPING_TERMS.extendedMapping} ${response.mapping.extended_properties.length}건`,
           type: "success",
         });
+
+        if (response.mapping.extended_properties.length > 0) {
+          addLog({
+            id: `log-ext-summary-${Date.now()}`,
+            timestamp: "완료",
+            message: `${MAPPING_TERMS.sourceColumn}이 ${MAPPING_TERMS.extendedMapping}으로 ${response.mapping.extended_properties.length}건 반영되었습니다.`,
+            type: "info",
+          });
+
+          response.mapping.extended_properties.slice(0, 8).forEach((ep, idx) => {
+            addLog({
+              id: `log-ext-${Date.now()}-${idx}`,
+              timestamp: "완료",
+              message: `[${MAPPING_TERMS.extendedMapping}] ${ep.source_column} -> ${ep.target_label}.${ep.property_name}`,
+              type: "info",
+            });
+          });
+
+          if (response.mapping.extended_properties.length > 8) {
+            addLog({
+              id: `log-ext-more-${Date.now()}`,
+              timestamp: "완료",
+              message: `외 ${response.mapping.extended_properties.length - 8}건은 매핑 단계에서 확인할 수 있습니다.`,
+              type: "info",
+            });
+          }
+        }
 
         // 스토어에 매핑 데이터 저장
         setMappingPreviewData(
