@@ -62,6 +62,7 @@ export interface RelationMappingEntry {
   property_types: Record<string, string>;
   approved: boolean;
   dismissed: boolean;
+  dismissed_reason?: string | null;
 }
 
 // 타겟 속성 옵션 (향후 온톨로지 API에서 로드)

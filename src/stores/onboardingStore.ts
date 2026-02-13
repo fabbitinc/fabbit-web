@@ -119,6 +119,7 @@ interface OnboardingState {
   ) => void;
   setTargetPropertyOptions: (options: TargetPropertyOption[]) => void;
   setMappingId: (id: string) => void;
+  setMappings: (columnMappings: ColumnMappingEntry[], relationMappings: RelationMappingEntry[]) => void;
 
   // 매핑 조작
   approveColumnMapping: (id: string) => void;
@@ -249,6 +250,12 @@ export const useOnboardingStore = create<OnboardingState>()((set, get) => ({
   setTargetPropertyOptions: (options) => set({ targetPropertyOptions: options }),
 
   setMappingId: (id) => set({ mappingId: id }),
+
+  setMappings: (columnMappings, relationMappings) =>
+    set({
+      columnMappings: columnMappings.map((cm) => ({ ...cm })),
+      relationMappings: relationMappings.map(cloneRelationMapping),
+    }),
 
   approveColumnMapping: (id) =>
     set((state) => ({

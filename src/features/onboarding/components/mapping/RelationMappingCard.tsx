@@ -36,6 +36,18 @@ export function RelationMappingCard({
   const localTo = t(`mapping:nodeLabel.${mapping.to_label}`, mapping.to_label);
   const localRel = t(`mapping:relType.${mapping.rel_type}`, mapping.rel_type);
 
+  const getDismissedReasonLabel = (reason?: string | null) => {
+    if (!reason) return null;
+    if (reason === "missing_from_endpoint") return "from endpoint 컬럼 누락";
+    if (reason === "missing_to_endpoint") return "to endpoint 컬럼 누락";
+    if (reason === "missing_required_rel_property") return "필수 관계 속성 컬럼 누락";
+    if (reason === "missing_source_column") return "참조 컬럼 누락";
+    if (reason === "invalid_ext_property_name") return "확장 속성 이름 규칙 위반";
+    return reason;
+  };
+
+  const dismissedReasonLabel = getDismissedReasonLabel(mapping.dismissed_reason);
+
   return (
     <div
       className={cn(
@@ -123,6 +135,11 @@ export function RelationMappingCard({
           )}
         </div>
       </div>
+      {isDismissed && dismissedReasonLabel && (
+        <div className="mt-2 text-xs text-amber-700">
+          제외 사유: {dismissedReasonLabel}
+        </div>
+      )}
     </div>
   );
 }
