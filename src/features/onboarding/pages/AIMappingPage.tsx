@@ -11,7 +11,12 @@ import {
   validateMapping,
   startSynthesis,
 } from "@/api/onboarding";
-import type { TargetPropertyOption } from "@/features/onboarding/types/onboarding.types";
+import type {
+  ColumnMappingEntry,
+  RelationMappingEntry,
+  TargetPropertyOption,
+} from "@/features/onboarding/types/onboarding.types";
+import type { MappingResultDTO } from "@/api/types/onboarding";
 import { MappingSummaryBar } from "@/features/onboarding/components/mapping/MappingSummaryBar";
 import { MappingCard } from "@/features/onboarding/components/mapping/MappingCard";
 import { UnmappedCard } from "@/features/onboarding/components/mapping/UnmappedCard";
@@ -30,14 +35,11 @@ export function AIMappingPage() {
     setStep,
     setTargetPropertyOptions,
     setMappingId,
+    setMappings,
     approveColumnMapping,
     approveRelationMapping,
     approveAllMappings,
-    removeColumnMapping,
     dismissRelationMapping,
-    restoreRelationMapping,
-    changeColumnMappingTarget,
-    createColumnMapping,
     resetMappings,
     getMappingResult,
     setSynthesisJob,
@@ -106,12 +108,175 @@ export function AIMappingPage() {
   // 매핑이 하나라도 있는지 확인 (다음 버튼 활성화 조건)
   const hasMappings = columnMappings.length + activeRelationMappings.length > 0;
 
-  const handleRemoveColumnMapping = (id: string) => {
-    const dismissedCount = removeColumnMapping(id);
-    if (dismissedCount > 0) {
-      toast.warning(
-        `참조 컬럼이 제거되어 관계 매핑 ${dismissedCount}건이 제외되었습니다.`
+  const getRelationKey = (rm: RelationMappingEntry) =>
+    [
+      rm.from_label,
+      rm.rel_type,
+      rm.to_label,
+      JSON.stringify(rm.from_columns),
+      JSON.stringify(rm.to_columns),
+      JSON.stringify(rm.properties),
+    ].join("|");
+
+  const buildDraftMapping = (
+    nextColumns: ColumnMappingEntry[],
+    nextRelations: RelationMappingEntry[],
+  ): MappingResultDTO => ({
+    column_mappings: nextColumns.map((cm) => ({
+      source_column: cm.source_column,
+      target_label: cm.target_label,
+      target_property: cm.target_property,
+      data_type: cm.data_type,
+      confidence: cm.confidence,
+      reason: cm.reason,
+    })),
+    relation_mappings: nextRelations
+      .filter((rm) => !rm.dismissed)
+      .map((rm) => ({
+        from_label: rm.from_label,
+        to_label: rm.to_label,
+        rel_type: rm.rel_type,
+        from_columns: rm.from_columns,
+        to_columns: rm.to_columns,
+        properties: rm.properties,
+        property_types: rm.property_types,
+      })),
+    extended_properties: [],
+  });
+
+  const applyValidatedState = async (
+    nextColumns: ColumnMappingEntry[],
+    nextRelations: RelationMappingEntry[],
+  ) => {
+    if (!primaryUploadId) {
+      toast.error("업로드 정보가 없습니다. 이전 단계를 다시 진행해주세요.");
+      return false;
+    }
+
+    try {
+      const validation = await validateMapping({
+        upload_id: primaryUploadId,
+        mapping: buildDraftMapping(nextColumns, nextRelations),
+      });
+
+      const errors = validation.errors || [];
+      if (errors.length > 0) {
+        toast.error(errors[0].message || "매핑 검증에 실패했습니다.");
+        return false;
+      }
+
+      const warnings = validation.warnings || [];
+      if (warnings.length > 0) {
+        toast.warning(warnings[0].message || "매핑 검증 경고가 있습니다.");
+      }
+
+      const normalized = validation.normalized_mapping;
+      const normalizedRelationMap = new Map(
+        normalized.relation_mappings.map((rm) => [
+          [
+            rm.from_label,
+            rm.rel_type,
+            rm.to_label,
+            JSON.stringify(rm.from_columns || {}),
+            JSON.stringify(rm.to_columns || {}),
+            JSON.stringify(rm.properties || {}),
+          ].join("|"),
+          rm,
+        ]),
       );
+
+      const finalColumns = normalized.column_mappings.map((cm, idx) => {
+        const existing =
+          nextColumns.find(
+            (item) =>
+              item.source_column === cm.source_column &&
+              item.target_label === cm.target_label &&
+              item.target_property === cm.target_property,
+          ) ||
+          columnMappings.find(
+            (item) =>
+              item.source_column === cm.source_column &&
+              item.target_label === cm.target_label &&
+              item.target_property === cm.target_property,
+          );
+
+        return {
+          id: existing?.id || `cm-auto-${idx + 1}`,
+          source_column: cm.source_column,
+          target_label: cm.target_label,
+          target_property: cm.target_property,
+          data_type: cm.data_type,
+          confidence: cm.confidence,
+          reason: cm.reason,
+          approved: existing?.approved ?? false,
+        };
+      });
+
+      const finalRelations = nextRelations.map((rm) => {
+        const relationKey = getRelationKey(rm);
+        const normalizedRelation = normalizedRelationMap.get(relationKey);
+
+        if (rm.dismissed) return rm;
+
+        if (!normalizedRelation) {
+          return {
+            ...rm,
+            dismissed: true,
+            approved: false,
+            dismissed_reason: rm.dismissed_reason || "missing_source_column",
+          };
+        }
+
+        return {
+          ...rm,
+          from_columns: { ...normalizedRelation.from_columns },
+          to_columns: { ...normalizedRelation.to_columns },
+          properties: { ...normalizedRelation.properties },
+          property_types: { ...normalizedRelation.property_types },
+          dismissed: false,
+          dismissed_reason: null,
+        };
+      });
+
+      setMappings(finalColumns, finalRelations);
+      return true;
+    } catch (err) {
+      console.error("Mapping validate failed:", err);
+      const axiosErr = err as { response?: { data?: { detail?: string } } };
+      const errorMsg = axiosErr?.response?.data?.detail || "매핑 검증에 실패했습니다.";
+      toast.error(errorMsg);
+      return false;
+    }
+  };
+
+  const handleRemoveColumnMapping = async (id: string) => {
+    const removed = columnMappings.find((cm) => cm.id === id);
+    if (!removed) return;
+
+    const nextColumns = columnMappings.filter((cm) => cm.id !== id);
+    let dismissedCount = 0;
+    const nextRelations = relationMappings.map((rm) => {
+      const usedInFrom = Object.values(rm.from_columns).includes(removed.source_column);
+      const usedInTo = Object.values(rm.to_columns).includes(removed.source_column);
+      const usedInProps = Object.keys(rm.properties).includes(removed.source_column);
+      if (!usedInFrom && !usedInTo && !usedInProps) return rm;
+
+      dismissedCount += rm.dismissed ? 0 : 1;
+      return {
+        ...rm,
+        dismissed: true,
+        approved: false,
+        dismissed_reason: usedInFrom
+          ? "missing_from_endpoint"
+          : usedInTo
+            ? "missing_to_endpoint"
+            : "missing_required_rel_property",
+      };
+    });
+
+    const ok = await applyValidatedState(nextColumns, nextRelations);
+    if (ok && dismissedCount > 0) {
+      toast.warning(`참조 컬럼이 제거되어 관계 매핑 ${dismissedCount}건이 제외되었습니다.`);
     }
   };
 
@@ -120,12 +285,55 @@ export function AIMappingPage() {
     targetLabel: string,
     targetProperty: string
   ) => {
-    const dismissedCount = changeColumnMappingTarget(id, targetLabel, targetProperty);
-    if (dismissedCount > 0) {
-      toast.warning(
-        `참조 컬럼 대상이 변경되어 관계 매핑 ${dismissedCount}건이 제외되었습니다.`
+    const nextColumns = columnMappings.map((cm) =>
+      cm.id === id
+        ? {
+            ...cm,
+            target_label: targetLabel,
+            target_property: targetProperty,
+            approved: false,
+            confidence: 100,
+            reason: "사용자 수동 변경",
+          }
+        : cm,
+    );
+
+    let dismissedCount = 0;
+    const nextRelations = relationMappings.map((rm) => {
+      const isFromValid = Object.entries(rm.from_columns).every(([prop, sourceColumn]) =>
+        nextColumns.some(
+          (cm) =>
+            cm.source_column === sourceColumn &&
+            cm.target_label === rm.from_label &&
+            cm.target_property === prop,
+        ),
       );
-    }
+      const isToValid = Object.entries(rm.to_columns).every(([prop, sourceColumn]) =>
+        nextColumns.some(
+          (cm) =>
+            cm.source_column === sourceColumn &&
+            cm.target_label === rm.to_label &&
+            cm.target_property === prop,
+        ),
+      );
+
+      if (isFromValid && isToValid) return rm;
+
+      dismissedCount += rm.dismissed ? 0 : 1;
+      return {
+        ...rm,
+        dismissed: true,
+        approved: false,
+        dismissed_reason: !isFromValid ? "missing_from_endpoint" : "missing_to_endpoint",
+      };
+    });
+
+    void (async () => {
+      const ok = await applyValidatedState(nextColumns, nextRelations);
+      if (ok && dismissedCount > 0) {
+        toast.warning(`참조 컬럼 대상이 변경되어 관계 매핑 ${dismissedCount}건이 제외되었습니다.`);
+      }
+    })();
   };
 
   const handleCreateColumnMapping = (
@@ -133,17 +341,46 @@ export function AIMappingPage() {
     targetLabel: string,
     targetProperty: string
   ) => {
-    const dismissedCount = createColumnMapping(sourceColumn, targetLabel, targetProperty);
-    if (dismissedCount > 0) {
-      toast.warning(
-        `매핑 추가 결과와 충돌하여 관계 매핑 ${dismissedCount}건이 제외되었습니다.`
-      );
-    }
+    const nextColumns = [
+      ...columnMappings,
+      {
+        id: `cm-${Date.now()}`,
+        source_column: sourceColumn,
+        target_label: targetLabel,
+        target_property: targetProperty,
+        data_type: "string",
+        confidence: 100,
+        reason: "사용자 수동 매핑",
+        approved: false,
+      },
+    ];
+
+    void (async () => {
+      const ok = await applyValidatedState(nextColumns, relationMappings);
+      if (!ok) return;
+
+      const dismissedCount = relationMappings.filter((rm) => rm.dismissed).length;
+      if (dismissedCount > 0) {
+        toast.warning(`매핑 추가 후에도 제외된 관계 매핑 ${dismissedCount}건이 있습니다.`);
+      }
+    })();
   };
 
-  const handleRestoreRelationMapping = (id: string) => {
-    const restored = restoreRelationMapping(id);
-    if (!restored) {
+  const handleRestoreRelationMapping = async (id: string) => {
+    const target = relationMappings.find((rm) => rm.id === id);
+    if (!target) return;
+
+    const nextRelations = relationMappings.map((rm) =>
+      rm.id === id ? { ...rm, dismissed: false, approved: false, dismissed_reason: null } : rm,
+    );
+
+    const ok = await applyValidatedState(columnMappings, nextRelations);
+    if (!ok) {
+      const fallbackReason = "missing_source_column";
+      const revertedRelations = relationMappings.map((rm) =>
+        rm.id === id ? { ...rm, dismissed: true, approved: false, dismissed_reason: fallbackReason } : rm,
+      );
+      setMappings(columnMappings, revertedRelations);
       toast.error("참조 컬럼 매핑이 유효하지 않아 관계 매핑을 복원할 수 없습니다.");
     }
   };
