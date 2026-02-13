@@ -14,6 +14,10 @@ export interface UploadedFile {
   status: "pending" | "uploading" | "completed" | "failed";
   progress: number;
   error?: string;
+  // API에서 받은 업로드 ID
+  uploadId?: string;
+  // 원본 File 객체 (presigned URL 업로드용)
+  file?: File;
 }
 
 export interface UploadLimits {
@@ -28,30 +32,45 @@ export interface UploadLimits {
 // Step 2: AI 매핑
 export type ConfidenceLevel = "high" | "medium" | "low";
 
-export interface SourceColumn {
-  id: string;
-  name: string;
-  sampleData: string[];
-  mappedTo?: string;
+export function getConfidenceLevel(confidence: number): ConfidenceLevel {
+  if (confidence >= 90) return "high";
+  if (confidence >= 70) return "medium";
+  return "low";
 }
 
-export interface TargetProperty {
+// 컬럼 매핑 (API column_mapping + 프론트 확장)
+export interface ColumnMappingEntry {
   id: string;
-  name: string;
-  label: string;
-  category: string;
-  required: boolean;
-  description: string;
-  mappedFrom?: string;
-}
-
-export interface MappingConnection {
-  id: string;
-  sourceId: string;
-  targetId: string;
+  source_column: string;
+  target_label: string;
+  target_property: string;
+  data_type: string;
   confidence: number;
-  confidenceLevel: ConfidenceLevel;
+  reason: string;
   approved: boolean;
+}
+
+// 관계 매핑 (API relation_mapping + 프론트 확장)
+export interface RelationMappingEntry {
+  id: string;
+  from_label: string;
+  to_label: string;
+  rel_type: string;
+  from_columns: Record<string, string>;
+  to_columns: Record<string, string>;
+  properties: Record<string, string>;
+  property_types: Record<string, string>;
+  approved: boolean;
+  dismissed: boolean;
+}
+
+// 타겟 속성 옵션 (향후 온톨로지 API에서 로드)
+export interface TargetPropertyOption {
+  label: string;
+  property: string;
+  description: string;
+  required: boolean;
+  data_type: string;
 }
 
 // Step 3: 데이터 처리

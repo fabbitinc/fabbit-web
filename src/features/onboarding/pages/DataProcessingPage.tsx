@@ -1,20 +1,20 @@
-import { useEffect } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Cog,
-  Database,
-  GitBranch,
   Circle,
   Loader2,
   CheckCircle2,
   Clock,
+  AlertCircle,
 } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useOnboardingStore } from "@/stores/onboardingStore";
-import { mockLogMessages } from "@/features/onboarding/mock-data/onboarding-mock";
-import { CounterAnimation } from "@/features/onboarding/components/processing/CounterAnimation";
+import { previewMapping } from "@/api/onboarding";
 import { LogStream } from "@/features/onboarding/components/processing/LogStream";
+import type { LogEntry } from "@/features/onboarding/types/onboarding.types";
 
 const stepStatusConfig = {
   pending: {
@@ -32,73 +32,147 @@ const stepStatusConfig = {
   },
 } as const;
 
+// 처리 단계별 애니메이션 로그
+const phaseLogMessages: Record<string, LogEntry[]> = {
+  parsing: [
+    { id: "log-1", timestamp: "00:00", message: "업로드된 파일을 분석합니다...", type: "info" },
+    { id: "log-2", timestamp: "00:02", message: "파일 구조를 파싱 중...", type: "info" },
+  ],
+  normalizing: [
+    { id: "log-3", timestamp: "00:05", message: "데이터 정규화 시작...", type: "info" },
+    { id: "log-4", timestamp: "00:08", message: "컬럼 헤더 추출 완료", type: "success" },
+    { id: "log-5", timestamp: "00:10", message: "샘플 데이터 추출 중...", type: "info" },
+  ],
+  connecting: [
+    { id: "log-6", timestamp: "00:15", message: "AI 매핑 분석을 시작합니다...", type: "info" },
+    { id: "log-7", timestamp: "00:25", message: "컬럼-온톨로지 매핑 추론 중...", type: "info" },
+    { id: "log-8", timestamp: "00:40", message: "관계 매핑 추론 중...", type: "info" },
+  ],
+  validating: [
+    { id: "log-9", timestamp: "00:50", message: "매핑 결과 검증 중...", type: "info" },
+  ],
+};
+
+const PHASES = ["parsing", "normalizing", "connecting", "validating"] as const;
+
 export function DataProcessingPage() {
   const navigate = useNavigate();
   const {
     setStep,
+    primaryUploadId,
     processingSteps,
-    processingStats,
     processingProgress,
     processingLogs,
     isProcessing,
     startProcessing,
     updateProcessingStep,
-    updateProcessingStats,
     setProcessingProgress,
     addLog,
+    setMappingPreviewData,
   } = useOnboardingStore();
+
+  const [error, setError] = useState<string | null>(null);
+  const [isCompleted, setIsCompleted] = useState(false);
+  const apiCalledRef = useRef(false);
 
   useEffect(() => {
     setStep(2);
   }, [setStep]);
 
-  // 시뮬레이션 (개발: ~1초)
+  // API 호출 + 단계 애니메이션
   useEffect(() => {
-    let logIndex = 0;
-    const totalLogs = mockLogMessages.length;
-
-    const interval = setInterval(() => {
-      if (logIndex >= totalLogs) {
-        clearInterval(interval);
-        return;
-      }
-
-      const progress = Math.round(((logIndex + 1) / totalLogs) * 100);
-      setProcessingProgress(progress);
-      addLog(mockLogMessages[logIndex]);
-
-      if (logIndex === 0)
-        updateProcessingStep("parsing", "in_progress");
-      if (logIndex === 2) {
-        updateProcessingStep("parsing", "completed");
-        updateProcessingStep("normalizing", "in_progress");
-      }
-      if (logIndex === 6) {
-        updateProcessingStep("normalizing", "completed");
-        updateProcessingStep("connecting", "in_progress");
-      }
-      if (logIndex === 9) {
-        updateProcessingStep("connecting", "completed");
-        updateProcessingStep("validating", "in_progress");
-      }
-      if (logIndex === totalLogs - 1)
-        updateProcessingStep("validating", "completed");
-
-      const nodeProgress = Math.min(logIndex / totalLogs, 1);
-      updateProcessingStats({
-        nodesCreated: Math.round(3450 * nodeProgress),
-        relationsCreated: Math.round(8920 * nodeProgress),
-      });
-
-      logIndex++;
-    }, 70);
+    if (apiCalledRef.current || !primaryUploadId) return;
+    apiCalledRef.current = true;
 
     startProcessing();
 
-    return () => clearInterval(interval);
-  }, []);
+    let currentPhaseIndex = 0;
+    let logIndex = 0;
+    let stopped = false;
 
-  const isCompleted = processingProgress >= 100;
+    // 첫 번째 단계 시작
+    updateProcessingStep(PHASES[0], "in_progress");
+
+    // 단계별 로그 애니메이션 (API 응답 전까지 최대 90%)
+    const animationInterval = setInterval(() => {
+      if (stopped) return;
+
+      const currentPhase = PHASES[currentPhaseIndex];
+      const phaseLogs = phaseLogMessages[currentPhase] || [];
+
+      if (logIndex < phaseLogs.length) {
+        addLog(phaseLogs[logIndex]);
+        logIndex++;
+      } else if (currentPhaseIndex < PHASES.length - 1) {
+        updateProcessingStep(currentPhase, "completed");
+        currentPhaseIndex++;
+        updateProcessingStep(PHASES[currentPhaseIndex], "in_progress");
+        logIndex = 0;
+      }
+
+      // 진행률 계산 (최대 90%)
+      const totalLogs = Object.values(phaseLogMessages).reduce(
+        (sum, logs) => sum + logs.length,
+        0,
+      );
+      const processedLogs =
+        Object.values(phaseLogMessages)
+          .slice(0, currentPhaseIndex)
+          .reduce((sum, logs) => sum + logs.length, 0) + logIndex;
+      const progress = Math.min(Math.round((processedLogs / totalLogs) * 90), 90);
+      setProcessingProgress(progress);
+    }, 2500);
+
+    // 실제 API 호출
+    previewMapping({ upload_id: primaryUploadId })
+      .then((response) => {
+        stopped = true;
+        clearInterval(animationInterval);
+
+        // 모든 단계 완료 처리
+        PHASES.forEach((phase) => updateProcessingStep(phase, "completed"));
+        setProcessingProgress(100);
+
+        addLog({
+          id: "log-done",
+          timestamp: "완료",
+          message: `매핑 분석 완료: 컬럼 ${response.mapping.column_mappings.length}개, 관계 ${response.mapping.relation_mappings.length}개 매핑됨`,
+          type: "success",
+        });
+
+        // 스토어에 매핑 데이터 저장
+        setMappingPreviewData(
+          response.headers,
+          response.sample_rows,
+          response.mapping,
+          response.editable_constraints,
+        );
+
+        setIsCompleted(true);
+      })
+      .catch((err) => {
+        stopped = true;
+        clearInterval(animationInterval);
+        console.error("Mapping preview failed:", err);
+
+        const errorMsg =
+          err?.response?.data?.detail || "매핑 분석에 실패했습니다";
+        setError(errorMsg);
+        toast.error(errorMsg);
+
+        addLog({
+          id: "log-error",
+          timestamp: "오류",
+          message: `오류: ${errorMsg}`,
+          type: "error",
+        });
+      });
+
+    return () => {
+      stopped = true;
+      clearInterval(animationInterval);
+    };
+  }, [primaryUploadId]);
 
   return (
     <div className="relative flex w-full max-w-[700px] flex-col">
@@ -121,100 +195,105 @@ export function DataProcessingPage() {
       </div>
 
       <div className="flex w-full flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-2xl shadow-gray-200/50">
-      {/* 상단 헤더 */}
-      <div className="px-8 pt-10 pb-6 text-center lg:px-10">
-        <div className="flex justify-center mb-3">
-          <Cog
-            className={`size-8 text-blue-500 ${isProcessing && !isCompleted ? "animate-spin" : ""}`}
-          />
-        </div>
-        <h1 className="text-2xl font-bold text-gray-900">데이터 지식화</h1>
-        <p className="mt-2 text-sm text-gray-500">
-          업로드된 데이터를 분석하여 지식 그래프를 구축합니다
-        </p>
-      </div>
-
-      {/* 콘텐츠 */}
-      <div className="px-8 lg:px-10 space-y-6">
-        {/* 전체 Progress */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-gray-500">전체 진행률</span>
-            <span className="font-medium text-gray-900">
-              {processingProgress}%
-            </span>
+        {/* 상단 헤더 */}
+        <div className="px-8 pt-10 pb-6 text-center lg:px-10">
+          <div className="flex justify-center mb-3">
+            <Cog
+              className={`size-8 text-blue-500 ${isProcessing && !isCompleted ? "animate-spin" : ""}`}
+            />
           </div>
-          <Progress value={processingProgress} className="h-2" />
-          <div className="flex items-center gap-1 text-xs text-gray-400">
-            <Clock className="size-3" />
-            <span>{isCompleted ? "처리 완료" : "처리 중..."}</span>
+          <h1 className="text-2xl font-bold text-gray-900">데이터 지식화</h1>
+          <p className="mt-2 text-sm text-gray-500">
+            업로드된 데이터를 분석하여 AI 매핑을 생성합니다
+          </p>
+        </div>
+
+        {/* 콘텐츠 */}
+        <div className="px-8 lg:px-10 space-y-6">
+          {/* 전체 Progress */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-gray-500">전체 진행률</span>
+              <span className="font-medium text-gray-900">
+                {processingProgress}%
+              </span>
+            </div>
+            <Progress value={processingProgress} className="h-2" />
+            <div className="flex items-center gap-1 text-xs text-gray-400">
+              <Clock className="size-3" />
+              <span>
+                {error
+                  ? "오류 발생"
+                  : isCompleted
+                    ? "분석 완료"
+                    : "AI 분석 중... (1~2분 소요)"}
+              </span>
+            </div>
+          </div>
+
+          {/* 에러 표시 */}
+          {error && (
+            <div className="flex items-center gap-3 p-4 rounded-xl bg-red-50 border border-red-200">
+              <AlertCircle className="size-5 text-red-500 shrink-0" />
+              <div>
+                <p className="text-sm font-medium text-red-800">{error}</p>
+                <p className="text-xs text-red-600 mt-1">
+                  이전 단계로 돌아가서 다시 시도해주세요
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* 처리 단계 체크리스트 */}
+          <div className="rounded-xl border border-gray-200 p-5 space-y-3">
+            <h3 className="text-sm font-semibold text-gray-900">처리 단계</h3>
+            <div className="space-y-1.5">
+              {processingSteps.map((step) => {
+                const config = stepStatusConfig[step.status];
+                const Icon = config.icon;
+                const shouldAnimate =
+                  "animate" in config && config.animate;
+
+                return (
+                  <div
+                    key={step.phase}
+                    className={`flex items-center gap-3 px-3 py-2 rounded-lg ${config.className}`}
+                  >
+                    <Icon
+                      className={`size-4 shrink-0 ${shouldAnimate ? "animate-spin" : ""}`}
+                    />
+                    <span className="text-sm">{step.label}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* 로그 스트리밍 */}
+          <div className="bg-gray-900 rounded-xl p-4">
+            <LogStream logs={processingLogs} />
           </div>
         </div>
 
-        {/* 카운터 영역 */}
-        <div className="grid grid-cols-2 gap-4">
-          <CounterAnimation
-            target={processingStats.nodesCreated}
-            label="생성된 노드"
-            icon={<Database className="size-6" />}
-          />
-          <CounterAnimation
-            target={processingStats.relationsCreated}
-            label="생성된 관계"
-            icon={<GitBranch className="size-6" />}
-          />
+        {/* 하단 버튼 */}
+        <div className="flex items-center justify-between px-8 pb-8 pt-6 lg:px-10">
+          <Button
+            type="button"
+            variant="outline"
+            className="h-12 px-8 text-base font-semibold border-gray-200 hover:bg-gray-50 hover:border-gray-300 transition-all"
+            onClick={() => navigate("/onboarding/upload")}
+          >
+            이전
+          </Button>
+          <Button
+            type="button"
+            className="h-12 px-8 bg-blue-600 hover:bg-blue-700 text-base font-semibold shadow-lg shadow-blue-600/20 transition-all hover:shadow-blue-600/30"
+            disabled={!isCompleted}
+            onClick={() => navigate("/onboarding/mapping")}
+          >
+            다음
+          </Button>
         </div>
-
-        {/* 처리 단계 체크리스트 */}
-        <div className="rounded-xl border border-gray-200 p-5 space-y-3">
-          <h3 className="text-sm font-semibold text-gray-900">처리 단계</h3>
-          <div className="space-y-1.5">
-            {processingSteps.map((step) => {
-              const config = stepStatusConfig[step.status];
-              const Icon = config.icon;
-              const shouldAnimate =
-                "animate" in config && config.animate;
-
-              return (
-                <div
-                  key={step.phase}
-                  className={`flex items-center gap-3 px-3 py-2 rounded-lg ${config.className}`}
-                >
-                  <Icon
-                    className={`size-4 shrink-0 ${shouldAnimate ? "animate-spin" : ""}`}
-                  />
-                  <span className="text-sm">{step.label}</span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {/* 로그 스트리밍 */}
-        <div className="bg-gray-900 rounded-xl p-4">
-          <LogStream logs={processingLogs} />
-        </div>
-      </div>
-
-      {/* 하단 버튼 */}
-      <div className="flex items-center justify-between px-8 pb-8 pt-6 lg:px-10">
-        <Button
-          type="button"
-          variant="outline"
-          className="h-12 px-8 text-base font-semibold border-gray-200 hover:bg-gray-50 hover:border-gray-300 transition-all"
-          onClick={() => navigate("/onboarding/upload")}
-        >
-          이전
-        </Button>
-        <Button
-          type="button"
-          className="h-12 px-8 bg-blue-600 hover:bg-blue-700 text-base font-semibold shadow-lg shadow-blue-600/20 transition-all hover:shadow-blue-600/30"
-          disabled={!isCompleted}
-          onClick={() => navigate("/onboarding/mapping")}
-        >
-          다음
-        </Button>
-      </div>
       </div>
     </div>
   );

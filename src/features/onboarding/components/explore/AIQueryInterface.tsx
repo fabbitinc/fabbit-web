@@ -12,12 +12,14 @@ interface AIQueryInterfaceProps {
   messages: ChatMessage[];
   suggestedQuestions: SuggestedQuestion[];
   onSendMessage: (message: string) => void;
+  isLoading?: boolean;
 }
 
 export function AIQueryInterface({
   messages,
   suggestedQuestions,
   onSendMessage,
+  isLoading = false,
 }: AIQueryInterfaceProps) {
   const [input, setInput] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -91,6 +93,22 @@ export function AIQueryInterface({
               </div>
             ))}
 
+            {/* AI 응답 대기 중 로딩 */}
+            {isLoading && (
+              <div className="flex gap-2 justify-start">
+                <div className="w-7 h-7 rounded-full bg-[#3b82f6]/10 flex items-center justify-center shrink-0">
+                  <Bot className="size-3.5 text-[#3b82f6]" />
+                </div>
+                <div className="bg-[#f1f5f9] rounded-2xl rounded-bl-md px-4 py-3">
+                  <div className="flex gap-1">
+                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                    <span className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* 대화 시작 전: 추천 질문을 채팅 영역 안에 카드로 표시 */}
             {!hasUserMessages && suggestedQuestions.length > 0 && (
               <div className="pt-2 space-y-2">
@@ -144,11 +162,12 @@ export function AIQueryInterface({
             onKeyDown={handleKeyDown}
             placeholder="질문을 입력하세요..."
             className="flex-1"
+            disabled={isLoading}
           />
           <Button
             size="icon"
             onClick={handleSend}
-            disabled={!input.trim()}
+            disabled={!input.trim() || isLoading}
           >
             <Send className="size-4" />
           </Button>
