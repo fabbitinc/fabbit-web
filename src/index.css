@@ -138,6 +138,11 @@
     /* 스크롤바 공간 미리 확보 - 레이아웃 시프트 방지 */
     scrollbar-gutter: stable;
   }
+  /* react-remove-scroll-bar(Radix Select 등)가 body에 margin-right를 추가로 적용하여
+     scrollbar-gutter와 이중 보정되는 현상 방지 */
+  body[data-scroll-locked] {
+    margin-right: 0 !important;
+  }
   body {
     @apply bg-background text-foreground;
   }
