@@ -7,6 +7,7 @@ interface MappingSummaryBarProps {
   columnMappingCount: number;
   relationMappingCount: number;
   unmappedCount: number;
+  totalCandidates: number;
   approvedCount: number;
   totalMappings: number;
   onApproveAll: () => void;
@@ -17,6 +18,7 @@ export function MappingSummaryBar({
   columnMappingCount,
   relationMappingCount,
   unmappedCount,
+  totalCandidates,
   approvedCount,
   totalMappings,
   onApproveAll,
@@ -60,7 +62,7 @@ export function MappingSummaryBar({
             <p className="text-xs text-gray-500">{t("mapping:excluded")}</p>
             <p className="text-lg font-bold text-gray-700">
               {unmappedCount}
-              <span className="text-sm font-normal text-gray-400"> / {totalMappings}</span>
+              <span className="text-sm font-normal text-gray-400"> / {totalCandidates}</span>
             </p>
           </div>
         </div>

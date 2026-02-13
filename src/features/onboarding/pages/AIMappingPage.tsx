@@ -91,6 +91,8 @@ export function AIMappingPage() {
   const approvedRelationCount = activeRelationMappings.filter((rm) => rm.approved).length;
   const totalMappings = columnMappings.length + activeRelationMappings.length;
   const totalApproved = approvedColumnCount + approvedRelationCount;
+  const totalCandidates = mappingHeaders.length + relationMappings.length;
+  const excludedCount = unmappedColumns.length + dismissedRelationMappings.length;
 
   // 샘플 데이터 헬퍼
   const getSampleData = (column: string) => {
@@ -258,8 +260,9 @@ export function AIMappingPage() {
     const nextRelations = relationMappings.map((rm) => {
       const usedInFrom = Object.values(rm.from_columns).includes(removed.source_column);
       const usedInTo = Object.values(rm.to_columns).includes(removed.source_column);
-      const usedInProps = Object.keys(rm.properties).includes(removed.source_column);
-      if (!usedInFrom && !usedInTo && !usedInProps) return rm;
+      // 관계 속성(properties)은 컬럼 매핑 존재 자체가 아니라
+      // 원본 헤더 존재 여부로 유효성을 판단하므로 여기서는 제외 처리하지 않음.
+      if (!usedInFrom && !usedInTo) return rm;
 
       dismissedCount += rm.dismissed ? 0 : 1;
       return {
@@ -268,9 +271,7 @@ export function AIMappingPage() {
         approved: false,
         dismissed_reason: usedInFrom
           ? "missing_from_endpoint"
-          : usedInTo
-            ? "missing_to_endpoint"
-            : "missing_required_rel_property",
+          : "missing_to_endpoint",
       };
     });
 
@@ -490,7 +491,8 @@ export function AIMappingPage() {
           <MappingSummaryBar
             columnMappingCount={columnMappings.length}
             relationMappingCount={activeRelationMappings.length}
-            unmappedCount={unmappedColumns.length}
+            unmappedCount={excludedCount}
+            totalCandidates={totalCandidates}
             approvedCount={totalApproved}
             totalMappings={totalMappings}
             onApproveAll={approveAllMappings}
