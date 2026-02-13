@@ -12,6 +12,7 @@ import type {
   TargetPropertyOption,
 } from "@/features/onboarding/types/onboarding.types";
 import type {
+  EditableConstraintsDTO,
   MappingResultDTO,
   SynthesisJobResponse,
 } from "@/api/types/onboarding";
@@ -81,7 +82,7 @@ interface OnboardingState {
   initialExtendedMappings: ExtendedPropertyEntry[];
   mappingHeaders: string[];
   mappingSampleRows: Record<string, string>[];
-  editableConstraints: Record<string, unknown> | null;
+  editableConstraints: EditableConstraintsDTO | null;
   // 온톨로지 스키마에서 로드된 타겟 옵션
   targetPropertyOptions: TargetPropertyOption[];
 
@@ -118,7 +119,7 @@ interface OnboardingState {
     headers: string[],
     sampleRows: Record<string, string>[],
     mapping: MappingResultDTO,
-    editableConstraints?: Record<string, unknown>,
+    editableConstraints?: EditableConstraintsDTO,
   ) => void;
   setTargetPropertyOptions: (options: TargetPropertyOption[]) => void;
   setMappingId: (id: string) => void;
@@ -228,7 +229,7 @@ export const useOnboardingStore = create<OnboardingState>()((set, get) => ({
       data_type: cm.data_type || "string",
       confidence: cm.confidence || 0,
       reason: cm.reason || "",
-      approved: cm.confidence >= 95, // 신뢰도 95% 이상이면 자동 승인
+      approved: (cm.confidence || 0) >= 90,
     }));
 
     // API의 relation_mappings를 프론트의 RelationMappingEntry로 변환
@@ -255,7 +256,7 @@ export const useOnboardingStore = create<OnboardingState>()((set, get) => ({
       data_type: ep.data_type || "string",
       confidence: ep.confidence || 0,
       reason: ep.reason || "",
-      approved: ep.confidence >= 95,
+      approved: true,
     }));
     const initialExtendedMappings = extendedMappings.map((ep) => ({ ...ep }));
 

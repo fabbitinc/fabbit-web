@@ -58,8 +58,8 @@ export function LoginPage() {
   const { login, loginWithProvider, isLoading } = useAuthStore();
 
   // TODO: 개발용 기본값 제거
-  const [email, setEmail] = useState("user1@gmail.com");
-  const [password, setPassword] = useState("admin");
+  const [email, setEmail] = useState("test@gmail.com");
+  const [password, setPassword] = useState("qwer1234");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
 
@@ -71,7 +71,9 @@ export function LoginPage() {
       const result = await login(email, password);
 
       if (!result.onboarded && !result.isAdmin) {
-        setError("워크스페이스 초기 설정이 완료되지 않았습니다. 관리자에게 문의해 주세요.");
+        setError(
+          "워크스페이스 초기 설정이 완료되지 않았습니다. 관리자에게 문의해 주세요.",
+        );
         return;
       }
 

@@ -193,28 +193,9 @@ export function ExplorePage() {
     synthesisStatus === "pending" || synthesisStatus === "running";
 
   return (
-    <div className="relative flex w-full max-w-[1100px] flex-col">
-      {/* 워터마크 로고 */}
-      <div className="absolute top-[-40px] left-0 flex items-center gap-1.5">
-        <div className="flex h-5 w-5 items-center justify-center rounded bg-gradient-to-br from-[#3b82f6] to-[#8b5cf6]">
-          <svg
-            className="h-3 w-3 text-white"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-          >
-            <path d="M12 2L2 7l10 5 10-5-10-5z" />
-            <path d="M2 17l10 5 10-5" />
-            <path d="M2 12l10 5 10-5" />
-          </svg>
-        </div>
-        <span className="text-xs text-gray-300">Fabbit</span>
-      </div>
-
-      <div className="flex w-full flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-2xl shadow-gray-200/50">
-        {/* 상단 헤더 */}
-        <div className="px-8 pt-10 pb-6 text-center lg:px-10">
+    <div className="w-full max-w-[1100px] space-y-6">
+      {/* 상단 헤더 */}
+      <div className="px-8 pb-6 pt-2 text-center lg:px-10">
           <div className="flex justify-center mb-3">
             <Compass className="size-8 text-purple-500" />
           </div>
@@ -222,11 +203,11 @@ export function ExplorePage() {
           <p className="mt-2 text-sm text-gray-500">
             구축된 지식 그래프를 탐색하고 통찰을 얻어보세요
           </p>
-        </div>
+      </div>
 
-        {/* 합성 진행 중 표시 */}
-        {isSynthesisRunning && (
-          <div className="mx-8 lg:mx-10 mb-6 p-5 rounded-xl border border-blue-200 bg-blue-50/50">
+      {/* 합성 진행 중 표시 */}
+      {isSynthesisRunning && (
+          <div className="mx-8 mb-6 rounded-xl border border-blue-200 bg-blue-50/50 p-5 lg:mx-10">
             <div className="flex items-center gap-3 mb-3">
               <Loader2 className="size-5 text-blue-500 animate-spin" />
               <span className="text-sm font-medium text-blue-800">
@@ -237,11 +218,11 @@ export function ExplorePage() {
             <p className="text-xs text-blue-600 mt-2">
               지식 그래프를 구축하고 있습니다. 잠시만 기다려주세요.
             </p>
-          </div>
-        )}
+        </div>
+      )}
 
-        {/* 에러 표시 */}
-        {error && (
+      {/* 에러 표시 */}
+      {error && (
           <div className="mx-8 lg:mx-10 mb-6 flex items-center gap-3 p-4 rounded-xl bg-red-50 border border-red-200">
             <AlertCircle className="size-5 text-red-500 shrink-0" />
             <div>
@@ -250,11 +231,11 @@ export function ExplorePage() {
                 이전 단계로 돌아가서 다시 시도해주세요
               </p>
             </div>
-          </div>
-        )}
+        </div>
+      )}
 
-        {/* 2컬럼 그리드 (합성 완료 후 표시) */}
-        {synthesisStatus === "completed" && (
+      {/* 2컬럼 그리드 (합성 완료 후 표시) */}
+      {synthesisStatus === "completed" && (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 px-8 lg:px-10">
             {/* 좌측: 헬스 체크 */}
             <div className="lg:col-span-2">
@@ -276,11 +257,11 @@ export function ExplorePage() {
                 isLoading={isQueryLoading}
               />
             </div>
-          </div>
-        )}
+        </div>
+      )}
 
-        {/* 하단 버튼 */}
-        <div className="flex items-center justify-between px-8 pb-8 pt-6 lg:px-10">
+      {/* 하단 버튼 */}
+      <div className="flex items-center justify-between px-8 pb-8 pt-6 lg:px-10">
           <Button
             type="button"
             variant="outline"
@@ -307,7 +288,6 @@ export function ExplorePage() {
               </>
             )}
           </Button>
-        </div>
       </div>
     </div>
   );

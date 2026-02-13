@@ -65,6 +65,14 @@ export interface RelationMappingEntry {
   dismissed_reason?: string | null;
 }
 
+export interface RelationMappingEditDraft {
+  relType: string;
+  fromSourceColumn: string;
+  toSourceColumn: string;
+  propertySourceColumn: string;
+  relationProperty: string;
+}
+
 export interface ExtendedPropertyEntry {
   id: string;
   source_column: string;

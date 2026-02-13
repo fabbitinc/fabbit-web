@@ -1,7 +1,7 @@
 import { CheckCircle2, Columns3, GitBranch, HelpCircle, ScrollText } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
+import { cn } from "@/lib/utils";
 import { MAPPING_TERMS } from "@/features/onboarding/constants/mappingTerminology";
 
 interface MappingSummaryBarProps {
@@ -9,7 +9,6 @@ interface MappingSummaryBarProps {
   relationMappingCount: number;
   extendedMappingCount: number;
   unmappedCount: number;
-  totalCandidates: number;
   approvedCount: number;
   totalMappings: number;
   onApproveAll: () => void;
@@ -21,7 +20,6 @@ export function MappingSummaryBar({
   relationMappingCount,
   extendedMappingCount,
   unmappedCount,
-  totalCandidates,
   approvedCount,
   totalMappings,
   onApproveAll,
@@ -31,61 +29,72 @@ export function MappingSummaryBar({
   const progressPercent = totalMappings > 0 ? Math.round((approvedCount / totalMappings) * 100) : 0;
   const pendingCount = totalMappings - approvedCount;
 
+  const metrics = [
+    {
+      key: "base",
+      label: MAPPING_TERMS.baseMapping,
+      value: String(columnMappingCount),
+      icon: Columns3,
+      tone: "text-blue-600",
+    },
+    {
+      key: "relation",
+      label: MAPPING_TERMS.relationMapping,
+      value: String(relationMappingCount),
+      icon: GitBranch,
+      tone: "text-violet-600",
+    },
+    {
+      key: "extended",
+      label: MAPPING_TERMS.extendedMapping,
+      value: String(extendedMappingCount),
+      icon: ScrollText,
+      tone: "text-amber-600",
+    },
+    {
+      key: "approved",
+      label: t("common:approved"),
+      value: `${approvedCount} / ${totalMappings}`,
+      icon: CheckCircle2,
+      tone: "text-emerald-600",
+    },
+    {
+      key: "excluded",
+      label: t("mapping:excluded"),
+      value: String(unmappedCount),
+      icon: HelpCircle,
+      tone: "text-red-600",
+    },
+  ] as const;
+
   return (
-    <div className="space-y-4 rounded-xl border border-gray-200 bg-gray-50/50 p-4">
-      {/* 5칸 통계 */}
-      <div className="grid grid-cols-5 gap-3">
-        <div className="flex items-center gap-2.5 rounded-lg border border-blue-100 bg-white px-3 py-2.5">
-          <Columns3 className="size-4 text-blue-500" />
-          <div>
-            <p className="text-xs text-blue-600">{MAPPING_TERMS.baseMapping}</p>
-            <p className="text-lg font-bold text-blue-700">{columnMappingCount}</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2.5 rounded-lg border border-violet-100 bg-white px-3 py-2.5">
-          <GitBranch className="size-4 text-violet-500" />
-          <div>
-            <p className="text-xs text-violet-600">{MAPPING_TERMS.relationMapping}</p>
-            <p className="text-lg font-bold text-violet-700">{relationMappingCount}</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2.5 rounded-lg border border-amber-100 bg-white px-3 py-2.5">
-          <ScrollText className="size-4 text-amber-500" />
-          <div>
-            <p className="text-xs text-amber-600">{MAPPING_TERMS.extendedMapping}</p>
-            <p className="text-lg font-bold text-amber-700">{extendedMappingCount}</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2.5 rounded-lg border border-green-100 bg-white px-3 py-2.5">
-          <CheckCircle2 className="size-4 text-green-500" />
-          <div>
-            <p className="text-xs text-green-600">{t("common:approved")}</p>
-            <p className="text-lg font-bold text-green-700">
-              {approvedCount}
-              <span className="text-sm font-normal text-gray-400"> / {totalMappings}</span>
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2.5 rounded-lg border border-gray-100 bg-white px-3 py-2.5">
-          <HelpCircle className="size-4 text-gray-400" />
-          <div>
-            <p className="text-xs text-gray-500">{t("mapping:excluded")}</p>
-            <p className="text-lg font-bold text-gray-700">
-              {unmappedCount}
-              <span className="text-sm font-normal text-gray-400"> / {totalCandidates}</span>
-            </p>
-          </div>
-        </div>
+    <div className="space-y-3 rounded-xl border border-gray-200 bg-white p-4">
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-5">
+        {metrics.map((item) => {
+          const Icon = item.icon;
+          return (
+            <div key={item.key} className="rounded-lg border border-gray-200 bg-gray-50/40 px-3 py-2.5">
+              <div className="mb-1 flex items-center gap-1.5">
+                <Icon className={cn("size-4", item.tone)} />
+                <span className={cn("text-xs font-semibold", item.tone)}>{item.label}</span>
+              </div>
+              <div className="flex items-center justify-end pr-1">
+                <p className="text-right text-xl font-bold text-gray-800">{item.value}</p>
+              </div>
+            </div>
+          );
+        })}
       </div>
 
-      {/* Progress 바 + 액션 버튼 */}
       <div className="flex items-center gap-4">
         <div className="flex-1 space-y-1">
           <div className="flex items-center justify-between text-xs">
             <span className="text-gray-500">{t("mapping:approvalProgress")}</span>
             <span className="font-medium text-gray-700">{progressPercent}%</span>
           </div>
-          <Progress value={progressPercent} className="h-2" />
+          <div className="h-2 overflow-hidden rounded-full bg-gray-200">
+            <div className="h-full bg-gray-800 transition-all" style={{ width: `${progressPercent}%` }} />
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <Button

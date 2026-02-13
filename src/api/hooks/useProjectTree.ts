@@ -12,9 +12,7 @@ export const PROJECT_TREE_QUERY_KEY = ["projectTree"] as const;
  *
  * [필드 누락 안내]
  * API에 없어서 기본값으로 처리되는 필드:
- * - Project: description, lastUpdated
- * - Folder: itemCount (하위 items 배열 길이로 계산)
- * - Item: status, hasDrawing
+ * - Item: status
  *
  * [Mock 프로젝트]
  * UI 설계 확인을 위해 mockProject가 항상 첫 번째로 포함됨
