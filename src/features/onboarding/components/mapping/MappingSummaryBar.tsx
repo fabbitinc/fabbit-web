@@ -1,58 +1,67 @@
-import { CheckCircle2, Clock, FileSpreadsheet, Unlink } from "lucide-react";
+import { CheckCircle2, Columns3, GitBranch, HelpCircle } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 
 interface MappingSummaryBarProps {
-  totalSources: number;
-  mappedCount: number;
-  approvedCount: number;
-  pendingCount: number;
+  columnMappingCount: number;
+  relationMappingCount: number;
   unmappedCount: number;
+  approvedCount: number;
+  totalMappings: number;
   onApproveAll: () => void;
   onReset: () => void;
 }
 
 export function MappingSummaryBar({
-  totalSources,
-  mappedCount,
-  approvedCount,
-  pendingCount,
+  columnMappingCount,
+  relationMappingCount,
   unmappedCount,
+  approvedCount,
+  totalMappings,
   onApproveAll,
   onReset,
 }: MappingSummaryBarProps) {
-  const progressPercent = Math.round((approvedCount / totalSources) * 100);
+  const { t } = useTranslation(["common", "mapping"]);
+  const progressPercent = totalMappings > 0 ? Math.round((approvedCount / totalMappings) * 100) : 0;
+  const pendingCount = totalMappings - approvedCount;
 
   return (
     <div className="space-y-4 rounded-xl border border-gray-200 bg-gray-50/50 p-4">
       {/* 4칸 통계 */}
       <div className="grid grid-cols-4 gap-3">
-        <div className="flex items-center gap-2.5 rounded-lg bg-white px-3 py-2.5 border border-gray-100">
-          <FileSpreadsheet className="size-4 text-gray-400" />
+        <div className="flex items-center gap-2.5 rounded-lg border border-blue-100 bg-white px-3 py-2.5">
+          <Columns3 className="size-4 text-blue-500" />
           <div>
-            <p className="text-xs text-gray-500">전체 컬럼</p>
-            <p className="text-lg font-bold text-gray-900">{totalSources}</p>
+            <p className="text-xs text-blue-600">{t("mapping:columnMapping")}</p>
+            <p className="text-lg font-bold text-blue-700">{columnMappingCount}</p>
           </div>
         </div>
-        <div className="flex items-center gap-2.5 rounded-lg bg-white px-3 py-2.5 border border-blue-100">
-          <CheckCircle2 className="size-4 text-blue-500" />
+        <div className="flex items-center gap-2.5 rounded-lg border border-violet-100 bg-white px-3 py-2.5">
+          <GitBranch className="size-4 text-violet-500" />
           <div>
-            <p className="text-xs text-blue-600">매핑됨</p>
-            <p className="text-lg font-bold text-blue-700">{mappedCount}</p>
+            <p className="text-xs text-violet-600">{t("mapping:relationMapping")}</p>
+            <p className="text-lg font-bold text-violet-700">{relationMappingCount}</p>
           </div>
         </div>
-        <div className="flex items-center gap-2.5 rounded-lg bg-white px-3 py-2.5 border border-amber-100">
-          <Clock className="size-4 text-amber-500" />
+        <div className="flex items-center gap-2.5 rounded-lg border border-green-100 bg-white px-3 py-2.5">
+          <CheckCircle2 className="size-4 text-green-500" />
           <div>
-            <p className="text-xs text-amber-600">승인 대기</p>
-            <p className="text-lg font-bold text-amber-700">{pendingCount}</p>
+            <p className="text-xs text-green-600">{t("common:approved")}</p>
+            <p className="text-lg font-bold text-green-700">
+              {approvedCount}
+              <span className="text-sm font-normal text-gray-400"> / {totalMappings}</span>
+            </p>
           </div>
         </div>
-        <div className="flex items-center gap-2.5 rounded-lg bg-white px-3 py-2.5 border border-gray-100">
-          <Unlink className="size-4 text-gray-400" />
+        <div className="flex items-center gap-2.5 rounded-lg border border-gray-100 bg-white px-3 py-2.5">
+          <HelpCircle className="size-4 text-gray-400" />
           <div>
-            <p className="text-xs text-gray-500">미매핑</p>
-            <p className="text-lg font-bold text-gray-600">{unmappedCount}</p>
+            <p className="text-xs text-gray-500">{t("mapping:excluded")}</p>
+            <p className="text-lg font-bold text-gray-700">
+              {unmappedCount}
+              <span className="text-sm font-normal text-gray-400"> / {totalMappings}</span>
+            </p>
           </div>
         </div>
       </div>
@@ -61,7 +70,7 @@ export function MappingSummaryBar({
       <div className="flex items-center gap-4">
         <div className="flex-1 space-y-1">
           <div className="flex items-center justify-between text-xs">
-            <span className="text-gray-500">승인 진행률</span>
+            <span className="text-gray-500">{t("mapping:approvalProgress")}</span>
             <span className="font-medium text-gray-700">{progressPercent}%</span>
           </div>
           <Progress value={progressPercent} className="h-2" />
@@ -73,15 +82,15 @@ export function MappingSummaryBar({
             className="h-8 text-xs"
             onClick={onReset}
           >
-            리셋
+            {t("common:reset")}
           </Button>
           <Button
             size="sm"
-            className="h-8 bg-blue-600 hover:bg-blue-700 text-xs"
+            className="h-8 bg-blue-600 text-xs hover:bg-blue-700"
             onClick={onApproveAll}
             disabled={pendingCount === 0}
           >
-            모두 승인 ({pendingCount})
+            {t("mapping:approveAll")} ({pendingCount})
           </Button>
         </div>
       </div>

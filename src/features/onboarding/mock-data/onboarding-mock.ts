@@ -1,8 +1,8 @@
 import type {
   UploadLimits,
-  SourceColumn,
-  TargetProperty,
-  MappingConnection,
+  ColumnMappingEntry,
+  RelationMappingEntry,
+  TargetPropertyOption,
   ProcessingStep,
   LogEntry,
   HealthCheckReport,
@@ -47,47 +47,78 @@ export const uploadLimitsByPlan: Record<PlanTier, UploadLimits> = {
   },
 };
 
-// Step 1: 원본 컬럼 (Source Data)
-export const mockSourceColumns: SourceColumn[] = [
-  { id: "src-1", name: "Part No.", sampleData: ["ASM-001", "PCB-102", "M-BOLT-03"] },
-  { id: "src-2", name: "품명", sampleData: ["메인 프레임", "제어 보드", "고정 볼트"] },
-  { id: "src-3", name: "재질", sampleData: ["SUS304", "FR-4", "SCM435"] },
-  { id: "src-4", name: "수량", sampleData: ["1", "2", "48"] },
-  { id: "src-5", name: "단가 (원)", sampleData: ["125,000", "45,000", "350"] },
-  { id: "src-6", name: "공급처", sampleData: ["삼성전자(주)", "대한부품", "볼트코리아"] },
-  { id: "src-7", name: "납기(일)", sampleData: ["14", "21", "7"] },
-  { id: "src-8", name: "도면번호", sampleData: ["DWG-001-R3", "DWG-102-R1", ""] },
-  { id: "src-9", name: "비고", sampleData: ["핵심 부품", "", "표준품"] },
-  { id: "src-10", name: "열처리 규격", sampleData: ["HRC 45-50", "", "HRC 38-42"] },
+// ─── AI 매핑 Mock 데이터 (실제 API 응답 구조 기반) ───
+
+export const mockMappingHeaders: string[] = [
+  "상위품번", "상위품명", "하위품번", "하위품명", "수량", "단위", "재질", "공급업체", "비고",
 ];
 
-// Step 1: 표준 속성 (Target Ontology)
-export const mockTargetProperties: TargetProperty[] = [
-  { id: "tgt-1", name: "part_number", label: "Part", category: "Part", required: true, description: "품번" },
-  { id: "tgt-2", name: "name", label: "Part", category: "Part", required: true, description: "품명" },
-  { id: "tgt-3", name: "material", label: "Part", category: "Part", required: false, description: "재질" },
-  { id: "tgt-4", name: "unit_price", label: "Part", category: "Part", required: false, description: "단가" },
-  { id: "tgt-5", name: "quantity", label: "BOM", category: "BOM", required: true, description: "수량" },
-  { id: "tgt-6", name: "supplier_name", label: "Supplier", category: "Supplier", required: true, description: "공급사명" },
-  { id: "tgt-7", name: "lead_time", label: "Supplier", category: "Supplier", required: false, description: "납기 (일)" },
-  { id: "tgt-8", name: "drawing_number", label: "Drawing", category: "Drawing", required: false, description: "도면 번호" },
-  { id: "tgt-9", name: "_ext_remark", label: "Part", category: "확장 속성", required: false, description: "비고 (확장)" },
-  { id: "tgt-10", name: "_ext_heat_treatment", label: "Part", category: "확장 속성", required: false, description: "열처리 규격 (확장)" },
+export const mockMappingSampleRows: Record<string, string>[] = [
+  { "상위품번": "ASM-001", "상위품명": "메인 프레임 조립품", "하위품번": "PRT-001", "하위품명": "브라켓", "수량": "2", "단위": "EA", "재질": "SS400", "공급업체": "한국정밀", "비고": "지지용 브라켓" },
+  { "상위품번": "ASM-001", "상위품명": "메인 프레임 조립품", "하위품번": "PRT-002", "하위품명": "드라이브 샤프트", "수량": "1", "단위": "EA", "재질": "AL6061-T6", "공급업체": "삼성기계", "비고": "메인 구동축" },
+  { "상위품번": "ASM-001", "상위품명": "메인 프레임 조립품", "하위품번": "PRT-003", "하위품명": "볼베어링", "수량": "4", "단위": "EA", "재질": "SUS304", "공급업체": "NSK코리아", "비고": "6205-2RS" },
+  { "상위품번": "ASM-001", "상위품명": "메인 프레임 조립품", "하위품번": "PRT-004", "하위품명": "커버 플레이트", "수량": "1", "단위": "EA", "재질": "SS400", "공급업체": "한국정밀", "비고": "상부 커버" },
+  { "상위품번": "PRT-001", "상위품명": "브라켓", "하위품번": "PRT-005", "하위품명": "육각볼트 M10", "수량": "4", "단위": "EA", "재질": "SCM435", "공급업체": "대한볼트", "비고": "체결용" },
 ];
 
-// Step 1: AI 매핑 연결 (8개 매핑, 2개 미매핑: src-9 비고, src-10 열처리 규격)
-export const mockMappingConnections: MappingConnection[] = [
-  { id: "conn-1", sourceId: "src-1", targetId: "tgt-1", confidence: 98, confidenceLevel: "high", approved: true },
-  { id: "conn-2", sourceId: "src-2", targetId: "tgt-2", confidence: 95, confidenceLevel: "high", approved: true },
-  { id: "conn-3", sourceId: "src-3", targetId: "tgt-3", confidence: 92, confidenceLevel: "high", approved: false },
-  { id: "conn-4", sourceId: "src-4", targetId: "tgt-5", confidence: 88, confidenceLevel: "medium", approved: false },
-  { id: "conn-5", sourceId: "src-5", targetId: "tgt-4", confidence: 85, confidenceLevel: "medium", approved: false },
-  { id: "conn-6", sourceId: "src-6", targetId: "tgt-6", confidence: 78, confidenceLevel: "medium", approved: false },
-  { id: "conn-7", sourceId: "src-7", targetId: "tgt-7", confidence: 72, confidenceLevel: "medium", approved: false },
-  { id: "conn-8", sourceId: "src-8", targetId: "tgt-8", confidence: 96, confidenceLevel: "high", approved: true },
+// 컬럼 매핑 (confidence ≥ 95 → approved)
+export const mockColumnMappings: ColumnMappingEntry[] = [
+  { id: "cm-1", source_column: "상위품번", target_label: "Part", target_property: "part_number", data_type: "string", confidence: 95, reason: "Header directly indicates parent part number (merge key).", approved: true },
+  { id: "cm-2", source_column: "하위품번", target_label: "Part", target_property: "part_number", data_type: "string", confidence: 95, reason: "Header directly indicates child part number (merge key).", approved: true },
+  { id: "cm-3", source_column: "상위품명", target_label: "Part", target_property: "name", data_type: "string", confidence: 90, reason: "Header corresponds to part name for the parent part.", approved: false },
+  { id: "cm-4", source_column: "하위품명", target_label: "Part", target_property: "name", data_type: "string", confidence: 95, reason: "Header corresponds to part name for the child part.", approved: true },
+  { id: "cm-5", source_column: "단위", target_label: "Part", target_property: "unit", data_type: "string", confidence: 90, reason: "Header matches ontology 'unit' (UOM) meaning.", approved: false },
+  { id: "cm-6", source_column: "재질", target_label: "Part", target_property: "material", data_type: "string", confidence: 95, reason: "Header directly maps to material/specified substance.", approved: true },
+  { id: "cm-7", source_column: "비고", target_label: "Part", target_property: "description", data_type: "string", confidence: 90, reason: "Remarks column contains descriptive notes appropriate for description.", approved: false },
+  { id: "cm-8", source_column: "공급업체", target_label: "Supplier", target_property: "company_name", data_type: "string", confidence: 95, reason: "Header directly indicates supplier/company name (merge key).", approved: true },
 ];
 
-// Step 2: 처리 단계
+// 관계 매핑
+export const mockRelationMappings: RelationMappingEntry[] = [
+  {
+    id: "rm-1",
+    from_label: "Part",
+    to_label: "Part",
+    rel_type: "CONSISTS_OF",
+    from_columns: { part_number: "상위품번" },
+    to_columns: { part_number: "하위품번" },
+    properties: { "수량": "quantity" },
+    property_types: { quantity: "integer" },
+    approved: false,
+    dismissed: false,
+  },
+  {
+    id: "rm-2",
+    from_label: "Part",
+    to_label: "Supplier",
+    rel_type: "SUPPLIED_BY",
+    from_columns: { part_number: "하위품번" },
+    to_columns: { company_name: "공급업체" },
+    properties: {},
+    property_types: {},
+    approved: false,
+    dismissed: false,
+  },
+];
+
+// 타겟 속성 스키마 (향후 GET /api/v1/ontology/schema 에서 로드)
+export const targetPropertySchema: TargetPropertyOption[] = [
+  { label: "Part", property: "part_number", description: "품번", required: true, data_type: "string" },
+  { label: "Part", property: "name", description: "품명", required: true, data_type: "string" },
+  { label: "Part", property: "material", description: "재질", required: false, data_type: "string" },
+  { label: "Part", property: "unit", description: "단위", required: false, data_type: "string" },
+  { label: "Part", property: "unit_price", description: "단가", required: false, data_type: "float" },
+  { label: "Part", property: "specification", description: "규격", required: false, data_type: "string" },
+  { label: "Part", property: "description", description: "설명", required: false, data_type: "string" },
+  { label: "Supplier", property: "company_name", description: "공급사명", required: true, data_type: "string" },
+  { label: "Supplier", property: "contact", description: "담당자", required: false, data_type: "string" },
+  { label: "Supplier", property: "lead_time", description: "납기 (일)", required: false, data_type: "integer" },
+  { label: "Drawing", property: "drawing_number", description: "도면번호", required: false, data_type: "string" },
+  { label: "Drawing", property: "revision", description: "리비전", required: false, data_type: "string" },
+];
+
+// ─── 처리/탐색 Mock 데이터 ───
+
 export const mockProcessingSteps: ProcessingStep[] = [
   { phase: "parsing", label: "데이터 파싱", status: "pending" },
   { phase: "normalizing", label: "정규화 및 병합", status: "pending" },
@@ -95,7 +126,6 @@ export const mockProcessingSteps: ProcessingStep[] = [
   { phase: "validating", label: "검증 및 최적화", status: "pending" },
 ];
 
-// Step 2: 로그 메시지
 export const mockLogMessages: LogEntry[] = [
   { id: "log-1", timestamp: "00:00", message: "데이터 파싱을 시작합니다...", type: "info" },
   { id: "log-2", timestamp: "00:02", message: "BOM_Master.xlsx: 1,247행 감지", type: "info" },
@@ -112,7 +142,6 @@ export const mockLogMessages: LogEntry[] = [
   { id: "log-13", timestamp: "00:36", message: "지식 그래프 구축이 완료되었습니다!", type: "success" },
 ];
 
-// Step 3: 헬스 체크 리포트
 export const mockHealthCheckReport: HealthCheckReport = {
   score: 85,
   totalNodes: 3450,
@@ -126,7 +155,6 @@ export const mockHealthCheckReport: HealthCheckReport = {
   ],
 };
 
-// Step 3: 추천 질문
 export const mockSuggestedQuestions: SuggestedQuestion[] = [
   { id: "q-1", question: "단가가 가장 높은 상위 5개 품목을 보여주세요", category: "비용 분석" },
   { id: "q-2", question: "공급사가 1곳뿐인 핵심 부품은 몇 개인가요?", category: "리스크 분석" },
@@ -136,7 +164,6 @@ export const mockSuggestedQuestions: SuggestedQuestion[] = [
   { id: "q-6", question: "A 공급사가 공급 중단되면 영향받는 프로젝트는?", category: "영향도 분석" },
 ];
 
-// Step 3: AI 채팅 초기 메시지
 export const mockInitialChatMessages: ChatMessage[] = [
   {
     id: "chat-1",
@@ -146,7 +173,6 @@ export const mockInitialChatMessages: ChatMessage[] = [
   },
 ];
 
-// AI 응답 시뮬레이션
 export const mockAIResponses: Record<string, string> = {
   "단가가 가장 높은 상위 5개 품목을 보여주세요":
     "단가 기준 상위 5개 품목입니다:\n\n| 순위 | 품번 | 품명 | 단가 |\n|------|------|------|------|\n| 1 | ASM-001 | 메인 프레임 | ₩125,000 |\n| 2 | MOT-205 | 서보 모터 | ₩98,000 |\n| 3 | PCB-102 | 제어 보드 | ₩45,000 |\n| 4 | GER-008 | 감속기 어셈블리 | ₩38,500 |\n| 5 | SNS-041 | 정밀 센서 모듈 | ₩32,000 |\n\n메인 프레임(ASM-001)이 가장 높은 단가를 보이며, 전체 BOM 비용의 약 15%를 차지합니다.",

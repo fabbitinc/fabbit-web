@@ -6,3 +6,4 @@ export * from "./project";
 export * from "./file";
 export * from "./import";
 export * from "./attribute";
+export * from "./onboarding";

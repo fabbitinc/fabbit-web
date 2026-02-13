@@ -23,6 +23,9 @@ import { SignupPage } from "@/features/registration/pages/SignupPage";
 import { WorkspaceSetupPage } from "@/features/registration/pages/WorkspaceSetupPage";
 import { PlanSelectionPage } from "@/features/registration/pages/PlanSelectionPage";
 
+// Dev 프리뷰
+import { MappingCardPreview } from "@/pages/dev/MappingCardPreview";
+
 // 온보딩 관련 임포트
 import { OnboardingLayout } from "@/features/onboarding/components/OnboardingLayout";
 import { DataUploadPage } from "@/features/onboarding/pages/DataUploadPage";
@@ -244,6 +247,9 @@ function App() {
   return (
     <>
       <Routes>
+        {/* Dev Preview (인증 불필요) */}
+        <Route path="/dev/mapping-preview" element={<MappingCardPreview />} />
+
         {/* Public Routes */}
         <Route
           path="/login"

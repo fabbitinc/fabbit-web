@@ -17,6 +17,7 @@ import { useOnboardingStore } from "@/stores/onboardingStore";
 import { useAuthStore } from "@/stores/authStore";
 import { uploadLimitsByPlan } from "@/features/onboarding/mock-data/onboarding-mock";
 import { cn } from "@/lib/utils";
+import { batchCreateUploads, batchCompleteUploads } from "@/api/onboarding";
 import type {
   UploadedFile,
   FileCategory,
@@ -69,12 +70,18 @@ export function DataUploadPage() {
     addFiles,
     updateFileProgress,
     removeFile,
+    addUploadId,
+    setPrimaryUploadId,
   } = useOnboardingStore();
   const selectedPlan = useAuthStore((s) => s.selectedPlan);
 
   const [dragOverCategory, setDragOverCategory] = useState<FileCategory | null>(
     null,
   );
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // 원본 File 객체를 별도 Map으로 관리 (store에 넣지 않음)
+  const fileMapRef = useRef<Map<string, File>>(new Map());
 
   const bomFileRef = useRef<HTMLInputElement>(null);
   const drawingFileRef = useRef<HTMLInputElement>(null);
@@ -85,37 +92,53 @@ export function DataUploadPage() {
     setStep(1);
   }, [setStep]);
 
-
   const bomFiles = uploadedFiles.filter((f) => f.category === "bom");
   const drawingFiles = uploadedFiles.filter((f) => f.category === "drawing");
   const totalSize = uploadedFiles.reduce((sum, f) => sum + f.size, 0);
 
-  // mock 업로드 시뮬레이션
-  const simulateUpload = useCallback(
-    (fileId: string) => {
-      const interval = setInterval(() => {
-        const file = useOnboardingStore
-          .getState()
-          .uploadedFiles.find((f) => f.id === fileId);
-        if (!file) {
-          clearInterval(interval);
-          return;
-        }
+  const uploadSingleFile = useCallback(
+    async (fileEntry: UploadedFile, uploadUrl: string) => {
+      const file = fileMapRef.current.get(fileEntry.id);
+      if (!file) {
+        updateFileProgress(fileEntry.id, 0, "failed");
+        return;
+      }
 
-        const newProgress = Math.min(file.progress + Math.random() * 15 + 5, 100);
-        if (newProgress >= 100) {
-          updateFileProgress(fileId, 100, "completed");
-          clearInterval(interval);
-        } else {
-          updateFileProgress(fileId, Math.round(newProgress), "uploading");
-        }
-      }, 150);
+      try {
+        // XMLHttpRequest로 진행률 추적
+        await new Promise<void>((resolve, reject) => {
+          const xhr = new XMLHttpRequest();
+          xhr.open("PUT", uploadUrl);
+          xhr.setRequestHeader("Content-Type", file.type);
+
+          xhr.upload.onprogress = (e) => {
+            if (e.lengthComputable) {
+              const progress = Math.round((e.loaded / e.total) * 100);
+              updateFileProgress(fileEntry.id, progress, "uploading");
+            }
+          };
+
+          xhr.onload = () => {
+            if (xhr.status >= 200 && xhr.status < 300) {
+              updateFileProgress(fileEntry.id, 100, "completed");
+              resolve();
+            } else {
+              reject(new Error(`Upload failed: ${xhr.status}`));
+            }
+          };
+
+          xhr.onerror = () => reject(new Error("Upload failed"));
+          xhr.send(file);
+        });
+      } catch {
+        updateFileProgress(fileEntry.id, 0, "failed");
+      }
     },
     [updateFileProgress],
   );
 
   const handleFiles = useCallback(
-    (fileList: FileList, category: FileCategory) => {
+    async (fileList: FileList, category: FileCategory) => {
       const accept = categoryConfig[category].accept.split(",");
       const existingNames = new Set(
         uploadedFiles.filter((f) => f.category === category).map((f) => f.name),
@@ -124,34 +147,38 @@ export function DataUploadPage() {
       const skippedExt: string[] = [];
       const skippedDup: string[] = [];
 
-      const newFiles: UploadedFile[] = Array.from(fileList)
-        .filter((file) => {
-          if (file.name.startsWith(".")) return false;
+      const validFiles: { file: File; entry: UploadedFile }[] = [];
 
-          const ext = "." + file.name.split(".").pop()?.toLowerCase();
-          if (!accept.includes(ext)) {
-            skippedExt.push(file.name);
-            return false;
-          }
+      Array.from(fileList).forEach((file) => {
+        if (file.name.startsWith(".")) return;
 
-          if (existingNames.has(file.name)) {
-            skippedDup.push(file.name);
-            return false;
-          }
-          existingNames.add(file.name);
+        const ext = "." + file.name.split(".").pop()?.toLowerCase();
+        if (!accept.includes(ext)) {
+          skippedExt.push(file.name);
+          return;
+        }
 
-          return true;
-        })
-        .map((file) => ({
-          id: `file-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        if (existingNames.has(file.name)) {
+          skippedDup.push(file.name);
+          return;
+        }
+        existingNames.add(file.name);
+
+        const id = `file-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        const entry: UploadedFile = {
+          id,
           name: file.name,
           size: file.size,
-          type: file.type,
+          type: file.type || "application/octet-stream",
           category,
           relativePath: (file as File & { webkitRelativePath?: string }).webkitRelativePath || undefined,
-          status: "uploading" as const,
+          status: "pending",
           progress: 0,
-        }));
+        };
+
+        fileMapRef.current.set(id, file);
+        validFiles.push({ file, entry });
+      });
 
       if (skippedExt.length > 0 || skippedDup.length > 0) {
         const formatNames = (names: string[]) =>
@@ -179,11 +206,42 @@ export function DataUploadPage() {
         });
       }
 
-      if (newFiles.length === 0) return;
-      addFiles(newFiles);
-      newFiles.forEach((f) => simulateUpload(f.id));
+      if (validFiles.length === 0) return;
+
+      // 1. 스토어에 파일 항목 추가
+      addFiles(validFiles.map((v) => v.entry));
+
+      // 2. 배치 presigned URL 발급
+      try {
+        const batchResponse = await batchCreateUploads({
+          items: validFiles.map((v) => ({
+            original_name: v.file.name,
+            content_type: v.file.type || "application/octet-stream",
+            file_size: v.file.size,
+          })),
+        });
+
+        // 3. 각 파일을 presigned URL로 업로드
+        for (let i = 0; i < batchResponse.items.length; i++) {
+          const uploadInfo = batchResponse.items[i];
+          const fileEntry = validFiles[i].entry;
+
+          addUploadId(fileEntry.id, uploadInfo.upload_id);
+          updateFileProgress(fileEntry.id, 0, "uploading");
+
+          // 비동기로 업로드 시작 (병렬)
+          uploadSingleFile(fileEntry, uploadInfo.upload_url);
+        }
+      } catch (error) {
+        toast.error("파일 업로드 준비에 실패했습니다");
+        console.error("Batch upload creation failed:", error);
+        // 실패한 파일들 상태 업데이트
+        validFiles.forEach((v) => {
+          updateFileProgress(v.entry.id, 0, "failed");
+        });
+      }
     },
-    [addFiles, simulateUpload, uploadedFiles],
+    [addFiles, uploadSingleFile, uploadedFiles, addUploadId, updateFileProgress],
   );
 
   const handleDragOver = (e: React.DragEvent, category: FileCategory) => {
@@ -217,12 +275,48 @@ export function DataUploadPage() {
   const hasAnyFiles = uploadedFiles.length > 0;
   const allCompleted =
     hasAnyFiles && uploadedFiles.every((f) => f.status === "completed");
+  const hasBomFiles = bomFiles.some((f) => f.status === "completed");
 
   // 제한 체크
   const bomLimitReached =
     limits.bomFiles !== null && bomFiles.length >= limits.bomFiles;
   const drawingLimitReached =
     limits.drawingFiles !== null && drawingFiles.length >= limits.drawingFiles;
+
+  const handleNext = async () => {
+    if (!allCompleted || !hasBomFiles) return;
+
+    setIsSubmitting(true);
+    try {
+      // 완료된 파일들의 upload_id 수집
+      const completedUploadIds = uploadedFiles
+        .filter((f) => f.status === "completed" && f.uploadId)
+        .map((f) => f.uploadId!);
+
+      if (completedUploadIds.length === 0) {
+        toast.error("업로드된 파일이 없습니다");
+        return;
+      }
+
+      // 배치 완료 확인
+      await batchCompleteUploads({ upload_ids: completedUploadIds });
+
+      // 첫 번째 BOM 파일의 upload_id를 primary로 설정
+      const firstBom = uploadedFiles.find(
+        (f) => f.category === "bom" && f.status === "completed" && f.uploadId,
+      );
+      if (firstBom?.uploadId) {
+        setPrimaryUploadId(firstBom.uploadId);
+      }
+
+      navigate("/onboarding/processing");
+    } catch (error) {
+      console.error("Upload completion failed:", error);
+      toast.error("업로드 완료 처리에 실패했습니다");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="relative flex w-full max-w-[960px] flex-col">
@@ -403,7 +497,7 @@ export function DataUploadPage() {
                                 </button>
                               </div>
                             </div>
-                            {file.status === "uploading" && (
+                            {(file.status === "uploading" || file.status === "pending") && (
                               <Progress
                                 value={file.progress}
                                 className="mt-1.5 h-1"
@@ -443,24 +537,21 @@ export function DataUploadPage() {
           >
             이전
           </Button>
-          <div className="flex gap-3 items-center">
-            <Button
-              type="button"
-              variant="outline"
-              className="h-12 px-8 text-base font-semibold border-gray-200 hover:bg-gray-50 hover:border-gray-300 transition-all"
-              onClick={() => navigate("/onboarding/processing")}
-            >
-              건너뛰기
-            </Button>
-            <Button
-              type="button"
-              className="h-12 px-8 bg-blue-600 hover:bg-blue-700 text-base font-semibold shadow-lg shadow-blue-600/20 transition-all hover:shadow-blue-600/30"
-              disabled={!allCompleted}
-              onClick={() => navigate("/onboarding/processing")}
-            >
-              다음
-            </Button>
-          </div>
+          <Button
+            type="button"
+            className="h-12 px-8 bg-blue-600 hover:bg-blue-700 text-base font-semibold shadow-lg shadow-blue-600/20 transition-all hover:shadow-blue-600/30"
+            disabled={!allCompleted || !hasBomFiles || isSubmitting}
+            onClick={handleNext}
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                처리 중...
+              </>
+            ) : (
+              "다음"
+            )}
+          </Button>
         </div>
       </div>
     </div>
