@@ -319,28 +319,9 @@ export function DataUploadPage() {
   };
 
   return (
-    <div className="relative flex w-full max-w-[960px] flex-col">
-      {/* 워터마크 로고 */}
-      <div className="absolute top-[-40px] left-0 flex items-center gap-1.5">
-        <div className="flex h-5 w-5 items-center justify-center rounded bg-gradient-to-br from-[#3b82f6] to-[#8b5cf6]">
-          <svg
-            className="h-3 w-3 text-white"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-          >
-            <path d="M12 2L2 7l10 5 10-5-10-5z" />
-            <path d="M2 17l10 5 10-5" />
-            <path d="M2 12l10 5 10-5" />
-          </svg>
-        </div>
-        <span className="text-xs text-gray-300">Fabbit</span>
-      </div>
-
-      <div className="flex w-full flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-2xl shadow-gray-200/50">
-        {/* 상단 헤더 */}
-        <div className="px-8 pt-10 pb-6 text-center lg:px-10">
+    <div className="w-full max-w-[960px] space-y-4">
+      {/* 상단 헤더 */}
+      <div className="px-8 pb-6 pt-2 text-center lg:px-10">
           <h1 className="text-2xl font-bold text-gray-900">데이터 업로드</h1>
           <p className="mt-2 text-sm text-gray-500">
             BOM 파일과 도면 파일을 분류하여 업로드하세요
@@ -367,10 +348,10 @@ export function DataUploadPage() {
               </span>
             </div>
           </div>
-        </div>
+      </div>
 
-        {/* 2컬럼: BOM / 도면 업로드 영역 */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 px-8 lg:px-10">
+      {/* 2컬럼: BOM / 도면 업로드 영역 */}
+      <div className="grid grid-cols-1 gap-6 px-8 lg:grid-cols-2 lg:px-10">
           {(["bom", "drawing"] as const).map((category) => {
             const config = categoryConfig[category];
             const Icon = config.icon;
@@ -553,7 +534,6 @@ export function DataUploadPage() {
             )}
           </Button>
         </div>
-      </div>
     </div>
   );
 }

@@ -98,13 +98,39 @@ export interface SkippedSheetDTO {
   reason: string;
 }
 
+export interface RelationCatalogItemDTO {
+  rel_type: string;
+  from_label: string;
+  to_label: string;
+  description: string;
+}
+
+export interface RelationPropertyCatalogItemDTO {
+  rel_type: string;
+  property: string;
+  data_type: string;
+  required: boolean;
+  description: string;
+}
+
+export interface EditableConstraintsDTO {
+  allowed_labels: string[];
+  allowed_properties_by_label: Record<string, string[]>;
+  allowed_rel_types: string[];
+  allowed_rel_properties_by_type: Record<string, string[]>;
+  merge_keys_by_label: Record<string, string[]>;
+  relation_edit_mode?: string;
+  relation_catalog?: RelationCatalogItemDTO[];
+  relation_property_catalog?: RelationPropertyCatalogItemDTO[];
+}
+
 export interface MappingPreviewResponse {
   headers: string[];
   sample_rows: Record<string, string>[];
   mapping: MappingResultDTO;
   sheets: SheetPreviewDTO[];
   skipped_sheets: SkippedSheetDTO[];
-  editable_constraints?: Record<string, unknown>;
+  editable_constraints?: EditableConstraintsDTO;
 }
 
 export interface MappingConfirmRequest {

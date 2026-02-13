@@ -3,63 +3,67 @@ import type {
   ProjectTreeResponse,
   ProjectTreeDto,
   FolderTreeDto,
-  ItemTreeDto,
+  TreeItemNodeDto,
 } from "../types";
 
 /**
  * API 응답을 UI TreeNodeData 형식으로 변환
  *
  * [필드 누락 안내]
- * API에 없어서 기본값으로 처리되는 필드:
- * - Project: description, lastUpdated
- * - Item: status, hasDrawing
+ * API에 없거나 optional인 필드는 기본값으로 처리됩니다.
  */
 
-function convertItemTree(item: ItemTreeDto): TreeNodeData {
-  // 하위 아이템 변환 (ASSEMBLY인 경우)
+function toItemName(item: TreeItemNodeDto): string {
+  if (item.name && item.name.trim().length > 0) {
+    return item.name;
+  }
+  if (item.item_number && item.item_number.trim().length > 0) {
+    return item.item_number;
+  }
+  return "이름 없는 아이템";
+}
+
+function convertItemTree(item: TreeItemNodeDto): TreeNodeData {
   const children = item.items?.map(convertItemTree);
+  const itemId = item.id ?? item.item_number ?? `unknown-item-${toItemName(item)}`;
 
   return {
-    id: item.id,
-    name: item.name ?? item.itemNumber, // name이 없으면 itemNumber 사용
+    id: itemId,
+    name: toItemName(item),
     type: "item",
-    partNumber: item.itemNumber,
-    itemType: item.itemType,
-    itemCount: item.itemCount, // API에서 제공
+    partNumber: item.item_number,
+    itemType: item.item_type,
+    itemCount: item.item_count,
     children: children && children.length > 0 ? children : undefined,
-    // TODO: status - API에 없음, 기본값 "none"
     status: "none",
-    // TODO: hasDrawing - API에 없음, 기본값 false
-    hasDrawing: false,
+    hasDrawing: Boolean(item.has_drawing),
   };
 }
 
 function convertFolderTree(folder: FolderTreeDto): TreeNodeData {
   const children: TreeNodeData[] = [
-    ...folder.folders.map(convertFolderTree),
-    ...folder.items.map(convertItemTree),
+    ...(folder.folders ?? []).map(convertFolderTree),
+    ...(folder.items ?? []).map(convertItemTree),
   ];
 
   return {
     id: folder.id,
     name: folder.name,
     type: "folder",
-    itemCount: folder.itemCount, // API에서 제공
+    itemCount: folder.item_count ?? 0,
     children: children.length > 0 ? children : undefined,
   };
 }
 
 function convertProjectTree(project: ProjectTreeDto): TreeNodeData {
-  const children = project.folders.map(convertFolderTree);
+  const children = (project.folders ?? []).map(convertFolderTree);
 
   return {
     id: project.id,
     name: project.name,
     type: "project",
-    // TODO: description - API에 없음
-    description: undefined,
-    // TODO: lastUpdated - API에 없음
-    lastUpdated: undefined,
+    description: project.description ?? undefined,
+    lastUpdated: project.updated_at,
     children: children.length > 0 ? children : undefined,
   };
 }
@@ -70,5 +74,6 @@ function convertProjectTree(project: ProjectTreeDto): TreeNodeData {
 export function convertProjectTreeResponse(
   response: ProjectTreeResponse,
 ): TreeNodeData[] {
-  return response.projects.map(convertProjectTree);
+  // 현재 UI는 최상위 노드를 project로 가정하므로 orphans는 포함하지 않습니다.
+  return (response.projects ?? []).map(convertProjectTree);
 }
