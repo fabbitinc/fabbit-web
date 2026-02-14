@@ -64,6 +64,7 @@ interface MappingState {
   changeColumnMappingTarget: (id: string, targetLabel: string, targetProperty: string) => number;
   createColumnMapping: (sourceColumn: string, targetLabel: string, targetProperty: string) => number;
   resetMappings: () => void;
+  reset: () => void;
 
   // 매핑 결과를 API 형식으로 반환
   getMappingResult: () => MappingResultDTO;
@@ -337,6 +338,21 @@ export const useMappingStore = create<MappingState>()((set, get) => ({
       extendedMappings: state.initialExtendedMappings.map((ep) => ({ ...ep })),
     }));
   },
+
+  reset: () => set({
+    currentStep: 1,
+    columnMappings: [],
+    relationMappings: [],
+    extendedMappings: [],
+    initialColumnMappings: [],
+    initialRelationMappings: [],
+    initialExtendedMappings: [],
+    mappingHeaders: [],
+    mappingSampleRows: [],
+    editableConstraints: null,
+    targetPropertyOptions: [],
+    mappingId: null,
+  }),
 
   getMappingResult: () => {
     const state = get();
