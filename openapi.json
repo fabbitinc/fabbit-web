@@ -948,6 +948,64 @@
                 ]
             }
         },
+        "/api/v1/projects/{project_id}/synthesis/batch": {
+            "post": {
+                "tags": [
+                    "projects"
+                ],
+                "summary": "Start Project Synthesis Batch",
+                "operationId": "start_project_synthesis_batch_api_v1_projects__project_id__synthesis_batch_post",
+                "security": [
+                    {
+                        "HTTPBearer": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "project_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "title": "Project Id"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SynthesisBatchStartRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SynthesisBatchStartResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/synthesis": {
             "get": {
                 "tags": [
@@ -1016,6 +1074,54 @@
                         "HTTPBearer": []
                     }
                 ]
+            }
+        },
+        "/api/v1/synthesis/batches/{batch_id}": {
+            "get": {
+                "tags": [
+                    "synthesis"
+                ],
+                "summary": "Get Synthesis Batch",
+                "operationId": "get_synthesis_batch_api_v1_synthesis_batches__batch_id__get",
+                "security": [
+                    {
+                        "HTTPBearer": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "batch_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "title": "Batch Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SynthesisBatchStatusResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
             }
         },
         "/api/v1/synthesis/{job_id}": {
@@ -4212,6 +4318,255 @@
                 ],
                 "title": "StartersResponse"
             },
+            "SynthesisBatchFailure": {
+                "properties": {
+                    "upload_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "title": "Upload Id"
+                    },
+                    "reason": {
+                        "type": "string",
+                        "title": "Reason"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "upload_id",
+                    "reason"
+                ],
+                "title": "SynthesisBatchFailure",
+                "description": "\ubc30\uce58 \uc2dc\uc791 \uc2e4\ud328 \ud56d\ubaa9."
+            },
+            "SynthesisBatchItemStatus": {
+                "properties": {
+                    "job_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "title": "Job Id"
+                    },
+                    "upload_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "title": "Upload Id"
+                    },
+                    "status": {
+                        "type": "string",
+                        "title": "Status"
+                    },
+                    "total_rows": {
+                        "type": "integer",
+                        "title": "Total Rows"
+                    },
+                    "processed_rows": {
+                        "type": "integer",
+                        "title": "Processed Rows"
+                    },
+                    "nodes_created": {
+                        "type": "integer",
+                        "title": "Nodes Created"
+                    },
+                    "relationships_created": {
+                        "type": "integer",
+                        "title": "Relationships Created"
+                    },
+                    "error_count": {
+                        "type": "integer",
+                        "title": "Error Count"
+                    },
+                    "started_at": {
+                        "anyOf": [
+                            {
+                                "type": "string",
+                                "format": "date-time"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Started At"
+                    },
+                    "completed_at": {
+                        "anyOf": [
+                            {
+                                "type": "string",
+                                "format": "date-time"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Completed At"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "job_id",
+                    "upload_id",
+                    "status",
+                    "total_rows",
+                    "processed_rows",
+                    "nodes_created",
+                    "relationships_created",
+                    "error_count",
+                    "started_at",
+                    "completed_at"
+                ],
+                "title": "SynthesisBatchItemStatus",
+                "description": "\ubc30\uce58 \ub0b4 \uac1c\ubcc4 \uc791\uc5c5 \uc0c1\ud0dc."
+            },
+            "SynthesisBatchStartRequest": {
+                "properties": {
+                    "upload_ids": {
+                        "items": {
+                            "type": "string",
+                            "format": "uuid"
+                        },
+                        "type": "array",
+                        "maxItems": 100,
+                        "minItems": 1,
+                        "title": "Upload Ids",
+                        "description": "\ud569\uc131\ud560 \uc5c5\ub85c\ub4dc ID \ubaa9\ub85d"
+                    },
+                    "mapping_id": {
+                        "anyOf": [
+                            {
+                                "type": "string",
+                                "format": "uuid"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Mapping Id",
+                        "description": "\uc0ac\uc6a9\ud560 \ub9e4\ud551 ID (\ubbf8\uc9c0\uc815 \uc2dc \ud504\ub85c\uc81d\ud2b8/\uc870\uc9c1 \ucd5c\uc2e0 \ub9e4\ud551 \uc790\ub3d9 \uc120\ud0dd)"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "upload_ids"
+                ],
+                "title": "SynthesisBatchStartRequest",
+                "description": "\ud569\uc131 \ubc30\uce58 \uc791\uc5c5 \uc2dc\uc791 \uc694\uccad."
+            },
+            "SynthesisBatchStartResponse": {
+                "properties": {
+                    "batch_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "title": "Batch Id"
+                    },
+                    "requested_count": {
+                        "type": "integer",
+                        "title": "Requested Count"
+                    },
+                    "accepted_count": {
+                        "type": "integer",
+                        "title": "Accepted Count"
+                    },
+                    "items": {
+                        "items": {
+                            "$ref": "#/components/schemas/SynthesisJobResponse"
+                        },
+                        "type": "array",
+                        "title": "Items"
+                    },
+                    "failed": {
+                        "items": {
+                            "$ref": "#/components/schemas/SynthesisBatchFailure"
+                        },
+                        "type": "array",
+                        "title": "Failed"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "batch_id",
+                    "requested_count",
+                    "accepted_count",
+                    "items",
+                    "failed"
+                ],
+                "title": "SynthesisBatchStartResponse",
+                "description": "\ud569\uc131 \ubc30\uce58 \uc791\uc5c5 \uc2dc\uc791 \uc751\ub2f5."
+            },
+            "SynthesisBatchStatusResponse": {
+                "properties": {
+                    "batch_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "title": "Batch Id"
+                    },
+                    "requested_count": {
+                        "type": "integer",
+                        "title": "Requested Count"
+                    },
+                    "accepted_count": {
+                        "type": "integer",
+                        "title": "Accepted Count"
+                    },
+                    "failed_count": {
+                        "type": "integer",
+                        "title": "Failed Count"
+                    },
+                    "pending_count": {
+                        "type": "integer",
+                        "title": "Pending Count"
+                    },
+                    "processing_count": {
+                        "type": "integer",
+                        "title": "Processing Count"
+                    },
+                    "completed_count": {
+                        "type": "integer",
+                        "title": "Completed Count"
+                    },
+                    "failed_job_count": {
+                        "type": "integer",
+                        "title": "Failed Job Count"
+                    },
+                    "status": {
+                        "type": "string",
+                        "title": "Status"
+                    },
+                    "failed": {
+                        "items": {
+                            "$ref": "#/components/schemas/SynthesisBatchFailure"
+                        },
+                        "type": "array",
+                        "title": "Failed"
+                    },
+                    "items": {
+                        "items": {
+                            "$ref": "#/components/schemas/SynthesisBatchItemStatus"
+                        },
+                        "type": "array",
+                        "title": "Items"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "title": "Created At"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "batch_id",
+                    "requested_count",
+                    "accepted_count",
+                    "failed_count",
+                    "pending_count",
+                    "processing_count",
+                    "completed_count",
+                    "failed_job_count",
+                    "status",
+                    "failed",
+                    "items",
+                    "created_at"
+                ],
+                "title": "SynthesisBatchStatusResponse",
+                "description": "\ud569\uc131 \ubc30\uce58 \uc791\uc5c5 \uc9c4\ud589 \uc0c1\ud0dc \uc751\ub2f5."
+            },
             "SynthesisJobResponse": {
                 "properties": {
                     "id": {
@@ -4327,6 +4682,18 @@
                         "type": "string",
                         "format": "uuid",
                         "title": "Upload Id"
+                    },
+                    "mapping_id": {
+                        "anyOf": [
+                            {
+                                "type": "string",
+                                "format": "uuid"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Mapping Id"
                     }
                 },
                 "type": "object",
