@@ -4,7 +4,7 @@ import { Compass, Rocket, Loader2, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { useOnboardingStore } from "@/stores/onboardingStore";
+import { useMappingStore, useProcessingStore, useExploreStore } from "@/stores/onboarding";
 import { useAuthStore } from "@/stores/authStore";
 import {
   getSynthesisJob,
@@ -22,8 +22,9 @@ const POLL_INTERVAL = 3000;
 
 export function ExplorePage() {
   const navigate = useNavigate();
-  const { setStep, synthesisJobId, chatMessages, addChatMessage } =
-    useOnboardingStore();
+  const { setStep } = useMappingStore();
+  const { synthesisJobId } = useProcessingStore();
+  const { chatMessages, addChatMessage } = useExploreStore();
   const { completeOnboarding: completeOnboardingLocal } = useAuthStore();
 
   const [synthesisStatus, setSynthesisStatus] = useState<string>("pending");
