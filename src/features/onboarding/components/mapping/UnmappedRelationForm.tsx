@@ -75,9 +75,10 @@ export function UnmappedRelationForm({
   const hasPropertySelected = effectiveRelationProperty !== NO_PROPERTY;
 
   const hasProperties = relationProps.length > 0;
+  const isSameEndpoint = effectiveRelationFrom !== "" && effectiveRelationFrom === effectiveRelationTo;
 
   const canApply = Boolean(
-    effectiveRelationType && effectiveRelationFrom && effectiveRelationTo,
+    effectiveRelationType && effectiveRelationFrom && effectiveRelationTo && !isSameEndpoint,
   );
 
   const handleApply = () => {
@@ -127,10 +128,12 @@ export function UnmappedRelationForm({
           <Label className="inline-flex items-center gap-1 text-xs text-gray-600">
             <span>원본 기준 컬럼</span>
             {relationEndpointOptions?.fromLabel && (
-              <DisplayWithOriginalTooltip
-                display={t(`mapping:nodeLabel.${relationEndpointOptions.fromLabel}`, relationEndpointOptions.fromLabel)}
-                original={relationEndpointOptions.fromLabel}
-              />
+              <span className="inline-flex items-center gap-0.5 text-gray-400">
+                (<DisplayWithOriginalTooltip
+                  display={t(`mapping:nodeLabel.${relationEndpointOptions.fromLabel}`, relationEndpointOptions.fromLabel)}
+                  original={relationEndpointOptions.fromLabel}
+                />)
+              </span>
             )}
           </Label>
           <Select value={effectiveRelationFrom} onValueChange={setRelationFrom}>
@@ -153,10 +156,12 @@ export function UnmappedRelationForm({
           <Label className="inline-flex items-center gap-1 text-xs text-gray-600">
             <span>대상 기준 컬럼</span>
             {relationEndpointOptions?.toLabel && (
-              <DisplayWithOriginalTooltip
-                display={t(`mapping:nodeLabel.${relationEndpointOptions.toLabel}`, relationEndpointOptions.toLabel)}
-                original={relationEndpointOptions.toLabel}
-              />
+              <span className="inline-flex items-center gap-0.5 text-gray-400">
+                (<DisplayWithOriginalTooltip
+                  display={t(`mapping:nodeLabel.${relationEndpointOptions.toLabel}`, relationEndpointOptions.toLabel)}
+                  original={relationEndpointOptions.toLabel}
+                />)
+              </span>
             )}
           </Label>
           <Select value={effectiveRelationTo} onValueChange={setRelationTo}>
@@ -176,6 +181,9 @@ export function UnmappedRelationForm({
           </Select>
         </div>
       </div>
+      {isSameEndpoint && (
+        <p className="text-xs text-red-500">원본 기준 컬럼과 대상 기준 컬럼은 서로 다른 컬럼이어야 합니다.</p>
+      )}
       {hasProperties && (
         <div className="space-y-1">
           <Label className="text-xs text-gray-600">속성 (선택)</Label>
