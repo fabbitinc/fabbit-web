@@ -13,7 +13,8 @@ import {
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { useOnboardingStore } from "@/stores/onboardingStore";
+import { useUploadStore } from "@/stores/onboarding";
+import { useMappingStore } from "@/stores/onboarding";
 import { useAuthStore } from "@/stores/authStore";
 import { uploadLimitsByPlan } from "@/features/onboarding/mock-data/onboarding-mock";
 import { cn } from "@/lib/utils";
@@ -64,15 +65,15 @@ function FileIcon({ category }: { category: FileCategory }) {
 
 export function DataUploadPage() {
   const navigate = useNavigate();
+  const { setStep } = useMappingStore();
   const {
-    setStep,
     uploadedFiles,
     addFiles,
     updateFileProgress,
     removeFile,
     addUploadId,
     setPrimaryUploadId,
-  } = useOnboardingStore();
+  } = useUploadStore();
   const selectedPlan = useAuthStore((s) => s.selectedPlan);
 
   const [dragOverCategory, setDragOverCategory] = useState<FileCategory | null>(

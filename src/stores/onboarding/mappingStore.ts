@@ -1,78 +1,24 @@
 import { create } from "zustand";
 import type {
   OnboardingStep,
-  UploadedFile,
   ColumnMappingEntry,
   RelationMappingEntry,
   ExtendedPropertyEntry,
-  ProcessingStep,
-  ProcessingStats,
-  LogEntry,
-  ChatMessage,
   TargetPropertyOption,
 } from "@/features/onboarding/types/onboarding.types";
 import type {
   EditableConstraintsDTO,
   MappingResultDTO,
-  SynthesisJobResponse,
 } from "@/api/types/onboarding";
-import {
-  mockProcessingSteps,
-} from "@/features/onboarding/mock-data/onboarding-mock";
+import { cloneRelationMapping, isRelationValid } from "./helpers";
+import { toExtendedPropertyName } from "@/features/onboarding/utils/mappingUtils";
+import { AUTO_APPROVE_CONFIDENCE_THRESHOLD } from "@/features/onboarding/constants/mappingConfig";
 
-function cloneRelationMapping(rm: RelationMappingEntry): RelationMappingEntry {
-  return {
-    ...rm,
-    from_columns: { ...rm.from_columns },
-    to_columns: { ...rm.to_columns },
-    properties: { ...rm.properties },
-    property_types: { ...rm.property_types },
-  };
-}
-
-function isRelationValid(
-  relation: RelationMappingEntry,
-  columnMappings: ColumnMappingEntry[],
-  mappingHeaders: string[],
-): boolean {
-  const isFromValid = Object.entries(relation.from_columns).every(([prop, sourceColumn]) =>
-    columnMappings.some(
-      (cm) =>
-        cm.source_column === sourceColumn &&
-        cm.target_label === relation.from_label &&
-        cm.target_property === prop,
-    ),
-  );
-
-  const isToValid = Object.entries(relation.to_columns).every(([prop, sourceColumn]) =>
-    columnMappings.some(
-      (cm) =>
-        cm.source_column === sourceColumn &&
-        cm.target_label === relation.to_label &&
-        cm.target_property === prop,
-    ),
-  );
-
-  const isPropertiesValid = Object.keys(relation.properties).every((sourceColumn) =>
-    mappingHeaders.includes(sourceColumn),
-  );
-
-  return isFromValid && isToValid && isPropertiesValid;
-}
-
-interface OnboardingState {
-  // 현재 스텝
+interface MappingState {
+  // 현재 스텝 (4개 페이지 모두 setStep 호출)
   currentStep: OnboardingStep;
 
-  // Step 1: 업로드
-  uploadedFiles: UploadedFile[];
-
-  // API에서 받은 업로드 ID들 (presigned URL 업로드 후)
-  uploadIds: string[];
-  // 첫 번째 BOM 파일의 upload_id (매핑에 사용)
-  primaryUploadId: string | null;
-
-  // Step 2: 매핑
+  // 매핑 데이터
   columnMappings: ColumnMappingEntry[];
   relationMappings: RelationMappingEntry[];
   extendedMappings: ExtendedPropertyEntry[];
@@ -89,32 +35,9 @@ interface OnboardingState {
   // API에서 받은 매핑 ID (confirm 후)
   mappingId: string | null;
 
-  // Step 3: 처리
-  processingSteps: ProcessingStep[];
-  processingStats: ProcessingStats;
-  processingProgress: number;
-  processingLogs: LogEntry[];
-  isProcessing: boolean;
-  // 합성 작업
-  synthesisJobId: string | null;
-  synthesisJob: SynthesisJobResponse | null;
-
-  // Step 4: 탐색
-  chatMessages: ChatMessage[];
-
   // Actions
   setStep: (step: OnboardingStep) => void;
 
-  // 파일 업로드
-  addFiles: (files: UploadedFile[]) => void;
-  updateFileProgress: (id: string, progress: number, status?: UploadedFile["status"]) => void;
-  removeFile: (id: string) => void;
-
-  // 업로드 ID 관리
-  addUploadId: (fileId: string, uploadId: string) => void;
-  setPrimaryUploadId: (uploadId: string) => void;
-
-  // 매핑 데이터 설정 (API 응답)
   setMappingPreviewData: (
     headers: string[],
     sampleRows: Record<string, string>[],
@@ -137,7 +60,6 @@ interface OnboardingState {
   approveExtendedMapping: (id: string) => void;
   removeExtendedMapping: (id: string) => void;
   createExtendedMapping: (sourceColumn: string, targetLabel: string) => void;
-  dismissRelationMapping: (id: string) => void;
   restoreRelationMapping: (id: string) => boolean;
   changeColumnMappingTarget: (id: string, targetLabel: string, targetProperty: string) => number;
   createColumnMapping: (sourceColumn: string, targetLabel: string, targetProperty: string) => number;
@@ -145,28 +67,10 @@ interface OnboardingState {
 
   // 매핑 결과를 API 형식으로 반환
   getMappingResult: () => MappingResultDTO;
-
-  // 처리
-  startProcessing: () => void;
-  updateProcessingStep: (phase: string, status: ProcessingStep["status"]) => void;
-  updateProcessingStats: (stats: Partial<ProcessingStats>) => void;
-  setProcessingProgress: (progress: number) => void;
-  addLog: (log: LogEntry) => void;
-
-  // 합성
-  setSynthesisJob: (job: SynthesisJobResponse) => void;
-
-  // 채팅
-  addChatMessage: (message: ChatMessage) => void;
 }
 
-export const useOnboardingStore = create<OnboardingState>()((set, get) => ({
-  
+export const useMappingStore = create<MappingState>()((set, get) => ({
   currentStep: 1,
-
-  uploadedFiles: [],
-  uploadIds: [],
-  primaryUploadId: null,
 
   columnMappings: [],
   relationMappings: [],
@@ -180,47 +84,9 @@ export const useOnboardingStore = create<OnboardingState>()((set, get) => ({
   targetPropertyOptions: [],
   mappingId: null,
 
-  processingSteps: [...mockProcessingSteps],
-  processingStats: { nodesCreated: 0, relationsCreated: 0, totalNodes: 0, totalRelations: 0 },
-  processingProgress: 0,
-  processingLogs: [],
-  isProcessing: false,
-  synthesisJobId: null,
-  synthesisJob: null,
-
-  chatMessages: [],
-
   setStep: (step) => set({ currentStep: step }),
 
-  addFiles: (files) =>
-    set((state) => ({
-      uploadedFiles: [...state.uploadedFiles, ...files],
-    })),
-
-  updateFileProgress: (id, progress, status) =>
-    set((state) => ({
-      uploadedFiles: state.uploadedFiles.map((f) =>
-        f.id === id ? { ...f, progress, ...(status ? { status } : {}) } : f
-      ),
-    })),
-
-  removeFile: (id) =>
-    set((state) => ({
-      uploadedFiles: state.uploadedFiles.filter((f) => f.id !== id),
-    })),
-
-  addUploadId: (fileId, uploadId) =>
-    set((state) => ({
-      uploadedFiles: state.uploadedFiles.map((f) =>
-        f.id === fileId ? { ...f, uploadId } : f
-      ),
-      uploadIds: [...state.uploadIds, uploadId],
-    })),
-
-  setPrimaryUploadId: (uploadId) => set({ primaryUploadId: uploadId }),
-
   setMappingPreviewData: (headers, sampleRows, mapping, editableConstraints) => {
-    // API의 column_mappings를 프론트의 ColumnMappingEntry로 변환
     const columnMappings: ColumnMappingEntry[] = mapping.column_mappings.map((cm, idx) => ({
       id: `cm-${idx + 1}`,
       source_column: cm.source_column,
@@ -229,10 +95,9 @@ export const useOnboardingStore = create<OnboardingState>()((set, get) => ({
       data_type: cm.data_type || "string",
       confidence: cm.confidence || 0,
       reason: cm.reason || "",
-      approved: (cm.confidence || 0) >= 90,
+      approved: (cm.confidence || 0) >= AUTO_APPROVE_CONFIDENCE_THRESHOLD,
     }));
 
-    // API의 relation_mappings를 프론트의 RelationMappingEntry로 변환
     const relationMappings: RelationMappingEntry[] = mapping.relation_mappings.map((rm, idx) => ({
       id: `rm-${idx + 1}`,
       from_label: rm.from_label,
@@ -287,7 +152,7 @@ export const useOnboardingStore = create<OnboardingState>()((set, get) => ({
   approveColumnMapping: (id) =>
     set((state) => ({
       columnMappings: state.columnMappings.map((cm) =>
-        cm.id === id ? { ...cm, approved: true } : cm
+        cm.id === id ? { ...cm, approved: true } : cm,
       ),
     })),
 
@@ -363,17 +228,6 @@ export const useOnboardingStore = create<OnboardingState>()((set, get) => ({
     })),
 
   createExtendedMapping: (sourceColumn, targetLabel) => {
-    const hash = Array.from(sourceColumn).reduce(
-      (acc, ch) => ((acc * 31 + ch.charCodeAt(0)) >>> 0),
-      7,
-    );
-    const normalizeName = sourceColumn
-      .normalize("NFKD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "_")
-      .replace(/^_+|_+$/g, "");
-
     set((state) => ({
       extendedMappings: [
         ...state.extendedMappings,
@@ -381,7 +235,7 @@ export const useOnboardingStore = create<OnboardingState>()((set, get) => ({
           id: `ep-${Date.now()}`,
           source_column: sourceColumn,
           target_label: targetLabel,
-          property_name: `_ext_${normalizeName || `col_${hash.toString(36)}`}`,
+          property_name: toExtendedPropertyName(sourceColumn),
           data_type: "string",
           confidence: 100,
           reason: "사용자 확장 속성 추가",
@@ -390,13 +244,6 @@ export const useOnboardingStore = create<OnboardingState>()((set, get) => ({
       ],
     }));
   },
-
-  dismissRelationMapping: (id) =>
-    set((state) => ({
-      relationMappings: state.relationMappings.map((rm) =>
-        rm.id === id ? { ...rm, dismissed: true, approved: false } : rm
-      ),
-    })),
 
   restoreRelationMapping: (id) => {
     const state = get();
@@ -409,7 +256,7 @@ export const useOnboardingStore = create<OnboardingState>()((set, get) => ({
 
     set((current) => ({
       relationMappings: current.relationMappings.map((rm) =>
-        rm.id === id ? { ...rm, dismissed: false, approved: false } : rm
+        rm.id === id ? { ...rm, dismissed: false, approved: false } : rm,
       ),
     }));
     return true;
@@ -430,7 +277,7 @@ export const useOnboardingStore = create<OnboardingState>()((set, get) => ({
             confidence: 100,
             reason: "사용자 수동 변경",
           }
-        : cm
+        : cm,
     );
 
     let affectedRelationCount = 0;
@@ -523,36 +370,4 @@ export const useOnboardingStore = create<OnboardingState>()((set, get) => ({
       })),
     };
   },
-
-  startProcessing: () => set({ isProcessing: true }),
-
-  updateProcessingStep: (phase, status) =>
-    set((state) => ({
-      processingSteps: state.processingSteps.map((s) =>
-        s.phase === phase ? { ...s, status } : s
-      ),
-    })),
-
-  updateProcessingStats: (stats) =>
-    set((state) => ({
-      processingStats: { ...state.processingStats, ...stats },
-    })),
-
-  setProcessingProgress: (progress) => set({ processingProgress: progress }),
-
-  addLog: (log) =>
-    set((state) => ({
-      processingLogs: [...state.processingLogs, log],
-    })),
-
-  setSynthesisJob: (job) =>
-    set({
-      synthesisJobId: job.id,
-      synthesisJob: job,
-    }),
-
-  addChatMessage: (message) =>
-    set((state) => ({
-      chatMessages: [...state.chatMessages, message],
-    })),
 }));

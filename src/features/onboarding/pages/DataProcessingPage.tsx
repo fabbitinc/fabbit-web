@@ -11,7 +11,7 @@ import {
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { useOnboardingStore } from "@/stores/onboardingStore";
+import { useMappingStore, useUploadStore, useProcessingStore } from "@/stores/onboarding";
 import { previewMapping } from "@/api/onboarding";
 import { LogStream } from "@/features/onboarding/components/processing/LogStream";
 import { MAPPING_TERMS } from "@/features/onboarding/constants/mappingTerminology";
@@ -58,9 +58,9 @@ const PHASES = ["parsing", "normalizing", "connecting", "validating"] as const;
 
 export function DataProcessingPage() {
   const navigate = useNavigate();
+  const { setStep, setMappingPreviewData } = useMappingStore();
+  const { primaryUploadId } = useUploadStore();
   const {
-    setStep,
-    primaryUploadId,
     processingSteps,
     processingProgress,
     processingLogs,
@@ -69,8 +69,7 @@ export function DataProcessingPage() {
     updateProcessingStep,
     setProcessingProgress,
     addLog,
-    setMappingPreviewData,
-  } = useOnboardingStore();
+  } = useProcessingStore();
 
   const [error, setError] = useState<string | null>(null);
   const [isCompleted, setIsCompleted] = useState(false);

@@ -1,20 +1,12 @@
 import { useMemo, useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
-import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import type { TargetPropertyOption } from "@/features/onboarding/types/onboarding.types";
 import { MAPPING_TERMS } from "@/features/onboarding/constants/mappingTerminology";
-import { DisplayWithOriginalTooltip } from "./DisplayWithOriginalTooltip";
+import { UnmappedBaseForm } from "./UnmappedBaseForm";
+import { UnmappedExtendedForm } from "./UnmappedExtendedForm";
+import { UnmappedRelationForm } from "./UnmappedRelationForm";
 import { cn } from "@/lib/utils";
 
 type ResolveMode = "base" | "extended" | "relation_prop";
@@ -28,7 +20,7 @@ interface UnmappedCardProps {
   relationFromToOptions?: string[];
   relationEndpointOptionsByType?: Record<
     string,
-    { fromColumns: string[]; toColumns: string[]; fromLabel: string; toLabel: string }
+    { fromColumns: string[]; toColumns: string[]; fromLabel: string; toLabel: string; fromMergeKey?: string; toMergeKey?: string }
   >;
   onCreateBase: (sourceColumn: string, targetLabel: string, targetProperty: string) => void;
   onCreateExtended: (sourceColumn: string, targetLabel: string, propertyName?: string) => void;
@@ -39,20 +31,6 @@ interface UnmappedCardProps {
     toSourceColumn: string,
     relationProperty: string,
   ) => void;
-}
-
-function toExtendedPropertyName(sourceColumn: string) {
-  const hash = Array.from(sourceColumn).reduce(
-    (acc, ch) => ((acc * 31 + ch.charCodeAt(0)) >>> 0),
-    7,
-  );
-  const normalizeName = sourceColumn
-    .normalize("NFKD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "_")
-    .replace(/^_+|_+$/g, "");
-  return `_ext_${normalizeName || `col_${hash.toString(36)}`}`;
 }
 
 export function UnmappedCard({
@@ -67,7 +45,6 @@ export function UnmappedCard({
   onCreateExtended,
   onCreateRelation,
 }: UnmappedCardProps) {
-  const { t } = useTranslation(["mapping"]);
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<ResolveMode>("base");
 
@@ -75,83 +52,6 @@ export function UnmappedCard({
     () => [...new Set(targetOptions.map((opt) => opt.label))].sort((a, b) => a.localeCompare(b)),
     [targetOptions],
   );
-
-  const [baseLabel, setBaseLabel] = useState<string>(labels[0] || "");
-  const baseProperties = useMemo(
-    () => targetOptions.filter((opt) => opt.label === baseLabel),
-    [targetOptions, baseLabel],
-  );
-  const [baseProperty, setBaseProperty] = useState<string>("");
-
-  const [extendedLabel, setExtendedLabel] = useState<string>(labels[0] || "");
-  const [extendedPropertyName, setExtendedPropertyName] = useState<string>(
-    toExtendedPropertyName(column),
-  );
-
-  const [relationType, setRelationType] = useState<string>(relationTypeOptions[0] || "");
-  const effectiveRelationType = relationType || relationTypeOptions[0] || "";
-  const relationEndpointOptions = relationEndpointOptionsByType[effectiveRelationType];
-  const relationFromOptions = relationEndpointOptions?.fromColumns || relationFromToOptions;
-  const relationToOptions = relationEndpointOptions?.toColumns || relationFromToOptions;
-  const [relationFrom, setRelationFrom] = useState<string>(relationFromOptions[0] || "");
-  const [relationTo, setRelationTo] = useState<string>(relationToOptions[0] || "");
-  const effectiveRelationFrom =
-    relationFromOptions.includes(relationFrom) ? relationFrom : relationFromOptions[0] || "";
-  const effectiveRelationTo =
-    relationToOptions.includes(relationTo) ? relationTo : relationToOptions[0] || "";
-  const relationProps = effectiveRelationType ? relationPropertyByType[effectiveRelationType] || [] : [];
-  const [relationProperty, setRelationProperty] = useState<string>(relationProps[0] || "");
-  const effectiveRelationProperty =
-    relationProps.includes(relationProperty) ? relationProperty : relationProps[0] || "";
-
-  const canApply =
-    mode === "base"
-      ? Boolean(baseLabel && baseProperty)
-        : mode === "extended"
-          ? Boolean(extendedLabel && extendedPropertyName)
-        : Boolean(
-            effectiveRelationType &&
-              effectiveRelationFrom &&
-              effectiveRelationTo &&
-              effectiveRelationProperty,
-          );
-
-  const handleApply = () => {
-    if (mode === "base") {
-      if (!baseLabel || !baseProperty) return;
-      onCreateBase(column, baseLabel, baseProperty);
-      setOpen(false);
-      return;
-    }
-
-    if (mode === "extended") {
-      if (!extendedLabel) return;
-      onCreateExtended(column, extendedLabel, extendedPropertyName);
-      setOpen(false);
-      return;
-    }
-
-    if (mode === "relation_prop") {
-      if (
-        !effectiveRelationType ||
-        !effectiveRelationFrom ||
-        !effectiveRelationTo ||
-        !effectiveRelationProperty
-      ) {
-        return;
-      }
-      onCreateRelation(
-        column,
-        effectiveRelationType,
-        effectiveRelationFrom,
-        effectiveRelationTo,
-        effectiveRelationProperty,
-      );
-      setOpen(false);
-    }
-  };
-
-  const currentTargetDisplay = "미할당";
 
   return (
     <div className="space-y-2">
@@ -174,7 +74,7 @@ export function UnmappedCard({
             <div className="mb-0.5 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
               라벨 / 속성
             </div>
-            <p className="text-[15px] font-bold text-gray-900">{currentTargetDisplay}</p>
+            <p className="text-[15px] font-bold text-gray-900">미할당</p>
           </div>
         </div>
 
@@ -212,6 +112,7 @@ export function UnmappedCard({
 
       {open && (
         <div className="rounded-xl border border-gray-200 bg-white p-4">
+          {/* 모드 전환 버튼 */}
           <div className="mb-4 flex items-center gap-2">
             <Button
               type="button"
@@ -236,196 +137,50 @@ export function UnmappedCard({
               variant={mode === "relation_prop" ? "default" : "outline"}
               size="sm"
               className={cn("h-7 text-xs", mode === "relation_prop" && "bg-gray-900 hover:bg-gray-900")}
-              onClick={() => {
-                setMode("relation_prop");
-                const nextType = effectiveRelationType;
-                setRelationType(nextType);
-                const endpoints = relationEndpointOptionsByType[nextType];
-                if (endpoints) {
-                  setRelationFrom(endpoints.fromColumns[0] || "");
-                  setRelationTo(endpoints.toColumns[0] || "");
-                }
-                if (!effectiveRelationProperty && nextType) {
-                  setRelationProperty((relationPropertyByType[nextType] || [""])[0]);
-                }
-              }}
+              onClick={() => setMode("relation_prop")}
             >
               관계 속성
             </Button>
           </div>
 
+          {/* 서브폼 렌더링 */}
           <div className="space-y-3">
             {mode === "base" && (
-              <>
-                <div className="space-y-1">
-                  <Label className="text-xs text-gray-600">라벨</Label>
-                  <Select
-                    value={baseLabel}
-                    onValueChange={(value) => {
-                      setBaseLabel(value);
-                      const next = targetOptions.find((opt) => opt.label === value)?.property || "";
-                      setBaseProperty(next);
-                    }}
-                  >
-                    <SelectTrigger className="h-9 text-xs">
-                      <SelectValue placeholder="라벨 선택" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {labels.map((label) => (
-                        <SelectItem key={label} value={label}>
-                          <DisplayWithOriginalTooltip
-                            display={t(`mapping:nodeLabel.${label}`, label)}
-                            original={label}
-                          />
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-1">
-                  <Label className="text-xs text-gray-600">속성</Label>
-                  <Select value={baseProperty} onValueChange={setBaseProperty}>
-                    <SelectTrigger className="h-9 text-xs">
-                      <SelectValue placeholder="속성 선택" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {baseProperties.map((prop) => (
-                        <SelectItem key={`${prop.label}.${prop.property}`} value={prop.property}>
-                          <DisplayWithOriginalTooltip
-                            display={t(`mapping:property.${prop.property}`, prop.property)}
-                            original={prop.property}
-                          />
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </>
+              <UnmappedBaseForm
+                column={column}
+                labels={labels}
+                targetOptions={targetOptions}
+                onApply={(src, label, prop) => {
+                  onCreateBase(src, label, prop);
+                  setOpen(false);
+                }}
+              />
             )}
 
             {mode === "extended" && (
-              <>
-                <div className="space-y-1">
-                  <Label className="text-xs text-gray-600">라벨</Label>
-                  <Select value={extendedLabel} onValueChange={setExtendedLabel}>
-                    <SelectTrigger className="h-9 text-xs">
-                      <SelectValue placeholder="라벨 선택" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {labels.map((label) => (
-                        <SelectItem key={label} value={label}>
-                          <DisplayWithOriginalTooltip
-                            display={t(`mapping:nodeLabel.${label}`, label)}
-                            original={label}
-                          />
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-xs text-gray-600">속성</Label>
-                  <Input
-                    className="h-9 text-xs"
-                    value={extendedPropertyName}
-                    onChange={(e) => setExtendedPropertyName(e.target.value)}
-                  />
-                </div>
-              </>
+              <UnmappedExtendedForm
+                column={column}
+                labels={labels}
+                onApply={(src, label, propName) => {
+                  onCreateExtended(src, label, propName);
+                  setOpen(false);
+                }}
+              />
             )}
 
             {mode === "relation_prop" && (
-              <>
-                <div className="space-y-1">
-                  <Label className="text-xs text-gray-600">타입</Label>
-                  <Select
-                    value={effectiveRelationType}
-                    onValueChange={(value) => {
-                      setRelationType(value);
-                      const endpoints = relationEndpointOptionsByType[value];
-                      if (endpoints) {
-                        setRelationFrom(endpoints.fromColumns[0] || "");
-                        setRelationTo(endpoints.toColumns[0] || "");
-                      }
-                      setRelationProperty((relationPropertyByType[value] || [""])[0]);
-                    }}
-                  >
-                    <SelectTrigger className="h-9 text-xs">
-                      <SelectValue placeholder="관계 타입" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {relationTypeOptions.map((type) => (
-                        <SelectItem key={type} value={type}>{type}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-                  <div className="space-y-1">
-                    <Label className="text-xs text-gray-600">원본 기준 컬럼</Label>
-                    <Select value={effectiveRelationFrom} onValueChange={setRelationFrom}>
-                      <SelectTrigger className="h-9 text-xs">
-                        <SelectValue placeholder="원본 기준 컬럼" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {relationFromOptions.map((col) => (
-                          <SelectItem key={`from-${col}`} value={col}>{col}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-1">
-                    <Label className="text-xs text-gray-600">대상 기준 컬럼</Label>
-                    <Select value={effectiveRelationTo} onValueChange={setRelationTo}>
-                      <SelectTrigger className="h-9 text-xs">
-                        <SelectValue placeholder="대상 기준 컬럼" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {relationToOptions.map((col) => (
-                          <SelectItem key={`to-${col}`} value={col}>{col}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-                <div className="space-y-1">
-                  <Label className="text-xs text-gray-600">속성</Label>
-                  <Select value={effectiveRelationProperty} onValueChange={setRelationProperty}>
-                    <SelectTrigger className="h-9 text-xs">
-                      <SelectValue placeholder="관계 속성" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {relationProps.map((prop) => (
-                        <SelectItem key={prop} value={prop}>
-                          <DisplayWithOriginalTooltip
-                            display={t(`mapping:property.${prop}`, prop)}
-                            original={prop}
-                          />
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                {relationProps.length === 0 && (
-                  <div className="rounded-lg border border-dashed border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-700">
-                    선택한 관계 타입에 설정 가능한 관계 속성이 없습니다.
-                  </div>
-                )}
-              </>
+              <UnmappedRelationForm
+                column={column}
+                relationTypeOptions={relationTypeOptions}
+                relationPropertyByType={relationPropertyByType}
+                relationFromToOptions={relationFromToOptions}
+                relationEndpointOptionsByType={relationEndpointOptionsByType}
+                onApply={(src, relType, from, to, relProp) => {
+                  onCreateRelation(src, relType, from, to, relProp);
+                  setOpen(false);
+                }}
+              />
             )}
-
-            <p className="text-sm text-gray-500">선택 컬럼: {column}</p>
-
-            <Button
-              type="button"
-              size="sm"
-              className="h-8 w-full bg-gray-900 text-xs hover:bg-gray-800"
-              disabled={!canApply}
-              onClick={handleApply}
-            >
-              적용
-            </Button>
           </div>
         </div>
       )}
