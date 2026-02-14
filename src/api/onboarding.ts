@@ -1,5 +1,7 @@
 import { apiClient } from "./client";
 import type {
+  CreateUploadRequest,
+  CreateUploadResponse,
   BatchCreateUploadRequest,
   BatchCreateUploadResponse,
   BatchCompleteRequest,
@@ -21,6 +23,20 @@ import type {
 } from "./types/onboarding";
 
 // ─── Upload ───
+
+/**
+ * 단일 업로드 생성 (presigned URL 발급)
+ * POST /api/v1/uploads
+ */
+export async function createUpload(
+  request: CreateUploadRequest,
+): Promise<CreateUploadResponse> {
+  const response = await apiClient.post<CreateUploadResponse>(
+    "/api/v1/uploads",
+    request,
+  );
+  return response.data;
+}
 
 /**
  * 배치 업로드 생성 (presigned URL 발급)

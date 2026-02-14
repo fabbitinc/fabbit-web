@@ -94,7 +94,7 @@ export interface TargetPropertyOption {
 }
 
 // Step 3: 데이터 처리
-export type ProcessingPhase = "parsing" | "normalizing" | "connecting" | "validating";
+export type ProcessingPhase = "uploading" | "parsing" | "normalizing" | "connecting" | "validating";
 
 export interface ProcessingStep {
   phase: ProcessingPhase;

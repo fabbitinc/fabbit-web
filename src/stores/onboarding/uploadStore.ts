@@ -11,6 +11,7 @@ interface UploadState {
   removeFile: (id: string) => void;
   addUploadId: (fileId: string, uploadId: string) => void;
   setPrimaryUploadId: (uploadId: string) => void;
+  reset: () => void;
 }
 
 export const useUploadStore = create<UploadState>()((set) => ({
@@ -44,4 +45,6 @@ export const useUploadStore = create<UploadState>()((set) => ({
     })),
 
   setPrimaryUploadId: (uploadId) => set({ primaryUploadId: uploadId }),
+
+  reset: () => set({ uploadedFiles: [], uploadIds: [], primaryUploadId: null }),
 }));

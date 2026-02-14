@@ -125,14 +125,14 @@ export function UnmappedRelationForm({
       </div>
       <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
         <div className="space-y-1">
-          <Label className="inline-flex items-center gap-1 text-xs text-gray-600">
+          <Label className="inline-flex items-center gap-1.5 text-xs text-gray-600">
             <span>원본 기준 컬럼</span>
             {relationEndpointOptions?.fromLabel && (
-              <span className="inline-flex items-center gap-0.5 text-gray-400">
-                (<DisplayWithOriginalTooltip
+              <span className="inline-flex items-center rounded bg-violet-100 px-1.5 py-0.5 text-[11px] font-semibold text-violet-700">
+                <DisplayWithOriginalTooltip
                   display={t(`mapping:nodeLabel.${relationEndpointOptions.fromLabel}`, relationEndpointOptions.fromLabel)}
                   original={relationEndpointOptions.fromLabel}
-                />)
+                />
               </span>
             )}
           </Label>
@@ -153,14 +153,14 @@ export function UnmappedRelationForm({
           </Select>
         </div>
         <div className="space-y-1">
-          <Label className="inline-flex items-center gap-1 text-xs text-gray-600">
+          <Label className="inline-flex items-center gap-1.5 text-xs text-gray-600">
             <span>대상 기준 컬럼</span>
             {relationEndpointOptions?.toLabel && (
-              <span className="inline-flex items-center gap-0.5 text-gray-400">
-                (<DisplayWithOriginalTooltip
+              <span className="inline-flex items-center rounded bg-violet-100 px-1.5 py-0.5 text-[11px] font-semibold text-violet-700">
+                <DisplayWithOriginalTooltip
                   display={t(`mapping:nodeLabel.${relationEndpointOptions.toLabel}`, relationEndpointOptions.toLabel)}
                   original={relationEndpointOptions.toLabel}
-                />)
+                />
               </span>
             )}
           </Label>

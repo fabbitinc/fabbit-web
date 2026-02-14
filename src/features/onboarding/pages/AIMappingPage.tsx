@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useMappingStore } from "@/stores/onboarding";
+import { useMappingStore, useUploadStore, useProcessingStore } from "@/stores/onboarding";
 import { MappingSummaryBar } from "@/features/onboarding/components/mapping/MappingSummaryBar";
 import { MappingCard } from "@/features/onboarding/components/mapping/MappingCard";
 import { UnmappedCard } from "@/features/onboarding/components/mapping/UnmappedCard";
@@ -198,7 +198,13 @@ export function AIMappingPage() {
             type="button"
             variant="outline"
             className="h-12 px-8 text-base font-semibold border-gray-200 hover:bg-gray-50 hover:border-gray-300 transition-all"
-            onClick={() => navigate("/onboarding/processing")}
+            onClick={() => {
+              if (!window.confirm("이전 단계로 돌아가면 현재 매핑 데이터가 삭제됩니다. 계속하시겠습니까?")) return;
+              useUploadStore.getState().reset();
+              useProcessingStore.getState().reset();
+              useMappingStore.getState().reset();
+              navigate("/onboarding/upload");
+            }}
           >
             {t("common:prev")}
           </Button>

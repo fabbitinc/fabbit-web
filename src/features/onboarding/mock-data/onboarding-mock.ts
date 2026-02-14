@@ -120,6 +120,7 @@ export const targetPropertySchema: TargetPropertyOption[] = [
 // ─── 처리/탐색 Mock 데이터 ───
 
 export const mockProcessingSteps: ProcessingStep[] = [
+  { phase: "uploading", label: "파일 업로드 확인", status: "pending" },
   { phase: "parsing", label: "데이터 파싱", status: "pending" },
   { phase: "normalizing", label: "정규화 및 병합", status: "pending" },
   { phase: "connecting", label: "관계 연결", status: "pending" },

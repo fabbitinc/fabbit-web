@@ -12,7 +12,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useMappingStore, useUploadStore, useProcessingStore } from "@/stores/onboarding";
-import { previewMapping } from "@/api/onboarding";
+import { completeUpload, previewMapping } from "@/api/onboarding";
 import { LogStream } from "@/features/onboarding/components/processing/LogStream";
 import { MAPPING_TERMS } from "@/features/onboarding/constants/mappingTerminology";
 import type { LogEntry } from "@/features/onboarding/types/onboarding.types";
@@ -33,28 +33,20 @@ const stepStatusConfig = {
   },
 } as const;
 
-// 처리 단계별 애니메이션 로그
-const phaseLogMessages: Record<string, LogEntry[]> = {
-  parsing: [
-    { id: "log-1", timestamp: "00:00", message: "업로드된 파일을 분석합니다...", type: "info" },
-    { id: "log-2", timestamp: "00:02", message: "파일 구조를 파싱 중...", type: "info" },
-  ],
-  normalizing: [
-    { id: "log-3", timestamp: "00:05", message: "데이터 정규화 시작...", type: "info" },
-    { id: "log-4", timestamp: "00:08", message: "원본 컬럼 헤더 추출 완료", type: "success" },
-    { id: "log-5", timestamp: "00:10", message: "샘플 데이터 추출 중...", type: "info" },
-  ],
-  connecting: [
-    { id: "log-6", timestamp: "00:15", message: "AI 매핑 분석을 시작합니다...", type: "info" },
-    { id: "log-7", timestamp: "00:25", message: "원본 컬럼-대상 속성 매핑 추론 중...", type: "info" },
-    { id: "log-8", timestamp: "00:40", message: "관계 매핑 추론 중...", type: "info" },
-  ],
-  validating: [
-    { id: "log-9", timestamp: "00:50", message: "매핑 결과 검증 중...", type: "info" },
-  ],
-};
+// 로그와 단계 전환을 함께 정의: phase가 지정된 항목에서 해당 단계를 in_progress로 전환
+const animationSteps: (LogEntry & { phase?: string })[] = [
+  { id: "p1", timestamp: "00:02", message: "파일 구조를 파싱 중...", type: "info", phase: "parsing" },
+  { id: "p2", timestamp: "00:05", message: "데이터 행과 컬럼을 분석합니다...", type: "info" },
+  { id: "p3", timestamp: "00:08", message: "데이터 정규화 시작...", type: "info", phase: "normalizing" },
+  { id: "p4", timestamp: "00:10", message: "원본 컬럼 헤더 추출 완료", type: "success" },
+  { id: "p5", timestamp: "00:14", message: "샘플 데이터 추출 중...", type: "info" },
+  { id: "p6", timestamp: "00:18", message: "AI 매핑 분석을 시작합니다...", type: "info", phase: "connecting" },
+  { id: "p7", timestamp: "00:28", message: "원본 컬럼-대상 속성 매핑 추론 중...", type: "info" },
+  { id: "p8", timestamp: "00:40", message: "관계 매핑 추론 중...", type: "info" },
+  { id: "p9", timestamp: "00:50", message: "매핑 결과 검증 중...", type: "info", phase: "validating" },
+];
 
-const PHASES = ["parsing", "normalizing", "connecting", "validating"] as const;
+const PHASES = ["uploading", "parsing", "normalizing", "connecting", "validating"] as const;
 
 export function DataProcessingPage() {
   const navigate = useNavigate();
@@ -75,66 +67,74 @@ export function DataProcessingPage() {
   const [isCompleted, setIsCompleted] = useState(false);
   const apiCalledRef = useRef(false);
 
+  const handleGoBack = () => {
+    if (!window.confirm("이전 단계로 돌아가면 현재 진행 중인 분석 데이터가 삭제됩니다. 계속하시겠습니까?")) return;
+    useUploadStore.getState().reset();
+    useProcessingStore.getState().reset();
+    useMappingStore.getState().reset();
+    navigate("/onboarding/upload");
+  };
+
   useEffect(() => {
     setStep(2);
   }, [setStep]);
 
-  // API 호출 + 단계 애니메이션
   useEffect(() => {
     if (apiCalledRef.current || !primaryUploadId) return;
     apiCalledRef.current = true;
 
     startProcessing();
 
-    let currentPhaseIndex = 0;
-    let logIndex = 0;
-    let stopped = false;
+    let animationInterval: ReturnType<typeof setInterval> | null = null;
+    let stepIndex = 0;
+    let lastPhase: string | null = null;
+    let done = false;
 
-    // 첫 번째 단계 시작
-    updateProcessingStep(PHASES[0], "in_progress");
+    const run = async () => {
+      try {
+        // ── 1단계: 업로드 확인 (20%) ──
+        updateProcessingStep("uploading", "in_progress");
+        addLog({ id: `log-u-${Date.now()}`, timestamp: "00:00", message: "업로드된 파일을 확인합니다...", type: "info" });
 
-    // 단계별 로그 애니메이션 (API 응답 전까지 최대 90%)
-    const animationInterval = setInterval(() => {
-      if (stopped) return;
+        await completeUpload(primaryUploadId);
 
-      const currentPhase = PHASES[currentPhaseIndex];
-      const phaseLogs = phaseLogMessages[currentPhase] || [];
+        updateProcessingStep("uploading", "completed");
+        setProcessingProgress(20);
+        addLog({ id: `log-u-done-${Date.now()}`, timestamp: "00:01", message: "파일 업로드 확인 완료", type: "success" });
 
-      if (logIndex < phaseLogs.length) {
-        addLog(phaseLogs[logIndex]);
-        logIndex++;
-      } else if (currentPhaseIndex < PHASES.length - 1) {
-        updateProcessingStep(currentPhase, "completed");
-        currentPhaseIndex++;
-        updateProcessingStep(PHASES[currentPhaseIndex], "in_progress");
-        logIndex = 0;
-      }
+        // ── 2단계: AI 분석 (20% → 100%) ──
+        // 로그 애니메이션으로 단계를 순차 전환
+        animationInterval = setInterval(() => {
+          if (done || stepIndex >= animationSteps.length) return;
 
-      // 진행률 계산 (최대 90%)
-      const totalLogs = Object.values(phaseLogMessages).reduce(
-        (sum, logs) => sum + logs.length,
-        0,
-      );
-      const processedLogs =
-        Object.values(phaseLogMessages)
-          .slice(0, currentPhaseIndex)
-          .reduce((sum, logs) => sum + logs.length, 0) + logIndex;
-      const progress = Math.min(Math.round((processedLogs / totalLogs) * 90), 90);
-      setProcessingProgress(progress);
-    }, 2500);
+          const step = animationSteps[stepIndex];
 
-    // 실제 API 호출
-    previewMapping({ upload_id: primaryUploadId })
-      .then((response) => {
-        stopped = true;
-        clearInterval(animationInterval);
+          // phase가 지정된 항목: 이전 단계 완료 + 새 단계 시작
+          if (step.phase) {
+            if (lastPhase) updateProcessingStep(lastPhase, "completed");
+            updateProcessingStep(step.phase, "in_progress");
+            lastPhase = step.phase;
+          }
 
-        // 모든 단계 완료 처리
+          addLog({ ...step, id: `log-a-${Date.now()}-${stepIndex}` });
+          stepIndex++;
+
+          const progress = 20 + Math.min(Math.round((stepIndex / animationSteps.length) * 70), 70);
+          setProcessingProgress(progress);
+        }, 3000);
+
+        const response = await previewMapping({ upload_id: primaryUploadId });
+
+        done = true;
+        if (animationInterval) clearInterval(animationInterval);
+        animationInterval = null;
+
+        // 모든 단계 완료
         PHASES.forEach((phase) => updateProcessingStep(phase, "completed"));
         setProcessingProgress(100);
 
         addLog({
-          id: "log-done",
+          id: `log-done-${Date.now()}`,
           timestamp: "완료",
           message: `매핑 분석 완료: ${MAPPING_TERMS.baseMapping} ${response.mapping.column_mappings.length}건, ${MAPPING_TERMS.relationMapping} ${response.mapping.relation_mappings.length}건, ${MAPPING_TERMS.extendedMapping} ${response.mapping.extended_properties.length}건`,
           type: "success",
@@ -167,7 +167,6 @@ export function DataProcessingPage() {
           }
         }
 
-        // 스토어에 매핑 데이터 저장
         setMappingPreviewData(
           response.headers,
           response.sample_rows,
@@ -176,28 +175,30 @@ export function DataProcessingPage() {
         );
 
         setIsCompleted(true);
-      })
-      .catch((err) => {
-        stopped = true;
-        clearInterval(animationInterval);
-        console.error("Mapping preview failed:", err);
+      } catch (err: unknown) {
+        done = true;
+        if (animationInterval) clearInterval(animationInterval);
 
+        const axiosErr = err as { response?: { data?: { detail?: string } } };
         const errorMsg =
-          err?.response?.data?.detail || "매핑 분석에 실패했습니다";
+          axiosErr?.response?.data?.detail || "처리에 실패했습니다";
+        console.error("Processing failed:", err);
         setError(errorMsg);
         toast.error(errorMsg);
 
         addLog({
-          id: "log-error",
+          id: `log-error-${Date.now()}`,
           timestamp: "오류",
           message: `오류: ${errorMsg}`,
           type: "error",
         });
-      });
+      }
+    };
+
+    run();
 
     return () => {
-      stopped = true;
-      clearInterval(animationInterval);
+      if (animationInterval) clearInterval(animationInterval);
     };
   }, [primaryUploadId]);
 
@@ -289,7 +290,7 @@ export function DataProcessingPage() {
             type="button"
             variant="outline"
             className="h-12 px-8 text-base font-semibold border-gray-200 hover:bg-gray-50 hover:border-gray-300 transition-all"
-            onClick={() => navigate("/onboarding/upload")}
+            onClick={handleGoBack}
           >
             이전
           </Button>

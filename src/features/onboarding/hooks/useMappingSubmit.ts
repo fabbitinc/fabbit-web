@@ -6,7 +6,7 @@ import { confirmMapping, validateMapping, startSynthesis } from "@/api/onboardin
 import { extractApiErrorMessage } from "@/features/onboarding/utils/mappingUtils";
 
 /**
- * 매핑 확정 + 합성 시작 + 페이지 이동
+ * 매핑 확정 + 페이지 이동
  */
 export function useMappingSubmit() {
   const navigate = useNavigate();
@@ -45,7 +45,7 @@ export function useMappingSubmit() {
 
       const normalizedMapping = validation.normalized_mapping || draftMapping;
 
-      // 1. 매핑 확정 (같은 매핑으로 재시도 시 재사용)
+      // 매핑 확정
       const mappingSignature = JSON.stringify(normalizedMapping);
       let confirmedMappingId =
         confirmedMappingRef.current?.signature === mappingSignature
@@ -66,15 +66,14 @@ export function useMappingSubmit() {
         setMappingId(confirmResponse.id);
       }
 
-      // 2. 합성 작업 시작
-      const synthesisJob = await startSynthesis({
-        mapping_id: confirmedMappingId,
-      });
+      // 합성 시작
+      const synthesisJob = await startSynthesis({ mapping_id: confirmedMappingId });
       setSynthesisJob(synthesisJob);
 
+      toast.success("매핑이 확정되었습니다");
       navigate("/onboarding/explore");
     } catch (err) {
-      console.error("Mapping confirmation or synthesis failed:", err);
+      console.error("Mapping confirmation failed:", err);
       toast.error(extractApiErrorMessage(err, "매핑 확정에 실패했습니다"));
     } finally {
       setIsSubmitting(false);

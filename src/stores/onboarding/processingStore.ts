@@ -22,6 +22,7 @@ interface ProcessingState {
   setProcessingProgress: (progress: number) => void;
   addLog: (log: LogEntry) => void;
   setSynthesisJob: (job: SynthesisJobResponse) => void;
+  reset: () => void;
 }
 
 export const useProcessingStore = create<ProcessingState>()((set) => ({
@@ -59,4 +60,14 @@ export const useProcessingStore = create<ProcessingState>()((set) => ({
       synthesisJobId: job.id,
       synthesisJob: job,
     }),
+
+  reset: () => set({
+    processingSteps: mockProcessingSteps.map((s) => ({ ...s, status: "pending" as const })),
+    processingStats: { nodesCreated: 0, relationsCreated: 0, totalNodes: 0, totalRelations: 0 },
+    processingProgress: 0,
+    processingLogs: [],
+    isProcessing: false,
+    synthesisJobId: null,
+    synthesisJob: null,
+  }),
 }));
