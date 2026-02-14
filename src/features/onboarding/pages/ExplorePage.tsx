@@ -92,21 +92,22 @@ export function ExplorePage() {
     const pollStatus = async () => {
       try {
         const job = await getSynthesisJob(synthesisJobId);
+        const status = job.status.toLowerCase();
         const progress =
           job.total_rows > 0
             ? Math.round((job.processed_rows / job.total_rows) * 100)
             : 0;
         setSynthesisProgress(progress);
-        setSynthesisStatus(job.status);
+        setSynthesisStatus(status);
 
-        if (job.status === "completed") {
+        if (status === "completed") {
           if (pollRef.current) {
             clearInterval(pollRef.current);
             pollRef.current = null;
           }
           setSynthesisProgress(100);
           loadExploreData();
-        } else if (job.status === "failed") {
+        } else if (status === "failed") {
           if (pollRef.current) {
             clearInterval(pollRef.current);
             pollRef.current = null;

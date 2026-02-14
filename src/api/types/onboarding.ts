@@ -186,7 +186,8 @@ export interface MappingValidateResponse {
 // ─── Synthesis ───
 
 export interface SynthesisStartRequest {
-  mapping_id: string;
+  upload_id: string;
+  mapping_id?: string | null;
 }
 
 export interface SynthesisJobResponse {

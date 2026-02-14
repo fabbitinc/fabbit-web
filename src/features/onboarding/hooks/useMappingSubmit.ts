@@ -67,7 +67,7 @@ export function useMappingSubmit() {
       }
 
       // 합성 시작
-      const synthesisJob = await startSynthesis({ mapping_id: confirmedMappingId });
+      const synthesisJob = await startSynthesis({ upload_id: primaryUploadId, mapping_id: confirmedMappingId });
       setSynthesisJob(synthesisJob);
 
       toast.success("매핑이 확정되었습니다");
