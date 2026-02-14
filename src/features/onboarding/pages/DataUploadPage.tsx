@@ -1,18 +1,28 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { Upload, FileSpreadsheet } from "lucide-react";
+import { Upload, FileSpreadsheet, Crown, Lightbulb, FileText } from "lucide-react";
 import { toast } from "sonner";
 import { useMappingStore, useUploadStore } from "@/stores/onboarding";
+import { useAuthStore } from "@/stores/authStore";
+import { planOptions } from "@/features/registration/mock-data/registration-mock";
 import { cn } from "@/lib/utils";
 import { createUpload } from "@/api/onboarding";
 import type { UploadedFile } from "@/features/onboarding/types/onboarding.types";
 
 const BOM_ACCEPT = ".xlsx,.xls,.csv";
 
+const BOM_SAMPLE_DATA = [
+  { partNo: "P-001", name: "육각볼트 M10", material: "SUS304", qty: 10 },
+  { partNo: "P-002", name: "육각너트 M10", material: "SUS304", qty: 10 },
+  { partNo: "A-100", name: "브래킷 조립체", material: "AL6061", qty: 2 },
+];
+
 export function DataUploadPage() {
   const navigate = useNavigate();
   const { setStep } = useMappingStore();
   const { addFiles, addUploadId, setPrimaryUploadId } = useUploadStore();
+  const selectedPlan = useAuthStore((s) => s.selectedPlan);
+  const plan = planOptions.find((p) => p.tier === selectedPlan) ?? planOptions[0];
 
   const [isDragOver, setIsDragOver] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -102,8 +112,22 @@ export function DataUploadPage() {
       <div className="px-8 pb-6 pt-2 text-center lg:px-10">
         <h1 className="text-2xl font-bold text-gray-900">데이터 업로드</h1>
         <p className="mt-2 text-sm text-gray-500">
-          BOM 파일을 업로드하세요
+          BOM 데이터를 AI가 분석하여 품목과 구조를 자동으로 정리합니다
         </p>
+      </div>
+
+      {/* 플랜 정보 배너 */}
+      <div className="px-8 lg:px-10">
+        <div className="flex items-center gap-2 rounded-lg border border-blue-100 bg-blue-50/50 p-3">
+          <Crown className="h-4 w-4 shrink-0 text-blue-500" />
+          <p className="text-xs text-gray-600">
+            <span className="font-medium text-gray-800">
+              {plan.name} ({plan.priceLabel})
+            </span>
+            {" · "}
+            {plan.features.join(" · ")}
+          </p>
+        </div>
       </div>
 
       {/* BOM 업로드 영역 */}
@@ -150,6 +174,49 @@ export function DataUploadPage() {
                 <p className="text-xs text-gray-400">Excel(.xlsx, .xls), CSV 지원</p>
               </>
             )}
+          </div>
+        </div>
+      </div>
+
+      {/* BOM 파일 예시 미리보기 */}
+      <div className="px-8 lg:px-10">
+        <div className="overflow-hidden rounded-lg border border-gray-100">
+          <table className="w-full text-[11px] text-gray-400">
+            <thead>
+              <tr className="border-b border-gray-100 bg-gray-50/50">
+                <th className="px-3 py-1.5 text-left font-medium">품번</th>
+                <th className="px-3 py-1.5 text-left font-medium">명칭</th>
+                <th className="px-3 py-1.5 text-left font-medium">재질</th>
+                <th className="px-3 py-1.5 text-right font-medium">수량</th>
+              </tr>
+            </thead>
+            <tbody>
+              {BOM_SAMPLE_DATA.map((row) => (
+                <tr key={row.partNo} className="border-b border-gray-50 last:border-b-0">
+                  <td className="px-3 py-1.5">{row.partNo}</td>
+                  <td className="px-3 py-1.5">{row.name}</td>
+                  <td className="px-3 py-1.5">{row.material}</td>
+                  <td className="px-3 py-1.5 text-right">{row.qty}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p className="mt-1.5 text-center text-[11px] text-gray-300">
+          이런 형태의 파일을 업로드하세요
+        </p>
+      </div>
+
+      {/* 가이드 텍스트 */}
+      <div className="px-8 lg:px-10">
+        <div className="space-y-1.5">
+          <div className="flex items-center gap-1.5 text-xs text-gray-400">
+            <FileText className="h-3 w-3 shrink-0" />
+            <span>지원 포맷: Excel(.xlsx, .xls), CSV</span>
+          </div>
+          <div className="flex items-center gap-1.5 text-xs text-gray-400">
+            <Lightbulb className="h-3 w-3 shrink-0" />
+            <span>컬럼 헤더가 포함된 파일이 가장 정확한 결과를 제공합니다</span>
           </div>
         </div>
       </div>
