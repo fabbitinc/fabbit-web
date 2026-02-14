@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -9,7 +9,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useMappingStore } from "@/stores/onboarding";
 import { DisplayWithOriginalTooltip } from "./DisplayWithOriginalTooltip";
+
+const NO_PROPERTY = "__NONE__";
 
 interface UnmappedRelationFormProps {
   column: string;
@@ -38,6 +41,17 @@ export function UnmappedRelationForm({
   onApply,
 }: UnmappedRelationFormProps) {
   const { t } = useTranslation(["mapping"]);
+  const editableConstraints = useMappingStore((s) => s.editableConstraints);
+
+  // 속성별 required 여부 맵
+  const propertyRequiredMap = useMemo(() => {
+    const catalog = editableConstraints?.relation_property_catalog || [];
+    const map: Record<string, boolean> = {};
+    catalog.forEach((item) => {
+      map[`${item.rel_type}:${item.property}`] = item.required;
+    });
+    return map;
+  }, [editableConstraints]);
 
   const [relationType, setRelationType] = useState<string>(relationTypeOptions[0] || "");
   const effectiveRelationType = relationType || relationTypeOptions[0] || "";
@@ -53,22 +67,28 @@ export function UnmappedRelationForm({
   const relationProps = effectiveRelationType
     ? relationPropertyByType[effectiveRelationType] || []
     : [];
-  const [relationProperty, setRelationProperty] = useState<string>(relationProps[0] || "");
+  const [relationProperty, setRelationProperty] = useState<string>(NO_PROPERTY);
   const effectiveRelationProperty =
-    relationProps.includes(relationProperty) ? relationProperty : relationProps[0] || "";
+    relationProperty !== NO_PROPERTY && relationProps.includes(relationProperty)
+      ? relationProperty
+      : NO_PROPERTY;
+  const hasPropertySelected = effectiveRelationProperty !== NO_PROPERTY;
 
   const hasProperties = relationProps.length > 0;
 
   const canApply = Boolean(
-    effectiveRelationType &&
-      effectiveRelationFrom &&
-      effectiveRelationTo &&
-      (hasProperties ? effectiveRelationProperty : true),
+    effectiveRelationType && effectiveRelationFrom && effectiveRelationTo,
   );
 
   const handleApply = () => {
     if (!canApply) return;
-    onApply(column, effectiveRelationType, effectiveRelationFrom, effectiveRelationTo, effectiveRelationProperty);
+    onApply(
+      column,
+      effectiveRelationType,
+      effectiveRelationFrom,
+      effectiveRelationTo,
+      hasPropertySelected ? effectiveRelationProperty : "",
+    );
   };
 
   return (
@@ -84,7 +104,7 @@ export function UnmappedRelationForm({
               setRelationFrom(endpoints.fromColumns[0] || "");
               setRelationTo(endpoints.toColumns[0] || "");
             }
-            setRelationProperty((relationPropertyByType[value] || [""])[0]);
+            setRelationProperty(NO_PROPERTY);
           }}
         >
           <SelectTrigger className="h-9 text-xs">
@@ -158,26 +178,34 @@ export function UnmappedRelationForm({
       </div>
       {hasProperties && (
         <div className="space-y-1">
-          <Label className="text-xs text-gray-600">속성</Label>
+          <Label className="text-xs text-gray-600">속성 (선택)</Label>
           <Select value={effectiveRelationProperty} onValueChange={setRelationProperty}>
             <SelectTrigger className="h-9 text-xs">
               <SelectValue placeholder="관계 속성" />
             </SelectTrigger>
             <SelectContent>
-              {relationProps.map((prop) => (
-                <SelectItem key={prop} value={prop}>
-                  <DisplayWithOriginalTooltip
-                    display={t(`mapping:property.${prop}`, prop)}
-                    original={prop}
-                  />
-                </SelectItem>
-              ))}
+              <SelectItem value={NO_PROPERTY}>
+                <span className="text-gray-400">없음 (관계만 생성)</span>
+              </SelectItem>
+              {relationProps.map((prop) => {
+                const isRequired = propertyRequiredMap[`${effectiveRelationType}:${prop}`] ?? false;
+                return (
+                  <SelectItem key={prop} value={prop}>
+                    <DisplayWithOriginalTooltip
+                      display={`${t(`mapping:property.${prop}`, prop)}${isRequired ? " *" : ""}`}
+                      original={prop}
+                    />
+                  </SelectItem>
+                );
+              })}
             </SelectContent>
           </Select>
         </div>
       )}
 
-      <p className="text-sm text-gray-500">선택 컬럼: {column}</p>
+      {hasPropertySelected && (
+        <p className="text-sm text-gray-500">선택 컬럼: {column}</p>
+      )}
 
       <Button
         type="button"

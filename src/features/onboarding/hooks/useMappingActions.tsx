@@ -406,14 +406,19 @@ export function useMappingActions(
       return;
     }
 
-    const relationPropertyCatalog = editableConstraints.relation_property_catalog || [];
-    const relationPropertyDef = relationPropertyCatalog.find(
-      (item) => item.rel_type === relType && item.property === relationProperty,
-    );
-    const propertyType = relationPropertyDef?.data_type || "string";
-
+    const hasProperty = relationProperty !== "";
     const fromColumns = { [fromMergeKey]: fromSourceColumn };
     const toColumns = { [toMergeKey]: toSourceColumn };
+
+    // 속성이 있으면 속성 타입 조회
+    let propertyType = "string";
+    if (hasProperty) {
+      const relationPropertyCatalog = editableConstraints.relation_property_catalog || [];
+      const relationPropertyDef = relationPropertyCatalog.find(
+        (item) => item.rel_type === relType && item.property === relationProperty,
+      );
+      propertyType = relationPropertyDef?.data_type || "string";
+    }
 
     const existingIndex = relationMappings.findIndex(
       (rm) =>
@@ -425,11 +430,37 @@ export function useMappingActions(
     );
 
     const existingRelation = existingIndex >= 0 ? relationMappings[existingIndex] : null;
+
+    // 속성 없이 관계만 생성하는 경우
+    if (!hasProperty) {
+      if (existingRelation) {
+        toast.info("이미 동일한 관계가 존재합니다.");
+        return;
+      }
+      const nextRelations = [
+        ...relationMappings,
+        {
+          id: `rm-${Date.now()}`,
+          from_label: relationDef.from_label,
+          to_label: relationDef.to_label,
+          rel_type: relType,
+          from_columns: fromColumns,
+          to_columns: toColumns,
+          properties: {},
+          property_types: {},
+          approved: false,
+          dismissed: false,
+          dismissed_reason: null,
+        },
+      ];
+      void applyValidatedState(columnMappings, nextRelations, extendedMappings);
+      return;
+    }
+
+    // 속성이 있는 경우 (기존 로직)
     if (existingRelation) {
-      const sameFrom = Object.values(existingRelation.from_columns)[0] === fromSourceColumn;
-      const sameTo = Object.values(existingRelation.to_columns)[0] === toSourceColumn;
       const prevProp = existingRelation.properties[sourceColumn];
-      if (sameFrom && sameTo && prevProp === relationProperty) {
+      if (prevProp === relationProperty) {
         toast.info("이미 동일한 관계 속성 매핑이 적용되어 있습니다.");
         return;
       }
