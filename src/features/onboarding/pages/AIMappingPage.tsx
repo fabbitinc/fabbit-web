@@ -8,6 +8,7 @@ import { MappingSummaryBar } from "@/features/onboarding/components/mapping/Mapp
 import { MappingCard } from "@/features/onboarding/components/mapping/MappingCard";
 import { UnmappedCard } from "@/features/onboarding/components/mapping/UnmappedCard";
 import { RelationMappingCard } from "@/features/onboarding/components/mapping/RelationMappingCard";
+import { AddRelationForm } from "@/features/onboarding/components/mapping/AddRelationForm";
 import { ExtendedMappingCard } from "@/features/onboarding/components/mapping/ExtendedMappingCard";
 import { MAPPING_TERMS } from "@/features/onboarding/constants/mappingTerminology";
 import { useOntologySchema } from "@/features/onboarding/hooks/useOntologySchema";
@@ -128,6 +129,14 @@ export function AIMappingPage() {
                     ))}
                   </div>
                 )}
+
+                <AddRelationForm
+                  relationTypeOptions={selectableRelationTypeOptions}
+                  relationPropertyByType={relationPropertyByType}
+                  relationEndpointOptionsByType={relationEndpointOptionsByType}
+                  unmappedColumns={unmappedColumns}
+                  onApply={handleCreateRelationPropertyMapping}
+                />
 
               </div>
 
