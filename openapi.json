@@ -3800,10 +3800,6 @@
             },
             "QueryResponse": {
                 "properties": {
-                    "cypher_query": {
-                        "type": "string",
-                        "title": "Cypher Query"
-                    },
                     "results": {
                         "items": {
                             "additionalProperties": true,
@@ -3819,7 +3815,6 @@
                 },
                 "type": "object",
                 "required": [
-                    "cypher_query",
                     "results",
                     "answer"
                 ],
