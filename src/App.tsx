@@ -25,6 +25,7 @@ import { PlanSelectionPage } from "@/features/registration/pages/PlanSelectionPa
 
 // Dev 프리뷰
 import { MappingCardPreview } from "@/pages/dev/MappingCardPreview";
+import { ItemsMasterPreview } from "@/pages/dev/ItemsMasterPreview";
 
 // 온보딩 관련 임포트
 import { OnboardingLayout } from "@/features/onboarding/components/OnboardingLayout";
@@ -77,7 +78,13 @@ function SiteNotFoundPage() {
         {/* 로고 */}
         <div className="mb-16 flex items-center gap-2.5">
           <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-[#3b82f6] to-[#8b5cf6] shadow-lg shadow-blue-500/25">
-            <svg className="h-5 w-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <svg
+              className="h-5 w-5 text-white"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+            >
               <path d="M12 2L2 7l10 5 10-5-10-5z" />
               <path d="M2 17l10 5 10-5" />
               <path d="M2 12l10 5 10-5" />
@@ -120,11 +127,15 @@ function SiteNotFoundPage() {
 // 인증된 사용자만 접근 가능한 라우트 (온보딩 완료 필수)
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-  const onboardingCompleted = useAuthStore((state) => state.onboardingCompleted);
+  const onboardingCompleted = useAuthStore(
+    (state) => state.onboardingCompleted,
+  );
 
   if (!isAuthenticated) {
     // 서브도메인(워크스페이스) → 로그인, 루트 도메인(www 포함) → 회원가입
-    return <Navigate to={getSubdomain() ? "/login" : "/register/signup"} replace />;
+    return (
+      <Navigate to={getSubdomain() ? "/login" : "/register/signup"} replace />
+    );
   }
 
   if (!onboardingCompleted) {
@@ -138,7 +149,9 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 // 루트 도메인(www 포함)에서는 로그인 불필요 → 회원가입으로
 function PublicRoute({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-  const onboardingCompleted = useAuthStore((state) => state.onboardingCompleted);
+  const onboardingCompleted = useAuthStore(
+    (state) => state.onboardingCompleted,
+  );
 
   if (!getSubdomain()) {
     return <Navigate to="/register/signup" replace />;
@@ -159,7 +172,9 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
 // 미인증 사용자만 접근 가능
 function RegistrationRoute({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-  const onboardingCompleted = useAuthStore((state) => state.onboardingCompleted);
+  const onboardingCompleted = useAuthStore(
+    (state) => state.onboardingCompleted,
+  );
 
   if (isAuthenticated && onboardingCompleted) {
     return <Navigate to="/" replace />;
@@ -181,7 +196,9 @@ function RegistrationRoute({ children }: { children: React.ReactNode }) {
 // 인증 + 온보딩 미완료 사용자만 접근 가능
 function OnboardingRoute({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-  const onboardingCompleted = useAuthStore((state) => state.onboardingCompleted);
+  const onboardingCompleted = useAuthStore(
+    (state) => state.onboardingCompleted,
+  );
 
   // 온보딩 완료된 사용자 → 메인으로
   if (isAuthenticated && onboardingCompleted) {
@@ -190,7 +207,9 @@ function OnboardingRoute({ children }: { children: React.ReactNode }) {
 
   // 미인증 사용자 → 서브도메인이면 로그인, 루트면 회원가입
   if (!isAuthenticated) {
-    return <Navigate to={getSubdomain() ? "/login" : "/register/signup"} replace />;
+    return (
+      <Navigate to={getSubdomain() ? "/login" : "/register/signup"} replace />
+    );
   }
 
   return <>{children}</>;
@@ -247,8 +266,9 @@ function App() {
   return (
     <>
       <Routes>
-        {/* Dev Preview (인증 불필요) */}
+        {/* TODO 삭제 Dev Preview (인증 불필요) */}
         <Route path="/dev/mapping-preview" element={<MappingCardPreview />} />
+        <Route path="/dev/items" element={<ItemsMasterPreview />} />
 
         {/* Public Routes */}
         <Route
@@ -261,7 +281,10 @@ function App() {
         />
 
         {/* /signup → /register/signup 리다이렉트 */}
-        <Route path="/signup" element={<Navigate to="/register/signup" replace />} />
+        <Route
+          path="/signup"
+          element={<Navigate to="/register/signup" replace />}
+        />
 
         {/* Registration Routes (회원가입 1-3단계) */}
         <Route
@@ -307,7 +330,10 @@ function App() {
                   <Route path="/items/:id/bom" element={<BOMPage />} />
                   <Route path="/projects" element={<ProjectListPage />} />
                   <Route path="/projects/:id" element={<ProjectDetailPage />} />
-                  <Route path="/projects/:id/settings" element={<ProjectSettingsPage />} />
+                  <Route
+                    path="/projects/:id/settings"
+                    element={<ProjectSettingsPage />}
+                  />
                   <Route path="/approval" element={<ApprovalPage />} />
                   <Route path="/conflicts" element={<ConflictsPage />} />
                   <Route path="*" element={<Navigate to="/" replace />} />
