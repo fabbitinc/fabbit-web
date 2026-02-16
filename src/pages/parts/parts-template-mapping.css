@@ -1,0 +1,60 @@
+@layer components {
+  .parts-template-mapping-theme .text-blue-600 {
+    color: var(--brand-600) !important;
+  }
+
+  .parts-template-mapping-theme .text-violet-600,
+  .parts-template-mapping-theme .text-violet-500 {
+    color: var(--status-info) !important;
+  }
+
+  .parts-template-mapping-theme .text-amber-600 {
+    color: var(--status-warning) !important;
+  }
+
+  .parts-template-mapping-theme .text-red-600 {
+    color: var(--status-danger) !important;
+  }
+
+  .parts-template-mapping-theme .text-emerald-600 {
+    color: var(--status-success) !important;
+  }
+
+  .parts-template-mapping-theme .border-violet-200,
+  .parts-template-mapping-theme .hover\:border-violet-300:hover {
+    border-color: var(--status-info-border) !important;
+  }
+
+  .parts-template-mapping-theme .hover\:bg-violet-50\/50:hover {
+    background-color: var(--status-info-bg) !important;
+  }
+
+  .parts-template-mapping-theme .bg-blue-600 {
+    background-color: var(--brand-600) !important;
+  }
+
+  .parts-template-mapping-theme .hover\:bg-blue-700:hover {
+    background-color: var(--brand-500) !important;
+  }
+
+  .parts-template-mapping-theme .border-gray-200 {
+    border-color: var(--theme-border) !important;
+  }
+
+  .parts-template-mapping-theme .bg-gray-50\/40,
+  .parts-template-mapping-theme .bg-white {
+    background-color: var(--theme-surface) !important;
+  }
+
+  .parts-template-mapping-theme .text-gray-900,
+  .parts-template-mapping-theme .text-gray-800,
+  .parts-template-mapping-theme .text-gray-700 {
+    color: var(--theme-text-primary) !important;
+  }
+
+  .parts-template-mapping-theme .text-gray-600,
+  .parts-template-mapping-theme .text-gray-500,
+  .parts-template-mapping-theme .text-gray-400 {
+    color: var(--theme-text-secondary) !important;
+  }
+}

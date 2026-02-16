@@ -1,0 +1,176 @@
+@layer components {
+  .theme-primary-1 {
+    --brand-50: #eef4ff;
+    --brand-500: #2563eb;
+    --brand-600: #1d4ed8;
+    --accent-500: #7c3aed;
+    --ai-from: #06b6d4;
+    --ai-to: #2563eb;
+    --ai-from-hover: #0891b2;
+    --ai-to-hover: #1d4ed8;
+    --ai-text: #1e40af;
+    --logo-from: #1e3a8a;
+    --logo-to: #7c3aed;
+    --theme-text-primary: #0f172a;
+    --theme-text-secondary: #475569;
+    --theme-border: #dbe5f3;
+    --theme-surface: #ffffff;
+    --theme-background: #f8fafc;
+    --nav-sidebar-bg: #0f172a;
+    --nav-sidebar-border: #1e293b;
+    --nav-sidebar-active-bg: #3b82f6;
+    --nav-sidebar-active-shadow: 0 10px 20px -10px rgb(59 130 246 / 0.55);
+    --nav-sidebar-icon: #64748b;
+    --nav-sidebar-hover-bg: #1e293b;
+    --nav-sidebar-hover-text: #e2e8f0;
+    --nav-sidebar-tooltip-bg: #1e293b;
+    --nav-sidebar-tooltip-border: #334155;
+    --nav-sidebar-ai-bg: rgb(139 92 246 / 0.2);
+    --nav-sidebar-ai-icon: #8b5cf6;
+    --nav-sidebar-ai-subtext: #94a3b8;
+    --nav-resizer-track: #1e293b;
+    --nav-resizer-handle-bg: #1e293b;
+    --nav-resizer-handle-border: #334155;
+    --nav-resizer-handle-active: #3b82f6;
+  }
+
+  .theme-primary-2 {
+    --brand-50: #ecfeff;
+    --brand-500: #0891b2;
+    --brand-600: #0e7490;
+    --accent-500: #1e3a8a;
+    --ai-from: #0ea5e9;
+    --ai-to: #155e75;
+    --ai-from-hover: #0284c7;
+    --ai-to-hover: #164e63;
+    --ai-text: #155e75;
+    --logo-from: #164e63;
+    --logo-to: #1e3a8a;
+    --theme-text-primary: #082f49;
+    --theme-text-secondary: #155e75;
+    --theme-border: #cceaf0;
+    --theme-surface: #ffffff;
+    --theme-background: #f4fbfc;
+    --nav-sidebar-bg: #0f172a;
+    --nav-sidebar-border: #1e293b;
+    --nav-sidebar-active-bg: #3b82f6;
+    --nav-sidebar-active-shadow: 0 10px 20px -10px rgb(59 130 246 / 0.55);
+    --nav-sidebar-icon: #64748b;
+    --nav-sidebar-hover-bg: #1e293b;
+    --nav-sidebar-hover-text: #e2e8f0;
+    --nav-sidebar-tooltip-bg: #1e293b;
+    --nav-sidebar-tooltip-border: #334155;
+    --nav-sidebar-ai-bg: rgb(139 92 246 / 0.2);
+    --nav-sidebar-ai-icon: #8b5cf6;
+    --nav-sidebar-ai-subtext: #94a3b8;
+    --nav-resizer-track: #1e293b;
+    --nav-resizer-handle-bg: #1e293b;
+    --nav-resizer-handle-border: #334155;
+    --nav-resizer-handle-active: #3b82f6;
+  }
+
+  .theme-primary-3 {
+    --brand-50: #eef2ff;
+    --brand-500: #4f46e5;
+    --brand-600: #4338ca;
+    --accent-500: #65a30d;
+    --ai-from: #6366f1;
+    --ai-to: #65a30d;
+    --ai-from-hover: #4f46e5;
+    --ai-to-hover: #4d7c0f;
+    --ai-text: #4338ca;
+    --logo-from: #312e81;
+    --logo-to: #65a30d;
+    --theme-text-primary: #1e1b4b;
+    --theme-text-secondary: #3730a3;
+    --theme-border: #dcd9ff;
+    --theme-surface: #ffffff;
+    --theme-background: #f8f7ff;
+    --nav-sidebar-bg: #0f172a;
+    --nav-sidebar-border: #1e293b;
+    --nav-sidebar-active-bg: #3b82f6;
+    --nav-sidebar-active-shadow: 0 10px 20px -10px rgb(59 130 246 / 0.55);
+    --nav-sidebar-icon: #64748b;
+    --nav-sidebar-hover-bg: #1e293b;
+    --nav-sidebar-hover-text: #e2e8f0;
+    --nav-sidebar-tooltip-bg: #1e293b;
+    --nav-sidebar-tooltip-border: #334155;
+    --nav-sidebar-ai-bg: rgb(139 92 246 / 0.2);
+    --nav-sidebar-ai-icon: #8b5cf6;
+    --nav-sidebar-ai-subtext: #94a3b8;
+    --nav-resizer-track: #1e293b;
+    --nav-resizer-handle-bg: #1e293b;
+    --nav-resizer-handle-border: #334155;
+    --nav-resizer-handle-active: #3b82f6;
+  }
+
+  .theme-primary-4 {
+    --brand-50: #fff7ef;
+    --brand-500: #d4864d;
+    --brand-600: #bf713a;
+    --accent-500: #6a5442;
+    --ai-from: #e2a26c;
+    --ai-to: #c57a45;
+    --ai-from-hover: #d89359;
+    --ai-to-hover: #b86d3a;
+    --ai-text: #9a5a2f;
+    --logo-from: #7c2d12;
+    --logo-to: #6a5442;
+    --theme-text-primary: #3a2f26;
+    --theme-text-secondary: #7a6657;
+    --theme-border: #eddcc9;
+    --theme-surface: #ffffff;
+    --theme-background: #fbf4ec;
+    --nav-sidebar-bg: #0f172a;
+    --nav-sidebar-border: #1e293b;
+    --nav-sidebar-active-bg: #3b82f6;
+    --nav-sidebar-active-shadow: 0 10px 20px -10px rgb(59 130 246 / 0.55);
+    --nav-sidebar-icon: #64748b;
+    --nav-sidebar-hover-bg: #1e293b;
+    --nav-sidebar-hover-text: #e2e8f0;
+    --nav-sidebar-tooltip-bg: #1e293b;
+    --nav-sidebar-tooltip-border: #334155;
+    --nav-sidebar-ai-bg: rgb(139 92 246 / 0.2);
+    --nav-sidebar-ai-icon: #8b5cf6;
+    --nav-sidebar-ai-subtext: #94a3b8;
+    --nav-resizer-track: #1e293b;
+    --nav-resizer-handle-bg: #1e293b;
+    --nav-resizer-handle-border: #334155;
+    --nav-resizer-handle-active: #3b82f6;
+  }
+
+  .theme-primary-5 {
+    --brand-50: #edf4ff;
+    --brand-500: #3b82f6;
+    --brand-600: #2563eb;
+    --accent-500: #64748b;
+    --ai-from: #22d3ee;
+    --ai-to: #3b82f6;
+    --ai-from-hover: #06b6d4;
+    --ai-to-hover: #2563eb;
+    --ai-text: #1d4ed8;
+    --logo-from: #1e3a8a;
+    --logo-to: #334155;
+    --theme-text-primary: #0f172a;
+    --theme-text-secondary: #475569;
+    --theme-border: #cbd5e1;
+    --theme-surface: #ffffff;
+    --theme-background: #f3f7ff;
+    --nav-sidebar-bg: #0f172a;
+    --nav-sidebar-border: #1e293b;
+    --nav-sidebar-active-bg: #3b82f6;
+    --nav-sidebar-active-shadow: 0 10px 20px -10px rgb(59 130 246 / 0.55);
+    --nav-sidebar-icon: #64748b;
+    --nav-sidebar-hover-bg: #1e293b;
+    --nav-sidebar-hover-text: #e2e8f0;
+    --nav-sidebar-tooltip-bg: #1e293b;
+    --nav-sidebar-tooltip-border: #334155;
+    --nav-sidebar-ai-bg: rgb(139 92 246 / 0.2);
+    --nav-sidebar-ai-icon: #8b5cf6;
+    --nav-sidebar-ai-subtext: #94a3b8;
+    --nav-resizer-track: #1e293b;
+    --nav-resizer-handle-bg: #1e293b;
+    --nav-resizer-handle-border: #334155;
+    --nav-resizer-handle-active: #3b82f6;
+  }
+}

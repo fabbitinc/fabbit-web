@@ -51,7 +51,7 @@ interface PartSummary {
   child_count: number;
 }
 
-const MOCK_ITEMS: PartSummary[] = [
+const PARTS_MOCK_ITEMS: PartSummary[] = [
   { part_number: "BRK-001", name: "브라켓 A", revision: "A", material: "SUS304", category: "기구부품", drawing_count: 2, child_count: 5 },
   { part_number: "BRK-002", name: "브라켓 B", revision: "B", material: "SUS316", category: "기구부품", drawing_count: 1, child_count: 3 },
   { part_number: "GR-001", name: "스퍼 기어", revision: "A", material: "SCM440", category: "구동부품", drawing_count: 1, child_count: 0 },
@@ -80,11 +80,11 @@ const MOCK_ITEMS: PartSummary[] = [
   { part_number: "FRM-001", name: "프레임 조립체", revision: "B", material: "SPHC", category: "기구부품", drawing_count: 2, child_count: 15 },
 ];
 
-const PAGE_SIZE_OPTIONS = ["10", "20", "50"];
+const PAGE_SIZE_OPTIONS = ["15", "30", "50"];
 
 // mock 데이터에서 고유값 추출
-const ALL_CATEGORIES = [...new Set(MOCK_ITEMS.map((i) => i.category))];
-const ALL_MATERIALS = [...new Set(MOCK_ITEMS.map((i) => i.material).filter(Boolean))] as string[];
+const ALL_CATEGORIES = [...new Set(PARTS_MOCK_ITEMS.map((i) => i.category))];
+const ALL_MATERIALS = [...new Set(PARTS_MOCK_ITEMS.map((i) => i.material).filter(Boolean))] as string[];
 
 type SortKey = "part_number" | "name" | "category" | "material" | "revision";
 type SortDir = "asc" | "desc";
@@ -122,18 +122,18 @@ function filtersEqual(a: Filters, b: Filters): boolean {
 
 // --- 메인 컴포넌트 ---
 
-export function ItemsMasterPreview() {
+export function PartsPage() {
   const navigate = useNavigate();
 
   const handleRowClick = useCallback((partNumber: string) => {
-    navigate(`/dev/parts/${partNumber}`);
+    navigate(`/parts/${partNumber}`);
   }, [navigate]);
 
   // draft: UI에서 편집 중인 필터 / applied: 테이블에 실제 적용된 필터
   const [draft, setDraft] = useState<Filters>(INITIAL_FILTERS);
   const [applied, setApplied] = useState<Filters>(INITIAL_FILTERS);
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(20);
+  const [pageSize, setPageSize] = useState(15);
   const [sortKey, setSortKey] = useState<SortKey>("part_number");
   const [sortDir, setSortDir] = useState<SortDir>("asc");
 
@@ -185,7 +185,7 @@ export function ItemsMasterPreview() {
 
   // 테이블은 applied 기준으로 필터링
   const filtered = useMemo(() => {
-    return MOCK_ITEMS.filter((item) => {
+    return PARTS_MOCK_ITEMS.filter((item) => {
       if (applied.search) {
         const q = applied.search.trim().toLowerCase();
         if (
@@ -218,6 +218,7 @@ export function ItemsMasterPreview() {
   const totalPages = Math.max(1, Math.ceil(sorted.length / pageSize));
   const safePage = Math.min(page, totalPages);
   const paged = sorted.slice((safePage - 1) * pageSize, safePage * pageSize);
+  const emptyRowCount = Math.max(0, pageSize - paged.length);
 
   // draft 업데이트 (UI만, 테이블 반영 안 됨)
   function updateDraft<K extends keyof Filters>(key: K, value: Filters[K]) {
@@ -254,8 +255,8 @@ export function ItemsMasterPreview() {
   const draftAttrCount = (draft.hasDrawing !== null ? 1 : 0) + (draft.hasBom !== null ? 1 : 0);
 
   return (
-    <div className="theme-primary-1 theme-common-1 min-h-screen bg-background px-6 py-8">
-      <div className="dev-page-container">
+    <div className="min-h-full">
+      <div className="w-full">
         {/* 헤더 */}
         <div className="mb-6 flex items-start justify-between">
           <div>
@@ -264,24 +265,18 @@ export function ItemsMasterPreview() {
           </div>
           <div className="flex items-center gap-2">
             <Button
-              onClick={() => navigate("/dev/parts/templates?scope=master")}
+              onClick={() => navigate("/parts/templates?scope=master")}
               variant="outline"
-              className="ai-outline-btn"
+              className="ai-outline-btn ai-theme-1"
             >
               <Sparkles className="ai-outline-btn__icon h-4 w-4" />
               속성 분석
             </Button>
-            <Button variant="outline" onClick={() => navigate("/dev/parts/upload?scope=master")}>
+            <Button variant="outline" onClick={() => navigate("/parts/upload?scope=master")}>
               <Upload className="h-4 w-4" />
               부품 업로드
             </Button>
-            <Button
-              style={{
-                backgroundColor: "var(--brand-600)",
-                borderColor: "var(--brand-600)",
-                color: "white",
-              }}
-            >
+            <Button>
               <Plus />
               새 부품
             </Button>
@@ -304,13 +299,6 @@ export function ItemsMasterPreview() {
             variant={hasPendingChanges ? "default" : "outline"}
             disabled={!hasPendingChanges}
             onClick={applyFilters}
-            style={hasPendingChanges
-              ? {
-                  backgroundColor: "var(--brand-600)",
-                  borderColor: "var(--brand-600)",
-                  color: "white",
-                }
-              : undefined}
           >
             <Search className="h-4 w-4" />
             검색
@@ -328,7 +316,7 @@ export function ItemsMasterPreview() {
               <Button
                 variant="outline"
                 size="sm"
-                style={draft.categories.size > 0 ? { borderColor: "var(--brand-500)", color: "var(--brand-600)" } : undefined}
+                className={draft.categories.size > 0 ? "border-primary/50 text-primary" : ""}
               >
                 카테고리
                 <ChevronDown className="h-3.5 w-3.5" />
@@ -367,7 +355,7 @@ export function ItemsMasterPreview() {
               <Button
                 variant="outline"
                 size="sm"
-                style={draft.materials.size > 0 ? { borderColor: "var(--brand-500)", color: "var(--brand-600)" } : undefined}
+                className={draft.materials.size > 0 ? "border-primary/50 text-primary" : ""}
               >
                 재질
                 <ChevronDown className="h-3.5 w-3.5" />
@@ -406,7 +394,7 @@ export function ItemsMasterPreview() {
               <Button
                 variant="outline"
                 size="sm"
-                style={draftAttrCount > 0 ? { borderColor: "var(--brand-500)", color: "var(--brand-600)" } : undefined}
+                className={draftAttrCount > 0 ? "border-primary/50 text-primary" : ""}
               >
                 속성
                 <ChevronDown className="h-3.5 w-3.5" />
@@ -477,10 +465,7 @@ export function ItemsMasterPreview() {
         )}
 
         {/* 테이블 */}
-        <div
-          className="overflow-hidden rounded-lg border shadow-sm"
-          style={{ borderColor: "var(--theme-border)", backgroundColor: "var(--theme-surface)" }}
-        >
+        <div className="overflow-hidden rounded-lg border bg-card shadow-sm">
           <div className="overflow-x-auto">
             <table className="w-full text-sm table-fixed">
               <colgroup>
@@ -493,7 +478,7 @@ export function ItemsMasterPreview() {
                 <col style={{ width: "7%" }} />
               </colgroup>
               <thead>
-                <tr className="border-b text-left" style={{ backgroundColor: "var(--brand-50)" }}>
+                <tr className="border-b bg-muted/50 text-left">
                   <SortableHeader column="part_number" label="품번" sortKey={sortKey} sortDir={sortDir} onSort={handleSort} />
                   <SortableHeader column="name" label="품명" sortKey={sortKey} sortDir={sortDir} onSort={handleSort} />
                   <SortableHeader column="category" label="카테고리" sortKey={sortKey} sortDir={sortDir} onSort={handleSort} />
@@ -530,71 +515,75 @@ export function ItemsMasterPreview() {
                     </td>
                   </tr>
                 ) : (
-                  paged.map((item) => (
-                    <tr
-                      key={item.part_number}
-                      onClick={() => handleRowClick(item.part_number)}
-                      className="group border-b border-border/50 transition-colors last:border-b-0 hover:bg-muted/50 cursor-pointer"
-                    >
-                      <td className="py-3 pl-4 pr-2 font-mono text-xs font-medium" style={{ color: "var(--brand-600)" }}>
-                        {item.part_number}
-                      </td>
-                      <td className="py-3 pl-4 pr-2 text-foreground">
-                        {item.name}
-                      </td>
-                      <td className="py-3 pl-4 pr-2 text-muted-foreground">
-                        {item.category}
-                      </td>
-                      <td className="py-3 pl-4 pr-2 text-muted-foreground">
-                        {item.material ?? <span className="text-muted-foreground/40">—</span>}
-                      </td>
-                      <td className="py-3 pl-4 pr-2 text-center">
-                        <span className="inline-flex h-5 w-5 items-center justify-center rounded bg-muted text-[11px] font-medium text-muted-foreground">
-                          {item.revision}
-                        </span>
-                      </td>
-                      <td className="py-3 pl-4 pr-2 text-center">
-                        {item.drawing_count > 0 ? (
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <span className="inline-flex items-center gap-1 text-muted-foreground">
-                                <FileText className="h-3.5 w-3.5" />
-                                <span className="text-xs">{item.drawing_count}</span>
-                              </span>
-                            </TooltipTrigger>
-                            <TooltipContent>도면 {item.drawing_count}건</TooltipContent>
-                          </Tooltip>
-                        ) : (
-                          <span className="text-muted-foreground/40">—</span>
-                        )}
-                      </td>
-                      <td className="py-3 pl-4 pr-2 text-center">
-                        {item.child_count > 0 ? (
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <span className="inline-flex items-center gap-1 text-muted-foreground">
-                                <Network className="h-3.5 w-3.5" />
-                                <span className="text-xs">{item.child_count}</span>
-                              </span>
-                            </TooltipTrigger>
-                            <TooltipContent>하위 부품 {item.child_count}건</TooltipContent>
-                          </Tooltip>
-                        ) : (
-                          <span className="text-muted-foreground/40">—</span>
-                        )}
-                      </td>
-                    </tr>
-                  ))
+                  <>
+                    {paged.map((item) => (
+                      <tr
+                        key={item.part_number}
+                        onClick={() => handleRowClick(item.part_number)}
+                        className="group h-[45px] border-b border-border/50 transition-colors hover:bg-muted/50 cursor-pointer"
+                      >
+                        <td className="py-2 pl-4 pr-2 font-mono text-xs font-medium text-primary">
+                          {item.part_number}
+                        </td>
+                        <td className="py-2 pl-4 pr-2 text-foreground">
+                          {item.name}
+                        </td>
+                        <td className="py-2 pl-4 pr-2 text-muted-foreground">
+                          {item.category}
+                        </td>
+                        <td className="py-2 pl-4 pr-2 text-muted-foreground">
+                          {item.material ?? <span className="text-muted-foreground/40">—</span>}
+                        </td>
+                        <td className="py-2 pl-4 pr-2 text-center">
+                          <span className="inline-flex h-5 w-5 items-center justify-center rounded bg-muted text-[11px] font-medium text-muted-foreground">
+                            {item.revision}
+                          </span>
+                        </td>
+                        <td className="py-2 pl-4 pr-2 text-center">
+                          {item.drawing_count > 0 ? (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span className="inline-flex items-center gap-1 text-muted-foreground">
+                                  <FileText className="h-3.5 w-3.5" />
+                                  <span className="text-xs">{item.drawing_count}</span>
+                                </span>
+                              </TooltipTrigger>
+                              <TooltipContent>도면 {item.drawing_count}건</TooltipContent>
+                            </Tooltip>
+                          ) : (
+                            <span className="text-muted-foreground/40">—</span>
+                          )}
+                        </td>
+                        <td className="py-2 pl-4 pr-2 text-center">
+                          {item.child_count > 0 ? (
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <span className="inline-flex items-center gap-1 text-muted-foreground">
+                                  <Network className="h-3.5 w-3.5" />
+                                  <span className="text-xs">{item.child_count}</span>
+                                </span>
+                              </TooltipTrigger>
+                              <TooltipContent>하위 부품 {item.child_count}건</TooltipContent>
+                            </Tooltip>
+                          ) : (
+                            <span className="text-muted-foreground/40">—</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                    {Array.from({ length: emptyRowCount }).map((_, idx) => (
+                      <tr key={`empty-row-${idx}`} className="h-[45px] border-b border-border/50">
+                        <td colSpan={7} className="px-0 py-0" />
+                      </tr>
+                    ))}
+                  </>
                 )}
               </tbody>
             </table>
           </div>
 
           {/* 페이지네이션 */}
-          <div
-            className="flex items-center justify-between border-t px-4 py-3"
-            style={{ borderColor: "var(--theme-border)", backgroundColor: "var(--brand-50)" }}
-          >
+          <div className="flex items-center justify-between border-t bg-muted/30 px-4 py-3">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Select
                 value={String(pageSize)}
@@ -639,13 +628,6 @@ export function ItemsMasterPreview() {
                     size="icon-sm"
                     onClick={() => setPage(p as number)}
                     className="text-xs"
-                    style={p === safePage
-                      ? {
-                          backgroundColor: "var(--brand-600)",
-                          borderColor: "var(--brand-600)",
-                          color: "white",
-                        }
-                      : undefined}
                   >
                     {p}
                   </Button>
@@ -697,10 +679,9 @@ function SortableHeader({
             ? "text-foreground"
             : "text-muted-foreground hover:text-foreground"
         }`}
-        style={isActive ? { color: "var(--brand-600)" } : undefined}
       >
         {label}
-        <Icon className={`h-3 w-3 ${isActive ? "" : "text-muted-foreground/50"}`} style={isActive ? { color: "var(--brand-600)" } : undefined} />
+        <Icon className={`h-3 w-3 ${isActive ? "text-primary" : "text-muted-foreground/50"}`} />
       </button>
     </th>
   );

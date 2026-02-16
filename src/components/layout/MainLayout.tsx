@@ -71,14 +71,14 @@ export function MainLayout({ children }: MainLayoutProps) {
   }, [isResizing, handleMouseMove, handleMouseUp]);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#f1f5f9]">
+    <div className="flex h-screen overflow-hidden bg-white">
       <Sidebar />
 
       {showFolderTree && (
         <>
           {/* Tree Panel */}
           <div
-            className="relative border-r border-[#1e293b] bg-[#0f172a]"
+            className="sidebar-shell sidebar-divider relative border-r"
             style={{ width: treeWidth }}
           >
             <ScrollArea className="h-full">
@@ -88,18 +88,17 @@ export function MainLayout({ children }: MainLayoutProps) {
 
           {/* Resize Handle */}
           <div
-            className="group relative flex w-1 cursor-col-resize items-center justify-center bg-[#1e293b]"
+            className="sidebar-resizer-track group relative flex w-1 cursor-col-resize items-center justify-center"
             onMouseDown={handleMouseDown}
           >
             {/* 드래그 핸들 버튼 - 항상 보임 */}
             <div className={cn(
-              "absolute z-10 flex h-16 w-5 cursor-col-resize items-center justify-center rounded-full border border-[#334155] bg-[#1e293b] shadow-lg transition-all",
-              "hover:w-6 hover:border-[#3b82f6] hover:bg-[#3b82f6]",
-              isResizing && "w-6 border-[#3b82f6] bg-[#3b82f6]"
+              "sidebar-resizer-handle absolute z-10 flex h-16 w-5 cursor-col-resize items-center justify-center rounded-full border shadow-lg transition-all",
+              "hover:w-6",
+              isResizing && "sidebar-resizer-handle--active w-6"
             )}>
               <GripVertical className={cn(
-                "h-5 w-5 text-[#64748b] transition-colors",
-                "group-hover:text-white",
+                "sidebar-resizer-icon h-5 w-5 transition-colors",
                 isResizing && "text-white"
               )} />
             </div>

@@ -1,13 +1,17 @@
 import { useEffect, useState } from "react";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useParams, useNavigate } from "react-router-dom";
 import { MainLayout } from "@/components/layout/MainLayout";
+import { Button } from "@/components/ui/button";
 import { LoginPage } from "@/pages/auth/LoginPage";
-import { ItemsPage } from "@/pages/items/ItemsPage";
-import { ItemDetailPage } from "@/pages/items/ItemDetailPage";
-import { BOMPage } from "@/pages/items/BOMPage";
 import { ProjectListPage } from "@/pages/projects/ProjectListPage";
 import { ProjectDetailPage } from "@/pages/projects/ProjectDetailPage";
 import { ProjectSettingsPage } from "@/pages/projects/ProjectSettingsPage";
+import { PartsPage } from "@/pages/parts/PartsPage";
+import { PartDetailPage } from "@/pages/parts/PartDetailPage";
+import { PartsTemplateAnalysisPage } from "@/pages/parts/PartsTemplateAnalysisPage";
+import { PartsTemplateMappingPage } from "@/pages/parts/PartsTemplateMappingPage";
+import { PartsTemplateProcessingPage } from "@/pages/parts/PartsTemplateProcessingPage";
+import { PartsUploadPage } from "@/pages/parts/PartsUploadPage";
 import { UploadModal } from "@/features/upload/components/UploadModal";
 import { SimpleBomImportModal } from "@/features/items/components/SimpleBomImportModal";
 import { Toaster } from "@/components/ui/sonner";
@@ -27,6 +31,13 @@ import { PlanSelectionPage } from "@/features/registration/pages/PlanSelectionPa
 import { MappingCardPreview } from "@/pages/dev/MappingCardPreview";
 import { ItemsMasterPreview } from "@/pages/dev/ItemsMasterPreview";
 import { ItemDetailPreview } from "@/pages/dev/ItemDetailPreview";
+import { PartsUploadPreview } from "@/pages/dev/PartsUploadPreview";
+import { PartsTemplateAnalysisPreview } from "@/pages/dev/PartsTemplateAnalysisPreview";
+import { DesignSystemPreview } from "@/pages/dev/DesignSystemPreview";
+import { ProjectsHubPreview } from "@/pages/dev/ProjectsHubPreview";
+import { ProjectRepoPreview } from "@/pages/dev/ProjectRepoPreview";
+import { ProjectOpsItemDetailPreview } from "@/pages/dev/ProjectOpsItemDetailPreview";
+import { ProjectScheduleDetailPreview } from "@/pages/dev/ProjectScheduleDetailPreview";
 
 // 온보딩 관련 임포트
 import { OnboardingLayout } from "@/features/onboarding/components/OnboardingLayout";
@@ -35,10 +46,148 @@ import { AIMappingPage } from "@/features/onboarding/pages/AIMappingPage";
 import { DataProcessingPage } from "@/features/onboarding/pages/DataProcessingPage";
 import { ExplorePage } from "@/features/onboarding/pages/ExplorePage";
 
-function DashboardPage() {
+function AnimatedCount({ value, durationMs = 420 }: { value: number; durationMs?: number }) {
+  const [display, setDisplay] = useState(0);
+
+  useEffect(() => {
+    const safeTarget = Math.max(0, Math.floor(value));
+    const start = performance.now();
+    let frame = 0;
+
+    const tick = (now: number) => {
+      const progress = Math.min((now - start) / durationMs, 1);
+      const eased = 1 - (1 - progress) * (1 - progress);
+      setDisplay(Math.round(safeTarget * eased));
+      if (progress < 1) frame = requestAnimationFrame(tick);
+    };
+
+    frame = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(frame);
+  }, [value, durationMs]);
+
+  return <>{display.toLocaleString()}</>;
+}
+
+function DeltaBadge({ value, label }: { value: number; label: string }) {
+  const isPositive = value > 0;
+  const isNegative = value < 0;
+  const prefix = isPositive ? "+" : "";
+  const style = isPositive
+    ? {
+        color: "var(--status-success)",
+        borderColor: "var(--status-success-border)",
+        backgroundColor: "var(--status-success-bg)",
+      }
+    : isNegative
+      ? {
+          color: "var(--status-danger)",
+          borderColor: "var(--status-danger-border)",
+          backgroundColor: "var(--status-danger-bg)",
+        }
+      : {
+          color: "var(--status-info)",
+          borderColor: "var(--status-info-border)",
+          backgroundColor: "var(--status-info-bg)",
+        };
+
   return (
-    <div className="flex h-64 items-center justify-center rounded-lg border border-border bg-background">
-      <p className="text-muted-foreground">대시보드 - Coming Soon</p>
+    <span className="inline-flex items-center rounded-md border px-2 py-1 text-xs font-medium" style={style}>
+      {label} {prefix}
+      {Math.abs(value).toLocaleString()}
+    </span>
+  );
+}
+
+function DashboardPage() {
+  const navigate = useNavigate();
+  const stats = {
+    parts: {
+      total: 0,
+      added_this_week: 0,
+      added_today: 0,
+    },
+    bom_links: {
+      total: 387,
+    },
+    last_synthesis: {
+      completed_at: "2026-02-16T11:20:00Z",
+      nodes_created: 45,
+    },
+  };
+
+  const totalManagedParts = stats.parts.total;
+  const lastSynthesisAt = new Date(stats.last_synthesis.completed_at).toLocaleString("ko-KR", {
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+
+  return (
+    <div className="space-y-4">
+      <div className="grid gap-4 md:grid-cols-3">
+        {totalManagedParts > 0 ? (
+          <section className="rounded-lg border border-border bg-card p-5 md:col-span-2">
+            <p className="text-xs text-muted-foreground">Part 현황</p>
+            <p className="mt-2 text-3xl font-bold text-foreground">
+              <AnimatedCount value={stats.parts.total} />개
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">현재 시스템에서 관리 중인 부품 수</p>
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              <DeltaBadge label="이번 주" value={stats.parts.added_this_week} />
+              <DeltaBadge label="오늘" value={stats.parts.added_today} />
+            </div>
+          </section>
+        ) : (
+          <section
+            className="rounded-lg border border-dashed p-5 md:col-span-2"
+            style={{
+              borderColor: "var(--status-info-border)",
+              backgroundColor: "var(--status-info-bg)",
+            }}
+          >
+            <p className="text-xs text-muted-foreground">Part 현황</p>
+            <p className="mt-2 text-lg font-semibold" style={{ color: "var(--status-info)" }}>
+              아직 등록된 부품이 없습니다.
+            </p>
+            <p className="mt-1 text-sm text-muted-foreground">아이템 등록을 하러 가볼까요?</p>
+            <div className="mt-3">
+              <Button
+                variant="outline"
+                style={{ borderColor: "var(--brand-500)", color: "var(--brand-600)" }}
+                onClick={() => navigate("/parts")}
+              >
+                부품 등록 페이지로 이동
+              </Button>
+            </div>
+          </section>
+        )}
+
+        <section className="rounded-lg border border-border bg-card p-5">
+          <p className="text-xs text-muted-foreground">BOM Link</p>
+          <p className="mt-2 text-3xl font-bold text-foreground">
+            <AnimatedCount value={stats.bom_links.total} />개
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground">생성된 연결 관계 수</p>
+        </section>
+
+        <section className="rounded-lg border border-border bg-card p-5 md:col-span-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <p className="text-xs text-muted-foreground">마지막 Synthesis</p>
+              <p className="mt-1 text-sm font-medium text-foreground">완료 시각: {lastSynthesisAt}</p>
+            </div>
+            <div className="text-right">
+              <p className="text-xs text-muted-foreground">생성 노드</p>
+              <p className="text-2xl font-bold text-foreground">
+                <AnimatedCount value={stats.last_synthesis.nodes_created} />
+              </p>
+            </div>
+          </div>
+        </section>
+      </div>
+
     </div>
   );
 }
@@ -57,6 +206,11 @@ function ConflictsPage() {
       <p className="text-muted-foreground">충돌관리 - Coming Soon</p>
     </div>
   );
+}
+
+function LegacyItemDetailRedirect() {
+  const { id } = useParams<{ id: string }>();
+  return <Navigate to={id ? `/parts/${id}` : "/parts"} replace />;
 }
 
 function SiteNotFoundPage() {
@@ -128,19 +282,12 @@ function SiteNotFoundPage() {
 // 인증된 사용자만 접근 가능한 라우트 (온보딩 완료 필수)
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-  const onboardingCompleted = useAuthStore(
-    (state) => state.onboardingCompleted,
-  );
 
   if (!isAuthenticated) {
     // 서브도메인(워크스페이스) → 로그인, 루트 도메인(www 포함) → 회원가입
     return (
       <Navigate to={getSubdomain() ? "/login" : "/register/signup"} replace />
     );
-  }
-
-  if (!onboardingCompleted) {
-    return <Navigate to="/onboarding/upload" replace />;
   }
 
   return <>{children}</>;
@@ -163,7 +310,7 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
   }
 
   if (isAuthenticated && !onboardingCompleted) {
-    return <Navigate to="/onboarding/upload" replace />;
+    return <Navigate to="/" replace />;
   }
 
   return <>{children}</>;
@@ -182,7 +329,7 @@ function RegistrationRoute({ children }: { children: React.ReactNode }) {
   }
 
   if (isAuthenticated && !onboardingCompleted) {
-    return <Navigate to="/onboarding/upload" replace />;
+    return <Navigate to="/" replace />;
   }
 
   // 서브도메인(워크스페이스)에서는 회원가입 불가 → 로그인으로
@@ -269,8 +416,19 @@ function App() {
       <Routes>
         {/* TODO 삭제 Dev Preview (인증 불필요) */}
         <Route path="/dev/mapping-preview" element={<MappingCardPreview />} />
-        <Route path="/dev/items" element={<ItemsMasterPreview />} />
-        <Route path="/dev/items/:partNumber" element={<ItemDetailPreview />} />
+        <Route path="/dev/design" element={<DesignSystemPreview />} />
+        <Route path="/dev/projects" element={<ProjectsHubPreview />} />
+        <Route path="/dev/projects/:projectId" element={<ProjectRepoPreview />} />
+        <Route path="/dev/projects/:projectId/approvals/:itemId" element={<ProjectOpsItemDetailPreview />} />
+        <Route path="/dev/projects/:projectId/changes/:itemId" element={<ProjectOpsItemDetailPreview />} />
+        <Route path="/dev/projects/:projectId/issues/:itemId" element={<ProjectOpsItemDetailPreview />} />
+        <Route path="/dev/projects/:projectId/schedules/:scheduleId" element={<ProjectScheduleDetailPreview />} />
+        <Route path="/dev/parts" element={<ItemsMasterPreview />} />
+        <Route path="/dev/parts/templates" element={<PartsTemplateAnalysisPreview />} />
+        <Route path="/dev/parts/upload" element={<PartsUploadPreview />} />
+        <Route path="/dev/parts/:partNumber/templates" element={<PartsTemplateAnalysisPreview />} />
+        <Route path="/dev/parts/:partNumber/upload" element={<PartsUploadPreview />} />
+        <Route path="/dev/parts/:partNumber" element={<ItemDetailPreview />} />
 
         {/* Public Routes */}
         <Route
@@ -327,9 +485,19 @@ function App() {
               <MainLayout>
                 <Routes>
                   <Route path="/" element={<DashboardPage />} />
-                  <Route path="/items" element={<ItemsPage />} />
-                  <Route path="/items/:id" element={<ItemDetailPage />} />
-                  <Route path="/items/:id/bom" element={<BOMPage />} />
+                  <Route path="/parts" element={<PartsPage />} />
+                  <Route path="/parts/templates" element={<PartsTemplateAnalysisPage />} />
+                  <Route path="/parts/templates/processing" element={<PartsTemplateProcessingPage />} />
+                  <Route path="/parts/templates/mapping" element={<PartsTemplateMappingPage />} />
+                  <Route path="/parts/upload" element={<PartsUploadPage />} />
+                  <Route path="/parts/:partNumber/templates" element={<PartsTemplateAnalysisPage />} />
+                  <Route path="/parts/:partNumber/templates/processing" element={<PartsTemplateProcessingPage />} />
+                  <Route path="/parts/:partNumber/templates/mapping" element={<PartsTemplateMappingPage />} />
+                  <Route path="/parts/:partNumber/upload" element={<PartsUploadPage />} />
+                  <Route path="/parts/:partNumber" element={<PartDetailPage />} />
+                  <Route path="/items" element={<Navigate to="/parts" replace />} />
+                  <Route path="/items/:id" element={<LegacyItemDetailRedirect />} />
+                  <Route path="/items/:id/bom" element={<LegacyItemDetailRedirect />} />
                   <Route path="/projects" element={<ProjectListPage />} />
                   <Route path="/projects/:id" element={<ProjectDetailPage />} />
                   <Route

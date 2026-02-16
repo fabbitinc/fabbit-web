@@ -968,7 +968,7 @@ export function MappingCardPreview() {
 
   return (
     <div className="min-h-screen bg-gray-50/80 px-6 py-12">
-      <div className="mx-auto mb-3 flex w-full max-w-[1200px] items-center">
+      <div className="dev-page-container mb-3 flex items-center">
         <div className="flex items-center gap-2">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#3b82f6] to-[#8b5cf6]">
             <svg
@@ -987,7 +987,7 @@ export function MappingCardPreview() {
         </div>
       </div>
 
-      <div className="mx-auto flex w-full max-w-[960px] flex-col space-y-4">
+      <div className="dev-page-container flex flex-col space-y-4">
         <div className="px-8 pb-2 pt-6 text-center lg:px-10">
           <div className="mb-3 flex justify-center">
             <Sparkles className="size-8 text-blue-500" />

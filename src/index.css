@@ -1,5 +1,7 @@
 @import "tailwindcss";
 @import "tw-animate-css";
+@import "./styles/themes/primary-themes.css";
+@import "./styles/themes/common-themes.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -94,6 +96,62 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+
+  /* Brand Theme Tokens */
+  --brand-50: #eef4ff;
+  --brand-500: #2563eb;
+  --brand-600: #1d4ed8;
+  --accent-500: #7c3aed;
+
+  /* AI Action Tokens */
+  --ai-from: #06b6d4;
+  --ai-to: #2563eb;
+  --ai-from-hover: #0891b2;
+  --ai-to-hover: #1d4ed8;
+  --ai-text: #1e40af;
+
+  /* Logo Gradient Tokens */
+  --logo-from: #1e3a8a;
+  --logo-to: #7c3aed;
+
+  /* Theme Surface Tokens */
+  --theme-text-primary: #0f172a;
+  --theme-text-secondary: #475569;
+  --theme-border: #dbe5f3;
+  --theme-surface: #ffffff;
+  --theme-background: #f8fafc;
+
+  /* Sidebar Theme Tokens */
+  --nav-sidebar-bg: #0f172a;
+  --nav-sidebar-border: #1e293b;
+  --nav-sidebar-active-bg: #3b82f6;
+  --nav-sidebar-active-shadow: 0 10px 20px -10px rgb(59 130 246 / 0.55);
+  --nav-sidebar-icon: #64748b;
+  --nav-sidebar-hover-bg: #1e293b;
+  --nav-sidebar-hover-text: #e2e8f0;
+  --nav-sidebar-tooltip-bg: #1e293b;
+  --nav-sidebar-tooltip-border: #334155;
+  --nav-sidebar-ai-bg: rgb(139 92 246 / 0.2);
+  --nav-sidebar-ai-icon: #8b5cf6;
+  --nav-sidebar-ai-subtext: #94a3b8;
+  --nav-resizer-track: #1e293b;
+  --nav-resizer-handle-bg: #1e293b;
+  --nav-resizer-handle-border: #334155;
+  --nav-resizer-handle-active: #3b82f6;
+
+  /* Common Status Tokens */
+  --status-success: #16a34a;
+  --status-success-bg: #f0fdf4;
+  --status-success-border: #bbf7d0;
+  --status-warning: #d97706;
+  --status-warning-bg: #fffbeb;
+  --status-warning-border: #fde68a;
+  --status-danger: #dc2626;
+  --status-danger-bg: #fef2f2;
+  --status-danger-border: #fecaca;
+  --status-info: #0284c7;
+  --status-info-bg: #f0f9ff;
+  --status-info-border: #bae6fd;
 }
 
 .dark {
@@ -128,11 +186,65 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+
+  --brand-50: #1e293b;
+  --brand-500: #60a5fa;
+  --brand-600: #3b82f6;
+  --accent-500: #a78bfa;
+
+  --ai-from: #38bdf8;
+  --ai-to: #3b82f6;
+  --ai-from-hover: #0ea5e9;
+  --ai-to-hover: #2563eb;
+  --ai-text: #bfdbfe;
+
+  --logo-from: #60a5fa;
+  --logo-to: #a78bfa;
+
+  --theme-text-primary: #e2e8f0;
+  --theme-text-secondary: #94a3b8;
+  --theme-border: rgb(148 163 184 / 0.35);
+  --theme-surface: rgb(15 23 42 / 0.65);
+  --theme-background: rgb(2 6 23 / 0.4);
+
+  --nav-sidebar-bg: #0f172a;
+  --nav-sidebar-border: #1e293b;
+  --nav-sidebar-active-bg: #60a5fa;
+  --nav-sidebar-active-shadow: 0 10px 20px -10px rgb(96 165 250 / 0.45);
+  --nav-sidebar-icon: #94a3b8;
+  --nav-sidebar-hover-bg: #1e293b;
+  --nav-sidebar-hover-text: #e2e8f0;
+  --nav-sidebar-tooltip-bg: #1e293b;
+  --nav-sidebar-tooltip-border: #334155;
+  --nav-sidebar-ai-bg: rgb(139 92 246 / 0.24);
+  --nav-sidebar-ai-icon: #a78bfa;
+  --nav-sidebar-ai-subtext: #94a3b8;
+  --nav-resizer-track: #1e293b;
+  --nav-resizer-handle-bg: #1e293b;
+  --nav-resizer-handle-border: #334155;
+  --nav-resizer-handle-active: #60a5fa;
+
+  --status-success: #4ade80;
+  --status-success-bg: rgb(22 101 52 / 0.2);
+  --status-success-border: rgb(34 197 94 / 0.45);
+  --status-warning: #fbbf24;
+  --status-warning-bg: rgb(146 64 14 / 0.2);
+  --status-warning-border: rgb(245 158 11 / 0.45);
+  --status-danger: #f87171;
+  --status-danger-bg: rgb(127 29 29 / 0.2);
+  --status-danger-border: rgb(248 113 113 / 0.45);
+  --status-info: #38bdf8;
+  --status-info-bg: rgb(7 89 133 / 0.2);
+  --status-info-border: rgb(56 189 248 / 0.45);
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
+  }
+  a[href],
+  [role="button"] {
+    cursor: pointer;
   }
   html {
     /* 스크롤바 공간 미리 확보 - 레이아웃 시프트 방지 */
@@ -162,4 +274,129 @@
 
 .animate-fade-in-up {
   animation: fade-in-up 0.8s ease-out;
+}
+
+@layer components {
+  .dev-page-container {
+    @apply mx-auto w-full max-w-[1200px];
+  }
+
+  .ai-outline-btn {
+    border: 1px solid transparent;
+    background:
+      linear-gradient(var(--background), var(--background)) padding-box,
+      linear-gradient(90deg, var(--ai-from, #06b6d4), var(--ai-to, #2563eb)) border-box;
+    color: var(--ai-text, #1e3a8a);
+  }
+
+  .ai-outline-btn:hover {
+    background:
+      linear-gradient(var(--background), var(--background)) padding-box,
+      linear-gradient(90deg, var(--ai-from-hover, var(--ai-from, #06b6d4)), var(--ai-to-hover, var(--ai-to, #2563eb))) border-box;
+    color: var(--ai-text-hover, var(--ai-text, #1e3a8a));
+  }
+
+  .ai-outline-btn__icon {
+    color: var(--ai-from, #06b6d4);
+  }
+
+  .logo-gradient-bg {
+    background: linear-gradient(145deg, var(--logo-from), var(--logo-to));
+  }
+
+  .logo-gradient-text {
+    background-image: linear-gradient(145deg, var(--logo-from), var(--logo-to));
+    -webkit-background-clip: text;
+    color: transparent;
+  }
+
+  .status-chip {
+    border-radius: 9999px;
+    border-width: 1px;
+    padding: 0.125rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1rem;
+  }
+
+  .status-chip--success {
+    border-color: var(--status-success-border);
+    background-color: var(--status-success-bg);
+    color: var(--status-success);
+  }
+
+  .status-chip--warning {
+    border-color: var(--status-warning-border);
+    background-color: var(--status-warning-bg);
+    color: var(--status-warning);
+  }
+
+  .status-chip--danger {
+    border-color: var(--status-danger-border);
+    background-color: var(--status-danger-bg);
+    color: var(--status-danger);
+  }
+
+  .status-chip--info {
+    border-color: var(--status-info-border);
+    background-color: var(--status-info-bg);
+    color: var(--status-info);
+  }
+
+  .sidebar-shell {
+    background-color: var(--nav-sidebar-bg);
+  }
+
+  .sidebar-divider {
+    border-color: var(--nav-sidebar-border);
+  }
+
+  .sidebar-nav-item {
+    color: var(--nav-sidebar-icon);
+  }
+
+  .sidebar-nav-item:hover {
+    background-color: var(--nav-sidebar-hover-bg);
+    color: var(--nav-sidebar-hover-text);
+  }
+
+  .sidebar-nav-item--active {
+    background-color: var(--nav-sidebar-active-bg);
+    color: white;
+    box-shadow: var(--nav-sidebar-active-shadow);
+  }
+
+  .sidebar-tooltip {
+    border-color: var(--nav-sidebar-tooltip-border);
+    background-color: var(--nav-sidebar-tooltip-bg);
+    color: white;
+  }
+
+  .sidebar-ai-indicator {
+    background-color: var(--nav-sidebar-ai-bg);
+  }
+
+  .sidebar-resizer-track {
+    background-color: var(--nav-resizer-track);
+  }
+
+  .sidebar-resizer-handle {
+    border-color: var(--nav-resizer-handle-border);
+    background-color: var(--nav-resizer-handle-bg);
+  }
+
+  .sidebar-resizer-handle:hover,
+  .sidebar-resizer-handle--active {
+    border-color: var(--nav-resizer-handle-active);
+    background-color: var(--nav-resizer-handle-active);
+  }
+
+  .sidebar-resizer-icon {
+    color: var(--nav-sidebar-icon);
+  }
+
+  .sidebar-resizer-handle:hover .sidebar-resizer-icon,
+  .sidebar-resizer-handle--active .sidebar-resizer-icon {
+    color: white;
+  }
 }
