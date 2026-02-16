@@ -263,15 +263,7 @@ export function ExplorePage() {
       )}
 
       {/* 하단 버튼 */}
-      <div className="flex items-center justify-between px-8 pb-8 pt-6 lg:px-10">
-          <Button
-            type="button"
-            variant="outline"
-            className="h-12 px-8 text-base font-semibold border-gray-200 hover:bg-gray-50 hover:border-gray-300 transition-all"
-            onClick={() => navigate("/onboarding/mapping")}
-          >
-            이전
-          </Button>
+      <div className="flex items-center justify-end px-8 pb-8 pt-6 lg:px-10">
           <Button
             type="button"
             className="h-12 px-8 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-base font-semibold shadow-lg shadow-blue-600/20 transition-all hover:shadow-blue-600/30"

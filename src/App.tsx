@@ -26,6 +26,7 @@ import { PlanSelectionPage } from "@/features/registration/pages/PlanSelectionPa
 // Dev 프리뷰
 import { MappingCardPreview } from "@/pages/dev/MappingCardPreview";
 import { ItemsMasterPreview } from "@/pages/dev/ItemsMasterPreview";
+import { ItemDetailPreview } from "@/pages/dev/ItemDetailPreview";
 
 // 온보딩 관련 임포트
 import { OnboardingLayout } from "@/features/onboarding/components/OnboardingLayout";
@@ -269,6 +270,7 @@ function App() {
         {/* TODO 삭제 Dev Preview (인증 불필요) */}
         <Route path="/dev/mapping-preview" element={<MappingCardPreview />} />
         <Route path="/dev/items" element={<ItemsMasterPreview />} />
+        <Route path="/dev/items/:partNumber" element={<ItemDetailPreview />} />
 
         {/* Public Routes */}
         <Route

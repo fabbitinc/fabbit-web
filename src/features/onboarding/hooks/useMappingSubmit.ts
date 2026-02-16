@@ -2,8 +2,32 @@ import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useMappingStore, useUploadStore, useProcessingStore } from "@/stores/onboarding";
-import { confirmMapping, validateMapping, startSynthesis } from "@/api/onboarding";
+import { confirmMapping, validateMapping, startSynthesis, getSynthesisJob } from "@/api/onboarding";
 import { extractApiErrorMessage } from "@/features/onboarding/utils/mappingUtils";
+
+const SYNTHESIS_POLL_INTERVAL = 3000;
+
+/** synthesis 작업 완료까지 폴링 대기 */
+function waitForSynthesis(jobId: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const poll = async () => {
+      try {
+        const job = await getSynthesisJob(jobId);
+        const status = job.status.toLowerCase();
+        if (status === "completed") {
+          resolve();
+        } else if (status === "failed") {
+          reject(new Error(job.errors?.join(", ") || "데이터 합성에 실패했습니다"));
+        } else {
+          setTimeout(poll, SYNTHESIS_POLL_INTERVAL);
+        }
+      } catch (err) {
+        reject(err);
+      }
+    };
+    poll();
+  });
+}
 
 /**
  * 매핑 확정 + 페이지 이동
@@ -66,9 +90,10 @@ export function useMappingSubmit() {
         setMappingId(confirmResponse.id);
       }
 
-      // 합성 시작
+      // 합성 시작 → 완료 대기
       const synthesisJob = await startSynthesis({ upload_id: primaryUploadId, mapping_id: confirmedMappingId });
       setSynthesisJob(synthesisJob);
+      await waitForSynthesis(synthesisJob.id);
 
       toast.success("매핑이 확정되었습니다");
       navigate("/onboarding/explore");
