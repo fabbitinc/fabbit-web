@@ -19,7 +19,7 @@ import { useUploadStore } from "@/stores/uploadStore";
 const menuItems = [
   { id: "dashboard", label: "대시보드", icon: LayoutDashboard, path: "/" },
   { id: "projects", label: "프로젝트", icon: FolderKanban, path: "/projects" },
-  { id: "items", label: "부품관리", icon: Package, path: "/items" },
+  { id: "parts", label: "부품관리", icon: Package, path: "/parts" },
   { id: "approval", label: "결재", icon: ClipboardCheck, path: "/approval" },
   { id: "conflicts", label: "충돌관리", icon: AlertTriangle, path: "/conflicts" },
 ];
@@ -40,8 +40,8 @@ export function Sidebar() {
 
   return (
     <TooltipProvider delayDuration={0}>
-      <aside className="flex h-screen w-16 flex-col bg-[#0f172a]">
-        <div className="flex h-14 items-center justify-center border-b border-[#1e293b]">
+      <aside className="sidebar-shell flex h-screen w-16 flex-col">
+        <div className="sidebar-divider flex h-14 items-center justify-center border-b">
           <span className="text-xl font-bold text-white">F</span>
         </div>
         <nav className="flex flex-1 flex-col items-center gap-2 py-4">
@@ -53,16 +53,16 @@ export function Sidebar() {
                   <NavLink
                     to={item.path}
                     className={cn(
-                      "relative flex h-10 w-10 items-center justify-center rounded-lg transition-all",
+                      "sidebar-nav-item relative flex h-10 w-10 items-center justify-center rounded-lg transition-all",
                       isActive
-                        ? "bg-[#3b82f6] text-white shadow-lg shadow-[#3b82f6]/25"
-                        : "text-[#64748b] hover:bg-[#1e293b] hover:text-[#e2e8f0]"
+                        ? "sidebar-nav-item--active"
+                        : ""
                     )}
                   >
                     <item.icon className="h-5 w-5" />
                   </NavLink>
                 </TooltipTrigger>
-                <TooltipContent side="right" className="bg-[#1e293b] text-white border-[#334155]">
+                <TooltipContent side="right" className="sidebar-tooltip">
                   {item.label}
                 </TooltipContent>
               </Tooltip>
@@ -72,16 +72,16 @@ export function Sidebar() {
 
         {/* Active Uploads Indicator */}
         {hasActiveUploads && (
-          <div className="border-t border-[#1e293b] p-3">
+          <div className="sidebar-divider border-t p-3">
             <Tooltip>
               <TooltipTrigger asChild>
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-[#8b5cf6]/20">
-                  <Loader2 className="h-5 w-5 animate-spin text-[#8b5cf6]" />
+                <div className="sidebar-ai-indicator flex h-10 w-10 items-center justify-center rounded-lg">
+                  <Loader2 className="h-5 w-5 animate-spin" style={{ color: "var(--nav-sidebar-ai-icon)" }} />
                 </div>
               </TooltipTrigger>
-              <TooltipContent side="right" className="bg-[#1e293b] text-white border-[#334155]">
+              <TooltipContent side="right" className="sidebar-tooltip">
                 <p className="font-medium">{activeUploads.length}개 파일 처리 중</p>
-                <p className="text-xs text-[#94a3b8]">AI가 도면을 분석하고 있습니다</p>
+                <p className="text-xs" style={{ color: "var(--nav-sidebar-ai-subtext)" }}>AI가 도면을 분석하고 있습니다</p>
               </TooltipContent>
             </Tooltip>
           </div>

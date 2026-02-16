@@ -582,7 +582,7 @@ const TABS: { key: TabKey; label: string }[] = [
   { key: "history", label: "이력" },
 ];
 
-export function ItemDetailPreview() {
+export function PartDetailPage() {
   const { partNumber } = useParams<{ partNumber: string }>();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<TabKey>("info");
@@ -594,7 +594,7 @@ export function ItemDetailPreview() {
       <div className="min-h-screen bg-background px-6 py-8">
         <div className="dev-page-container">
           <button
-            onClick={() => navigate("/dev/parts")}
+            onClick={() => navigate("/parts")}
             className="mb-8 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="h-4 w-4" />
@@ -614,7 +614,7 @@ export function ItemDetailPreview() {
           {/* 상단: 뒤로가기 + 액션 버튼 */}
           <div className="mb-4 flex items-center justify-between">
             <button
-              onClick={() => navigate("/dev/parts")}
+              onClick={() => navigate("/parts")}
               className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
             >
               <ArrowLeft className="h-4 w-4" />
@@ -681,8 +681,8 @@ export function ItemDetailPreview() {
           <BomTab
             children={MOCK_BOM_CHILDREN}
             parents={MOCK_BOM_PARENTS}
-            onAnalyze={() => navigate(`/dev/parts/${item.part_number}/templates?scope=detail`)}
-            onUpload={() => navigate(`/dev/parts/${item.part_number}/upload?scope=detail`)}
+            onAnalyze={() => navigate(`/parts/${item.part_number}/templates?scope=detail`)}
+            onUpload={() => navigate(`/parts/${item.part_number}/upload?scope=detail`)}
           />
         )}
         {activeTab === "attachments" && <DrawingsTab drawings={MOCK_DRAWINGS} />}

@@ -1,0 +1,61 @@
+@layer components {
+  .theme-common-1 {
+    --status-success: #15803d;
+    --status-success-bg: #f0fdf4;
+    --status-success-border: #bbf7d0;
+    --status-warning: #b45309;
+    --status-warning-bg: #fffbeb;
+    --status-warning-border: #fde68a;
+    --status-danger: #b91c1c;
+    --status-danger-bg: #fef2f2;
+    --status-danger-border: #fecaca;
+    --status-info: #0369a1;
+    --status-info-bg: #f0f9ff;
+    --status-info-border: #bae6fd;
+  }
+
+  .theme-common-2 {
+    --status-success: #0f766e;
+    --status-success-bg: #f0fdfa;
+    --status-success-border: #99f6e4;
+    --status-warning: #a16207;
+    --status-warning-bg: #fefce8;
+    --status-warning-border: #fde047;
+    --status-danger: #be123c;
+    --status-danger-bg: #fff1f2;
+    --status-danger-border: #fecdd3;
+    --status-info: #1d4ed8;
+    --status-info-bg: #eff6ff;
+    --status-info-border: #bfdbfe;
+  }
+
+  .theme-common-3 {
+    --status-success: #166534;
+    --status-success-bg: #dcfce7;
+    --status-success-border: #86efac;
+    --status-warning: #92400e;
+    --status-warning-bg: #fef3c7;
+    --status-warning-border: #f59e0b;
+    --status-danger: #991b1b;
+    --status-danger-bg: #fee2e2;
+    --status-danger-border: #f87171;
+    --status-info: #1e3a8a;
+    --status-info-bg: #dbeafe;
+    --status-info-border: #60a5fa;
+  }
+
+  .theme-common-4 {
+    --status-success: #3f6212;
+    --status-success-bg: #f7fee7;
+    --status-success-border: #d9f99d;
+    --status-warning: #9a3412;
+    --status-warning-bg: #fff7ed;
+    --status-warning-border: #fdba74;
+    --status-danger: #9f1239;
+    --status-danger-bg: #fff1f2;
+    --status-danger-border: #fda4af;
+    --status-info: #334155;
+    --status-info-bg: #f8fafc;
+    --status-info-border: #cbd5e1;
+  }
+}
