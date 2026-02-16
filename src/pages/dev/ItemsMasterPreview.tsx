@@ -1,4 +1,5 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Search,
   Plus,
@@ -120,6 +121,12 @@ function filtersEqual(a: Filters, b: Filters): boolean {
 // --- 메인 컴포넌트 ---
 
 export function ItemsMasterPreview() {
+  const navigate = useNavigate();
+
+  const handleRowClick = useCallback((partNumber: string) => {
+    navigate(`/dev/items/${partNumber}`);
+  }, [navigate]);
+
   // draft: UI에서 편집 중인 필터 / applied: 테이블에 실제 적용된 필터
   const [draft, setDraft] = useState<Filters>(INITIAL_FILTERS);
   const [applied, setApplied] = useState<Filters>(INITIAL_FILTERS);
@@ -494,6 +501,7 @@ export function ItemsMasterPreview() {
                   paged.map((item) => (
                     <tr
                       key={item.part_number}
+                      onClick={() => handleRowClick(item.part_number)}
                       className="group border-b border-border/50 transition-colors last:border-b-0 hover:bg-muted/50 cursor-pointer"
                     >
                       <td className="py-3 pl-4 pr-2 font-mono text-xs font-medium text-primary">
