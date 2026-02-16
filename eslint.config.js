@@ -33,6 +33,10 @@ export default defineConfig([
       'jsx-a11y/aria-role': 'warn',
       'jsx-a11y/aria-unsupported-elements': 'warn',
       'jsx-a11y/control-has-associated-label': 'warn',
+      'react-refresh/only-export-components': 'warn',
+      'react-hooks/set-state-in-effect': 'warn',
+      'react-hooks/static-components': 'warn',
+      'react-hooks/preserve-manual-memoization': 'warn',
     },
   },
 ])

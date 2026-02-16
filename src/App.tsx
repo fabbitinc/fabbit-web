@@ -220,7 +220,7 @@ type AppStatus = "loading" | "ready" | "site_not_found";
 
 function App() {
   const [status, setStatus] = useState<AppStatus>("loading");
-  const [_site, setSite] = useState<SiteResponse | null>(null);
+  const [, setSite] = useState<SiteResponse | null>(null);
   const fetchMe = useAuthStore((s) => s.fetchMe);
 
   useEffect(() => {

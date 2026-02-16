@@ -179,7 +179,8 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      loginWithProvider: async (_provider) => {
+      loginWithProvider: async (provider) => {
+        void provider;
         // TODO: OAuth 플로우 구현
         set({ isLoading: true });
         await new Promise((resolve) => setTimeout(resolve, 1000));
