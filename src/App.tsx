@@ -6,6 +6,8 @@ import { LoginPage } from "@/pages/auth/LoginPage";
 import { ProjectListPage } from "@/pages/projects/ProjectListPage";
 import { ProjectDetailPage } from "@/pages/projects/ProjectDetailPage";
 import { ProjectSettingsPage } from "@/pages/projects/ProjectSettingsPage";
+import { OrganizationSettingsPage } from "@/pages/organization/OrganizationSettingsPage";
+import { UserSettingsPage } from "@/pages/user/UserSettingsPage";
 import { PartsPage } from "@/pages/parts/PartsPage";
 import { PartDetailPage } from "@/pages/parts/PartDetailPage";
 import { PartsTemplateAnalysisPage } from "@/pages/parts/PartsTemplateAnalysisPage";
@@ -504,6 +506,8 @@ function App() {
                     path="/projects/:id/settings"
                     element={<ProjectSettingsPage />}
                   />
+                  <Route path="/organization/settings" element={<OrganizationSettingsPage />} />
+                  <Route path="/user/settings" element={<UserSettingsPage />} />
                   <Route path="/approval" element={<ApprovalPage />} />
                   <Route path="/conflicts" element={<ConflictsPage />} />
                   <Route path="*" element={<Navigate to="/" replace />} />

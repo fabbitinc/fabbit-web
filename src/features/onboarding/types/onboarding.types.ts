@@ -38,50 +38,38 @@ export function getConfidenceLevel(confidence: number): ConfidenceLevel {
   return "low";
 }
 
-// 컬럼 매핑 (API column_mapping + 프론트 확장)
+// 속성 매핑 (API property_mapping + 프론트 확장)
+// is_extended=true이면 확장 속성, 아니면 기본 속성
 export interface ColumnMappingEntry {
   id: string;
   source_column: string;
-  target_label: string;
   target_property: string;
   data_type: string;
   confidence: number;
   reason: string;
   approved: boolean;
+  is_extended?: boolean;
 }
 
 // 관계 매핑 (API relation_mapping + 프론트 확장)
 export interface RelationMappingEntry {
   id: string;
-  from_label: string;
-  to_label: string;
   rel_type: string;
-  from_columns: Record<string, string>;
-  to_columns: Record<string, string>;
-  properties: Record<string, string>;
-  property_types: Record<string, string>;
+  target_label: string;
+  node_columns: Record<string, string>;
+  rel_columns: Record<string, string>;
+  rel_column_types: Record<string, string>;
+  confidence: number;
+  reason: string;
   approved: boolean;
   dismissed: boolean;
   dismissed_reason?: string | null;
 }
 
-export interface RelationMappingEditDraft {
-  relType: string;
-  fromSourceColumn: string;
-  toSourceColumn: string;
-  propertySourceColumn: string;
-  relationProperty: string;
-}
-
-export interface ExtendedPropertyEntry {
-  id: string;
-  source_column: string;
-  target_label: string;
-  property_name: string;
-  data_type: string;
-  confidence: number;
-  reason: string;
-  approved: boolean;
+export interface RelationTargetInfo {
+  targetLabel: string;
+  targetMergeKeys: string[];
+  targetColumnOptions: string[];
 }
 
 // 타겟 속성 옵션 (향후 온톨로지 API에서 로드)

@@ -1,98 +1,110 @@
 import { useMemo } from "react";
 import { useMappingStore } from "@/stores/onboarding";
 import { SAMPLE_DATA_MAX_COUNT } from "@/features/onboarding/constants/mappingConfig";
+import type { RelationTargetInfo } from "@/features/onboarding/types/onboarding.types";
 
 /**
  * 매핑 상태에서 파생되는 모든 계산 값
+ * - 기본/확장 매핑 분리 (is_extended 기준)
  * - 관계 타입/속성 옵션
- * - 관계 엔드포인트 옵션
+ * - 관계 상대방 노드 정보
  * - 활성/미매핑/승인 통계
  * - 샘플 데이터 헬퍼
  */
 export function useMappingDerivedState() {
   const columnMappings = useMappingStore((s) => s.columnMappings);
   const relationMappings = useMappingStore((s) => s.relationMappings);
-  const extendedMappings = useMappingStore((s) => s.extendedMappings);
   const mappingHeaders = useMappingStore((s) => s.mappingHeaders);
   const mappingSampleRows = useMappingStore((s) => s.mappingSampleRows);
   const editableConstraints = useMappingStore((s) => s.editableConstraints);
 
-  // 관계 타입 옵션
-  const relationTypeOptions = useMemo(
-    () =>
-      editableConstraints?.allowed_rel_types ||
-      [...new Set(relationMappings.map((rm) => rm.rel_type))],
-    [editableConstraints?.allowed_rel_types, relationMappings],
+  // 기본 매핑 (is_extended가 아닌 것)
+  const baseMappings = useMemo(
+    () => columnMappings.filter((cm) => !cm.is_extended),
+    [columnMappings],
   );
 
-  // 관계 타입별 속성 옵션
+  // 확장 매핑 (is_extended인 것)
+  const extendedMappings = useMemo(
+    () => columnMappings.filter((cm) => cm.is_extended),
+    [columnMappings],
+  );
+
+  // 관계 타입 옵션: relation_catalog에서 추출
+  const relationTypeOptions = useMemo(
+    () => {
+      const catalog = editableConstraints?.relation_catalog || [];
+      if (catalog.length > 0) {
+        return [...new Set(catalog.map((item) => item.rel_type))];
+      }
+      return [...new Set(relationMappings.map((rm) => rm.rel_type))];
+    },
+    [editableConstraints?.relation_catalog, relationMappings],
+  );
+
+  // 관계 타입별 속성 옵션: relation_property_catalog에서 파생
   const relationPropertyByType = useMemo(
-    () =>
-      editableConstraints?.allowed_rel_properties_by_type ||
-      relationMappings.reduce<Record<string, string[]>>((acc, rm) => {
-        const props = Object.values(rm.properties);
+    () => {
+      const catalog = editableConstraints?.relation_property_catalog || [];
+      if (catalog.length > 0) {
+        return catalog.reduce<Record<string, string[]>>((acc, item) => {
+          if (!acc[item.rel_type]) acc[item.rel_type] = [];
+          if (!acc[item.rel_type].includes(item.property)) {
+            acc[item.rel_type].push(item.property);
+          }
+          return acc;
+        }, {});
+      }
+      // 폴백: 기존 관계 매핑에서 추출
+      return relationMappings.reduce<Record<string, string[]>>((acc, rm) => {
+        const props = Object.values(rm.rel_columns);
         if (!acc[rm.rel_type]) acc[rm.rel_type] = [];
         props.forEach((prop) => {
           if (!acc[rm.rel_type].includes(prop)) acc[rm.rel_type].push(prop);
         });
         return acc;
-      }, {}),
-    [editableConstraints?.allowed_rel_properties_by_type, relationMappings],
+      }, {});
+    },
+    [editableConstraints?.relation_property_catalog, relationMappings],
   );
 
-  // 관계 타입별 엔드포인트 옵션
-  const relationEndpointOptionsByType = useMemo(() => {
+  // 관계 타입별 상대방 노드 정보
+  const relationTargetInfoByType = useMemo(() => {
+    const catalog = editableConstraints?.relation_catalog || [];
     const catalogByType = new Map(
-      (editableConstraints?.relation_catalog || []).map((item) => [item.rel_type, item]),
+      catalog.map((item) => [item.rel_type, item]),
     );
     const mergeKeysByLabel = editableConstraints?.merge_keys_by_label || {};
 
-    return relationTypeOptions.reduce<
-      Record<string, { fromColumns: string[]; toColumns: string[]; fromLabel: string; toLabel: string; fromMergeKey?: string; toMergeKey?: string }>
-    >((acc, relType) => {
-      const catalog = catalogByType.get(relType);
+    return relationTypeOptions.reduce<Record<string, RelationTargetInfo>>((acc, relType) => {
+      const catalogItem = catalogByType.get(relType);
       const fallback = relationMappings.find((rm) => rm.rel_type === relType);
 
-      const fromLabel = catalog?.from_label || fallback?.from_label || "";
-      const toLabel = catalog?.to_label || fallback?.to_label || "";
-      const fromMergeKey = fromLabel ? mergeKeysByLabel[fromLabel]?.[0] : undefined;
-      const toMergeKey = toLabel ? mergeKeysByLabel[toLabel]?.[0] : undefined;
+      const targetLabel = catalogItem?.to_label || fallback?.target_label || "";
+      const targetMergeKeys = targetLabel ? (mergeKeysByLabel[targetLabel] || []) : [];
 
-      const fromColumns = [
-        ...new Set(
-          columnMappings
-            .filter(
-              (cm) =>
-                cm.approved &&
-                (!fromLabel || cm.target_label === fromLabel) &&
-                (!fromMergeKey || cm.target_property === fromMergeKey),
-            )
-            .map((cm) => cm.source_column),
-        ),
-      ];
+      // 상대방 merge key가 baseMappings에 매핑되어 있으면 해당 컬럼, 없으면 전체 헤더
+      const resolveTargetColumns = () => {
+        if (targetMergeKeys.length > 0) {
+          const matched = baseMappings
+            .filter((cm) => cm.approved && targetMergeKeys.includes(cm.target_property))
+            .map((cm) => cm.source_column);
+          if (matched.length > 0) return [...new Set(matched)];
+        }
+        return [...mappingHeaders];
+      };
 
-      const toColumns = [
-        ...new Set(
-          columnMappings
-            .filter(
-              (cm) =>
-                cm.approved &&
-                (!toLabel || cm.target_label === toLabel) &&
-                (!toMergeKey || cm.target_property === toMergeKey),
-            )
-            .map((cm) => cm.source_column),
-        ),
-      ];
+      const targetColumnOptions = resolveTargetColumns();
 
-      acc[relType] = { fromColumns, toColumns, fromLabel, toLabel, fromMergeKey, toMergeKey };
+      acc[relType] = { targetLabel, targetMergeKeys, targetColumnOptions };
       return acc;
     }, {});
-  }, [editableConstraints, relationMappings, relationTypeOptions, columnMappings]);
+  }, [editableConstraints, relationMappings, relationTypeOptions, baseMappings, mappingHeaders]);
 
-  // 선택 가능한 관계 타입 (from/to 엔드포인트가 모두 있는 경우만)
+  // 선택 가능한 관계 타입 (상대방 노드 컬럼 옵션이 있는 경우만)
   const selectableRelationTypeOptions = relationTypeOptions.filter((relType) => {
-    const endpoint = relationEndpointOptionsByType[relType];
-    return Boolean(endpoint && endpoint.fromColumns.length > 0 && endpoint.toColumns.length > 0);
+    const info = relationTargetInfoByType[relType];
+    return Boolean(info && info.targetColumnOptions.length > 0);
   });
 
   // 활성 관계 매핑 (dismissed 제외)
@@ -102,20 +114,19 @@ export function useMappingDerivedState() {
   const unmappedColumns = useMemo(() => {
     const columnMappedCols = new Set([
       ...columnMappings.map((cm) => cm.source_column),
-      ...extendedMappings.map((ep) => ep.source_column),
       ...relationMappings
         .filter((rm) => !rm.dismissed)
-        .flatMap((rm) => Object.keys(rm.properties)),
+        .flatMap((rm) => Object.keys(rm.rel_columns)),
     ]);
     return mappingHeaders.filter((h) => !columnMappedCols.has(h));
-  }, [columnMappings, extendedMappings, relationMappings, mappingHeaders]);
+  }, [columnMappings, relationMappings, mappingHeaders]);
 
   // 승인 통계
-  const approvedColumnCount = columnMappings.filter((cm) => cm.approved).length;
+  const approvedBaseCount = baseMappings.filter((cm) => cm.approved).length;
   const approvedRelationCount = activeRelationMappings.filter((rm) => rm.approved).length;
-  const approvedExtendedCount = extendedMappings.filter((ep) => ep.approved).length;
-  const totalMappings = columnMappings.length + activeRelationMappings.length + extendedMappings.length;
-  const totalApproved = approvedColumnCount + approvedRelationCount + approvedExtendedCount;
+  const approvedExtendedCount = extendedMappings.filter((cm) => cm.approved).length;
+  const totalMappings = baseMappings.length + activeRelationMappings.length + extendedMappings.length;
+  const totalApproved = approvedBaseCount + approvedRelationCount + approvedExtendedCount;
   const excludedCount = unmappedColumns.length;
 
   // 매핑이 하나라도 있는지
@@ -135,10 +146,13 @@ export function useMappingDerivedState() {
   };
 
   return {
+    // 기본/확장 분리
+    baseMappings,
+    extendedMappings,
     // 관계 옵션
     relationTypeOptions,
     relationPropertyByType,
-    relationEndpointOptionsByType,
+    relationTargetInfoByType,
     selectableRelationTypeOptions,
     // 파생 데이터
     activeRelationMappings,

@@ -4,7 +4,8 @@ export interface CreateUploadRequest {
   original_name: string;
   content_type: string;
   file_size: number;
-  project_id?: string;
+  owner_type?: string;
+  owner_id?: string;
 }
 
 export interface CreateUploadResponse {
@@ -47,38 +48,28 @@ export interface BatchCompleteResponse {
 
 // ─── Mapping ───
 
-export interface ColumnMappingDTO {
+export interface PropertyMappingDTO {
   source_column: string;
-  target_label: string;
   target_property: string;
   data_type: string;
   confidence: number;
   reason: string;
+  is_extended?: boolean;
 }
 
 export interface RelationMappingDTO {
-  from_label: string;
-  to_label: string;
   rel_type: string;
-  from_columns: Record<string, string>;
-  to_columns: Record<string, string>;
-  properties: Record<string, string>;
-  property_types: Record<string, string>;
-}
-
-export interface ExtendedPropertyMappingDTO {
-  source_column: string;
   target_label: string;
-  property_name: string;
-  data_type: string;
+  node_columns: Record<string, string>;
+  rel_columns: Record<string, string>;
+  rel_column_types: Record<string, string>;
   confidence: number;
   reason: string;
 }
 
 export interface MappingResultDTO {
-  column_mappings: ColumnMappingDTO[];
+  property_mappings: PropertyMappingDTO[];
   relation_mappings: RelationMappingDTO[];
-  extended_properties: ExtendedPropertyMappingDTO[];
 }
 
 export interface MappingPreviewRequest {
@@ -114,14 +105,10 @@ export interface RelationPropertyCatalogItemDTO {
 }
 
 export interface EditableConstraintsDTO {
-  allowed_labels: string[];
-  allowed_properties_by_label: Record<string, string[]>;
-  allowed_rel_types: string[];
-  allowed_rel_properties_by_type: Record<string, string[]>;
+  allowed_part_properties: string[];
   merge_keys_by_label: Record<string, string[]>;
-  relation_edit_mode?: string;
-  relation_catalog?: RelationCatalogItemDTO[];
-  relation_property_catalog?: RelationPropertyCatalogItemDTO[];
+  relation_catalog: RelationCatalogItemDTO[];
+  relation_property_catalog: RelationPropertyCatalogItemDTO[];
 }
 
 export interface MappingPreviewResponse {
@@ -138,6 +125,7 @@ export interface MappingConfirmRequest {
   name: string;
   sheet_name?: string | null;
   mapping: MappingResultDTO;
+  scope?: string;
 }
 
 export interface MappingResponse {
@@ -149,6 +137,8 @@ export interface MappingResponse {
   mapping: MappingResultDTO;
   usage_count: number;
   created_at: string;
+  scope?: string;
+  is_active?: boolean;
 }
 
 export interface MappingListResponse {
@@ -163,9 +153,6 @@ export interface MappingValidateRequest {
 
 export interface MappingImpactSummary {
   disabled_column_count?: number;
-  changed_relations_count?: number;
-  base_to_ext_count?: number;
-  ext_to_base_count?: number;
 }
 
 export interface ValidationIssue {

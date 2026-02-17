@@ -6,7 +6,7 @@ import type { TargetPropertyOption } from "@/features/onboarding/types/onboardin
 
 /**
  * 온톨로지 스키마 기반 타겟 옵션 관리
- * - editableConstraints가 있으면 제약 기반 옵션 사용
+ * - editableConstraints가 있으면 allowed_part_properties 기반 옵션 사용
  * - 없으면 API에서 스키마 로드
  */
 export function useOntologySchema() {
@@ -14,18 +14,17 @@ export function useOntologySchema() {
   const targetPropertyOptions = useMappingStore((s) => s.targetPropertyOptions);
   const setTargetPropertyOptions = useMappingStore((s) => s.setTargetPropertyOptions);
 
+  // 제약 기반 옵션: allowed_part_properties (플랫 배열 → Part 라벨 고정)
   const constraintTargetOptions = useMemo<TargetPropertyOption[]>(() => {
     if (!editableConstraints) return [];
-    const byLabel = editableConstraints.allowed_properties_by_label || {};
-    return Object.entries(byLabel).flatMap(([label, properties]) =>
-      properties.map((property) => ({
-        label,
-        property,
-        description: "",
-        required: false,
-        data_type: "string",
-      })),
-    );
+    const properties = editableConstraints.allowed_part_properties || [];
+    return properties.map((property) => ({
+      label: "Part",
+      property,
+      description: "",
+      required: false,
+      data_type: "string",
+    }));
   }, [editableConstraints]);
 
   const effectiveTargetOptions =

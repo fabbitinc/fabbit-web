@@ -6,6 +6,7 @@ import {
   ClipboardCheck,
   AlertTriangle,
   Loader2,
+  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -14,6 +15,9 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { FolderTree } from "@/features/items/components/FolderTree";
 import { useUploadStore } from "@/stores/uploadStore";
 
 const menuItems = [
@@ -24,13 +28,32 @@ const menuItems = [
   { id: "conflicts", label: "충돌관리", icon: AlertTriangle, path: "/conflicts" },
 ];
 
-export function Sidebar() {
+interface SidebarProps {
+  isDesktop: boolean;
+  collapsed: boolean;
+  mobileOpen: boolean;
+  width: number;
+  showFolderTree: boolean;
+  onCloseMobile: () => void;
+}
+
+export function Sidebar({
+  isDesktop,
+  collapsed,
+  mobileOpen,
+  width,
+  showFolderTree,
+  onCloseMobile,
+}: SidebarProps) {
   const location = useLocation();
   const files = useUploadStore((state) => state.files);
   const activeUploads = files.filter(
     (f) => f.status === "uploading" || f.status === "analyzing"
   );
   const hasActiveUploads = activeUploads.length > 0;
+  const navWidth = Math.min(width, 320);
+  const showAsOverlay = !isDesktop;
+  const isVisible = isDesktop || mobileOpen;
 
   // 프로젝트 메뉴는 /projects 및 /projects/:id 등 하위 경로에서도 활성 상태
   const isMenuActive = (path: string) => {
@@ -40,52 +63,99 @@ export function Sidebar() {
 
   return (
     <TooltipProvider delayDuration={0}>
-      <aside className="sidebar-shell flex h-screen w-16 flex-col">
-        <div className="sidebar-divider flex h-14 items-center justify-center border-b">
-          <span className="text-xl font-bold text-white">F</span>
+      <aside
+        className={cn(
+          "sidebar-shell sidebar-divider z-40 flex h-full shrink-0 flex-col border-r transition-[width,transform] duration-200",
+          showAsOverlay && "absolute left-0 top-0 shadow-2xl",
+          !isVisible && "-translate-x-full"
+        )}
+        style={{ width: isDesktop ? "100%" : navWidth, maxWidth: showAsOverlay ? "90vw" : undefined }}
+      >
+        <div className="sidebar-divider flex h-12 shrink-0 items-center justify-between border-b px-3">
+          <div className="flex items-center gap-2">
+            <span className="flex h-7 w-7 items-center justify-center rounded bg-white/10 text-xs font-bold text-white">F</span>
+            {!collapsed && <span className="text-sm font-semibold text-white">Fabbit</span>}
+          </div>
+          {!isDesktop && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-slate-300 hover:bg-slate-800 hover:text-white"
+              onClick={onCloseMobile}
+              aria-label="사이드 내비게이션 닫기"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          )}
         </div>
-        <nav className="flex flex-1 flex-col items-center gap-2 py-4">
-          {menuItems.map((item) => {
-            const isActive = isMenuActive(item.path);
-            return (
-              <Tooltip key={item.id}>
-                <TooltipTrigger asChild>
+
+        <div className="flex min-h-0 flex-1 flex-col">
+          <ScrollArea className="min-h-0 flex-1">
+            <nav className={cn("flex flex-col gap-1 p-3", collapsed && "items-center") }>
+              {menuItems.map((item) => {
+                const isActive = isMenuActive(item.path);
+                const navItem = (
                   <NavLink
                     to={item.path}
+                    onClick={onCloseMobile}
                     className={cn(
-                      "sidebar-nav-item relative flex h-10 w-10 items-center justify-center rounded-lg transition-all",
-                      isActive
-                        ? "sidebar-nav-item--active"
-                        : ""
+                      "sidebar-nav-item relative flex h-10 items-center rounded-lg px-3 transition-all",
+                      collapsed ? "w-10 justify-center px-0" : "w-full justify-start gap-2.5",
+                      isActive ? "sidebar-nav-item--active" : ""
                     )}
                   >
-                    <item.icon className="h-5 w-5" />
+                    <item.icon className="h-5 w-5 shrink-0" />
+                    {!collapsed && <span className="truncate text-sm font-medium">{item.label}</span>}
                   </NavLink>
+                );
+
+                if (collapsed) {
+                  return (
+                    <Tooltip key={item.id}>
+                      <TooltipTrigger asChild>{navItem}</TooltipTrigger>
+                      <TooltipContent side="right" className="sidebar-tooltip">
+                        {item.label}
+                      </TooltipContent>
+                    </Tooltip>
+                  );
+                }
+
+                return <div key={item.id}>{navItem}</div>;
+              })}
+            </nav>
+
+            {showFolderTree && !collapsed && (
+              <div className="sidebar-divider mt-2 border-t p-3">
+                <p className="mb-2 text-xs font-medium text-slate-300">프로젝트 트리</p>
+                <div className="overflow-hidden rounded-md border border-slate-700 bg-slate-900/20">
+                  <FolderTree />
+                </div>
+              </div>
+            )}
+          </ScrollArea>
+
+          {hasActiveUploads && (
+            <div className={cn("sidebar-divider border-t p-3", collapsed && "px-2") }>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div className={cn(
+                    "sidebar-ai-indicator flex items-center rounded-lg",
+                    collapsed ? "h-10 w-10 justify-center" : "gap-2 px-3 py-2"
+                  )}>
+                    <Loader2 className="h-4 w-4 animate-spin" style={{ color: "var(--nav-sidebar-ai-icon)" }} />
+                    {!collapsed && (
+                      <span className="text-xs font-medium text-slate-200">{activeUploads.length}개 처리 중</span>
+                    )}
+                  </div>
                 </TooltipTrigger>
                 <TooltipContent side="right" className="sidebar-tooltip">
-                  {item.label}
+                  <p className="font-medium">{activeUploads.length}개 파일 처리 중</p>
+                  <p className="text-xs" style={{ color: "var(--nav-sidebar-ai-subtext)" }}>AI가 도면을 분석하고 있습니다</p>
                 </TooltipContent>
               </Tooltip>
-            );
-          })}
-        </nav>
-
-        {/* Active Uploads Indicator */}
-        {hasActiveUploads && (
-          <div className="sidebar-divider border-t p-3">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="sidebar-ai-indicator flex h-10 w-10 items-center justify-center rounded-lg">
-                  <Loader2 className="h-5 w-5 animate-spin" style={{ color: "var(--nav-sidebar-ai-icon)" }} />
-                </div>
-              </TooltipTrigger>
-              <TooltipContent side="right" className="sidebar-tooltip">
-                <p className="font-medium">{activeUploads.length}개 파일 처리 중</p>
-                <p className="text-xs" style={{ color: "var(--nav-sidebar-ai-subtext)" }}>AI가 도면을 분석하고 있습니다</p>
-              </TooltipContent>
-            </Tooltip>
-          </div>
-        )}
+            </div>
+          )}
+        </div>
       </aside>
     </TooltipProvider>
   );

@@ -597,14 +597,14 @@ function CurrentBaseMappingCards() {
         <SharedMappingCard
           key={cm.id}
           source={cm.source_column}
-          targetDisplay={`${labelDisplay(cm.target_label)} / ${propertyDisplay(cm.target_property)}`}
-          targetOriginal={`${cm.target_label} / ${cm.target_property}`}
+          targetDisplay={`Part / ${propertyDisplay(cm.target_property)}`}
+          targetOriginal={`Part / ${cm.target_property}`}
           sample={getSample(cm.source_column)}
           assignment={{
             status: "assigned",
             mode: "base",
-            targetDisplay: `${labelDisplay(cm.target_label)} / ${propertyDisplay(cm.target_property)}`,
-            targetOriginal: `${cm.target_label} / ${cm.target_property}`,
+            targetDisplay: `Part / ${propertyDisplay(cm.target_property)}`,
+            targetOriginal: `Part / ${cm.target_property}`,
           }}
           dataType={cm.data_type}
           confidence={cm.confidence}
@@ -623,29 +623,29 @@ function CurrentRelationMappingCards() {
   return (
     <div className="space-y-3">
       {staticRelationMappings.map((rm) => {
-        const firstPropKey = Object.values(rm.properties)[0] || "";
-        const firstPropType = firstPropKey
-          ? rm.property_types[firstPropKey]
+        const firstRelCol = Object.keys(rm.rel_columns)[0] || "";
+        const firstRelColType = firstRelCol
+          ? rm.rel_column_types[rm.rel_columns[firstRelCol]]
           : undefined;
 
         return (
           <SharedMappingCard
             key={rm.id}
-            source={`${Object.values(rm.from_columns).join(", ")} -> ${Object.values(rm.to_columns).join(", ")}`}
-            targetDisplay={`${relationDisplay(rm.rel_type)} / ${firstPropKey ? propertyDisplay(firstPropKey) : "-"}`}
-            targetOriginal={`${rm.rel_type} / ${firstPropKey || "-"}`}
-            relationFlowDisplay={`${labelDisplay(rm.from_label)} -> ${relationDisplay(rm.rel_type)} -> ${labelDisplay(rm.to_label)}`}
-            relationFlowOriginal={`${rm.from_label} -> ${rm.rel_type} -> ${rm.to_label}`}
-            sample={Object.keys(rm.properties).join(", ") || "-"}
+            source={Object.values(rm.node_columns).join(", ")}
+            targetDisplay={`${relationDisplay(rm.rel_type)} / ${firstRelCol ? propertyDisplay(rm.rel_columns[firstRelCol]) : "-"}`}
+            targetOriginal={`${rm.rel_type} / ${firstRelCol ? rm.rel_columns[firstRelCol] : "-"}`}
+            relationFlowDisplay={`Part -> ${relationDisplay(rm.rel_type)} -> ${labelDisplay(rm.target_label)}`}
+            relationFlowOriginal={`Part -> ${rm.rel_type} -> ${rm.target_label}`}
+            sample={Object.keys(rm.rel_columns).join(", ") || "-"}
             assignment={{
               status: "assigned",
               mode: "relation_prop",
               targetDisplay: relationDisplay(rm.rel_type),
               targetOriginal: rm.rel_type,
-              relationFlowDisplay: `${labelDisplay(rm.from_label)} -> ${relationDisplay(rm.rel_type)} -> ${labelDisplay(rm.to_label)}`,
-              relationFlowOriginal: `${rm.from_label} -> ${rm.rel_type} -> ${rm.to_label}`,
+              relationFlowDisplay: `Part -> ${relationDisplay(rm.rel_type)} -> ${labelDisplay(rm.target_label)}`,
+              relationFlowOriginal: `Part -> ${rm.rel_type} -> ${rm.target_label}`,
             }}
-            dataType={firstPropType}
+            dataType={firstRelColType}
             actions={
               <Button variant="outline" size="sm" className="h-7 text-xs">
                 수정

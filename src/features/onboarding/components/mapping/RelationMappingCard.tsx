@@ -21,49 +21,49 @@ export function RelationMappingCard({
 }: RelationMappingCardProps) {
   const { t } = useTranslation(["common", "mapping"]);
 
-  const fromCols = Object.values(mapping.from_columns);
-  const toCols = Object.values(mapping.to_columns);
-  const fromColsText = fromCols.join(", ") || "—";
-  const toColsText = toCols.join(", ") || "—";
+  // 상대방 노드 컬럼: "속성: 컬럼" 형태로 표시
+  const nodeColsText = Object.entries(mapping.node_columns)
+    .map(([prop, col]) => `${t(`mapping:property.${prop}`, prop)}: ${col}`)
+    .join(", ") || "—";
 
-  const localFrom = t(`mapping:nodeLabel.${mapping.from_label}`, mapping.from_label);
-  const localTo = t(`mapping:nodeLabel.${mapping.to_label}`, mapping.to_label);
+  const localTarget = t(`mapping:nodeLabel.${mapping.target_label}`, mapping.target_label);
   const localRel = t(`mapping:relType.${mapping.rel_type}`, mapping.rel_type);
 
-  const propEntries = Object.entries(mapping.properties);
-  const firstSourceColumn = propEntries[0]?.[0] || "";
-  const firstRelProp = propEntries[0]?.[1] || "";
-  const hasProperties = propEntries.length > 0;
+  const relColEntries = Object.entries(mapping.rel_columns);
+  const firstSourceColumn = relColEntries[0]?.[0] || "";
+  const firstRelProp = relColEntries[0]?.[1] || "";
+  const hasRelColumns = relColEntries.length > 0;
 
-  const firstType = firstRelProp ? mapping.property_types[firstRelProp] : undefined;
+  const firstType = firstRelProp ? mapping.rel_column_types[firstRelProp] : undefined;
   const localType = firstType ? t(`common:dataType.${firstType}`, firstType) : "-";
 
-  const typePropertyDisplay = hasProperties
+  const typePropertyDisplay = hasRelColumns
     ? `${localRel} / ${t(`mapping:property.${firstRelProp}`, firstRelProp)}`
     : localRel;
-  const typePropertyOriginal = hasProperties
+  const typePropertyOriginal = hasRelColumns
     ? `${mapping.rel_type} / ${firstRelProp}`
     : mapping.rel_type;
 
-  const endpointText = `${fromColsText} -> ${toColsText}`;
+  const confidenceDisplay = mapping.confidence > 0 ? `${mapping.confidence}%` : "-";
 
   return (
     <BaseMappingCard
       sourceColumn={firstSourceColumn}
-      targetLabel={hasProperties ? `관계 타입 / ${MAPPING_TERMS.relationProperty}` : "관계 타입"}
+      targetLabel={hasRelColumns ? `관계 타입 / ${MAPPING_TERMS.relationProperty}` : "관계 타입"}
       targetDisplay={typePropertyDisplay}
       targetOriginal={typePropertyOriginal}
       relationRow={{
-        endpointLabel: `${MAPPING_TERMS.relationKeySource} / ${MAPPING_TERMS.relationKeyTarget}`,
-        endpointText,
-        endpointTitle: endpointText,
-        flowDisplay: `${localFrom} -> ${localRel} -> ${localTo}`,
-        flowOriginal: `${mapping.from_label} -> ${mapping.rel_type} -> ${mapping.to_label}`,
+        endpointLabel: MAPPING_TERMS.relationNodeColumn,
+        endpointText: nodeColsText,
+        endpointTitle: nodeColsText,
+        flowDisplay: `Part -> ${localRel} -> ${localTarget}`,
+        flowOriginal: `Part -> ${mapping.rel_type} -> ${mapping.target_label}`,
       }}
       sampleData={sampleData}
       dataType={localType}
       dataTypeOriginal={firstType}
-      confidence="-"
+      confidence={confidenceDisplay}
+      confidenceReason={mapping.reason}
       approved={mapping.approved}
       dismissed={mapping.dismissed}
       dismissedReason={getDismissedReasonLabel(mapping.dismissed_reason) ?? undefined}

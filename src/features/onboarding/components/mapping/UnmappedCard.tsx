@@ -1,8 +1,11 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import type { TargetPropertyOption } from "@/features/onboarding/types/onboarding.types";
+import type {
+  TargetPropertyOption,
+  RelationTargetInfo,
+} from "@/features/onboarding/types/onboarding.types";
 import { MAPPING_TERMS } from "@/features/onboarding/constants/mappingTerminology";
 import { UnmappedBaseForm } from "./UnmappedBaseForm";
 import { UnmappedExtendedForm } from "./UnmappedExtendedForm";
@@ -17,19 +20,15 @@ interface UnmappedCardProps {
   targetOptions: TargetPropertyOption[];
   relationTypeOptions?: string[];
   relationPropertyByType?: Record<string, string[]>;
-  relationFromToOptions?: string[];
-  relationEndpointOptionsByType?: Record<
-    string,
-    { fromColumns: string[]; toColumns: string[]; fromLabel: string; toLabel: string; fromMergeKey?: string; toMergeKey?: string }
-  >;
-  onCreateBase: (sourceColumn: string, targetLabel: string, targetProperty: string) => void;
-  onCreateExtended: (sourceColumn: string, targetLabel: string, propertyName?: string) => void;
+  relationTargetInfoByType?: Record<string, RelationTargetInfo>;
+  targetPropertyOptions?: TargetPropertyOption[];
+  onCreateBase: (sourceColumn: string, targetProperty: string) => void;
+  onCreateExtended: (sourceColumn: string, propertyName?: string) => void;
   onCreateRelation: (
-    sourceColumn: string,
     relType: string,
-    fromSourceColumn: string,
-    toSourceColumn: string,
-    relationProperty: string,
+    nodeColumns: Record<string, string>,
+    relColumns: Record<string, string>,
+    relColumnTypes: Record<string, string>,
   ) => void;
 }
 
@@ -39,19 +38,14 @@ export function UnmappedCard({
   targetOptions,
   relationTypeOptions = [],
   relationPropertyByType = {},
-  relationFromToOptions = [],
-  relationEndpointOptionsByType = {},
+  relationTargetInfoByType = {},
+  targetPropertyOptions = [],
   onCreateBase,
   onCreateExtended,
   onCreateRelation,
 }: UnmappedCardProps) {
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<ResolveMode>("base");
-
-  const labels = useMemo(
-    () => [...new Set(targetOptions.map((opt) => opt.label))].sort((a, b) => a.localeCompare(b)),
-    [targetOptions],
-  );
 
   return (
     <div className="space-y-2">
@@ -72,7 +66,7 @@ export function UnmappedCard({
           </div>
           <div>
             <div className="mb-0.5 text-[11px] font-semibold uppercase tracking-wider text-gray-400">
-              라벨 / 속성
+              속성
             </div>
             <p className="text-[15px] font-bold text-gray-900">미할당</p>
           </div>
@@ -148,10 +142,9 @@ export function UnmappedCard({
             {mode === "base" && (
               <UnmappedBaseForm
                 column={column}
-                labels={labels}
                 targetOptions={targetOptions}
-                onApply={(src, label, prop) => {
-                  onCreateBase(src, label, prop);
+                onApply={(src, prop) => {
+                  onCreateBase(src, prop);
                   setOpen(false);
                 }}
               />
@@ -160,9 +153,8 @@ export function UnmappedCard({
             {mode === "extended" && (
               <UnmappedExtendedForm
                 column={column}
-                labels={labels}
-                onApply={(src, label, propName) => {
-                  onCreateExtended(src, label, propName);
+                onApply={(src, propName) => {
+                  onCreateExtended(src, propName);
                   setOpen(false);
                 }}
               />
@@ -173,10 +165,10 @@ export function UnmappedCard({
                 column={column}
                 relationTypeOptions={relationTypeOptions}
                 relationPropertyByType={relationPropertyByType}
-                relationFromToOptions={relationFromToOptions}
-                relationEndpointOptionsByType={relationEndpointOptionsByType}
-                onApply={(src, relType, from, to, relProp) => {
-                  onCreateRelation(src, relType, from, to, relProp);
+                relationTargetInfoByType={relationTargetInfoByType}
+                targetPropertyOptions={targetPropertyOptions}
+                onApply={(relType, nodeColumns, relColumns, relColumnTypes) => {
+                  onCreateRelation(relType, nodeColumns, relColumns, relColumnTypes);
                   setOpen(false);
                 }}
               />

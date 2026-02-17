@@ -18,16 +18,15 @@ export function MappingCard({
 }: MappingCardProps) {
   const { t } = useTranslation(["common", "mapping"]);
 
-  const localLabel = t(`mapping:nodeLabel.${mapping.target_label}`, mapping.target_label);
   const localProp = t(`mapping:property.${mapping.target_property}`, mapping.target_property);
   const localType = t(`common:dataType.${mapping.data_type}`, mapping.data_type);
 
   return (
     <BaseMappingCard
       sourceColumn={mapping.source_column}
-      targetLabel={`${MAPPING_TERMS.targetLabel} / ${MAPPING_TERMS.targetProperty}`}
-      targetDisplay={`${localLabel} / ${localProp}`}
-      targetOriginal={`${mapping.target_label} / ${mapping.target_property}`}
+      targetLabel={MAPPING_TERMS.targetProperty}
+      targetDisplay={localProp}
+      targetOriginal={mapping.target_property}
       sampleData={sampleData}
       dataType={localType}
       dataTypeOriginal={mapping.data_type}

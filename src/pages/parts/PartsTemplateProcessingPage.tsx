@@ -1,16 +1,12 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { AlertCircle, CheckCircle2, Circle, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { useMappingStore } from "@/stores/onboarding";
+import { useMappingStore, useUploadStore } from "@/stores/onboarding";
 import { type TemplateScope } from "@/pages/parts/partsTemplateStore";
-import {
-  mockColumnMappings,
-  mockMappingHeaders,
-  mockMappingSampleRows,
-  mockRelationMappings,
-} from "@/features/onboarding/mock-data/onboarding-mock";
+import { completeUpload, previewMapping } from "@/api/onboarding";
 
 type StepStatus = "pending" | "in_progress" | "completed";
 
@@ -31,11 +27,19 @@ const INITIAL_STEPS: ProcessingStep[] = [
   { key: "finalizing", label: "템플릿 버전 생성", status: "pending" },
 ];
 
-const WAIT_MS = 900;
+const PHASES = ["parsing", "normalizing", "analyzing", "finalizing"] as const;
 
-function sleep(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
+const animationLogs: { message: string; phase?: string }[] = [
+  { message: "파일 구조와 시트를 파싱하고 있습니다...", phase: "parsing" },
+  { message: "데이터 행과 컬럼을 분석합니다..." },
+  { message: "컬럼명 표준화를 진행합니다...", phase: "normalizing" },
+  { message: "원본 컬럼 헤더 추출 완료" },
+  { message: "속성 후보와 데이터 타입을 추론합니다...", phase: "analyzing" },
+  { message: "AI 매핑 분석을 시작합니다..." },
+  { message: "원본 컬럼-대상 속성 매핑 추론 중..." },
+  { message: "관계 매핑 추론 중..." },
+  { message: "템플릿 버전을 생성합니다...", phase: "finalizing" },
+];
 
 function getStepIcon(status: StepStatus) {
   if (status === "completed") return <CheckCircle2 className="h-4 w-4 text-green-600" />;
@@ -56,6 +60,8 @@ export function PartsTemplateProcessingPage() {
   const [isCompleted, setIsCompleted] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const setMappingPreviewData = useMappingStore((s) => s.setMappingPreviewData);
+  const primaryUploadId = useUploadStore((s) => s.primaryUploadId);
+  const apiCalledRef = useRef(false);
 
   const mappingPath = useMemo(
     () => (scope === "master" ? "/parts/templates/mapping" : `/parts/${partNumber}/templates/mapping`),
@@ -63,75 +69,90 @@ export function PartsTemplateProcessingPage() {
   );
 
   useEffect(() => {
-    if (!fileName) return;
+    if (apiCalledRef.current || !primaryUploadId) return;
+    apiCalledRef.current = true;
 
-    let cancelled = false;
+    let animationInterval: ReturnType<typeof setInterval> | null = null;
+    let stepIndex = 0;
+    let lastPhase: string | null = null;
+    let done = false;
 
-    async function run() {
+    const updateStep = (phase: string, status: StepStatus) => {
+      setSteps((prev) =>
+        prev.map((step) => (step.key === phase ? { ...step, status } : step)),
+      );
+    };
+
+    const run = async () => {
       try {
-        setLogs([`분석 대상 파일 확인: ${fileName}`]);
+        setLogs([`분석 대상 파일 확인: ${fileName ?? "업로드된 파일"}`]);
 
-        for (let i = 0; i < INITIAL_STEPS.length; i += 1) {
-          if (cancelled) return;
+        // 1단계: 업로드 완료 확인
+        updateStep("parsing", "in_progress");
+        setLogs((prev) => [...prev, "업로드된 파일을 확인합니다..."]);
+        await completeUpload(primaryUploadId);
+        updateStep("parsing", "completed");
+        setProgress(20);
+        setLogs((prev) => [...prev, "파일 업로드 확인 완료"]);
 
-          setSteps((prev) =>
-            prev.map((step, idx) => {
-              if (idx < i) return { ...step, status: "completed" };
-              if (idx === i) return { ...step, status: "in_progress" };
-              return step;
-            }),
-          );
+        // 2단계: AI 분석 (애니메이션 병렬 실행)
+        animationInterval = setInterval(() => {
+          if (done || stepIndex >= animationLogs.length) return;
 
-          if (i === 0) setLogs((prev) => [...prev, "파일 구조와 시트를 파싱하고 있습니다..."]);
-          if (i === 1) setLogs((prev) => [...prev, "컬럼명 표준화를 진행합니다..."]);
-          if (i === 2) setLogs((prev) => [...prev, "속성 후보와 데이터 타입을 추론합니다..."]);
+          const entry = animationLogs[stepIndex];
 
-          setProgress((i + 1) * 22);
-          await sleep(WAIT_MS);
-        }
+          if (entry.phase) {
+            if (lastPhase) updateStep(lastPhase, "completed");
+            updateStep(entry.phase, "in_progress");
+            lastPhase = entry.phase;
+          }
 
-        const mockMapping = {
-          column_mappings: mockColumnMappings.map((cm) => ({
-            source_column: cm.source_column,
-            target_label: cm.target_label,
-            target_property: cm.target_property,
-            data_type: cm.data_type,
-            confidence: cm.confidence,
-            reason: cm.reason,
-          })),
-          relation_mappings: mockRelationMappings.map((rm) => ({
-            from_label: rm.from_label,
-            to_label: rm.to_label,
-            rel_type: rm.rel_type,
-            from_columns: rm.from_columns,
-            to_columns: rm.to_columns,
-            properties: rm.properties,
-            property_types: rm.property_types,
-          })),
-          extended_properties: [],
-        };
+          setLogs((prev) => [...prev, entry.message]);
+          stepIndex++;
 
-        if (cancelled) return;
+          const p = 20 + Math.min(Math.round((stepIndex / animationLogs.length) * 70), 70);
+          setProgress(p);
+        }, 3000);
 
-        setMappingPreviewData(mockMappingHeaders, mockMappingSampleRows, mockMapping);
+        const response = await previewMapping({ upload_id: primaryUploadId });
 
-        setSteps((prev) => prev.map((step) => ({ ...step, status: "completed" })));
+        done = true;
+        if (animationInterval) clearInterval(animationInterval);
+        animationInterval = null;
+
+        // 모든 단계 완료
+        PHASES.forEach((phase) => updateStep(phase, "completed"));
         setProgress(100);
-        setLogs((prev) => [...prev, "속성 분석이 완료되었습니다. 매핑 검토 단계로 이동할 수 있습니다."]);
-        setIsCompleted(true);
-      } catch {
-        if (cancelled) return;
-        setError("속성 분석 처리 중 오류가 발생했습니다.");
-        setLogs((prev) => [...prev, "오류가 발생해 처리를 중단했습니다."]);
-      }
-    }
 
-    void run();
+        setLogs((prev) => [...prev, "속성 분석이 완료되었습니다. 매핑 검토 단계로 이동할 수 있습니다."]);
+
+        setMappingPreviewData(
+          response.headers,
+          response.sample_rows,
+          response.mapping,
+          response.editable_constraints,
+        );
+
+        setIsCompleted(true);
+      } catch (err) {
+        done = true;
+        if (animationInterval) clearInterval(animationInterval);
+
+        const axiosErr = err as { response?: { data?: { detail?: string } } };
+        const errorMsg = axiosErr?.response?.data?.detail || "속성 분석 처리 중 오류가 발생했습니다.";
+        console.error("Processing failed:", err);
+        setError(errorMsg);
+        toast.error(errorMsg);
+        setLogs((prev) => [...prev, `오류: ${errorMsg}`]);
+      }
+    };
+
+    run();
 
     return () => {
-      cancelled = true;
+      if (animationInterval) clearInterval(animationInterval);
     };
-  }, [fileName, setMappingPreviewData]);
+  }, [primaryUploadId, fileName, setMappingPreviewData]);
 
   return (
     <div className="min-h-screen bg-background px-6 py-8">
@@ -139,13 +160,13 @@ export function PartsTemplateProcessingPage() {
         <div className="rounded-lg border bg-card p-5">
           <h1 className="text-xl font-bold text-foreground">속성 분석 처리</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            {fileName ? `${fileName} 파일을 분석 중입니다.` : "분석 파일 정보가 없습니다."}
+            {fileName ? `${fileName} 파일을 분석 중입니다.` : "파일을 분석 중입니다."}
           </p>
 
-          {!fileName && (
+          {!primaryUploadId && (
             <div className="mt-4 flex items-center gap-2 rounded-md border border-amber-300 bg-amber-50 p-3 text-sm text-amber-800">
               <AlertCircle className="h-4 w-4" />
-              파일을 먼저 선택한 뒤 다시 시도해 주세요.
+              업로드 정보가 없습니다. 파일을 먼저 업로드한 뒤 다시 시도해 주세요.
             </div>
           )}
 
