@@ -3,7 +3,6 @@ import type {
   OnboardingStep,
   ColumnMappingEntry,
   RelationMappingEntry,
-  ExtendedPropertyEntry,
   TargetPropertyOption,
 } from "@/features/onboarding/types/onboarding.types";
 import type {
@@ -18,14 +17,12 @@ interface MappingState {
   // 현재 스텝 (4개 페이지 모두 setStep 호출)
   currentStep: OnboardingStep;
 
-  // 매핑 데이터
+  // 매핑 데이터 (is_extended 플래그로 기본/확장 구분)
   columnMappings: ColumnMappingEntry[];
   relationMappings: RelationMappingEntry[];
-  extendedMappings: ExtendedPropertyEntry[];
   // preview API 기준 원본 스냅샷 (리셋용)
   initialColumnMappings: ColumnMappingEntry[];
   initialRelationMappings: RelationMappingEntry[];
-  initialExtendedMappings: ExtendedPropertyEntry[];
   mappingHeaders: string[];
   mappingSampleRows: Record<string, string>[];
   editableConstraints: EditableConstraintsDTO | null;
@@ -49,7 +46,6 @@ interface MappingState {
   setMappings: (
     columnMappings: ColumnMappingEntry[],
     relationMappings: RelationMappingEntry[],
-    extendedMappings: ExtendedPropertyEntry[],
   ) => void;
 
   // 매핑 조작
@@ -57,12 +53,10 @@ interface MappingState {
   approveRelationMapping: (id: string) => void;
   approveAllMappings: () => void;
   removeColumnMapping: (id: string) => number;
-  approveExtendedMapping: (id: string) => void;
-  removeExtendedMapping: (id: string) => void;
-  createExtendedMapping: (sourceColumn: string, targetLabel: string) => void;
   restoreRelationMapping: (id: string) => boolean;
-  changeColumnMappingTarget: (id: string, targetLabel: string, targetProperty: string) => number;
-  createColumnMapping: (sourceColumn: string, targetLabel: string, targetProperty: string) => number;
+  changeColumnMappingTarget: (id: string, targetProperty: string) => number;
+  createColumnMapping: (sourceColumn: string, targetProperty: string, isExtended?: boolean) => number;
+  createExtendedMapping: (sourceColumn: string) => void;
   resetMappings: () => void;
   reset: () => void;
 
@@ -75,10 +69,8 @@ export const useMappingStore = create<MappingState>()((set, get) => ({
 
   columnMappings: [],
   relationMappings: [],
-  extendedMappings: [],
   initialColumnMappings: [],
   initialRelationMappings: [],
-  initialExtendedMappings: [],
   mappingHeaders: [],
   mappingSampleRows: [],
   editableConstraints: null,
@@ -88,43 +80,36 @@ export const useMappingStore = create<MappingState>()((set, get) => ({
   setStep: (step) => set({ currentStep: step }),
 
   setMappingPreviewData: (headers, sampleRows, mapping, editableConstraints) => {
-    const columnMappings: ColumnMappingEntry[] = mapping.column_mappings.map((cm, idx) => ({
+    // property_mappings → columnMappings (is_extended 플래그 유지)
+    const columnMappings: ColumnMappingEntry[] = mapping.property_mappings.map((pm, idx) => ({
       id: `cm-${idx + 1}`,
-      source_column: cm.source_column,
-      target_label: cm.target_label,
-      target_property: cm.target_property,
-      data_type: cm.data_type || "string",
-      confidence: cm.confidence || 0,
-      reason: cm.reason || "",
-      approved: (cm.confidence || 0) >= AUTO_APPROVE_CONFIDENCE_THRESHOLD,
+      source_column: pm.source_column,
+      target_property: pm.target_property,
+      data_type: pm.data_type || "string",
+      confidence: pm.confidence || 0,
+      reason: pm.reason || "",
+      approved: pm.is_extended
+        ? true
+        : (pm.confidence || 0) >= AUTO_APPROVE_CONFIDENCE_THRESHOLD,
+      is_extended: pm.is_extended || false,
     }));
 
+    // relation_mappings → relationMappings
     const relationMappings: RelationMappingEntry[] = mapping.relation_mappings.map((rm, idx) => ({
       id: `rm-${idx + 1}`,
-      from_label: rm.from_label,
-      to_label: rm.to_label,
       rel_type: rm.rel_type,
-      from_columns: rm.from_columns || {},
-      to_columns: rm.to_columns || {},
-      properties: rm.properties || {},
-      property_types: rm.property_types || {},
+      target_label: rm.target_label,
+      node_columns: rm.node_columns || {},
+      rel_columns: rm.rel_columns || {},
+      rel_column_types: rm.rel_column_types || {},
+      confidence: rm.confidence || 0,
+      reason: rm.reason || "",
       approved: false,
       dismissed: false,
     }));
 
     const initialColumnMappings = columnMappings.map((cm) => ({ ...cm }));
     const initialRelationMappings = relationMappings.map(cloneRelationMapping);
-    const extendedMappings: ExtendedPropertyEntry[] = mapping.extended_properties.map((ep, idx) => ({
-      id: `ep-${idx + 1}`,
-      source_column: ep.source_column,
-      target_label: ep.target_label,
-      property_name: ep.property_name,
-      data_type: ep.data_type || "string",
-      confidence: ep.confidence || 0,
-      reason: ep.reason || "",
-      approved: true,
-    }));
-    const initialExtendedMappings = extendedMappings.map((ep) => ({ ...ep }));
 
     set({
       mappingHeaders: headers,
@@ -132,10 +117,8 @@ export const useMappingStore = create<MappingState>()((set, get) => ({
       editableConstraints: editableConstraints || null,
       columnMappings: initialColumnMappings.map((cm) => ({ ...cm })),
       relationMappings: initialRelationMappings.map(cloneRelationMapping),
-      extendedMappings: initialExtendedMappings.map((ep) => ({ ...ep })),
       initialColumnMappings,
       initialRelationMappings,
-      initialExtendedMappings,
     });
   },
 
@@ -143,11 +126,10 @@ export const useMappingStore = create<MappingState>()((set, get) => ({
 
   setMappingId: (id) => set({ mappingId: id }),
 
-  setMappings: (columnMappings, relationMappings, extendedMappings) =>
+  setMappings: (columnMappings, relationMappings) =>
     set({
       columnMappings: columnMappings.map((cm) => ({ ...cm })),
       relationMappings: relationMappings.map(cloneRelationMapping),
-      extendedMappings: extendedMappings.map((ep) => ({ ...ep })),
     }),
 
   approveColumnMapping: (id) =>
@@ -173,7 +155,6 @@ export const useMappingStore = create<MappingState>()((set, get) => ({
   approveAllMappings: () =>
     set((state) => ({
       columnMappings: state.columnMappings.map((cm) => ({ ...cm, approved: true })),
-      extendedMappings: state.extendedMappings.map((ep) => ({ ...ep, approved: true })),
       relationMappings: state.relationMappings.map((rm) => {
         if (rm.dismissed) return rm;
 
@@ -194,10 +175,9 @@ export const useMappingStore = create<MappingState>()((set, get) => ({
     let affectedRelationCount = 0;
 
     const relationMappings = state.relationMappings.map((rm) => {
-      const usedInFrom = Object.values(rm.from_columns).includes(removedSourceColumn);
-      const usedInTo = Object.values(rm.to_columns).includes(removedSourceColumn);
-      const usedInProperties = Object.keys(rm.properties).includes(removedSourceColumn);
-      const shouldDismiss = usedInFrom || usedInTo || usedInProperties;
+      const usedInNodeColumns = Object.values(rm.node_columns).includes(removedSourceColumn);
+      const usedInRelColumns = Object.keys(rm.rel_columns).includes(removedSourceColumn);
+      const shouldDismiss = usedInNodeColumns || usedInRelColumns;
 
       if (!shouldDismiss) return rm;
 
@@ -216,31 +196,19 @@ export const useMappingStore = create<MappingState>()((set, get) => ({
     return affectedRelationCount;
   },
 
-  approveExtendedMapping: (id) =>
+  createExtendedMapping: (sourceColumn) => {
     set((state) => ({
-      extendedMappings: state.extendedMappings.map((ep) =>
-        ep.id === id ? { ...ep, approved: true } : ep,
-      ),
-    })),
-
-  removeExtendedMapping: (id) =>
-    set((state) => ({
-      extendedMappings: state.extendedMappings.filter((ep) => ep.id !== id),
-    })),
-
-  createExtendedMapping: (sourceColumn, targetLabel) => {
-    set((state) => ({
-      extendedMappings: [
-        ...state.extendedMappings,
+      columnMappings: [
+        ...state.columnMappings,
         {
-          id: `ep-${Date.now()}`,
+          id: `cm-${Date.now()}`,
           source_column: sourceColumn,
-          target_label: targetLabel,
-          property_name: toExtendedPropertyName(sourceColumn),
+          target_property: toExtendedPropertyName(sourceColumn),
           data_type: "string",
           confidence: 100,
           reason: "사용자 확장 속성 추가",
           approved: false,
+          is_extended: true,
         },
       ],
     }));
@@ -263,7 +231,7 @@ export const useMappingStore = create<MappingState>()((set, get) => ({
     return true;
   },
 
-  changeColumnMappingTarget: (id, targetLabel, targetProperty) => {
+  changeColumnMappingTarget: (id, targetProperty) => {
     const state = get();
     const changed = state.columnMappings.find((cm) => cm.id === id);
     if (!changed) return 0;
@@ -272,7 +240,6 @@ export const useMappingStore = create<MappingState>()((set, get) => ({
       cm.id === id
         ? {
             ...cm,
-            target_label: targetLabel,
             target_property: targetProperty,
             approved: false,
             confidence: 100,
@@ -298,19 +265,19 @@ export const useMappingStore = create<MappingState>()((set, get) => ({
     return affectedRelationCount;
   },
 
-  createColumnMapping: (sourceColumn, targetLabel, targetProperty) => {
+  createColumnMapping: (sourceColumn, targetProperty, isExtended) => {
     const state = get();
     const updatedColumnMappings = [
       ...state.columnMappings,
       {
         id: `cm-${Date.now()}`,
         source_column: sourceColumn,
-        target_label: targetLabel,
         target_property: targetProperty,
         data_type: "string",
         confidence: 100,
         reason: "사용자 수동 매핑",
         approved: false,
+        is_extended: isExtended || false,
       },
     ];
 
@@ -335,7 +302,6 @@ export const useMappingStore = create<MappingState>()((set, get) => ({
     set((state) => ({
       columnMappings: state.initialColumnMappings.map((cm) => ({ ...cm })),
       relationMappings: state.initialRelationMappings.map(cloneRelationMapping),
-      extendedMappings: state.initialExtendedMappings.map((ep) => ({ ...ep })),
     }));
   },
 
@@ -343,10 +309,8 @@ export const useMappingStore = create<MappingState>()((set, get) => ({
     currentStep: 1,
     columnMappings: [],
     relationMappings: [],
-    extendedMappings: [],
     initialColumnMappings: [],
     initialRelationMappings: [],
-    initialExtendedMappings: [],
     mappingHeaders: [],
     mappingSampleRows: [],
     editableConstraints: null,
@@ -357,33 +321,25 @@ export const useMappingStore = create<MappingState>()((set, get) => ({
   getMappingResult: () => {
     const state = get();
     return {
-      column_mappings: state.columnMappings.map((cm) => ({
+      property_mappings: state.columnMappings.map((cm) => ({
         source_column: cm.source_column,
-        target_label: cm.target_label,
         target_property: cm.target_property,
         data_type: cm.data_type,
         confidence: cm.confidence,
         reason: cm.reason,
+        is_extended: cm.is_extended || false,
       })),
       relation_mappings: state.relationMappings
         .filter((rm) => !rm.dismissed)
         .map((rm) => ({
-          from_label: rm.from_label,
-          to_label: rm.to_label,
           rel_type: rm.rel_type,
-          from_columns: rm.from_columns,
-          to_columns: rm.to_columns,
-          properties: rm.properties,
-          property_types: rm.property_types,
+          target_label: rm.target_label,
+          node_columns: rm.node_columns,
+          rel_columns: rm.rel_columns,
+          rel_column_types: rm.rel_column_types,
+          confidence: rm.confidence,
+          reason: rm.reason,
         })),
-      extended_properties: state.extendedMappings.map((ep) => ({
-        source_column: ep.source_column,
-        target_label: ep.target_label,
-        property_name: ep.property_name,
-        data_type: ep.data_type,
-        confidence: ep.confidence,
-        reason: ep.reason,
-      })),
     };
   },
 }));

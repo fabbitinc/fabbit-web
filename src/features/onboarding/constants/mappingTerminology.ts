@@ -6,16 +6,15 @@ export const MAPPING_TERMS = {
   relationMapping: "관계 매핑",
   extendedMapping: "확장 매핑",
   relationProperty: "관계 속성",
-  relationKeySource: "원본 기준 컬럼",
-  relationKeyTarget: "대상 기준 컬럼",
+  relationNodeColumn: "상대방 노드 컬럼",
 } as const;
 
 export function getDismissedReasonLabel(reason?: string | null): string | null {
   if (!reason) return null;
-  if (reason === "missing_from_endpoint")
-    return `${MAPPING_TERMS.relationKeySource}이 없습니다`;
-  if (reason === "missing_to_endpoint")
-    return `${MAPPING_TERMS.relationKeyTarget}이 없습니다`;
+  if (reason === "missing_node_column")
+    return `${MAPPING_TERMS.relationNodeColumn}이 없습니다`;
+  if (reason === "missing_rel_column")
+    return `${MAPPING_TERMS.relationProperty}에 필요한 ${MAPPING_TERMS.sourceColumn}이 없습니다`;
   if (reason === "missing_required_rel_property") {
     return `${MAPPING_TERMS.relationProperty}에 필요한 ${MAPPING_TERMS.sourceColumn}이 없습니다`;
   }

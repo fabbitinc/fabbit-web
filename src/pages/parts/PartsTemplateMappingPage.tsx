@@ -1,8 +1,12 @@
-import { useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { Sparkles } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { Loader2, Sparkles } from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { useMappingStore } from "@/stores/onboarding";
+import { useMappingStore, useUploadStore } from "@/stores/onboarding";
+import { validateMapping, confirmMapping } from "@/api/onboarding";
+import { extractApiErrorMessage } from "@/features/onboarding/utils/mappingUtils";
+import { type TemplateScope } from "@/pages/parts/partsTemplateStore";
 import { MappingSummaryBar } from "@/features/onboarding/components/mapping/MappingSummaryBar";
 import { MappingCard } from "@/features/onboarding/components/mapping/MappingCard";
 import { UnmappedCard } from "@/features/onboarding/components/mapping/UnmappedCard";
@@ -21,20 +25,26 @@ interface LocationState {
 
 export function PartsTemplateMappingPage() {
   const navigate = useNavigate();
+  const { partNumber } = useParams<{ partNumber: string }>();
   const location = useLocation();
   const { fileName } = (location.state as LocationState | null) ?? {};
 
-  const columnMappings = useMappingStore((s) => s.columnMappings);
-  const extendedMappings = useMappingStore((s) => s.extendedMappings);
+  const scope: TemplateScope = partNumber ? "part_detail" : "master";
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const mappingHeaders = useMappingStore((s) => s.mappingHeaders);
   const setStep = useMappingStore((s) => s.setStep);
   const approveColumnMapping = useMappingStore((s) => s.approveColumnMapping);
-  const approveExtendedMapping = useMappingStore((s) => s.approveExtendedMapping);
+  const getMappingResult = useMappingStore((s) => s.getMappingResult);
+  const setMappingId = useMappingStore((s) => s.setMappingId);
+  const primaryUploadId = useUploadStore((s) => s.primaryUploadId);
 
   const { effectiveTargetOptions } = useOntologySchema();
   const {
+    baseMappings,
+    extendedMappings,
     relationPropertyByType,
-    relationEndpointOptionsByType,
+    relationTargetInfoByType,
     selectableRelationTypeOptions,
     activeRelationMappings,
     unmappedColumns,
@@ -50,15 +60,64 @@ export function PartsTemplateMappingPage() {
     handleCreateColumnMapping,
     handleApproveRelationMapping,
     handleCreateExtendedMapping,
-    handleCreateRelationPropertyMapping,
+    handleCreateRelationMapping,
     handleRemoveExtendedMapping,
     handleRemoveRelationMapping,
     handleApproveAll,
-  } = useMappingActions(relationEndpointOptionsByType);
+  } = useMappingActions(relationTargetInfoByType);
 
   useEffect(() => {
     setStep(3);
   }, [setStep]);
+
+  const handleConfirm = async () => {
+    if (!primaryUploadId) {
+      toast.error("업로드 정보가 없습니다. 이전 단계를 다시 진행해주세요.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const draftMapping = getMappingResult();
+
+      // 검증
+      const validation = await validateMapping({
+        upload_id: primaryUploadId,
+        mapping: draftMapping,
+      });
+
+      const validationErrors = validation.errors || [];
+      const validationWarnings = validation.warnings || [];
+
+      if (validationErrors.length > 0) {
+        toast.error(validationErrors[0].message || "매핑 검증에 실패했습니다.");
+        return;
+      }
+
+      if (validationWarnings.length > 0) {
+        toast.warning(validationWarnings[0].message || "매핑 검증 경고가 있습니다.");
+      }
+
+      const normalizedMapping = validation.normalized_mapping || draftMapping;
+
+      // 확정
+      const confirmResponse = await confirmMapping({
+        upload_id: primaryUploadId,
+        name: `mapping-${Date.now()}`,
+        mapping: normalizedMapping,
+        scope,
+      });
+      setMappingId(confirmResponse.id);
+
+      toast.success("매핑이 확정되었습니다");
+      navigate(partNumber ? `/parts/${partNumber}` : "/parts");
+    } catch (err) {
+      console.error("Mapping confirmation failed:", err);
+      toast.error(extractApiErrorMessage(err, "매핑 확정에 실패했습니다"));
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background px-6 py-8">
@@ -74,7 +133,7 @@ export function PartsTemplateMappingPage() {
         </div>
 
         <MappingSummaryBar
-          columnMappingCount={columnMappings.length}
+          columnMappingCount={baseMappings.length}
           relationMappingCount={activeRelationMappings.length}
           extendedMappingCount={extendedMappings.length}
           unmappedCount={excludedCount}
@@ -87,11 +146,11 @@ export function PartsTemplateMappingPage() {
         <section className="space-y-5 rounded-lg border bg-card p-5">
           <div className="space-y-2">
             <h3 className="text-xs font-semibold uppercase tracking-wider text-blue-600">
-              {MAPPING_TERMS.baseMapping} ({columnMappings.length})
+              {MAPPING_TERMS.baseMapping} ({baseMappings.length})
             </h3>
-            {columnMappings.length > 0 && (
+            {baseMappings.length > 0 && (
               <div className="space-y-2">
-                {columnMappings.map((cm) => (
+                {baseMappings.map((cm) => (
                   <MappingCard
                     key={cm.id}
                     mapping={cm}
@@ -114,7 +173,7 @@ export function PartsTemplateMappingPage() {
                   <RelationMappingCard
                     key={rm.id}
                     mapping={rm}
-                    sampleData={getSampleData(Object.keys(rm.properties)[0] || "")}
+                    sampleData={getSampleData(Object.keys(rm.rel_columns)[0] || "")}
                     onApprove={handleApproveRelationMapping}
                     onDismiss={handleRemoveRelationMapping}
                   />
@@ -125,9 +184,10 @@ export function PartsTemplateMappingPage() {
             <AddRelationForm
               relationTypeOptions={selectableRelationTypeOptions}
               relationPropertyByType={relationPropertyByType}
-              relationEndpointOptionsByType={relationEndpointOptionsByType}
-              unmappedColumns={unmappedColumns}
-              onApply={handleCreateRelationPropertyMapping}
+              relationTargetInfoByType={relationTargetInfoByType}
+              targetPropertyOptions={effectiveTargetOptions}
+              mappingHeaders={mappingHeaders}
+              onApply={handleCreateRelationMapping}
             />
           </div>
 
@@ -142,7 +202,7 @@ export function PartsTemplateMappingPage() {
                     key={ep.id}
                     mapping={ep}
                     sampleData={getSampleData(ep.source_column)}
-                    onApprove={approveExtendedMapping}
+                    onApprove={approveColumnMapping}
                     onRemove={handleRemoveExtendedMapping}
                   />
                 ))}
@@ -164,11 +224,11 @@ export function PartsTemplateMappingPage() {
                     targetOptions={effectiveTargetOptions}
                     relationTypeOptions={selectableRelationTypeOptions}
                     relationPropertyByType={relationPropertyByType}
-                    relationFromToOptions={mappingHeaders}
-                    relationEndpointOptionsByType={relationEndpointOptionsByType}
+                    relationTargetInfoByType={relationTargetInfoByType}
+                    targetPropertyOptions={effectiveTargetOptions}
                     onCreateBase={handleCreateColumnMapping}
                     onCreateExtended={handleCreateExtendedMapping}
-                    onCreateRelation={handleCreateRelationPropertyMapping}
+                    onCreateRelation={handleCreateRelationMapping}
                   />
                 ))}
               </div>
@@ -177,8 +237,15 @@ export function PartsTemplateMappingPage() {
         </section>
 
         <div className="flex items-center justify-end">
-          <Button disabled={!hasMappings} onClick={() => navigate("/parts")}>
-            최종 승인 완료
+          <Button disabled={!hasMappings || isSubmitting} onClick={handleConfirm}>
+            {isSubmitting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                확정 중...
+              </>
+            ) : (
+              "최종 승인 완료"
+            )}
           </Button>
         </div>
       </div>

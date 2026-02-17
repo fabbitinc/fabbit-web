@@ -20,17 +20,16 @@ export function AIMappingPage() {
   const { t } = useTranslation(["common", "mapping"]);
   const navigate = useNavigate();
 
-  const columnMappings = useMappingStore((s) => s.columnMappings);
-  const extendedMappings = useMappingStore((s) => s.extendedMappings);
   const mappingHeaders = useMappingStore((s) => s.mappingHeaders);
   const setStep = useMappingStore((s) => s.setStep);
   const approveColumnMapping = useMappingStore((s) => s.approveColumnMapping);
-  const approveExtendedMapping = useMappingStore((s) => s.approveExtendedMapping);
 
   const { effectiveTargetOptions } = useOntologySchema();
   const {
+    baseMappings,
+    extendedMappings,
     relationPropertyByType,
-    relationEndpointOptionsByType,
+    relationTargetInfoByType,
     selectableRelationTypeOptions,
     activeRelationMappings,
     unmappedColumns,
@@ -46,11 +45,11 @@ export function AIMappingPage() {
     handleCreateColumnMapping,
     handleApproveRelationMapping,
     handleCreateExtendedMapping,
-    handleCreateRelationPropertyMapping,
+    handleCreateRelationMapping,
     handleRemoveExtendedMapping,
     handleRemoveRelationMapping,
     handleApproveAll,
-  } = useMappingActions(relationEndpointOptionsByType);
+  } = useMappingActions(relationTargetInfoByType);
   const { isSubmitting, handleSubmit } = useMappingSubmit();
 
   useEffect(() => {
@@ -76,7 +75,7 @@ export function AIMappingPage() {
       {/* 메인 영역 */}
       <div className="space-y-4 px-8 lg:px-10">
         <MappingSummaryBar
-          columnMappingCount={columnMappings.length}
+          columnMappingCount={baseMappings.length}
           relationMappingCount={activeRelationMappings.length}
           extendedMappingCount={extendedMappings.length}
           unmappedCount={excludedCount}
@@ -91,12 +90,12 @@ export function AIMappingPage() {
               {/* -- 기본 매핑 섹션 -- */}
               <div className="space-y-2">
                 <h3 className="text-xs font-semibold uppercase tracking-wider text-blue-600">
-                  {MAPPING_TERMS.baseMapping} ({columnMappings.length})
+                  {MAPPING_TERMS.baseMapping} ({baseMappings.length})
                 </h3>
 
-                {columnMappings.length > 0 && (
+                {baseMappings.length > 0 && (
                   <div className="space-y-2">
-                    {columnMappings.map((cm) => (
+                    {baseMappings.map((cm) => (
                       <MappingCard
                         key={cm.id}
                         mapping={cm}
@@ -122,7 +121,7 @@ export function AIMappingPage() {
                       <RelationMappingCard
                         key={rm.id}
                         mapping={rm}
-                        sampleData={getSampleData(Object.keys(rm.properties)[0] || "")}
+                        sampleData={getSampleData(Object.keys(rm.rel_columns)[0] || "")}
                         onApprove={handleApproveRelationMapping}
                         onDismiss={handleRemoveRelationMapping}
                       />
@@ -133,9 +132,10 @@ export function AIMappingPage() {
                 <AddRelationForm
                   relationTypeOptions={selectableRelationTypeOptions}
                   relationPropertyByType={relationPropertyByType}
-                  relationEndpointOptionsByType={relationEndpointOptionsByType}
-                  unmappedColumns={unmappedColumns}
-                  onApply={handleCreateRelationPropertyMapping}
+                  relationTargetInfoByType={relationTargetInfoByType}
+                  targetPropertyOptions={effectiveTargetOptions}
+                  mappingHeaders={mappingHeaders}
+                  onApply={handleCreateRelationMapping}
                 />
 
               </div>
@@ -153,7 +153,7 @@ export function AIMappingPage() {
                         key={ep.id}
                         mapping={ep}
                         sampleData={getSampleData(ep.source_column)}
-                        onApprove={approveExtendedMapping}
+                        onApprove={approveColumnMapping}
                         onRemove={handleRemoveExtendedMapping}
                       />
                     ))}
@@ -177,11 +177,11 @@ export function AIMappingPage() {
                         targetOptions={effectiveTargetOptions}
                         relationTypeOptions={selectableRelationTypeOptions}
                         relationPropertyByType={relationPropertyByType}
-                        relationFromToOptions={mappingHeaders}
-                        relationEndpointOptionsByType={relationEndpointOptionsByType}
+                        relationTargetInfoByType={relationTargetInfoByType}
+                        targetPropertyOptions={effectiveTargetOptions}
                         onCreateBase={handleCreateColumnMapping}
                         onCreateExtended={handleCreateExtendedMapping}
-                        onCreateRelation={handleCreateRelationPropertyMapping}
+                        onCreateRelation={handleCreateRelationMapping}
                       />
                     ))}
                   </div>

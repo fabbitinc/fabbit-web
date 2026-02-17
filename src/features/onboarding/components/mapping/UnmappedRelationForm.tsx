@@ -10,25 +10,27 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useMappingStore } from "@/stores/onboarding";
+import type {
+  RelationTargetInfo,
+  TargetPropertyOption,
+} from "@/features/onboarding/types/onboarding.types";
 import { DisplayWithOriginalTooltip } from "./DisplayWithOriginalTooltip";
 
-const NO_PROPERTY = "__NONE__";
+const NO_COLUMN = "__NONE__";
+
+type ColumnRole = "node" | "relation";
 
 interface UnmappedRelationFormProps {
   column: string;
   relationTypeOptions: string[];
   relationPropertyByType: Record<string, string[]>;
-  relationFromToOptions: string[];
-  relationEndpointOptionsByType: Record<
-    string,
-    { fromColumns: string[]; toColumns: string[]; fromLabel: string; toLabel: string; fromMergeKey?: string; toMergeKey?: string }
-  >;
+  relationTargetInfoByType: Record<string, RelationTargetInfo>;
+  targetPropertyOptions: TargetPropertyOption[];
   onApply: (
-    sourceColumn: string,
     relType: string,
-    fromSourceColumn: string,
-    toSourceColumn: string,
-    relationProperty: string,
+    nodeColumns: Record<string, string>,
+    relColumns: Record<string, string>,
+    relColumnTypes: Record<string, string>,
   ) => void;
 }
 
@@ -36,8 +38,8 @@ export function UnmappedRelationForm({
   column,
   relationTypeOptions,
   relationPropertyByType,
-  relationFromToOptions,
-  relationEndpointOptionsByType,
+  relationTargetInfoByType,
+  targetPropertyOptions,
   onApply,
 }: UnmappedRelationFormProps) {
   const { t } = useTranslation(["mapping"]);
@@ -53,43 +55,82 @@ export function UnmappedRelationForm({
     return map;
   }, [editableConstraints]);
 
+  // 속성별 데이터 타입 맵
+  const propertyTypeMap = useMemo(() => {
+    const catalog = editableConstraints?.relation_property_catalog || [];
+    const map: Record<string, string> = {};
+    catalog.forEach((item) => {
+      map[`${item.rel_type}:${item.property}`] = item.data_type;
+    });
+    return map;
+  }, [editableConstraints]);
+
   const [relationType, setRelationType] = useState<string>(relationTypeOptions[0] || "");
   const effectiveRelationType = relationType || relationTypeOptions[0] || "";
-  const relationEndpointOptions = relationEndpointOptionsByType[effectiveRelationType];
-  const relationFromOptions = relationEndpointOptions?.fromColumns || relationFromToOptions;
-  const relationToOptions = relationEndpointOptions?.toColumns || relationFromToOptions;
-  const [relationFrom, setRelationFrom] = useState<string>(relationFromOptions[0] || "");
-  const [relationTo, setRelationTo] = useState<string>(relationToOptions[0] || "");
-  const effectiveRelationFrom =
-    relationFromOptions.includes(relationFrom) ? relationFrom : relationFromOptions[0] || "";
-  const effectiveRelationTo =
-    relationToOptions.includes(relationTo) ? relationTo : relationToOptions[0] || "";
+  const targetInfo = relationTargetInfoByType[effectiveRelationType];
+  const targetLabel = targetInfo?.targetLabel || "";
+  const targetMergeKeys = targetInfo?.targetMergeKeys || [];
+  const targetColumnOptions = targetInfo?.targetColumnOptions || [];
+
+  // 상대방 노드의 merge key 컬럼 선택 (필수)
+  const [mergeKeyColumn, setMergeKeyColumn] = useState<string>(targetColumnOptions[0] || "");
+  const effectiveMergeKeyColumn =
+    targetColumnOptions.includes(mergeKeyColumn) ? mergeKeyColumn : targetColumnOptions[0] || "";
+
+  // 이 컬럼의 역할 선택
+  const [columnRole, setColumnRole] = useState<ColumnRole>("node");
+
+  // 상대방 노드 속성 목록 (targetLabel로 필터)
+  const nodePropertyOptions = useMemo(() => {
+    if (!targetLabel) return [];
+    return targetPropertyOptions
+      .filter((opt) => opt.label === targetLabel)
+      .filter((opt) => !targetMergeKeys.includes(opt.property));
+  }, [targetPropertyOptions, targetLabel, targetMergeKeys]);
+
+  // 관계 속성 목록
   const relationProps = effectiveRelationType
     ? relationPropertyByType[effectiveRelationType] || []
     : [];
-  const [relationProperty, setRelationProperty] = useState<string>(NO_PROPERTY);
-  const effectiveRelationProperty =
-    relationProperty !== NO_PROPERTY && relationProps.includes(relationProperty)
-      ? relationProperty
-      : NO_PROPERTY;
-  const hasPropertySelected = effectiveRelationProperty !== NO_PROPERTY;
 
-  const hasProperties = relationProps.length > 0;
-  const isSameEndpoint = effectiveRelationFrom !== "" && effectiveRelationFrom === effectiveRelationTo;
+  // 구체적 속성 선택
+  const [selectedProperty, setSelectedProperty] = useState<string>("");
+  const propertyOptions = columnRole === "node" ? nodePropertyOptions.map((o) => o.property) : relationProps;
+  const effectiveSelectedProperty =
+    propertyOptions.includes(selectedProperty) ? selectedProperty : "";
 
   const canApply = Boolean(
-    effectiveRelationType && effectiveRelationFrom && effectiveRelationTo && !isSameEndpoint,
+    effectiveRelationType &&
+    effectiveMergeKeyColumn &&
+    effectiveSelectedProperty,
   );
 
   const handleApply = () => {
     if (!canApply) return;
-    onApply(
-      column,
-      effectiveRelationType,
-      effectiveRelationFrom,
-      effectiveRelationTo,
-      hasPropertySelected ? effectiveRelationProperty : "",
-    );
+
+    const primaryMergeKey = targetMergeKeys[0] || "";
+    if (!primaryMergeKey) return;
+
+    if (columnRole === "node") {
+      // 이 컬럼을 노드 속성으로 할당
+      const nodeColumns: Record<string, string> = {
+        [primaryMergeKey]: effectiveMergeKeyColumn,
+        [effectiveSelectedProperty]: column,
+      };
+      onApply(effectiveRelationType, nodeColumns, {}, {});
+    } else {
+      // 이 컬럼을 관계 속성으로 할당
+      const nodeColumns: Record<string, string> = {
+        [primaryMergeKey]: effectiveMergeKeyColumn,
+      };
+      const relColumns: Record<string, string> = {
+        [column]: effectiveSelectedProperty,
+      };
+      const relColumnTypes: Record<string, string> = {
+        [effectiveSelectedProperty]: propertyTypeMap[`${effectiveRelationType}:${effectiveSelectedProperty}`] || "string",
+      };
+      onApply(effectiveRelationType, nodeColumns, relColumns, relColumnTypes);
+    }
   };
 
   return (
@@ -100,12 +141,9 @@ export function UnmappedRelationForm({
           value={effectiveRelationType}
           onValueChange={(value) => {
             setRelationType(value);
-            const endpoints = relationEndpointOptionsByType[value];
-            if (endpoints) {
-              setRelationFrom(endpoints.fromColumns[0] || "");
-              setRelationTo(endpoints.toColumns[0] || "");
-            }
-            setRelationProperty(NO_PROPERTY);
+            const info = relationTargetInfoByType[value];
+            setMergeKeyColumn(info?.targetColumnOptions[0] || "");
+            setSelectedProperty("");
           }}
         >
           <SelectTrigger className="h-9 text-xs">
@@ -123,97 +161,99 @@ export function UnmappedRelationForm({
           </SelectContent>
         </Select>
       </div>
-      <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
+
+      {/* 상대방 노드 merge key 컬럼 */}
+      {targetLabel && targetMergeKeys.length > 0 && (
         <div className="space-y-1">
           <Label className="inline-flex items-center gap-1.5 text-xs text-gray-600">
-            <span>원본 기준 컬럼</span>
-            {relationEndpointOptions?.fromLabel && (
-              <span className="inline-flex items-center rounded bg-violet-100 px-1.5 py-0.5 text-[11px] font-semibold text-violet-700">
-                <DisplayWithOriginalTooltip
-                  display={t(`mapping:nodeLabel.${relationEndpointOptions.fromLabel}`, relationEndpointOptions.fromLabel)}
-                  original={relationEndpointOptions.fromLabel}
-                />
-              </span>
-            )}
+            <span>상대방 노드 기준 컬럼</span>
+            <span className="inline-flex items-center rounded bg-violet-100 px-1.5 py-0.5 text-[11px] font-semibold text-violet-700">
+              <DisplayWithOriginalTooltip
+                display={t(`mapping:nodeLabel.${targetLabel}`, targetLabel)}
+                original={targetLabel}
+              />
+            </span>
+            <span className="text-red-500">*</span>
           </Label>
-          <Select value={effectiveRelationFrom} onValueChange={setRelationFrom}>
+          <Select value={effectiveMergeKeyColumn} onValueChange={setMergeKeyColumn}>
             <SelectTrigger className="h-9 text-xs">
-              <SelectValue placeholder="원본 기준 컬럼" />
+              <SelectValue placeholder="기준 컬럼 선택" />
             </SelectTrigger>
             <SelectContent>
-              {relationFromOptions.map((col) => (
-                <SelectItem key={`from-${col}`} value={col}>
-                  <DisplayWithOriginalTooltip
-                    display={col}
-                    original={relationEndpointOptions?.fromMergeKey ? t(`mapping:property.${relationEndpointOptions.fromMergeKey}`, relationEndpointOptions.fromMergeKey) : undefined}
-                  />
+              {targetColumnOptions.map((col) => (
+                <SelectItem key={col} value={col}>
+                  {col}
                 </SelectItem>
               ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="space-y-1">
-          <Label className="inline-flex items-center gap-1.5 text-xs text-gray-600">
-            <span>대상 기준 컬럼</span>
-            {relationEndpointOptions?.toLabel && (
-              <span className="inline-flex items-center rounded bg-violet-100 px-1.5 py-0.5 text-[11px] font-semibold text-violet-700">
-                <DisplayWithOriginalTooltip
-                  display={t(`mapping:nodeLabel.${relationEndpointOptions.toLabel}`, relationEndpointOptions.toLabel)}
-                  original={relationEndpointOptions.toLabel}
-                />
-              </span>
-            )}
-          </Label>
-          <Select value={effectiveRelationTo} onValueChange={setRelationTo}>
-            <SelectTrigger className="h-9 text-xs">
-              <SelectValue placeholder="대상 기준 컬럼" />
-            </SelectTrigger>
-            <SelectContent>
-              {relationToOptions.map((col) => (
-                <SelectItem key={`to-${col}`} value={col}>
-                  <DisplayWithOriginalTooltip
-                    display={col}
-                    original={relationEndpointOptions?.toMergeKey ? t(`mapping:property.${relationEndpointOptions.toMergeKey}`, relationEndpointOptions.toMergeKey) : undefined}
-                  />
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-      {isSameEndpoint && (
-        <p className="text-xs text-red-500">원본 기준 컬럼과 대상 기준 컬럼은 서로 다른 컬럼이어야 합니다.</p>
-      )}
-      {hasProperties && (
-        <div className="space-y-1">
-          <Label className="text-xs text-gray-600">속성 (선택)</Label>
-          <Select value={effectiveRelationProperty} onValueChange={setRelationProperty}>
-            <SelectTrigger className="h-9 text-xs">
-              <SelectValue placeholder="관계 속성" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value={NO_PROPERTY}>
-                <span className="text-gray-400">없음 (관계만 생성)</span>
-              </SelectItem>
-              {relationProps.map((prop) => {
-                const isRequired = propertyRequiredMap[`${effectiveRelationType}:${prop}`] ?? false;
-                return (
-                  <SelectItem key={prop} value={prop}>
-                    <DisplayWithOriginalTooltip
-                      display={`${t(`mapping:property.${prop}`, prop)}${isRequired ? " *" : ""}`}
-                      original={prop}
-                    />
-                  </SelectItem>
-                );
-              })}
             </SelectContent>
           </Select>
         </div>
       )}
 
-      {hasPropertySelected && (
-        <p className="text-sm text-gray-500">선택 컬럼: {column}</p>
-      )}
+      {/* 이 컬럼의 역할 */}
+      <div className="space-y-1">
+        <Label className="text-xs text-gray-600">이 컬럼의 역할</Label>
+        <div className="flex gap-2">
+          <Button
+            type="button"
+            variant={columnRole === "node" ? "default" : "outline"}
+            size="sm"
+            className="h-7 text-xs"
+            onClick={() => {
+              setColumnRole("node");
+              setSelectedProperty("");
+            }}
+          >
+            노드 속성
+          </Button>
+          {relationProps.length > 0 && (
+            <Button
+              type="button"
+              variant={columnRole === "relation" ? "default" : "outline"}
+              size="sm"
+              className="h-7 text-xs"
+              onClick={() => {
+                setColumnRole("relation");
+                setSelectedProperty("");
+              }}
+            >
+              관계 속성
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {/* 구체적 속성 선택 */}
+      <div className="space-y-1">
+        <Label className="text-xs text-gray-600">
+          {columnRole === "node" ? "노드 속성" : "관계 속성"}
+        </Label>
+        <Select value={effectiveSelectedProperty || NO_COLUMN} onValueChange={(v) => setSelectedProperty(v === NO_COLUMN ? "" : v)}>
+          <SelectTrigger className="h-9 text-xs">
+            <SelectValue placeholder="속성 선택" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value={NO_COLUMN}>
+              <span className="text-gray-400">선택하세요</span>
+            </SelectItem>
+            {propertyOptions.map((prop) => {
+              const isRequired = columnRole === "relation"
+                ? (propertyRequiredMap[`${effectiveRelationType}:${prop}`] ?? false)
+                : false;
+              return (
+                <SelectItem key={prop} value={prop}>
+                  <DisplayWithOriginalTooltip
+                    display={`${t(`mapping:property.${prop}`, prop)}${isRequired ? " *" : ""}`}
+                    original={prop}
+                  />
+                </SelectItem>
+              );
+            })}
+          </SelectContent>
+        </Select>
+      </div>
+
+      <p className="text-sm text-gray-500">선택 컬럼: {column}</p>
 
       <Button
         type="button"

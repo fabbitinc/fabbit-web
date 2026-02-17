@@ -25,20 +25,16 @@ export function toExtendedPropertyName(sourceColumn: string): string {
  * 관계 매핑의 identity key 생성 (중복 판별용)
  */
 export function getRelationIdentityKey(rm: {
-  from_label: string;
   rel_type: string;
-  to_label: string;
-  from_columns: Record<string, string>;
-  to_columns: Record<string, string>;
-  properties: Record<string, string>;
+  target_label: string;
+  node_columns: Record<string, string>;
+  rel_columns: Record<string, string>;
 }): string {
   return [
-    rm.from_label,
     rm.rel_type,
-    rm.to_label,
-    JSON.stringify(rm.from_columns),
-    JSON.stringify(rm.to_columns),
-    JSON.stringify(rm.properties),
+    rm.target_label,
+    JSON.stringify(rm.node_columns),
+    JSON.stringify(rm.rel_columns),
   ].join("|");
 }
 

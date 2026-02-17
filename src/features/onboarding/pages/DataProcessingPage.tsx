@@ -133,35 +133,39 @@ export function DataProcessingPage() {
         PHASES.forEach((phase) => updateProcessingStep(phase, "completed"));
         setProcessingProgress(100);
 
+        const basePropCount = response.mapping.property_mappings.filter((pm) => !pm.is_extended).length;
+        const extPropCount = response.mapping.property_mappings.filter((pm) => pm.is_extended).length;
+
         addLog({
           id: `log-done-${Date.now()}`,
           timestamp: "완료",
-          message: `매핑 분석 완료: ${MAPPING_TERMS.baseMapping} ${response.mapping.column_mappings.length}건, ${MAPPING_TERMS.relationMapping} ${response.mapping.relation_mappings.length}건, ${MAPPING_TERMS.extendedMapping} ${response.mapping.extended_properties.length}건`,
+          message: `매핑 분석 완료: ${MAPPING_TERMS.baseMapping} ${basePropCount}건, ${MAPPING_TERMS.relationMapping} ${response.mapping.relation_mappings.length}건, ${MAPPING_TERMS.extendedMapping} ${extPropCount}건`,
           type: "success",
         });
 
-        if (response.mapping.extended_properties.length > 0) {
+        const extendedProps = response.mapping.property_mappings.filter((pm) => pm.is_extended);
+        if (extendedProps.length > 0) {
           addLog({
             id: `log-ext-summary-${Date.now()}`,
             timestamp: "완료",
-            message: `${MAPPING_TERMS.sourceColumn}이 ${MAPPING_TERMS.extendedMapping}으로 ${response.mapping.extended_properties.length}건 반영되었습니다.`,
+            message: `${MAPPING_TERMS.sourceColumn}이 ${MAPPING_TERMS.extendedMapping}으로 ${extendedProps.length}건 반영되었습니다.`,
             type: "info",
           });
 
-          response.mapping.extended_properties.slice(0, 8).forEach((ep, idx) => {
+          extendedProps.slice(0, 8).forEach((ep, idx) => {
             addLog({
               id: `log-ext-${Date.now()}-${idx}`,
               timestamp: "완료",
-              message: `[${MAPPING_TERMS.extendedMapping}] ${ep.source_column} -> ${ep.target_label}.${ep.property_name}`,
+              message: `[${MAPPING_TERMS.extendedMapping}] ${ep.source_column} -> Part.${ep.target_property}`,
               type: "info",
             });
           });
 
-          if (response.mapping.extended_properties.length > 8) {
+          if (extendedProps.length > 8) {
             addLog({
               id: `log-ext-more-${Date.now()}`,
               timestamp: "완료",
-              message: `외 ${response.mapping.extended_properties.length - 8}건은 매핑 단계에서 확인할 수 있습니다.`,
+              message: `외 ${extendedProps.length - 8}건은 매핑 단계에서 확인할 수 있습니다.`,
               type: "info",
             });
           }

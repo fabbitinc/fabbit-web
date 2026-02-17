@@ -1,20 +1,18 @@
 import { useState, useCallback, useEffect, type ReactNode } from "react";
 import { useLocation } from "react-router-dom";
-import { GripVertical } from "lucide-react";
+import { GripVertical, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Sidebar } from "./Sidebar";
 import { Header } from "./Header";
 import { DetailDrawer } from "./DetailDrawer";
-import { FolderTree } from "@/features/items/components/FolderTree";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 
 interface MainLayoutProps {
   children: ReactNode;
 }
 
-const MIN_TREE_WIDTH = 240;
-const MAX_TREE_WIDTH = 400;
-const DEFAULT_TREE_WIDTH = 224; // 14rem = 224px
+const MIN_SIDENAV_WIDTH = 240;
+const DEFAULT_SIDENAV_WIDTH = 320;
 
 export function MainLayout({ children }: MainLayoutProps) {
   const location = useLocation();
@@ -24,36 +22,67 @@ export function MainLayout({ children }: MainLayoutProps) {
   // FolderTree를 보여줄 페이지들 (부품관리, 아이템 상세만 - 프로젝트 상세는 제외)
   const showFolderTree = isItemsPage || isItemDetailPage;
 
-  // 트리 너비 상태 (localStorage에서 복원)
-  const [treeWidth, setTreeWidth] = useState(() => {
-    const saved = localStorage.getItem("fabbit-tree-width");
-    return saved ? parseInt(saved, 10) : DEFAULT_TREE_WIDTH;
+  const [isDesktop, setIsDesktop] = useState(() => window.innerWidth >= 1024);
+  const [showBanner, setShowBanner] = useState(false);
+  const [isSideNavCollapsed, setIsSideNavCollapsed] = useState(() => {
+    const saved = localStorage.getItem("fabbit-side-nav-collapsed");
+    return saved === "true";
+  });
+  const [isSideNavOverlayOpen, setIsSideNavOverlayOpen] = useState(false);
+  const [sideNavWidth, setSideNavWidth] = useState(() => {
+    const saved = localStorage.getItem("fabbit-side-nav-width");
+    return saved ? parseInt(saved, 10) : DEFAULT_SIDENAV_WIDTH;
   });
   const [isResizing, setIsResizing] = useState(false);
 
-  // 리사이즈 핸들러
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    if (!isDesktop || isSideNavCollapsed) return;
     e.preventDefault();
     setIsResizing(true);
-  }, []);
+  }, [isDesktop, isSideNavCollapsed]);
 
   const handleMouseMove = useCallback((e: MouseEvent) => {
     if (!isResizing) return;
 
-    // 사이드바 너비(64px)를 빼고 계산
-    const newWidth = e.clientX - 64;
-    const clampedWidth = Math.min(Math.max(newWidth, MIN_TREE_WIDTH), MAX_TREE_WIDTH);
-    setTreeWidth(clampedWidth);
+    const maxWidth = Math.floor(window.innerWidth * 0.5);
+    const clampedWidth = Math.min(Math.max(e.clientX, MIN_SIDENAV_WIDTH), maxWidth);
+    setSideNavWidth(clampedWidth);
   }, [isResizing]);
 
   const handleMouseUp = useCallback(() => {
     if (isResizing) {
       setIsResizing(false);
-      localStorage.setItem("fabbit-tree-width", treeWidth.toString());
+      localStorage.setItem("fabbit-side-nav-width", sideNavWidth.toString());
     }
-  }, [isResizing, treeWidth]);
+  }, [isResizing, sideNavWidth]);
 
-  // 마우스 이벤트 리스너
+  const handleToggleSideNav = useCallback(() => {
+    if (isDesktop) {
+      setIsSideNavCollapsed((prev) => {
+        const next = !prev;
+        localStorage.setItem("fabbit-side-nav-collapsed", next ? "true" : "false");
+        return next;
+      });
+      return;
+    }
+
+    setIsSideNavOverlayOpen((prev) => !prev);
+  }, [isDesktop]);
+
+  const handleResizeDoubleClick = useCallback(() => {
+    setIsSideNavCollapsed(true);
+    localStorage.setItem("fabbit-side-nav-collapsed", "true");
+  }, []);
+
+  const closeMobileSideNav = useCallback(() => {
+    setIsSideNavOverlayOpen(false);
+  }, []);
+
+  const topNavRow = showBanner ? 2 : 1;
+  const contentRow = showBanner ? 3 : 2;
+  const sideNavColumn = isDesktop ? `${isSideNavCollapsed ? 64 : sideNavWidth}px` : "0px";
+  const splitterColumn = isDesktop && !isSideNavCollapsed ? "4px" : "0px";
+
   useEffect(() => {
     if (isResizing) {
       document.addEventListener("mousemove", handleMouseMove);
@@ -70,48 +99,99 @@ export function MainLayout({ children }: MainLayoutProps) {
     };
   }, [isResizing, handleMouseMove, handleMouseUp]);
 
+  useEffect(() => {
+    const handleResize = () => {
+      const desktop = window.innerWidth >= 1024;
+      setIsDesktop(desktop);
+      if (desktop) {
+        setIsSideNavOverlayOpen(false);
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  useEffect(() => {
+    if (isDesktop && !isSideNavCollapsed) {
+      localStorage.setItem("fabbit-side-nav-width", sideNavWidth.toString());
+    }
+  }, [isDesktop, isSideNavCollapsed, sideNavWidth]);
+
   return (
-    <div className="flex h-screen overflow-hidden bg-white">
-      <Sidebar />
-
-      {showFolderTree && (
-        <>
-          {/* Tree Panel */}
-          <div
-            className="sidebar-shell sidebar-divider relative border-r"
-            style={{ width: treeWidth }}
+    <div
+      className="relative grid h-screen overflow-hidden bg-background"
+      style={{
+        gridTemplateRows: `${showBanner ? "44px " : ""}48px minmax(0,1fr)`,
+        gridTemplateColumns: `${sideNavColumn} ${splitterColumn} minmax(0,1fr)`,
+      }}
+    >
+      {showBanner && (
+        <div className="flex items-center justify-between border-b border-blue-200 bg-blue-50 px-4" style={{ gridRow: 1, gridColumn: "1 / -1" }}>
+          <p className="truncate text-sm text-blue-900">
+            임시 배너입니다. 공지/안내 용도로 사용하고 나중에 삭제할 수 있습니다.
+          </p>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-blue-700 hover:bg-blue-100"
+            onClick={() => setShowBanner(false)}
+            aria-label="배너 닫기"
           >
-            <ScrollArea className="h-full">
-              <FolderTree />
-            </ScrollArea>
-          </div>
-
-          {/* Resize Handle */}
-          <div
-            className="sidebar-resizer-track group relative flex w-1 cursor-col-resize items-center justify-center"
-            onMouseDown={handleMouseDown}
-          >
-            {/* 드래그 핸들 버튼 - 항상 보임 */}
-            <div className={cn(
-              "sidebar-resizer-handle absolute z-10 flex h-16 w-5 cursor-col-resize items-center justify-center rounded-full border shadow-lg transition-all",
-              "hover:w-6",
-              isResizing && "sidebar-resizer-handle--active w-6"
-            )}>
-              <GripVertical className={cn(
-                "sidebar-resizer-icon h-5 w-5 transition-colors",
-                isResizing && "text-white"
-              )} />
-            </div>
-          </div>
-        </>
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
       )}
 
-      <div className="flex flex-1 flex-col overflow-hidden">
-        <Header />
-        <main className="flex-1 overflow-auto p-6">
-          {children}
-        </main>
+      <div style={{ gridRow: topNavRow, gridColumn: "1 / -1" }}>
+        <Header onToggleSideNav={handleToggleSideNav} />
       </div>
+
+      {!isDesktop && isSideNavOverlayOpen && (
+        <button
+          className="absolute inset-0 z-30 bg-slate-900/30"
+          onClick={closeMobileSideNav}
+          aria-label="사이드 내비게이션 닫기"
+        />
+      )}
+
+      <div style={{ gridRow: contentRow, gridColumn: 1 }} className="min-h-0 overflow-hidden">
+        <Sidebar
+          isDesktop={isDesktop}
+          collapsed={isDesktop ? isSideNavCollapsed : false}
+          mobileOpen={isSideNavOverlayOpen}
+          width={sideNavWidth}
+          showFolderTree={showFolderTree}
+          onCloseMobile={closeMobileSideNav}
+        />
+      </div>
+
+      {isDesktop && !isSideNavCollapsed && (
+        <div
+          style={{ gridRow: contentRow, gridColumn: 2 }}
+          className="sidebar-resizer-track group relative z-10 flex cursor-col-resize items-center justify-center"
+          onMouseDown={handleMouseDown}
+          onDoubleClick={handleResizeDoubleClick}
+        >
+          <div className={cn(
+            "sidebar-resizer-handle absolute z-10 flex h-16 w-5 cursor-col-resize items-center justify-center rounded-full border shadow-lg transition-all",
+            "hover:w-6",
+            isResizing && "sidebar-resizer-handle--active w-6"
+          )}>
+            <GripVertical className={cn(
+              "sidebar-resizer-icon h-5 w-5 transition-colors",
+              isResizing && "text-white"
+            )} />
+          </div>
+        </div>
+      )}
+
+      <main
+        style={{ gridRow: contentRow, gridColumn: 3 }}
+        className="relative z-0 min-h-0 overflow-auto p-6"
+      >
+        {children}
+      </main>
 
       <DetailDrawer />
     </div>
