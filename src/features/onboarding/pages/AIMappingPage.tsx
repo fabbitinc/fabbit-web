@@ -39,6 +39,7 @@ export function AIMappingPage() {
     hasMappings,
     getSampleData,
   } = useMappingDerivedState();
+
   const {
     handleResetMappings,
     handleRemoveColumnMapping,

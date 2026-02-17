@@ -71,23 +71,20 @@ export function Sidebar({
         )}
         style={{ width: isDesktop ? "100%" : navWidth, maxWidth: showAsOverlay ? "90vw" : undefined }}
       >
-        <div className="sidebar-divider flex h-12 shrink-0 items-center justify-between border-b px-3">
-          <div className="flex items-center gap-2">
-            <span className="flex h-7 w-7 items-center justify-center rounded bg-white/10 text-xs font-bold text-white">F</span>
-            {!collapsed && <span className="text-sm font-semibold text-white">Fabbit</span>}
-          </div>
-          {!isDesktop && (
+        {!isDesktop && (
+          <div className="sidebar-divider flex h-10 shrink-0 items-center justify-end border-b px-2">
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 text-slate-300 hover:bg-slate-800 hover:text-white"
+              className="size-8"
+              style={{ color: "var(--nav-sidebar-icon)" }}
               onClick={onCloseMobile}
               aria-label="사이드 내비게이션 닫기"
             >
-              <X className="h-4 w-4" />
+              <X className="size-4" />
             </Button>
-          )}
-        </div>
+          </div>
+        )}
 
         <div className="flex min-h-0 flex-1 flex-col">
           <ScrollArea className="min-h-0 flex-1">
@@ -99,8 +96,8 @@ export function Sidebar({
                     to={item.path}
                     onClick={onCloseMobile}
                     className={cn(
-                      "sidebar-nav-item relative flex h-10 items-center rounded-lg px-3 transition-all",
-                      collapsed ? "w-10 justify-center px-0" : "w-full justify-start gap-2.5",
+                      "sidebar-nav-item relative flex h-9 items-center rounded-lg px-4 transition-all",
+                      collapsed ? "w-9 justify-center px-0" : "w-full justify-start gap-2.5",
                       isActive ? "sidebar-nav-item--active" : ""
                     )}
                   >
@@ -126,8 +123,8 @@ export function Sidebar({
 
             {showFolderTree && !collapsed && (
               <div className="sidebar-divider mt-2 border-t p-3">
-                <p className="mb-2 text-xs font-medium text-slate-300">프로젝트 트리</p>
-                <div className="overflow-hidden rounded-md border border-slate-700 bg-slate-900/20">
+                <p className="mb-2 text-xs font-medium" style={{ color: "var(--nav-sidebar-icon)" }}>프로젝트 트리</p>
+                <div className="overflow-hidden rounded-md border" style={{ borderColor: "var(--nav-sidebar-border)" }}>
                   <FolderTree />
                 </div>
               </div>
@@ -144,7 +141,7 @@ export function Sidebar({
                   )}>
                     <Loader2 className="h-4 w-4 animate-spin" style={{ color: "var(--nav-sidebar-ai-icon)" }} />
                     {!collapsed && (
-                      <span className="text-xs font-medium text-slate-200">{activeUploads.length}개 처리 중</span>
+                      <span className="text-xs font-medium" style={{ color: "var(--nav-sidebar-text)" }}>{activeUploads.length}개 처리 중</span>
                     )}
                   </div>
                 </TooltipTrigger>

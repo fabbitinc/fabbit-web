@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { LoginPage } from "@/pages/auth/LoginPage";
 import { ProjectListPage } from "@/pages/projects/ProjectListPage";
 import { ProjectDetailPage } from "@/pages/projects/ProjectDetailPage";
-import { ProjectSettingsPage } from "@/pages/projects/ProjectSettingsPage";
+import { ProjectOpsItemDetailPage } from "@/pages/projects/ProjectOpsItemDetailPage";
+import { ProjectScheduleDetailPage } from "@/pages/projects/ProjectScheduleDetailPage";
 import { OrganizationSettingsPage } from "@/pages/organization/OrganizationSettingsPage";
 import { UserSettingsPage } from "@/pages/user/UserSettingsPage";
 import { PartsPage } from "@/pages/parts/PartsPage";
@@ -213,6 +214,11 @@ function ConflictsPage() {
 function LegacyItemDetailRedirect() {
   const { id } = useParams<{ id: string }>();
   return <Navigate to={id ? `/parts/${id}` : "/parts"} replace />;
+}
+
+function LegacyProjectSettingsRedirect() {
+  const { projectId } = useParams<{ projectId: string }>();
+  return <Navigate to={projectId ? `/projects/${projectId}` : "/projects"} replace />;
 }
 
 function SiteNotFoundPage() {
@@ -501,11 +507,12 @@ function App() {
                   <Route path="/items/:id" element={<LegacyItemDetailRedirect />} />
                   <Route path="/items/:id/bom" element={<LegacyItemDetailRedirect />} />
                   <Route path="/projects" element={<ProjectListPage />} />
-                  <Route path="/projects/:id" element={<ProjectDetailPage />} />
-                  <Route
-                    path="/projects/:id/settings"
-                    element={<ProjectSettingsPage />}
-                  />
+                  <Route path="/projects/:projectId" element={<ProjectDetailPage />} />
+                  <Route path="/projects/:projectId/approvals/:itemId" element={<ProjectOpsItemDetailPage />} />
+                  <Route path="/projects/:projectId/changes/:itemId" element={<ProjectOpsItemDetailPage />} />
+                  <Route path="/projects/:projectId/issues/:itemId" element={<ProjectOpsItemDetailPage />} />
+                  <Route path="/projects/:projectId/schedules/:scheduleId" element={<ProjectScheduleDetailPage />} />
+                  <Route path="/projects/:projectId/settings" element={<LegacyProjectSettingsRedirect />} />
                   <Route path="/organization/settings" element={<OrganizationSettingsPage />} />
                   <Route path="/user/settings" element={<UserSettingsPage />} />
                   <Route path="/approval" element={<ApprovalPage />} />

@@ -8,11 +8,10 @@ import type {
 } from "@/features/onboarding/types/onboarding.types";
 import { MAPPING_TERMS } from "@/features/onboarding/constants/mappingTerminology";
 import { UnmappedBaseForm } from "./UnmappedBaseForm";
-import { UnmappedExtendedForm } from "./UnmappedExtendedForm";
 import { UnmappedRelationForm } from "./UnmappedRelationForm";
 import { cn } from "@/lib/utils";
 
-type ResolveMode = "base" | "extended" | "relation_prop";
+type ResolveMode = "property" | "relation";
 
 interface UnmappedCardProps {
   column: string;
@@ -45,7 +44,7 @@ export function UnmappedCard({
   onCreateRelation,
 }: UnmappedCardProps) {
   const [open, setOpen] = useState(false);
-  const [mode, setMode] = useState<ResolveMode>("base");
+  const [mode, setMode] = useState<ResolveMode>("property");
 
   return (
     <div className="space-y-2">
@@ -110,28 +109,19 @@ export function UnmappedCard({
           <div className="mb-4 flex items-center gap-2">
             <Button
               type="button"
-              variant={mode === "base" ? "default" : "outline"}
+              variant={mode === "property" ? "default" : "outline"}
               size="sm"
-              className={cn("h-7 text-xs", mode === "base" && "bg-gray-900 hover:bg-gray-900")}
-              onClick={() => setMode("base")}
+              className={cn("h-7 text-xs", mode === "property" && "bg-gray-900 hover:bg-gray-900")}
+              onClick={() => setMode("property")}
             >
-              기본 속성
+              속성
             </Button>
             <Button
               type="button"
-              variant={mode === "extended" ? "default" : "outline"}
+              variant={mode === "relation" ? "default" : "outline"}
               size="sm"
-              className={cn("h-7 text-xs", mode === "extended" && "bg-gray-900 hover:bg-gray-900")}
-              onClick={() => setMode("extended")}
-            >
-              확장 속성
-            </Button>
-            <Button
-              type="button"
-              variant={mode === "relation_prop" ? "default" : "outline"}
-              size="sm"
-              className={cn("h-7 text-xs", mode === "relation_prop" && "bg-gray-900 hover:bg-gray-900")}
-              onClick={() => setMode("relation_prop")}
+              className={cn("h-7 text-xs", mode === "relation" && "bg-gray-900 hover:bg-gray-900")}
+              onClick={() => setMode("relation")}
             >
               관계 속성
             </Button>
@@ -139,7 +129,7 @@ export function UnmappedCard({
 
           {/* 서브폼 렌더링 */}
           <div className="space-y-3">
-            {mode === "base" && (
+            {mode === "property" && (
               <UnmappedBaseForm
                 column={column}
                 targetOptions={targetOptions}
@@ -147,20 +137,14 @@ export function UnmappedCard({
                   onCreateBase(src, prop);
                   setOpen(false);
                 }}
-              />
-            )}
-
-            {mode === "extended" && (
-              <UnmappedExtendedForm
-                column={column}
-                onApply={(src, propName) => {
+                onApplyExtended={(src, propName) => {
                   onCreateExtended(src, propName);
                   setOpen(false);
                 }}
               />
             )}
 
-            {mode === "relation_prop" && (
+            {mode === "relation" && (
               <UnmappedRelationForm
                 column={column}
                 relationTypeOptions={relationTypeOptions}

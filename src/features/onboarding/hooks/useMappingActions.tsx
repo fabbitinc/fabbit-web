@@ -207,6 +207,17 @@ export function useMappingActions(
     sourceColumn: string,
     targetProperty: string,
   ) => {
+    // 기본 속성 중복 체크
+    const duplicate = columnMappings.find(
+      (cm) => !cm.is_extended && cm.target_property === targetProperty,
+    );
+    if (duplicate) {
+      toast.error(
+        `"${targetProperty}" 속성은 이미 "${duplicate.source_column}" 컬럼에 매핑되어 있습니다.`,
+      );
+      return;
+    }
+
     const confidence = 100;
     const nextColumns = [
       ...columnMappings,

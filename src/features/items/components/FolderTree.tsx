@@ -216,9 +216,9 @@ export function FolderTree() {
   // 로딩 상태
   if (isLoading) {
     return (
-      <div className="flex h-full flex-col items-center justify-center bg-[#0f172a]">
-        <Loader2 className="h-6 w-6 animate-spin text-[#3b82f6]" />
-        <p className="mt-2 text-xs text-[#64748b]">프로젝트 로딩 중...</p>
+      <div className="flex h-full flex-col items-center justify-center">
+        <Loader2 className="h-6 w-6 animate-spin" style={{ color: "var(--brand-500)" }} />
+        <p className="mt-2 text-xs" style={{ color: "var(--nav-sidebar-icon)" }}>프로젝트 로딩 중...</p>
       </div>
     );
   }
@@ -226,31 +226,31 @@ export function FolderTree() {
   // 에러 상태
   if (error) {
     return (
-      <div className="flex h-full flex-col items-center justify-center bg-[#0f172a] p-4">
+      <div className="flex h-full flex-col items-center justify-center p-4">
         <p className="text-xs text-red-400">데이터를 불러오지 못했습니다</p>
-        <p className="mt-1 text-[10px] text-[#64748b]">{error.message}</p>
+        <p className="mt-1 text-[10px]" style={{ color: "var(--nav-sidebar-icon)" }}>{error.message}</p>
       </div>
     );
   }
 
   return (
     <TooltipProvider delayDuration={0}>
-      <div className="flex h-full flex-col bg-[#0f172a]">
+      <div className="flex h-full flex-col">
         {/* 검색 바 */}
         <div className="p-3 pb-0">
           <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-[#64748b]" />
+            <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2" style={{ color: "var(--nav-sidebar-icon)" }} />
             <input
               type="text"
               placeholder="프로젝트/폴더 검색..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full rounded-md border border-[#334155] bg-[#1e293b] py-1.5 pl-8 pr-8 text-xs text-[#e2e8f0] placeholder-[#64748b] outline-none transition-colors focus:border-[#3b82f6] focus:ring-1 focus:ring-[#3b82f6]"
+              className="sidebar-tree-search w-full rounded-md border py-1.5 pl-8 pr-8 text-xs outline-none transition-colors focus:ring-1"
             />
             {searchTerm && (
               <button
                 onClick={() => setSearchTerm("")}
-                className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-0.5 text-[#64748b] transition-colors hover:bg-[#334155] hover:text-[#e2e8f0]"
+                className="sidebar-tree-action absolute right-2 top-1/2 -translate-y-1/2 rounded p-0.5 transition-colors"
               >
                 <X className="h-3.5 w-3.5" />
               </button>
@@ -260,19 +260,19 @@ export function FolderTree() {
 
         {/* 트리 헤더 */}
         <div className="flex items-center justify-between px-3 py-2">
-          <span className="text-[11px] font-medium uppercase tracking-wider text-[#475569]">
+          <span className="text-[11px] font-medium uppercase tracking-wider" style={{ color: "var(--nav-sidebar-icon)" }}>
             Projects
           </span>
           <Tooltip>
             <TooltipTrigger asChild>
               <button
-                className="flex h-5 w-5 items-center justify-center rounded text-[#64748b] transition-colors hover:bg-[#1e293b] hover:text-[#e2e8f0]"
+                className="sidebar-tree-action flex h-5 w-5 items-center justify-center rounded transition-colors"
                 onClick={() => openNewNodeDialog("root", "루트", "project")}
               >
                 <Plus className="h-3.5 w-3.5" />
               </button>
             </TooltipTrigger>
-            <TooltipContent side="right" className="bg-[#1e293b] text-white border-[#334155]">
+            <TooltipContent side="right" className="sidebar-tooltip">
               새 프로젝트
             </TooltipContent>
           </Tooltip>
@@ -301,8 +301,8 @@ export function FolderTree() {
             </div>
           ) : (
             <div className="flex flex-col items-center justify-center py-8 text-center">
-              <Search className="h-8 w-8 text-[#334155]" />
-              <p className="mt-2 text-xs text-[#64748b]">검색 결과가 없습니다</p>
+              <Search className="h-8 w-8" style={{ color: "var(--nav-sidebar-border)" }} />
+              <p className="mt-2 text-xs" style={{ color: "var(--nav-sidebar-icon)" }}>검색 결과가 없습니다</p>
             </div>
           )}
         </div>
@@ -318,12 +318,12 @@ export function FolderTree() {
             <DialogTitle>{getDialogTitle()}</DialogTitle>
           </DialogHeader>
           <div className="py-4">
-            <p className="mb-3 text-sm text-[#64748b]">
+            <p className="mb-3 text-sm text-muted-foreground">
               {newNodeDialog.parentId === "root" ? (
                 <>새 {newNodeDialog.nodeType === "project" ? "프로젝트" : "폴더"}를 생성합니다.</>
               ) : (
                 <>
-                  <span className="font-medium text-[#0f172a]">{newNodeDialog.parentName}</span>
+                  <span className="font-medium text-foreground">{newNodeDialog.parentName}</span>
                   {" "}하위에 생성합니다.
                 </>
               )}
@@ -346,7 +346,7 @@ export function FolderTree() {
             <Button
               onClick={handleCreateNode}
               disabled={!newNodeName.trim()}
-              className="bg-[#3b82f6] hover:bg-[#2563eb]"
+              style={{ backgroundColor: "var(--brand-500)" }}
             >
               생성
             </Button>
@@ -446,26 +446,38 @@ function TreeNode({ node, level, projectId, searchTerm, onAddNode, onNodeClick, 
     switch (node.type) {
       case "project":
         return (
-          <div className={cn(
-            "flex h-4 w-4 shrink-0 items-center justify-center rounded",
-            isSelected ? "bg-[#3b82f6]" : "bg-[#8b5cf6]"
-          )}>
+          <div
+            className="flex h-4 w-4 shrink-0 items-center justify-center rounded"
+            style={{ backgroundColor: isSelected ? "var(--brand-500)" : "var(--accent-500)" }}
+          >
             <Layers className="h-2.5 w-2.5 text-white" />
           </div>
         );
       case "folder":
         // 폴더: 노란색 폴더 아이콘
         return expanded && hasChildren ? (
-          <FolderOpen className={cn("h-4 w-4 shrink-0", isSelected ? "text-[#60a5fa]" : "text-[#fbbf24]")} />
+          <FolderOpen
+            className="h-4 w-4 shrink-0"
+            style={{ color: isSelected ? "var(--nav-sidebar-active-text)" : "#fbbf24" }}
+          />
         ) : (
-          <Folder className={cn("h-4 w-4 shrink-0", isSelected ? "text-[#60a5fa]" : "text-[#fbbf24]")} />
+          <Folder
+            className="h-4 w-4 shrink-0"
+            style={{ color: isSelected ? "var(--nav-sidebar-active-text)" : "#fbbf24" }}
+          />
         );
       case "item":
         // ASSEMBLY: Box, PART: Cog (기어)
         return node.itemType === "ASSEMBLY" ? (
-          <Box className={cn("h-4 w-4 shrink-0", isSelected ? "text-[#60a5fa]" : "text-[#3b82f6]")} />
+          <Box
+            className="h-4 w-4 shrink-0"
+            style={{ color: isSelected ? "var(--nav-sidebar-active-text)" : "var(--brand-500)" }}
+          />
         ) : (
-          <Cog className={cn("h-4 w-4 shrink-0", isSelected ? "text-[#60a5fa]" : "text-[#64748b]")} />
+          <Cog
+            className="h-4 w-4 shrink-0"
+            style={{ color: isSelected ? "var(--nav-sidebar-active-text)" : "var(--nav-sidebar-icon)" }}
+          />
         );
       default:
         return null;
@@ -487,9 +499,7 @@ function TreeNode({ node, level, projectId, searchTerm, onAddNode, onNodeClick, 
       <div
         className={cn(
           "group relative flex cursor-pointer items-center rounded-md py-1.5 pr-1 text-[13px] transition-colors",
-          isSelected
-            ? "bg-[#3b82f6]/10 text-white before:absolute before:left-0 before:top-0 before:h-full before:w-[2px] before:rounded-full before:bg-[#3b82f6]"
-            : "text-[#94a3b8] hover:bg-[#1e293b] hover:text-[#e2e8f0]"
+          isSelected ? "sidebar-tree-item--active" : "sidebar-tree-item"
         )}
         style={{ paddingLeft: `${level * 12 + 8}px` }}
         onClick={handleClick}
@@ -525,11 +535,11 @@ function TreeNode({ node, level, projectId, searchTerm, onAddNode, onNodeClick, 
             <HighlightedText text={node.name} searchTerm={searchTerm} />
             {/* 어셈블리: 품번 표시 */}
             {node.type === "item" && node.partNumber && (
-              <span className="ml-1 text-[10px] text-[#64748b]">{node.partNumber}</span>
+              <span className="ml-1 text-[10px]" style={{ color: "var(--nav-sidebar-icon)" }}>{node.partNumber}</span>
             )}
             {/* 폴더/어셈블리: 하위 단품 개수 */}
             {(node.type === "folder" || node.type === "item") && node.itemCount !== undefined && node.itemCount > 0 && (
-              <span className="ml-1 text-[10px] tabular-nums text-[#64748b]">({node.itemCount})</span>
+              <span className="ml-1 text-[10px] tabular-nums" style={{ color: "var(--nav-sidebar-icon)" }}>({node.itemCount})</span>
             )}
           </span>
         </div>
@@ -540,7 +550,7 @@ function TreeNode({ node, level, projectId, searchTerm, onAddNode, onNodeClick, 
             <Tooltip>
               <TooltipTrigger asChild>
                 <button
-                  className="flex h-5 w-5 items-center justify-center rounded text-[#64748b] opacity-0 transition-all hover:bg-[#334155] hover:text-white group-hover:opacity-100"
+                  className="sidebar-tree-action flex h-5 w-5 items-center justify-center rounded opacity-0 transition-all group-hover:opacity-100"
                   onClick={(e) => {
                     e.stopPropagation();
                     onBomImport(projectId, node.id);
@@ -549,7 +559,7 @@ function TreeNode({ node, level, projectId, searchTerm, onAddNode, onNodeClick, 
                   <FileSpreadsheet className="h-3.5 w-3.5" />
                 </button>
               </TooltipTrigger>
-              <TooltipContent side="right" className="bg-[#1e293b] text-white border-[#334155]">
+              <TooltipContent side="right" className="sidebar-tooltip">
                 BOM 가져오기
               </TooltipContent>
             </Tooltip>
@@ -557,7 +567,7 @@ function TreeNode({ node, level, projectId, searchTerm, onAddNode, onNodeClick, 
           <Tooltip>
             <TooltipTrigger asChild>
               <button
-                className="flex h-5 w-5 items-center justify-center rounded text-[#64748b] opacity-0 transition-all hover:bg-[#334155] hover:text-white group-hover:opacity-100"
+                className="sidebar-tree-action flex h-5 w-5 items-center justify-center rounded opacity-0 transition-all group-hover:opacity-100"
                 onClick={(e) => {
                   e.stopPropagation();
                   const childType = node.type === "project" ? "folder" : "item";
@@ -567,7 +577,7 @@ function TreeNode({ node, level, projectId, searchTerm, onAddNode, onNodeClick, 
                 <Plus className="h-3.5 w-3.5" />
               </button>
             </TooltipTrigger>
-            <TooltipContent side="right" className="bg-[#1e293b] text-white border-[#334155]">
+            <TooltipContent side="right" className="sidebar-tooltip">
               {getAddTooltip()}
             </TooltipContent>
           </Tooltip>
