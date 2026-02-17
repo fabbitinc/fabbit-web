@@ -1,19 +1,17 @@
+import { useState, useEffect } from "react";
 import {
   Search,
   Bell,
   ChevronDown,
   Check,
   LogOut,
-  Settings,
   Building2,
   CircleHelp,
   User,
   PanelLeft,
   Plus,
-  LayoutGrid,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -23,6 +21,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { useAuthStore } from "@/stores/authStore";
 import { cn } from "@/lib/utils";
 
@@ -35,23 +35,20 @@ function getInitials(name: string): string {
     .slice(0, 2);
 }
 
-function OrganizationAvatar({ name, size = "sm" }: { name: string; size?: "sm" | "md" }) {
-  const sizeClasses = size === "sm" ? "h-7 w-7 text-xs" : "h-9 w-9 text-sm";
-
+function InitialsAvatar({ name, className, variant = "rounded" }: {
+  name: string;
+  className?: string;
+  variant?: "rounded" | "circle";
+}) {
   return (
-    <div className={cn("flex items-center justify-center rounded-md bg-slate-700 font-medium text-white", sizeClasses)}>
-      {getInitials(name)}
-    </div>
-  );
-}
-
-function UserAvatar({ name, size = "sm" }: { name: string; size?: "sm" | "md" }) {
-  const sizeClasses = size === "sm" ? "h-7 w-7 text-xs" : "h-9 w-9 text-sm";
-
-  return (
-    <div className={cn("flex items-center justify-center rounded-md bg-slate-700 font-medium text-white", sizeClasses)}>
-      {getInitials(name)}
-    </div>
+    <Avatar className={cn(variant === "rounded" ? "rounded-md" : "rounded-full", className)}>
+      <AvatarFallback
+        className={cn("text-xs font-medium", variant === "rounded" ? "rounded-md" : "rounded-full")}
+        style={{ backgroundColor: "var(--nav-topbar-avatar-bg)", color: "var(--nav-topbar-avatar-text)" }}
+      >
+        {getInitials(name)}
+      </AvatarFallback>
+    </Avatar>
   );
 }
 
@@ -71,48 +68,114 @@ export function Header({ onToggleSideNav }: HeaderProps) {
   const navigate = useNavigate();
   const { user, memberships, currentMembership, logout } = useAuthStore();
   const currentOrg = currentMembership?.organization;
-  const iconButtonClass = "h-8 w-8 text-slate-500 hover:bg-slate-100 hover:text-slate-900";
+  const [searchOpen, setSearchOpen] = useState(false);
+
+  // "/" 키보드 단축키로 검색 Dialog 열기
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if (e.key === "/" && !e.ctrlKey && !e.metaKey && !e.altKey) {
+        const target = e.target as HTMLElement;
+        const tag = target.tagName;
+        if (tag === "INPUT" || tag === "TEXTAREA" || target.isContentEditable) return;
+        e.preventDefault();
+        setSearchOpen(true);
+      }
+    }
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   return (
-    <header className="grid h-12 shrink-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 border-b border-slate-200 bg-white px-3 lg:px-4">
-      <div className="flex shrink-0 items-center gap-1.5">
+    <header className="topbar-shell topbar-divider grid h-12 shrink-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-6 border-b px-3 lg:px-6">
+      {/* 좌측: 토글 + 브랜드 */}
+      <div className="flex shrink-0 items-center gap-2">
         <Button
           variant="ghost"
           size="icon"
-          className={iconButtonClass}
+          className="topbar-icon-btn size-8"
           aria-label="사이드 내비게이션 토글"
           onClick={onToggleSideNav}
         >
-          <PanelLeft className="h-[17px] w-[17px]" />
+          <PanelLeft className="size-5" />
         </Button>
 
-        <Button
-          variant="ghost"
-          size="icon"
-          className={iconButtonClass}
-          aria-label="앱 메뉴"
+        <div className="flex items-center gap-2">
+          <div
+            className="flex size-7 items-center justify-center rounded-md"
+            style={{ backgroundColor: "var(--brand-500)", color: "var(--nav-topbar-avatar-text)" }}
+          >
+            <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M12 2L2 7l10 5 10-5-10-5z" />
+              <path d="M2 17l10 5 10-5" />
+              <path d="M2 12l10 5 10-5" />
+            </svg>
+          </div>
+          <span className="text-sm font-semibold leading-none text-foreground">Fabbit</span>
+        </div>
+      </div>
+
+      {/* 중앙: 검색 트리거 + 생성 버튼 */}
+      <div className="flex w-full min-w-0 items-center gap-2">
+        <button
+          type="button"
+          onClick={() => setSearchOpen(true)}
+          className="topbar-icon-btn flex h-9 min-w-[240px] flex-1 items-center gap-2 rounded-md border border-transparent px-3 text-sm"
         >
-          <LayoutGrid className="h-[17px] w-[17px]" />
-        </Button>
+          <Search className="size-4 shrink-0" />
+          <span>검색</span>
+          <kbd className="ml-auto hidden rounded border px-1.5 py-0.5 text-xs font-medium opacity-60 sm:inline-block">/</kbd>
+        </button>
 
+        <Button variant="outline" className="h-9 shrink-0 gap-1.5">
+          <Plus className="size-4" />
+          생성
+        </Button>
+      </div>
+
+      {/* 검색 Dialog */}
+      <Dialog open={searchOpen} onOpenChange={setSearchOpen}>
+        <DialogContent
+          showCloseButton={false}
+          className="top-[20%] translate-y-0 sm:max-w-lg"
+        >
+          <DialogTitle className="sr-only">검색</DialogTitle>
+          <div className="flex items-center gap-2">
+            <Search className="size-5 shrink-0 text-muted-foreground" />
+            <input
+              autoFocus
+              type="text"
+              aria-label="검색"
+              placeholder="검색어를 입력하세요..."
+              className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+            />
+          </div>
+          <p className="text-xs text-muted-foreground">
+            품목, 도면, BOM 등을 검색할 수 있습니다.
+          </p>
+        </DialogContent>
+      </Dialog>
+
+      {/* 우측: 조직 전환 + 도움말 + 알림 + 프로필 아바타 */}
+      <div className="flex shrink-0 items-center gap-0.5">
         {currentOrg && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  className="h-9 gap-2 rounded-lg px-2 text-slate-700 hover:bg-slate-100"
-                >
-                  <OrganizationAvatar name={currentOrg.name} />
-                  <div className="text-left">
-                    <p className="max-w-[120px] truncate text-sm font-medium leading-none text-slate-900">
-                      {currentOrg.name}
-                    </p>
-                  </div>
-                  <ChevronDown className="h-4 w-4 text-slate-400" />
-                </Button>
-              </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-64">
-              <DropdownMenuLabel className="text-xs font-normal text-slate-500">
+              <Button
+                variant="ghost"
+                className="h-9 gap-2 rounded-lg px-2"
+                style={{ color: "var(--nav-topbar-icon-hover)" }}
+              >
+                <InitialsAvatar name={currentOrg.name} className="size-7" variant="rounded" />
+                <div className="text-left">
+                  <p className="max-w-[120px] truncate text-sm font-medium leading-none text-foreground">
+                    {currentOrg.name}
+                  </p>
+                </div>
+                <ChevronDown className="size-4 text-muted-foreground" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-64">
+              <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
                 조직 전환
               </DropdownMenuLabel>
               {memberships.map((m) => (
@@ -120,106 +183,69 @@ export function Header({ onToggleSideNav }: HeaderProps) {
                   key={m.orgId}
                   className="flex items-center gap-3 py-2"
                 >
-                  <OrganizationAvatar name={m.organization.name} size="md" />
+                  <InitialsAvatar name={m.organization.name} className="size-9" variant="rounded" />
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-slate-900">
+                    <p className="truncate text-sm font-medium text-foreground">
                       {m.organization.name}
                     </p>
-                    <p className="text-xs text-slate-500">
+                    <p className="text-xs text-muted-foreground">
                       {getRoleLabel(m.role)}
                     </p>
                   </div>
                   {currentOrg.id === m.organization.id && (
-                    <Check className="h-4 w-4 text-blue-600" />
+                    <Check className="size-4" style={{ color: "var(--brand-500)" }} />
                   )}
                 </DropdownMenuItem>
               ))}
               <DropdownMenuSeparator />
-              <DropdownMenuItem className="gap-2 text-slate-600" onClick={() => navigate("/organization/settings")}>
-                <Building2 className="h-4 w-4" />
+              <DropdownMenuItem className="gap-2 text-muted-foreground" onClick={() => navigate("/organization/settings")}>
+                <Building2 className="size-4" />
                 조직 관리
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         )}
-      </div>
 
-      <div className="flex w-full min-w-0 items-center gap-2">
-        <div className="relative min-w-[240px] flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-          <Input
-            type="search"
-            placeholder="Search..."
-            className="h-9 w-full border-slate-200 bg-slate-50 pl-9 text-sm placeholder:text-slate-400 focus:bg-white"
-          />
-        </div>
-
-        <Button variant="outline" className="h-9 shrink-0 gap-1.5 border-slate-200 bg-white px-3 text-slate-700 hover:bg-slate-50">
-          <Plus className="h-4 w-4" />
-          생성
-        </Button>
-      </div>
-
-      <div className="flex shrink-0 items-center gap-0.5">
-        <Button variant="ghost" size="icon" className={iconButtonClass} aria-label="도움말">
-          <CircleHelp className="h-[18px] w-[18px]" />
+        <Button variant="ghost" size="icon" className="topbar-icon-btn size-8" aria-label="도움말">
+          <CircleHelp className="size-5" />
         </Button>
 
-        <Button variant="ghost" size="icon" className={iconButtonClass} aria-label="알림">
-          <Bell className="h-[18px] w-[18px]" />
+        <Button variant="ghost" size="icon" className="topbar-icon-btn size-8" aria-label="알림">
+          <Bell className="size-5" />
         </Button>
-
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className={iconButtonClass} aria-label="설정">
-              <Settings className="h-[18px] w-[18px]" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuLabel className="text-xs font-normal text-slate-500">설정</DropdownMenuLabel>
-            <DropdownMenuItem className="gap-2" onClick={() => navigate("/organization/settings")}>
-              <Building2 className="h-4 w-4" />
-              조직 설정
-            </DropdownMenuItem>
-            <DropdownMenuItem className="gap-2" onClick={() => navigate("/user/settings")}>
-              <User className="h-4 w-4" />
-              개인 설정
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
 
         {user && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
-                className="h-9 gap-2 rounded-lg px-2 text-slate-700 hover:bg-slate-100"
+                size="icon"
+                className="topbar-icon-btn size-8"
+                aria-label="프로필 메뉴"
               >
-                <UserAvatar name={user.name} />
-                <div className="text-left">
-                  <p className="max-w-[120px] truncate text-sm font-medium leading-none text-slate-900">
-                    {user.name}
-                  </p>
-                </div>
-                <ChevronDown className="h-4 w-4 text-slate-400" />
+                <InitialsAvatar name={user.name} className="size-7" variant="circle" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
               <div className="px-2 py-2">
-                <p className="text-sm font-medium text-slate-900">{user.name}</p>
-                <p className="text-xs text-slate-500">{user.email}</p>
+                <p className="text-sm font-medium text-foreground">{user.name}</p>
+                <p className="text-xs text-muted-foreground">{user.email}</p>
               </div>
               <DropdownMenuSeparator />
               <DropdownMenuItem className="gap-2" onClick={() => navigate("/user/settings")}>
-                <User className="h-4 w-4" />
-                내 계정
+                <User className="size-4" />
+                개인 설정
+              </DropdownMenuItem>
+              <DropdownMenuItem className="gap-2" onClick={() => navigate("/organization/settings")}>
+                <Building2 className="size-4" />
+                조직 설정
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
                 onClick={logout}
-                className="gap-2 text-red-600 focus:bg-red-50 focus:text-red-600"
+                className="gap-2 text-destructive focus:bg-destructive/10 focus:text-destructive"
               >
-                <LogOut className="h-4 w-4" />
+                <LogOut className="size-4" />
                 로그아웃
               </DropdownMenuItem>
             </DropdownMenuContent>

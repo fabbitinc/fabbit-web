@@ -121,23 +121,35 @@
   --theme-surface: #ffffff;
   --theme-background: #f8fafc;
 
+  /* Top Navigation Tokens */
+  --nav-topbar-bg: var(--theme-surface);
+  --nav-topbar-border: var(--theme-border);
+  --nav-topbar-icon: var(--theme-text-secondary);
+  --nav-topbar-icon-hover: var(--theme-text-primary);
+  --nav-topbar-hover-bg: #f1f5f9;
+  --nav-topbar-avatar-bg: #334155;
+  --nav-topbar-avatar-text: #ffffff;
+
   /* Sidebar Theme Tokens */
-  --nav-sidebar-bg: #0f172a;
-  --nav-sidebar-border: #1e293b;
-  --nav-sidebar-active-bg: #3b82f6;
-  --nav-sidebar-active-shadow: 0 10px 20px -10px rgb(59 130 246 / 0.55);
-  --nav-sidebar-icon: #64748b;
-  --nav-sidebar-hover-bg: #1e293b;
-  --nav-sidebar-hover-text: #e2e8f0;
-  --nav-sidebar-tooltip-bg: #1e293b;
-  --nav-sidebar-tooltip-border: #334155;
-  --nav-sidebar-ai-bg: rgb(139 92 246 / 0.2);
-  --nav-sidebar-ai-icon: #8b5cf6;
-  --nav-sidebar-ai-subtext: #94a3b8;
-  --nav-resizer-track: #1e293b;
-  --nav-resizer-handle-bg: #1e293b;
-  --nav-resizer-handle-border: #334155;
-  --nav-resizer-handle-active: #3b82f6;
+  --nav-sidebar-bg: var(--theme-surface);
+  --nav-sidebar-border: var(--theme-border);
+  --nav-sidebar-active-bg: var(--brand-50);
+  --nav-sidebar-active-text: var(--brand-500);
+  --nav-sidebar-active-notch: var(--brand-500);
+  --nav-sidebar-active-shadow: none;
+  --nav-sidebar-icon: var(--theme-text-secondary);
+  --nav-sidebar-text: var(--theme-text-primary);
+  --nav-sidebar-hover-bg: #f1f5f9;
+  --nav-sidebar-hover-text: var(--theme-text-primary);
+  --nav-sidebar-tooltip-bg: var(--theme-text-primary);
+  --nav-sidebar-tooltip-border: var(--theme-text-secondary);
+  --nav-sidebar-ai-bg: rgb(139 92 246 / 0.08);
+  --nav-sidebar-ai-icon: #7c3aed;
+  --nav-sidebar-ai-subtext: var(--theme-text-secondary);
+  --nav-resizer-track: var(--theme-border);
+  --nav-resizer-handle-bg: var(--theme-surface);
+  --nav-resizer-handle-border: var(--theme-border);
+  --nav-resizer-handle-active: var(--brand-500);
 
   /* Common Status Tokens */
   --status-success: #16a34a;
@@ -207,21 +219,32 @@
   --theme-surface: rgb(15 23 42 / 0.65);
   --theme-background: rgb(2 6 23 / 0.4);
 
-  --nav-sidebar-bg: #0f172a;
-  --nav-sidebar-border: #1e293b;
-  --nav-sidebar-active-bg: #60a5fa;
-  --nav-sidebar-active-shadow: 0 10px 20px -10px rgb(96 165 250 / 0.45);
+  --nav-topbar-bg: #1e293b;
+  --nav-topbar-border: rgb(148 163 184 / 0.35);
+  --nav-topbar-icon: #94a3b8;
+  --nav-topbar-icon-hover: #e2e8f0;
+  --nav-topbar-hover-bg: #334155;
+  --nav-topbar-avatar-bg: #475569;
+  --nav-topbar-avatar-text: #e2e8f0;
+
+  --nav-sidebar-bg: #1e293b;
+  --nav-sidebar-border: rgb(148 163 184 / 0.2);
+  --nav-sidebar-active-bg: rgb(59 130 246 / 0.15);
+  --nav-sidebar-active-text: #60a5fa;
+  --nav-sidebar-active-notch: #60a5fa;
+  --nav-sidebar-active-shadow: none;
   --nav-sidebar-icon: #94a3b8;
-  --nav-sidebar-hover-bg: #1e293b;
+  --nav-sidebar-text: #e2e8f0;
+  --nav-sidebar-hover-bg: rgb(148 163 184 / 0.1);
   --nav-sidebar-hover-text: #e2e8f0;
-  --nav-sidebar-tooltip-bg: #1e293b;
+  --nav-sidebar-tooltip-bg: #0f172a;
   --nav-sidebar-tooltip-border: #334155;
   --nav-sidebar-ai-bg: rgb(139 92 246 / 0.24);
   --nav-sidebar-ai-icon: #a78bfa;
   --nav-sidebar-ai-subtext: #94a3b8;
-  --nav-resizer-track: #1e293b;
+  --nav-resizer-track: rgb(148 163 184 / 0.2);
   --nav-resizer-handle-bg: #1e293b;
-  --nav-resizer-handle-border: #334155;
+  --nav-resizer-handle-border: #475569;
   --nav-resizer-handle-active: #60a5fa;
 
   --status-success: #4ade80;
@@ -347,7 +370,7 @@
   }
 
   .sidebar-nav-item {
-    color: var(--nav-sidebar-icon);
+    color: var(--nav-sidebar-text);
   }
 
   .sidebar-nav-item:hover {
@@ -357,8 +380,19 @@
 
   .sidebar-nav-item--active {
     background-color: var(--nav-sidebar-active-bg);
-    color: white;
-    box-shadow: var(--nav-sidebar-active-shadow);
+    color: var(--nav-sidebar-active-text);
+    box-shadow: none;
+  }
+
+  .sidebar-nav-item--active::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 4px;
+    bottom: 4px;
+    width: 3px;
+    border-radius: 0 2px 2px 0;
+    background-color: var(--nav-sidebar-active-notch);
   }
 
   .sidebar-tooltip {
@@ -369,6 +403,59 @@
 
   .sidebar-ai-indicator {
     background-color: var(--nav-sidebar-ai-bg);
+  }
+
+  /* 트리 아이템 기본 */
+  .sidebar-tree-item {
+    color: var(--nav-sidebar-icon);
+  }
+
+  .sidebar-tree-item:hover {
+    background-color: var(--nav-sidebar-hover-bg);
+    color: var(--nav-sidebar-hover-text);
+  }
+
+  /* 트리 아이템 선택 */
+  .sidebar-tree-item--active {
+    background-color: var(--nav-sidebar-active-bg);
+    color: var(--nav-sidebar-active-text);
+  }
+
+  .sidebar-tree-item--active::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 2px;
+    border-radius: 9999px;
+    background-color: var(--nav-sidebar-active-notch);
+  }
+
+  /* 트리 액션 버튼 */
+  .sidebar-tree-action {
+    color: var(--nav-sidebar-icon);
+  }
+
+  .sidebar-tree-action:hover {
+    background-color: var(--nav-sidebar-hover-bg);
+    color: var(--nav-sidebar-hover-text);
+  }
+
+  /* 트리 검색 input */
+  .sidebar-tree-search {
+    border-color: var(--nav-sidebar-border);
+    background-color: var(--nav-sidebar-hover-bg);
+    color: var(--nav-sidebar-text);
+  }
+
+  .sidebar-tree-search::placeholder {
+    color: var(--nav-sidebar-icon);
+  }
+
+  .sidebar-tree-search:focus {
+    border-color: var(--brand-500);
+    --tw-ring-color: var(--brand-500);
   }
 
   .sidebar-resizer-track {
@@ -393,5 +480,22 @@
   .sidebar-resizer-handle:hover .sidebar-resizer-icon,
   .sidebar-resizer-handle--active .sidebar-resizer-icon {
     color: white;
+  }
+
+  .topbar-shell {
+    background-color: var(--nav-topbar-bg);
+  }
+
+  .topbar-divider {
+    border-color: var(--nav-topbar-border);
+  }
+
+  .topbar-icon-btn {
+    color: var(--nav-topbar-icon);
+  }
+
+  .topbar-icon-btn:hover {
+    background-color: var(--nav-topbar-hover-bg);
+    color: var(--nav-topbar-icon-hover);
   }
 }
