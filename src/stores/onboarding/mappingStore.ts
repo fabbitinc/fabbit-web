@@ -10,7 +10,10 @@ import type {
   MappingResultDTO,
 } from "@/api/types/onboarding";
 import { cloneRelationMapping, isRelationValid } from "./helpers";
-import { toExtendedPropertyName } from "@/features/onboarding/utils/mappingUtils";
+import {
+  normalizeRelationColumns,
+  toExtendedPropertyName,
+} from "@/features/onboarding/utils/mappingUtils";
 import { AUTO_APPROVE_CONFIDENCE_THRESHOLD } from "@/features/onboarding/constants/mappingConfig";
 
 interface MappingState {
@@ -100,7 +103,7 @@ export const useMappingStore = create<MappingState>()((set, get) => ({
       rel_type: rm.rel_type,
       target_label: rm.target_label,
       node_columns: rm.node_columns || {},
-      rel_columns: rm.rel_columns || {},
+      rel_columns: normalizeRelationColumns(rm.rel_columns, headers),
       rel_column_types: rm.rel_column_types || {},
       confidence: rm.confidence || 0,
       reason: rm.reason || "",

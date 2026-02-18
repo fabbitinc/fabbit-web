@@ -3,6 +3,7 @@
 ## 공통
 
 - 백엔드 API는 `openapi.json` 참고해서 진행
+- 사용자는 `npm run dev` 로 개발중. 코드 수정이후 `npm run build`로 검증할 필요 없음
 - 작업 성격에 맞는 스킬을 먼저 로드해서 사용
   - `frontend-design`: 신규 화면/컴포넌트 UI 구현, 스타일 개선
   - `web-design-guidelines`: UI/UX/a11y 리뷰, 가이드 준수 점검
@@ -13,6 +14,7 @@
 
 ## 스타일
 
+- Attlasian Design System 을 참고 해서 제작
 - UI 컴포넌트는 기본적으로 shadcn/ui 프리미티브(`src/components/ui`)를 기반으로 조합/확장해서 사용
 - 새 UI가 필요하면 기존 shadcn 컴포넌트(Button, Input, Select, Badge 등) 재사용을 우선하고, 중복 커스텀 구현은 지양
 - 필요한 프리미티브가 없으면 shadcn 컴포넌트를 먼저 추가/도입하고, 그래도 커버되지 않는 경우에만 새 컴포넌트 생성
