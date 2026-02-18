@@ -116,6 +116,9 @@ export function useMappingDerivedState() {
       ...columnMappings.map((cm) => cm.source_column),
       ...relationMappings
         .filter((rm) => !rm.dismissed)
+        .flatMap((rm) => Object.values(rm.node_columns)),
+      ...relationMappings
+        .filter((rm) => !rm.dismissed)
         .flatMap((rm) => Object.keys(rm.rel_columns)),
     ]);
     return mappingHeaders.filter((h) => !columnMappedCols.has(h));
@@ -131,6 +134,7 @@ export function useMappingDerivedState() {
 
   // 매핑이 하나라도 있는지
   const hasMappings = totalMappings > 0;
+  const hasUnselectedPartMappings = baseMappings.some((cm) => !cm.target_property);
 
   // 샘플 데이터 추출 헬퍼
   const getSampleData = (column: string) => {
@@ -162,6 +166,7 @@ export function useMappingDerivedState() {
     totalApproved,
     excludedCount,
     hasMappings,
+    hasUnselectedPartMappings,
     // 헬퍼
     getSampleData,
   };

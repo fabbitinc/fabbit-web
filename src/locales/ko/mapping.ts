@@ -1,7 +1,8 @@
 export default {
   // 페이지
   title: "The Bridge - AI 매핑",
-  description: "AI가 원본 데이터와 표준 속성을 매핑했습니다. 확인하고 수정해 주세요.",
+  description:
+    "AI가 원본 데이터와 표준 속성을 매핑했습니다. 확인하고 수정해 주세요.",
 
   // 섹션
   columnMapping: "컬럼 매핑",
@@ -12,6 +13,7 @@ export default {
   approvalProgress: "승인 진행률",
   approveAll: "모두 승인",
   selectTarget: "타겟 선택",
+  selectProperty: "속성 선택",
   createMapping: "매핑",
 
   // 관계 유형
@@ -34,7 +36,7 @@ export default {
   property: {
     // Part
     part_number: "품번",
-    name: "명칭",
+    name: "부품명",
     revision: "리비전",
     material: "재질",
     unit: "단위",

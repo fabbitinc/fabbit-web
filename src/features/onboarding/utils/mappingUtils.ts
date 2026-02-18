@@ -39,6 +39,35 @@ export function getRelationIdentityKey(rm: {
 }
 
 /**
+ * 관계 속성 매핑 방향을 정규화
+ * - 내부 표준: { source_column: rel_property }
+ * - 일부 입력이 { rel_property: source_column } 형태면 헤더 기준으로 자동 교정
+ */
+export function normalizeRelationColumns(
+  relColumns: Record<string, string> | undefined,
+  headers: string[],
+): Record<string, string> {
+  if (!relColumns) return {};
+
+  const normalized: Record<string, string> = {};
+  for (const [key, value] of Object.entries(relColumns)) {
+    if (headers.includes(key)) {
+      normalized[key] = value;
+      continue;
+    }
+
+    if (headers.includes(value)) {
+      normalized[value] = key;
+      continue;
+    }
+
+    normalized[key] = value;
+  }
+
+  return normalized;
+}
+
+/**
  * Axios 에러에서 사용자 표시용 메시지 추출
  */
 export function extractApiErrorMessage(

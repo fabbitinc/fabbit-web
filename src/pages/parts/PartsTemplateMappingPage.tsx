@@ -1,22 +1,15 @@
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { Loader2, Sparkles } from "lucide-react";
+import { Loader2, RotateCcw, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { useMappingStore, useUploadStore } from "@/stores/onboarding";
 import { validateMapping, confirmMapping } from "@/api/onboarding";
 import { extractApiErrorMessage } from "@/features/onboarding/utils/mappingUtils";
 import { type TemplateScope } from "@/pages/parts/partsTemplateStore";
-import { MappingSummaryBar } from "@/features/onboarding/components/mapping/MappingSummaryBar";
-import { MappingCard } from "@/features/onboarding/components/mapping/MappingCard";
-import { UnmappedCard } from "@/features/onboarding/components/mapping/UnmappedCard";
-import { RelationMappingCard } from "@/features/onboarding/components/mapping/RelationMappingCard";
-import { AddRelationForm } from "@/features/onboarding/components/mapping/AddRelationForm";
-import { ExtendedMappingCard } from "@/features/onboarding/components/mapping/ExtendedMappingCard";
-import { MAPPING_TERMS } from "@/features/onboarding/constants/mappingTerminology";
-import { useOntologySchema } from "@/features/onboarding/hooks/useOntologySchema";
 import { useMappingDerivedState } from "@/features/onboarding/hooks/useMappingDerivedState";
 import { useMappingActions } from "@/features/onboarding/hooks/useMappingActions";
+import { KanbanBoard } from "@/features/onboarding/components/kanban/KanbanBoard";
 import "@/pages/parts/parts-template-mapping.css";
 
 interface LocationState {
@@ -32,39 +25,16 @@ export function PartsTemplateMappingPage() {
   const scope: TemplateScope = partNumber ? "part_detail" : "master";
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const mappingHeaders = useMappingStore((s) => s.mappingHeaders);
   const setStep = useMappingStore((s) => s.setStep);
-  const approveColumnMapping = useMappingStore((s) => s.approveColumnMapping);
   const getMappingResult = useMappingStore((s) => s.getMappingResult);
   const setMappingId = useMappingStore((s) => s.setMappingId);
   const primaryUploadId = useUploadStore((s) => s.primaryUploadId);
 
-  const { effectiveTargetOptions } = useOntologySchema();
-  const {
-    baseMappings,
-    extendedMappings,
-    relationPropertyByType,
-    relationTargetInfoByType,
-    selectableRelationTypeOptions,
-    activeRelationMappings,
-    unmappedColumns,
-    totalMappings,
-    totalApproved,
-    excludedCount,
-    hasMappings,
-    getSampleData,
-  } = useMappingDerivedState();
-  const {
-    handleResetMappings,
-    handleRemoveColumnMapping,
-    handleCreateColumnMapping,
-    handleApproveRelationMapping,
-    handleCreateExtendedMapping,
-    handleCreateRelationMapping,
-    handleRemoveExtendedMapping,
-    handleRemoveRelationMapping,
-    handleApproveAll,
-  } = useMappingActions(relationTargetInfoByType);
+  const derived = useMappingDerivedState();
+  const { hasMappings, hasUnselectedPartMappings } = derived;
+  const { handleResetMappings } = useMappingActions(
+    derived.relationTargetInfoByType,
+  );
 
   useEffect(() => {
     setStep(3);
@@ -76,11 +46,17 @@ export function PartsTemplateMappingPage() {
       return;
     }
 
+    if (hasUnselectedPartMappings) {
+      toast.error(
+        "속성을 선택하지 않은 Part 매핑이 있습니다. 모든 카드의 속성을 선택해주세요.",
+      );
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       const draftMapping = getMappingResult();
 
-      // 검증
       const validation = await validateMapping({
         upload_id: primaryUploadId,
         mapping: draftMapping,
@@ -95,12 +71,13 @@ export function PartsTemplateMappingPage() {
       }
 
       if (validationWarnings.length > 0) {
-        toast.warning(validationWarnings[0].message || "매핑 검증 경고가 있습니다.");
+        toast.warning(
+          validationWarnings[0].message || "매핑 검증 경고가 있습니다.",
+        );
       }
 
       const normalizedMapping = validation.normalized_mapping || draftMapping;
 
-      // 확정
       const confirmResponse = await confirmMapping({
         upload_id: primaryUploadId,
         name: `mapping-${Date.now()}`,
@@ -122,122 +99,37 @@ export function PartsTemplateMappingPage() {
   return (
     <div className="min-h-screen bg-background px-6 py-8">
       <div className="dev-page-container parts-template-mapping-theme space-y-4">
+        {/* 헤더 */}
         <div className="rounded-lg border bg-card px-6 py-5">
           <div className="mb-2 flex items-center gap-2">
             <Sparkles className="h-5 w-5 text-primary" />
             <h1 className="text-xl font-bold text-foreground">매핑 확인</h1>
+            <Button
+              variant="outline"
+              size="sm"
+              className="ml-auto gap-1.5"
+              onClick={handleResetMappings}
+            >
+              <RotateCcw className="size-3.5" />
+              초기화
+            </Button>
           </div>
           <p className="text-sm text-muted-foreground">
-            {fileName ? `${fileName} 분석 결과를 검토하고 최종 매핑을 확정하세요.` : "분석 결과를 검토하고 최종 매핑을 확정하세요."}
+            {fileName
+              ? `${fileName} 분석 결과를 검토하고 최종 매핑을 확정하세요.`
+              : "분석 결과를 검토하고 최종 매핑을 확정하세요."}
           </p>
         </div>
 
-        <MappingSummaryBar
-          columnMappingCount={baseMappings.length}
-          relationMappingCount={activeRelationMappings.length}
-          extendedMappingCount={extendedMappings.length}
-          unmappedCount={excludedCount}
-          approvedCount={totalApproved}
-          totalMappings={totalMappings}
-          onApproveAll={handleApproveAll}
-          onReset={handleResetMappings}
-        />
+        {/* 칸반보드 (요약바 포함) */}
+        <KanbanBoard />
 
-        <section className="space-y-5 rounded-lg border bg-card p-5">
-          <div className="space-y-2">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-blue-600">
-              {MAPPING_TERMS.baseMapping} ({baseMappings.length})
-            </h3>
-            {baseMappings.length > 0 && (
-              <div className="space-y-2">
-                {baseMappings.map((cm) => (
-                  <MappingCard
-                    key={cm.id}
-                    mapping={cm}
-                    sampleData={getSampleData(cm.source_column)}
-                    onApprove={approveColumnMapping}
-                    onRemove={handleRemoveColumnMapping}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-violet-600">
-              {MAPPING_TERMS.relationMapping} ({activeRelationMappings.length})
-            </h3>
-            {activeRelationMappings.length > 0 && (
-              <div className="space-y-2">
-                {activeRelationMappings.map((rm) => (
-                  <RelationMappingCard
-                    key={rm.id}
-                    mapping={rm}
-                    sampleData={getSampleData(Object.keys(rm.rel_columns)[0] || "")}
-                    onApprove={handleApproveRelationMapping}
-                    onDismiss={handleRemoveRelationMapping}
-                  />
-                ))}
-              </div>
-            )}
-
-            <AddRelationForm
-              relationTypeOptions={selectableRelationTypeOptions}
-              relationPropertyByType={relationPropertyByType}
-              relationTargetInfoByType={relationTargetInfoByType}
-              targetPropertyOptions={effectiveTargetOptions}
-              mappingHeaders={mappingHeaders}
-              onApply={handleCreateRelationMapping}
-            />
-          </div>
-
-          <div className="space-y-2">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-amber-600">
-              {MAPPING_TERMS.extendedMapping} ({extendedMappings.length})
-            </h3>
-            {extendedMappings.length > 0 && (
-              <div className="space-y-2">
-                {extendedMappings.map((ep) => (
-                  <ExtendedMappingCard
-                    key={ep.id}
-                    mapping={ep}
-                    sampleData={getSampleData(ep.source_column)}
-                    onApprove={approveColumnMapping}
-                    onRemove={handleRemoveExtendedMapping}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-
-          <div className="space-y-3">
-            <h3 className="text-xs font-semibold uppercase tracking-wider text-red-600">
-              제외 항목 (통합 관리) ({excludedCount})
-            </h3>
-            {unmappedColumns.length > 0 && (
-              <div className="space-y-2">
-                {unmappedColumns.map((col) => (
-                  <UnmappedCard
-                    key={col}
-                    column={col}
-                    sampleData={getSampleData(col)}
-                    targetOptions={effectiveTargetOptions}
-                    relationTypeOptions={selectableRelationTypeOptions}
-                    relationPropertyByType={relationPropertyByType}
-                    relationTargetInfoByType={relationTargetInfoByType}
-                    targetPropertyOptions={effectiveTargetOptions}
-                    onCreateBase={handleCreateColumnMapping}
-                    onCreateExtended={handleCreateExtendedMapping}
-                    onCreateRelation={handleCreateRelationMapping}
-                  />
-                ))}
-              </div>
-            )}
-          </div>
-        </section>
-
+        {/* 확정 버튼 */}
         <div className="flex items-center justify-end">
-          <Button disabled={!hasMappings || isSubmitting} onClick={handleConfirm}>
+          <Button
+            disabled={!hasMappings || hasUnselectedPartMappings || isSubmitting}
+            onClick={handleConfirm}
+          >
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
