@@ -70,6 +70,7 @@ export interface RelationTargetInfo {
   targetLabel: string;
   targetMergeKeys: string[];
   targetColumnOptions: string[];
+  targetProperties?: string[];
 }
 
 // 타겟 속성 옵션 (향후 온톨로지 API에서 로드)
@@ -79,6 +80,7 @@ export interface TargetPropertyOption {
   description: string;
   required: boolean;
   data_type: string;
+  is_merge_key?: boolean;
 }
 
 // Step 3: 데이터 처리

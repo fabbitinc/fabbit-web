@@ -8,6 +8,7 @@ import type {
 import type {
   EditableConstraintsDTO,
   MappingResultDTO,
+  OntologySchemaResponse,
 } from "@/api/types/onboarding";
 import { cloneRelationMapping, isRelationValid } from "./helpers";
 import {
@@ -31,6 +32,7 @@ interface MappingState {
   editableConstraints: EditableConstraintsDTO | null;
   // 온톨로지 스키마에서 로드된 타겟 옵션
   targetPropertyOptions: TargetPropertyOption[];
+  ontologySchema: OntologySchemaResponse | null;
 
   // API에서 받은 매핑 ID (confirm 후)
   mappingId: string | null;
@@ -42,9 +44,9 @@ interface MappingState {
     headers: string[],
     sampleRows: Record<string, string>[],
     mapping: MappingResultDTO,
-    editableConstraints?: EditableConstraintsDTO,
   ) => void;
   setTargetPropertyOptions: (options: TargetPropertyOption[]) => void;
+  setOntologySchema: (schema: OntologySchemaResponse | null) => void;
   setMappingId: (id: string) => void;
   setMappings: (
     columnMappings: ColumnMappingEntry[],
@@ -78,11 +80,12 @@ export const useMappingStore = create<MappingState>()((set, get) => ({
   mappingSampleRows: [],
   editableConstraints: null,
   targetPropertyOptions: [],
+  ontologySchema: null,
   mappingId: null,
 
   setStep: (step) => set({ currentStep: step }),
 
-  setMappingPreviewData: (headers, sampleRows, mapping, editableConstraints) => {
+  setMappingPreviewData: (headers, sampleRows, mapping) => {
     // property_mappings → columnMappings (is_extended 플래그 유지)
     const columnMappings: ColumnMappingEntry[] = mapping.property_mappings.map((pm, idx) => ({
       id: `cm-${idx + 1}`,
@@ -117,7 +120,6 @@ export const useMappingStore = create<MappingState>()((set, get) => ({
     set({
       mappingHeaders: headers,
       mappingSampleRows: sampleRows,
-      editableConstraints: editableConstraints || null,
       columnMappings: initialColumnMappings.map((cm) => ({ ...cm })),
       relationMappings: initialRelationMappings.map(cloneRelationMapping),
       initialColumnMappings,
@@ -126,6 +128,8 @@ export const useMappingStore = create<MappingState>()((set, get) => ({
   },
 
   setTargetPropertyOptions: (options) => set({ targetPropertyOptions: options }),
+
+  setOntologySchema: (schema) => set({ ontologySchema: schema }),
 
   setMappingId: (id) => set({ mappingId: id }),
 
@@ -318,6 +322,7 @@ export const useMappingStore = create<MappingState>()((set, get) => ({
     mappingSampleRows: [],
     editableConstraints: null,
     targetPropertyOptions: [],
+    ontologySchema: null,
     mappingId: null,
   }),
 
@@ -338,7 +343,13 @@ export const useMappingStore = create<MappingState>()((set, get) => ({
           rel_type: rm.rel_type,
           target_label: rm.target_label,
           node_columns: rm.node_columns,
-          rel_columns: rm.rel_columns,
+          // API 스키마 기준: { property_name: source_column }
+          rel_columns: Object.fromEntries(
+            Object.entries(rm.rel_columns).map(([sourceColumn, property]) => [
+              property,
+              sourceColumn,
+            ]),
+          ),
           rel_column_types: rm.rel_column_types,
           confidence: rm.confidence,
           reason: rm.reason,

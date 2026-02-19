@@ -175,7 +175,6 @@ export function DataProcessingPage() {
           response.headers,
           response.sample_rows,
           response.mapping,
-          response.editable_constraints,
         );
 
         setIsCompleted(true);

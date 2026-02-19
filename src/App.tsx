@@ -41,6 +41,7 @@ import { ProjectsHubPreview } from "@/pages/dev/ProjectsHubPreview";
 import { ProjectRepoPreview } from "@/pages/dev/ProjectRepoPreview";
 import { ProjectOpsItemDetailPreview } from "@/pages/dev/ProjectOpsItemDetailPreview";
 import { ProjectScheduleDetailPreview } from "@/pages/dev/ProjectScheduleDetailPreview";
+import { TemplatesPreview } from "@/pages/dev/TemplatesPreview";
 
 // 온보딩 관련 임포트
 import { OnboardingLayout } from "@/features/onboarding/components/OnboardingLayout";
@@ -425,6 +426,7 @@ function App() {
         {/* TODO 삭제 Dev Preview (인증 불필요) */}
         <Route path="/dev/mapping-preview" element={<MappingCardPreview />} />
         <Route path="/dev/design" element={<DesignSystemPreview />} />
+        <Route path="/dev/templates" element={<TemplatesPreview />} />
         <Route path="/dev/projects" element={<ProjectsHubPreview />} />
         <Route path="/dev/projects/:projectId" element={<ProjectRepoPreview />} />
         <Route path="/dev/projects/:projectId/approvals/:itemId" element={<ProjectOpsItemDetailPreview />} />

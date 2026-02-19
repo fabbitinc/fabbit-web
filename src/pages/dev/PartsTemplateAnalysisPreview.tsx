@@ -7,26 +7,26 @@ import {
   createTemplateVersion,
   getLatestTemplate,
   getTemplates,
-  type TemplateScope,
+  type TemplateType,
 } from "@/pages/dev/partsTemplateStore";
 
 export function PartsTemplateAnalysisPreview() {
   const navigate = useNavigate();
   const { partNumber } = useParams<{ partNumber: string }>();
-  const scope: TemplateScope = partNumber ? "part_detail" : "master";
+  const templateType: TemplateType = partNumber ? "part_detail" : "master";
   const [refreshKey, setRefreshKey] = useState(0);
 
   void refreshKey;
-  const scopedTemplates = getTemplates().filter((template) => template.scope === scope);
-  const latestTemplate = getLatestTemplate(scope);
+  const scopedTemplates = getTemplates().filter((template) => template.templateType === templateType);
+  const latestTemplate = getLatestTemplate(templateType);
 
   function runAnalysis() {
     const columns =
-      scope === "master"
+      templateType === "master"
         ? ["part_number", "part_name", "material", "revision", "unit"]
         : ["part_number", "part_name", "quantity", "unit", "description"];
 
-    createTemplateVersion(scope, columns);
+    createTemplateVersion(templateType, columns);
     setRefreshKey((prev) => prev + 1);
   }
 
@@ -37,12 +37,12 @@ export function PartsTemplateAnalysisPreview() {
           <div>
             <h1 className="text-xl font-bold text-foreground">속성 분석</h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              {scope === "master" ? "Part Master 템플릿" : `Part Detail 템플릿 (${partNumber})`}을 관리합니다.
+              {templateType === "master" ? "Part Master 템플릿" : `Part Detail 템플릿 (${partNumber})`}을 관리합니다.
             </p>
           </div>
           <Button
             variant="outline"
-            onClick={() => navigate(scope === "master" ? "/dev/parts" : `/dev/parts/${partNumber}`)}
+            onClick={() => navigate(templateType === "master" ? "/dev/parts" : `/dev/parts/${partNumber}`)}
           >
             <ArrowLeft className="h-4 w-4" />
             돌아가기
@@ -73,9 +73,9 @@ export function PartsTemplateAnalysisPreview() {
               variant="outline"
               onClick={() =>
                 navigate(
-                  scope === "master"
-                    ? "/dev/parts/upload?scope=master"
-                    : `/dev/parts/${partNumber}/upload?scope=detail`
+                  templateType === "master"
+                    ? "/dev/parts/upload"
+                    : `/dev/parts/${partNumber}/upload`
                 )
               }
             >
@@ -90,7 +90,7 @@ export function PartsTemplateAnalysisPreview() {
             {scopedTemplates.map((template) => (
               <div key={template.id} className="rounded-md border bg-background p-3 text-sm">
                 <p className="font-medium text-foreground">{template.name}</p>
-                <p className="text-xs text-muted-foreground">scope={template.scope} · v{template.version} · {template.updatedAt}</p>
+                <p className="text-xs text-muted-foreground">v{template.version} · {template.updatedAt}</p>
               </div>
             ))}
           </div>

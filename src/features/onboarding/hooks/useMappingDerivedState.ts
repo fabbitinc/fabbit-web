@@ -2,6 +2,21 @@ import { useMemo } from "react";
 import { useMappingStore } from "@/stores/onboarding";
 import { SAMPLE_DATA_MAX_COUNT } from "@/features/onboarding/constants/mappingConfig";
 import type { RelationTargetInfo } from "@/features/onboarding/types/onboarding.types";
+import type { KanbanColumnId } from "@/features/onboarding/hooks/useMappingKanban";
+
+const REL_TYPE_TO_COLUMN: Record<string, KanbanColumnId> = {
+  CONSISTS_OF: "parent_part",
+  SUPPLIED_BY: "Supplier",
+  DEFINED_BY: "Drawing",
+  HAS_ITEM: "Project",
+};
+
+type BlockingIssueReason = "unselected_property" | "merge_key_missing";
+
+interface BlockingIssue {
+  columnId: KanbanColumnId;
+  reason: BlockingIssueReason;
+}
 
 /**
  * 매핑 상태에서 파생되는 모든 계산 값
@@ -16,7 +31,8 @@ export function useMappingDerivedState() {
   const relationMappings = useMappingStore((s) => s.relationMappings);
   const mappingHeaders = useMappingStore((s) => s.mappingHeaders);
   const mappingSampleRows = useMappingStore((s) => s.mappingSampleRows);
-  const editableConstraints = useMappingStore((s) => s.editableConstraints);
+  const ontologySchema = useMappingStore((s) => s.ontologySchema);
+  const targetPropertyOptions = useMappingStore((s) => s.targetPropertyOptions);
 
   // 기본 매핑 (is_extended가 아닌 것)
   const baseMappings = useMemo(
@@ -30,28 +46,51 @@ export function useMappingDerivedState() {
     [columnMappings],
   );
 
-  // 관계 타입 옵션: relation_catalog에서 추출
+  const mergeKeysByLabel = useMemo(() => {
+    const nodeLabels = ontologySchema?.node_labels || [];
+    return nodeLabels.reduce<Record<string, string[]>>((acc, label) => {
+      const keyByFlag = label.properties
+        .filter((prop) => prop.is_merge_key)
+        .map((prop) => prop.name);
+      acc[label.label] = label.merge_keys.length > 0 ? label.merge_keys : keyByFlag;
+      return acc;
+    }, {});
+  }, [ontologySchema]);
+
+  const targetPropertiesByLabel = useMemo(() => {
+    const map = new Map<string, string[]>();
+    targetPropertyOptions.forEach((opt) => {
+      if (!map.has(opt.label)) map.set(opt.label, []);
+      const props = map.get(opt.label)!;
+      if (!props.includes(opt.property)) props.push(opt.property);
+    });
+    return map;
+  }, [targetPropertyOptions]);
+
+  // 관계 타입 옵션: ontology schema에서 추출
   const relationTypeOptions = useMemo(
     () => {
-      const catalog = editableConstraints?.relation_catalog || [];
-      if (catalog.length > 0) {
-        return [...new Set(catalog.map((item) => item.rel_type))];
+      const relationTypes = ontologySchema?.relationship_types || [];
+      if (relationTypes.length > 0) {
+        return [...new Set(relationTypes.map((item) => item.rel_type))];
       }
       return [...new Set(relationMappings.map((rm) => rm.rel_type))];
     },
-    [editableConstraints?.relation_catalog, relationMappings],
+    [ontologySchema, relationMappings],
   );
 
-  // 관계 타입별 속성 옵션: relation_property_catalog에서 파생
+  // 관계 타입별 속성 옵션: ontology relationship_types에서 파생
   const relationPropertyByType = useMemo(
     () => {
-      const catalog = editableConstraints?.relation_property_catalog || [];
-      if (catalog.length > 0) {
-        return catalog.reduce<Record<string, string[]>>((acc, item) => {
+      const relationTypes = ontologySchema?.relationship_types || [];
+      if (relationTypes.length > 0) {
+        return relationTypes.reduce<Record<string, string[]>>((acc, item) => {
           if (!acc[item.rel_type]) acc[item.rel_type] = [];
-          if (!acc[item.rel_type].includes(item.property)) {
-            acc[item.rel_type].push(item.property);
-          }
+          item.properties.forEach((prop) => {
+            if (!acc[item.rel_type].includes(prop.name)) {
+              acc[item.rel_type].push(prop.name);
+            }
+          });
           return acc;
         }, {});
       }
@@ -65,23 +104,25 @@ export function useMappingDerivedState() {
         return acc;
       }, {});
     },
-    [editableConstraints?.relation_property_catalog, relationMappings],
+    [ontologySchema, relationMappings],
   );
 
   // 관계 타입별 상대방 노드 정보
   const relationTargetInfoByType = useMemo(() => {
-    const catalog = editableConstraints?.relation_catalog || [];
-    const catalogByType = new Map(
-      catalog.map((item) => [item.rel_type, item]),
+    const relationTypes = ontologySchema?.relationship_types || [];
+    const relationByType = new Map(
+      relationTypes.map((item) => [item.rel_type, item]),
     );
-    const mergeKeysByLabel = editableConstraints?.merge_keys_by_label || {};
 
     return relationTypeOptions.reduce<Record<string, RelationTargetInfo>>((acc, relType) => {
-      const catalogItem = catalogByType.get(relType);
+      const relationType = relationByType.get(relType);
       const fallback = relationMappings.find((rm) => rm.rel_type === relType);
 
-      const targetLabel = catalogItem?.to_label || fallback?.target_label || "";
+      const targetLabel = relationType?.to_label || fallback?.target_label || "";
       const targetMergeKeys = targetLabel ? (mergeKeysByLabel[targetLabel] || []) : [];
+      const targetProperties = targetLabel
+        ? (targetPropertiesByLabel.get(targetLabel) || [])
+        : [];
 
       // 상대방 merge key가 baseMappings에 매핑되어 있으면 해당 컬럼, 없으면 전체 헤더
       const resolveTargetColumns = () => {
@@ -96,10 +137,10 @@ export function useMappingDerivedState() {
 
       const targetColumnOptions = resolveTargetColumns();
 
-      acc[relType] = { targetLabel, targetMergeKeys, targetColumnOptions };
+      acc[relType] = { targetLabel, targetMergeKeys, targetColumnOptions, targetProperties };
       return acc;
     }, {});
-  }, [editableConstraints, relationMappings, relationTypeOptions, baseMappings, mappingHeaders]);
+  }, [ontologySchema, relationMappings, relationTypeOptions, baseMappings, mappingHeaders, mergeKeysByLabel, targetPropertiesByLabel]);
 
   // 선택 가능한 관계 타입 (상대방 노드 컬럼 옵션이 있는 경우만)
   const selectableRelationTypeOptions = relationTypeOptions.filter((relType) => {
@@ -134,7 +175,108 @@ export function useMappingDerivedState() {
 
   // 매핑이 하나라도 있는지
   const hasMappings = totalMappings > 0;
-  const hasUnselectedPartMappings = baseMappings.some((cm) => !cm.target_property);
+  const unselectedPartMappings = baseMappings.filter((cm) => !cm.target_property);
+  const hasUnselectedPartMappings = unselectedPartMappings.length > 0;
+  const unselectedPartMappingsCount = unselectedPartMappings.length;
+
+  const unselectedRelationMappings = activeRelationMappings.flatMap((rm) =>
+    Object.values(rm.rel_columns).filter((prop) => !String(prop || "").trim()),
+  );
+  const hasUnselectedRelationMappings = unselectedRelationMappings.length > 0;
+  const unselectedRelationMappingsCount = unselectedRelationMappings.length;
+  const hasUnselectedMappings = hasUnselectedPartMappings || hasUnselectedRelationMappings;
+
+  const relationMergeKeyIssueByType = activeRelationMappings.reduce<Record<string, number>>(
+    (acc, rm) => {
+      const mergeKeys = relationTargetInfoByType[rm.rel_type]?.targetMergeKeys || [];
+      if (mergeKeys.length === 0) return acc;
+
+      const hasBasicProperty = Object.keys(rm.node_columns).length > 0;
+      if (!hasBasicProperty) return acc;
+
+      const hasMergeKey = mergeKeys.some((mergeKey) => Boolean(rm.node_columns[mergeKey]));
+      if (!hasMergeKey) {
+        acc[rm.rel_type] = (acc[rm.rel_type] || 0) + 1;
+      }
+      return acc;
+    },
+    {},
+  );
+  const hasRelationMergeKeyIssues = Object.keys(relationMergeKeyIssueByType).length > 0;
+  const relationMergeKeyIssueCount = Object.values(relationMergeKeyIssueByType).reduce(
+    (sum, count) => sum + count,
+    0,
+  );
+
+  const partMergeKeys = mergeKeysByLabel.Part || [];
+  const partMissingMergeKeys = partMergeKeys.filter(
+    (mergeKey) =>
+      !baseMappings.some(
+        (cm) => !cm.is_extended && cm.target_property && cm.target_property === mergeKey,
+      ),
+  );
+  const hasRequiredPartMergeKeys =
+    partMergeKeys.length === 0 || partMissingMergeKeys.length === 0;
+
+  const blockingIssues = useMemo<BlockingIssue[]>(() => {
+    const issues: BlockingIssue[] = [];
+
+    unselectedPartMappings.forEach(() => {
+      issues.push({ columnId: "Part", reason: "unselected_property" });
+    });
+
+    activeRelationMappings.forEach((rm) => {
+      const columnId = REL_TYPE_TO_COLUMN[rm.rel_type] || "unmapped";
+
+      Object.values(rm.rel_columns)
+        .filter((prop) => !String(prop || "").trim())
+        .forEach(() => {
+          issues.push({ columnId, reason: "unselected_property" });
+        });
+    });
+
+    partMissingMergeKeys.forEach(() => {
+      issues.push({ columnId: "Part", reason: "merge_key_missing" });
+    });
+
+    Object.entries(relationMergeKeyIssueByType).forEach(([relType, count]) => {
+      const columnId = REL_TYPE_TO_COLUMN[relType] || "unmapped";
+      for (let i = 0; i < count; i += 1) {
+        issues.push({ columnId, reason: "merge_key_missing" });
+      }
+    });
+
+    return issues;
+  }, [activeRelationMappings, partMissingMergeKeys, relationMergeKeyIssueByType, unselectedPartMappings]);
+
+  const blockingIssueCount = blockingIssues.length;
+
+  const issueCountByColumn = useMemo(() => {
+    return blockingIssues.reduce<Partial<Record<KanbanColumnId, number>>>((acc, issue) => {
+      acc[issue.columnId] = (acc[issue.columnId] || 0) + 1;
+      return acc;
+    }, {});
+  }, [blockingIssues]);
+
+  const issueSummaryByColumn = useMemo(() => {
+    const byColumn = new Map<KanbanColumnId, Set<string>>();
+    for (const issue of blockingIssues) {
+      if (!byColumn.has(issue.columnId)) byColumn.set(issue.columnId, new Set());
+      const messages = byColumn.get(issue.columnId)!;
+      if (issue.reason === "unselected_property") {
+        messages.add("속성을 선택하지 않은 카드가 있어요.");
+      }
+      if (issue.reason === "merge_key_missing") {
+        messages.add("매칭키가 지정되지 않았어요.");
+      }
+    }
+
+    const summary: Partial<Record<KanbanColumnId, string>> = {};
+    for (const [columnId, messages] of byColumn.entries()) {
+      summary[columnId] = Array.from(messages).join(" · ");
+    }
+    return summary;
+  }, [blockingIssues]);
 
   // 샘플 데이터 추출 헬퍼
   const getSampleData = (column: string) => {
@@ -158,6 +300,7 @@ export function useMappingDerivedState() {
     relationPropertyByType,
     relationTargetInfoByType,
     selectableRelationTypeOptions,
+    mergeKeysByLabel,
     // 파생 데이터
     activeRelationMappings,
     unmappedColumns,
@@ -167,6 +310,19 @@ export function useMappingDerivedState() {
     excludedCount,
     hasMappings,
     hasUnselectedPartMappings,
+    unselectedPartMappingsCount,
+    hasUnselectedRelationMappings,
+    unselectedRelationMappingsCount,
+    hasUnselectedMappings,
+    hasRequiredPartMergeKeys,
+    partMissingMergeKeys,
+    relationMergeKeyIssueByType,
+    hasRelationMergeKeyIssues,
+    relationMergeKeyIssueCount,
+    blockingIssues,
+    issueCountByColumn,
+    issueSummaryByColumn,
+    blockingIssueCount,
     // 헬퍼
     getSampleData,
   };

@@ -265,14 +265,14 @@ export function PartsPage() {
           </div>
           <div className="flex items-center gap-2">
             <Button
-              onClick={() => navigate("/parts/templates?scope=master")}
+              onClick={() => navigate("/parts/templates")}
               variant="outline"
               className="ai-outline-btn ai-theme-1"
             >
               <Sparkles className="ai-outline-btn__icon h-4 w-4" />
               속성 분석
             </Button>
-            <Button variant="outline" onClick={() => navigate("/parts/upload?scope=master")}>
+            <Button variant="outline" onClick={() => navigate("/parts/upload")}>
               <Upload className="h-4 w-4" />
               부품 업로드
             </Button>

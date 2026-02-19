@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useMappingStore, useUploadStore } from "@/stores/onboarding";
-import { type TemplateScope } from "@/pages/parts/partsTemplateStore";
+import { type TemplateType } from "@/pages/parts/partsTemplateStore";
 import { completeUpload, previewMapping } from "@/api/onboarding";
 
 type StepStatus = "pending" | "in_progress" | "completed";
@@ -53,19 +53,21 @@ export function PartsTemplateProcessingPage() {
   const location = useLocation();
   const { fileName } = (location.state as LocationState | null) ?? {};
 
-  const scope: TemplateScope = partNumber ? "part_detail" : "master";
+  const templateType: TemplateType = partNumber ? "part_detail" : "master";
   const [steps, setSteps] = useState<ProcessingStep[]>(INITIAL_STEPS);
   const [progress, setProgress] = useState(0);
   const [logs, setLogs] = useState<string[]>([]);
   const [isCompleted, setIsCompleted] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [retryToken, setRetryToken] = useState(0);
   const setMappingPreviewData = useMappingStore((s) => s.setMappingPreviewData);
   const primaryUploadId = useUploadStore((s) => s.primaryUploadId);
   const apiCalledRef = useRef(false);
+  const retryPreviewOnlyRef = useRef(false);
 
   const mappingPath = useMemo(
-    () => (scope === "master" ? "/parts/templates/mapping" : `/parts/${partNumber}/templates/mapping`),
-    [scope, partNumber],
+    () => (templateType === "master" ? "/parts/templates/mapping" : `/parts/${partNumber}/templates/mapping`),
+    [templateType, partNumber],
   );
 
   useEffect(() => {
@@ -87,13 +89,19 @@ export function PartsTemplateProcessingPage() {
       try {
         setLogs([`분석 대상 파일 확인: ${fileName ?? "업로드된 파일"}`]);
 
-        // 1단계: 업로드 완료 확인
+        // 1단계: 업로드 완료 확인 (재시도 시 스킵)
         updateStep("parsing", "in_progress");
-        setLogs((prev) => [...prev, "업로드된 파일을 확인합니다..."]);
-        await completeUpload(primaryUploadId);
-        updateStep("parsing", "completed");
-        setProgress(20);
-        setLogs((prev) => [...prev, "파일 업로드 확인 완료"]);
+        if (retryPreviewOnlyRef.current) {
+          setLogs((prev) => [...prev, "기존 업로드를 재사용해 분석을 다시 시작합니다..."]);
+          updateStep("parsing", "completed");
+          setProgress(20);
+        } else {
+          setLogs((prev) => [...prev, "업로드된 파일을 확인합니다..."]);
+          await completeUpload(primaryUploadId);
+          updateStep("parsing", "completed");
+          setProgress(20);
+          setLogs((prev) => [...prev, "파일 업로드 확인 완료"]);
+        }
 
         // 2단계: AI 분석 (애니메이션 병렬 실행)
         animationInterval = setInterval(() => {
@@ -130,10 +138,10 @@ export function PartsTemplateProcessingPage() {
           response.headers,
           response.sample_rows,
           response.mapping,
-          response.editable_constraints,
         );
 
         setIsCompleted(true);
+        retryPreviewOnlyRef.current = false;
       } catch (err) {
         done = true;
         if (animationInterval) clearInterval(animationInterval);
@@ -152,7 +160,23 @@ export function PartsTemplateProcessingPage() {
     return () => {
       if (animationInterval) clearInterval(animationInterval);
     };
-  }, [primaryUploadId, fileName, setMappingPreviewData]);
+  }, [primaryUploadId, fileName, setMappingPreviewData, retryToken]);
+
+  const handleRetry = () => {
+    if (!primaryUploadId) {
+      toast.error("업로드 정보가 없습니다. 파일을 다시 업로드해주세요.");
+      return;
+    }
+
+    apiCalledRef.current = false;
+    retryPreviewOnlyRef.current = true;
+    setError(null);
+    setIsCompleted(false);
+    setProgress(0);
+    setSteps(INITIAL_STEPS);
+    setLogs(["재시도를 시작합니다..."]);
+    setRetryToken((prev) => prev + 1);
+  };
 
   return (
     <div className="min-h-screen bg-background px-6 py-8">
@@ -202,9 +226,13 @@ export function PartsTemplateProcessingPage() {
           {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
 
           <div className="mt-4 flex items-center justify-end">
-            <Button disabled={!isCompleted} onClick={() => navigate(mappingPath, { state: { fileName } })}>
-              매핑 확인
-            </Button>
+            {error ? (
+              <Button onClick={handleRetry}>재시도</Button>
+            ) : (
+              <Button disabled={!isCompleted} onClick={() => navigate(mappingPath, { state: { fileName } })}>
+                매핑 확인
+              </Button>
+            )}
           </div>
         </section>
       </div>

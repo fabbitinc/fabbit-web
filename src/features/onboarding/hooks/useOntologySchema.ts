@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useEffect } from "react";
 import { toast } from "sonner";
 import { useMappingStore } from "@/stores/onboarding";
 import { getOntologySchema } from "@/api/onboarding";
@@ -6,33 +6,19 @@ import type { TargetPropertyOption } from "@/features/onboarding/types/onboardin
 
 /**
  * 온톨로지 스키마 기반 타겟 옵션 관리
- * - editableConstraints가 있으면 allowed_part_properties 기반 옵션 사용
- * - 없으면 API에서 스키마 로드
+ * - 항상 /api/v1/ontology/schema 기반으로 옵션 구성
  */
 export function useOntologySchema() {
-  const editableConstraints = useMappingStore((s) => s.editableConstraints);
+  const ontologySchema = useMappingStore((s) => s.ontologySchema);
   const targetPropertyOptions = useMappingStore((s) => s.targetPropertyOptions);
   const setTargetPropertyOptions = useMappingStore((s) => s.setTargetPropertyOptions);
+  const setOntologySchema = useMappingStore((s) => s.setOntologySchema);
 
-  // 제약 기반 옵션: allowed_part_properties (플랫 배열 → Part 라벨 고정)
-  const constraintTargetOptions = useMemo<TargetPropertyOption[]>(() => {
-    if (!editableConstraints) return [];
-    const properties = editableConstraints.allowed_part_properties || [];
-    return properties.map((property) => ({
-      label: "Part",
-      property,
-      description: "",
-      required: false,
-      data_type: "string",
-    }));
-  }, [editableConstraints]);
-
-  const effectiveTargetOptions =
-    constraintTargetOptions.length > 0 ? constraintTargetOptions : targetPropertyOptions;
+  const effectiveTargetOptions = targetPropertyOptions.filter((opt) => opt.label === "Part");
 
   // 온톨로지 스키마 로드
   useEffect(() => {
-    if (effectiveTargetOptions.length > 0) return;
+    if (ontologySchema) return;
 
     getOntologySchema()
       .then((schema) => {
@@ -45,16 +31,18 @@ export function useOntologySchema() {
               description: prop.description,
               required: prop.required,
               data_type: prop.data_type,
+              is_merge_key: prop.is_merge_key,
             });
           }
         }
+        setOntologySchema(schema);
         setTargetPropertyOptions(options);
       })
       .catch((err) => {
         console.error("Failed to load ontology schema:", err);
         toast.error("온톨로지 스키마를 불러오지 못했습니다. 잠시 후 다시 시도해주세요.");
       });
-  }, [effectiveTargetOptions.length, setTargetPropertyOptions]);
+  }, [ontologySchema, setOntologySchema, setTargetPropertyOptions]);
 
   return { effectiveTargetOptions };
 }

@@ -17,7 +17,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { getLatestTemplate, getTemplates, normalizeColumns, type TemplateScope } from "@/pages/parts/partsTemplateStore";
+import { getLatestTemplate, getTemplates, normalizeColumns, type TemplateType } from "@/pages/parts/partsTemplateStore";
+import { PARTS_TERMS } from "@/pages/parts/partsTerminology";
 
 type UploadType = "part_list" | "parent_child_bom" | "root_specified_bom";
 type PageStep = "upload" | "mapping" | "result";
@@ -125,20 +126,20 @@ function getFileSchemaMatchRatio(file: UploadedFile) {
 }
 
 function toTypeLabel(type: UploadType) {
-  if (type === "part_list") return "Part List";
-  if (type === "parent_child_bom") return "Parent/Child BOM";
-  return "Root-Specified BOM";
+  if (type === "part_list") return "부품 목록형";
+  if (type === "parent_child_bom") return "완전 BOM형";
+  return "루트 지정 BOM형";
 }
 
 export function PartsUploadPage() {
   const navigate = useNavigate();
   const { partNumber } = useParams<{ partNumber: string }>();
-  const scope: TemplateScope = partNumber ? "part_detail" : "master";
+  const templateType: TemplateType = partNumber ? "part_detail" : "master";
 
   const [step, setStep] = useState<PageStep>("upload");
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>("");
   const [uploadType, setUploadType] = useState<UploadType>(
-    scope === "master" ? "part_list" : "root_specified_bom"
+    templateType === "master" ? "part_list" : "root_specified_bom"
   );
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [columnApproval, setColumnApproval] = useState<Record<string, string>>({});
@@ -148,16 +149,16 @@ export function PartsUploadPage() {
   const [openChanged, setOpenChanged] = useState(true);
 
   const scopedTemplates = useMemo(
-    () => getTemplates().filter((template) => template.scope === scope),
-    [scope]
+    () => getTemplates().filter((template) => template.templateType === templateType),
+    [templateType]
   );
 
-  const latestTemplate = useMemo(() => getLatestTemplate(scope), [scope]);
+  const latestTemplate = useMemo(() => getLatestTemplate(templateType), [templateType]);
   const selectedTemplate =
     scopedTemplates.find((template) => template.id === selectedTemplateId) ?? latestTemplate;
 
   const allowTypes: UploadType[] =
-    scope === "master"
+    templateType === "master"
       ? ["part_list", "parent_child_bom"]
       : ["root_specified_bom"];
 
@@ -237,7 +238,7 @@ export function PartsUploadPage() {
           <section className="rounded-lg border bg-card p-6">
             <h1 className="text-xl font-bold text-foreground">데이터 업로드</h1>
             <p className="mt-2 text-sm text-muted-foreground">
-              현재 스코프에 속성 템플릿이 없습니다. 외부에서 속성 분석을 먼저 실행해 주세요.
+              사용할 속성 템플릿이 없습니다. 외부에서 속성 분석을 먼저 실행해 주세요.
             </p>
             <div className="mt-4 flex items-center gap-2">
               <Button
@@ -245,9 +246,9 @@ export function PartsUploadPage() {
                 className="ai-outline-btn ai-theme-1"
                 onClick={() =>
                   navigate(
-                    scope === "master"
-                      ? "/parts/templates?scope=master"
-                      : `/parts/${partNumber}/templates?scope=detail`
+                    templateType === "master"
+                      ? "/parts/templates"
+                      : `/parts/${partNumber}/templates`
                   )
                 }
               >
@@ -256,7 +257,7 @@ export function PartsUploadPage() {
               </Button>
               <Button
                 variant="outline"
-                onClick={() => navigate(scope === "master" ? "/parts" : `/parts/${partNumber}`)}
+                onClick={() => navigate(templateType === "master" ? "/parts" : `/parts/${partNumber}`)}
               >
                 <ArrowLeft className="h-4 w-4" />
                 돌아가기
@@ -275,14 +276,14 @@ export function PartsUploadPage() {
           <div>
             <h1 className="text-xl font-bold text-foreground">데이터 업로드</h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              {scope === "master"
-                ? "Part Master 화면: Part List, Parent/Child BOM 지원"
-                : `Part 상세화면 (${partNumber}): Root-Specified BOM 지원`}
+              {templateType === "master"
+                ? "부품 마스터 화면: 부품 목록형, 완전 BOM형 지원"
+                : `부품 상세 화면 (${partNumber}): 루트 지정 BOM형 지원`}
             </p>
           </div>
           <Button
             variant="outline"
-            onClick={() => navigate(scope === "master" ? "/parts" : `/parts/${partNumber}`)}
+            onClick={() => navigate(templateType === "master" ? "/parts" : `/parts/${partNumber}`)}
           >
             <ArrowLeft className="h-4 w-4" />
             돌아가기
@@ -292,9 +293,9 @@ export function PartsUploadPage() {
         <section className="rounded-lg border bg-card p-4">
           <p className="text-sm font-semibold text-foreground">용어 정리</p>
           <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
-            <li>- Part List: Part 정보만 담긴 파일</li>
-            <li>- Parent/Child BOM: 파일 내 상위 칼럼 있음 (Flat Parent, Hierarchical Parent)</li>
-            <li>- Root-Specified BOM: 파일 내 상위 칼럼 없음 (Manual Root, 파일명 추천/사용자 입력)</li>
+            <li>- 부품 목록형: 부품 정보만 담긴 파일</li>
+            <li>- 완전 BOM형: 파일 내 {PARTS_TERMS.assemblyParentPart.label} 칼럼 포함</li>
+            <li>- 루트 지정 BOM형: 파일 내 {PARTS_TERMS.assemblyParentPart.label} 칼럼 없음 (합성 시 루트 기준 입력)</li>
           </ul>
         </section>
 
@@ -346,7 +347,7 @@ export function PartsUploadPage() {
               <div className="flex items-center justify-between">
                 <Label className="text-sm">업데이트 옵션</Label>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground">기존 Part 재활용</span>
+                  <span className="text-xs text-muted-foreground">기존 부품 재활용</span>
                   <Switch
                     checked={forceRevisionUpdate}
                     onCheckedChange={setForceRevisionUpdate}
@@ -357,7 +358,7 @@ export function PartsUploadPage() {
               <p className="mt-2 text-xs text-muted-foreground">
                 {forceRevisionUpdate
                   ? "켜짐: 기존 Part가 있어도 update된 리비전 생성"
-                  : "꺼짐: 기존 Part 정보를 활용"}
+                  : "꺼짐: 기존 부품 정보를 활용"}
               </p>
             </div>
 
@@ -440,9 +441,9 @@ export function PartsUploadPage() {
                 className="ai-outline-btn ai-theme-1"
                 onClick={() =>
                   navigate(
-                    scope === "master"
-                      ? "/parts/templates?scope=master"
-                      : `/parts/${partNumber}/templates?scope=detail`
+                    templateType === "master"
+                      ? "/parts/templates"
+                      : `/parts/${partNumber}/templates`
                   )
                 }
               >
@@ -542,7 +543,7 @@ export function PartsUploadPage() {
                 신규: <strong>{resultSummary.newCount}건</strong> / 변경 감지: <strong>{resultSummary.changedCount}건</strong> / 기존 데이터: <strong>{resultSummary.existingCount}건</strong>
               </p>
               <p className="mt-1 text-xs text-muted-foreground">
-                적재 job payload: template_id={selectedTemplate?.id ?? "-"}, scope={scope}, update_option={String(forceRevisionUpdate)}
+                적재 job payload: template_id={selectedTemplate?.id ?? "-"}, update_option={String(forceRevisionUpdate)}
               </p>
             </div>
 
@@ -574,7 +575,7 @@ export function PartsUploadPage() {
 
             <div className="flex items-center gap-2">
               <Button variant="outline" onClick={() => setStep("upload")}>다시 업로드</Button>
-              <Button onClick={() => navigate(scope === "master" ? "/parts" : `/parts/${partNumber}`)}>
+              <Button onClick={() => navigate(templateType === "master" ? "/parts" : `/parts/${partNumber}`)}>
                 <Check className="h-4 w-4" />
                 완료
               </Button>

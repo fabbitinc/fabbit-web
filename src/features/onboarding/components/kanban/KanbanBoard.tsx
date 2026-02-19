@@ -36,10 +36,15 @@ export function KanbanBoard() {
       effectiveTargetOptions: kanban.effectiveTargetOptions,
       columnMappings,
       onSetPartMapping: kanban.handleSetPartMapping,
+      onSetRelationCardMapping: kanban.handleSetRelationCardMapping,
       onRemoveColumnMapping: kanban.handleRemoveColumnMapping,
       onRemoveExtendedMapping: kanban.handleRemoveExtendedMapping,
       onRemoveRelationMapping: kanban.handleRemoveRelationMapping,
+      onRemoveRelationCardMapping: kanban.handleRemoveRelationCardMapping,
       relationMappings,
+      relationPropertyByType: kanban.relationPropertyByType,
+      relationTargetInfoByType: kanban.relationTargetInfoByType,
+      mergeKeysByLabel: kanban.mergeKeysByLabel,
     }),
     [kanban, columnMappings, relationMappings],
   );
@@ -81,7 +86,7 @@ export function KanbanBoard() {
           relationMappings,
           kanban.handleRemoveColumnMapping,
           kanban.handleRemoveExtendedMapping,
-          kanban.handleRemoveRelationMapping,
+          kanban.handleRemoveRelationCardMapping,
         );
         return;
       }
@@ -95,7 +100,7 @@ export function KanbanBoard() {
           relationMappings,
           kanban.handleRemoveColumnMapping,
           kanban.handleRemoveExtendedMapping,
-          kanban.handleRemoveRelationMapping,
+          kanban.handleRemoveRelationCardMapping,
         );
       }
 
@@ -108,9 +113,15 @@ export function KanbanBoard() {
       // 관계 컬럼: 즉시 이동 (첫 번째 merge key로 기본 배치)
       const relType = COLUMN_TO_REL_TYPE[toColumnId];
       if (relType) {
-        const targetInfo = kanban.relationTargetInfoByType[relType];
-        const firstKey = targetInfo?.targetMergeKeys?.[0] || "id";
-        kanban.handleCreateRelationMapping(relType, { [firstKey]: sourceColumn }, {}, {});
+        const existingRelation = relationMappings.find(
+          (rm) => !rm.dismissed && rm.rel_type === relType,
+        );
+        kanban.handleCreateRelationMapping(
+          relType,
+          existingRelation ? { ...existingRelation.node_columns } : {},
+          { [sourceColumn]: "" },
+          existingRelation ? { ...existingRelation.rel_column_types } : {},
+        );
       }
     },
     [columnMappings, relationMappings, kanban],
@@ -198,7 +209,13 @@ export function KanbanBoard() {
         <KanbanProvider value={kanbanContextValue}>
           <div className="flex flex-col gap-3">
             {kanban.columns.map((column) => (
-              <KanbanColumn key={column.id} column={column} />
+              <KanbanColumn
+                key={column.id}
+                column={column}
+                mappingHeaders={mappingHeaders}
+                issueCount={kanban.issueCountByColumn[column.id] || 0}
+                issueSummary={kanban.issueSummaryByColumn[column.id] || ""}
+              />
             ))}
           </div>
         </KanbanProvider>

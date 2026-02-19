@@ -681,8 +681,8 @@ export function ItemDetailPreview() {
           <BomTab
             children={MOCK_BOM_CHILDREN}
             parents={MOCK_BOM_PARENTS}
-            onAnalyze={() => navigate(`/dev/parts/${item.part_number}/templates?scope=detail`)}
-            onUpload={() => navigate(`/dev/parts/${item.part_number}/upload?scope=detail`)}
+            onAnalyze={() => navigate(`/dev/parts/${item.part_number}/templates`)}
+            onUpload={() => navigate(`/dev/parts/${item.part_number}/upload`)}
           />
         )}
         {activeTab === "attachments" && <DrawingsTab drawings={MOCK_DRAWINGS} />}

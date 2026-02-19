@@ -3,8 +3,14 @@ import { useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, FileText, Lightbulb, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { type TemplateScope } from "@/pages/parts/partsTemplateStore";
+import { type TemplateType } from "@/pages/parts/partsTemplateStore";
+import { PARTS_TERMS } from "@/pages/parts/partsTerminology";
 import { createUpload } from "@/api/onboarding";
 import { useUploadStore } from "@/stores/onboarding";
 import type { UploadedFile } from "@/features/onboarding/types/onboarding.types";
@@ -12,34 +18,58 @@ import type { UploadedFile } from "@/features/onboarding/types/onboarding.types"
 const ANALYSIS_ACCEPT = ".xlsx,.xls,.csv";
 
 const PART_LIST_EXAMPLE = [
-  { part_number: "BLT-001", part_name: "육각 볼트 M8x25", material: "SUS304", revision: "A" },
-  { part_number: "NUT-001", part_name: "육각 너트 M8", material: "SUS304", revision: "A" },
+  { part_number: "BLT-001", part_name: "Hex Bolt M8x25", material: "SUS304", revision: "A" },
+  { part_number: "NUT-001", part_name: "Hex Nut M8", material: "SUS304", revision: "A" },
 ];
 
 const PARENT_CHILD_BOM_EXAMPLE = [
   {
     parent_part_number: "ASM-100",
-    parent_part_name: "모터 어셈블리",
+    parent_part_name: "Motor Assembly",
     child_part_number: "BLT-001",
     quantity: 4,
   },
   {
     parent_part_number: "ASM-100",
-    parent_part_name: "모터 어셈블리",
+    parent_part_name: "Motor Assembly",
     child_part_number: "BRK-002",
     quantity: 1,
   },
 ];
 
 const ROOT_SPECIFIED_BOM_EXAMPLE = [
-  { part_number: "BLT-001", part_name: "육각 볼트 M8x25", quantity: 4, unit: "EA" },
-  { part_number: "BRK-002", part_name: "브라켓 B", quantity: 1, unit: "EA" },
+  { part_number: "BLT-001", part_name: "Hex Bolt M8x25", quantity: 4, unit: "EA" },
+  { part_number: "BRK-002", part_name: "Bracket B", quantity: 1, unit: "EA" },
 ];
+
+function HeaderLabel({
+  ko,
+  aliases,
+  raw,
+  className,
+}: {
+  ko: string;
+  aliases: string;
+  raw: string;
+  className?: string;
+}) {
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span className={cn("cursor-help", className)}>{ko}</span>
+      </TooltipTrigger>
+      <TooltipContent side="top" className="max-w-xs text-xs">
+        <p>{aliases}</p>
+        <p className="mt-1 text-[11px] opacity-80">원문 키: {raw}</p>
+      </TooltipContent>
+    </Tooltip>
+  );
+}
 
 export function PartsTemplateAnalysisPage() {
   const navigate = useNavigate();
   const { partNumber } = useParams<{ partNumber: string }>();
-  const scope: TemplateScope = partNumber ? "part_detail" : "master";
+  const templateType: TemplateType = partNumber ? "part_detail" : "master";
   const [isDragOver, setIsDragOver] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -140,7 +170,7 @@ export function PartsTemplateAnalysisPage() {
     }
 
     setIsUploading(false);
-    const nextPath = scope === "master" ? "/parts/templates/processing" : `/parts/${partNumber}/templates/processing`;
+    const nextPath = templateType === "master" ? "/parts/templates/processing" : `/parts/${partNumber}/templates/processing`;
     navigate(nextPath, { state: { fileName: file.name } });
   }
 
@@ -151,14 +181,14 @@ export function PartsTemplateAnalysisPage() {
           <div>
             <h1 className="text-xl font-bold text-foreground">속성 분석</h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              {scope === "master"
-                ? "업로드 파일을 분석해 Part 속성 템플릿을 생성합니다."
+              {templateType === "master"
+                ? "업로드 파일을 분석해 부품 속성 템플릿을 생성합니다."
                 : `부품(${partNumber}) 기준으로 상세 속성 템플릿을 생성합니다.`}
             </p>
           </div>
           <Button
             variant="outline"
-            onClick={() => navigate(scope === "master" ? "/parts" : `/parts/${partNumber}`)}
+            onClick={() => navigate(templateType === "master" ? "/parts" : `/parts/${partNumber}`)}
           >
             <ArrowLeft className="h-4 w-4" />
             돌아가기
@@ -168,7 +198,7 @@ export function PartsTemplateAnalysisPage() {
         <section className="rounded-lg border bg-card p-5">
           <h2 className="text-sm font-semibold text-foreground">분석 파일 업로드</h2>
           <p className="mt-1 text-xs text-muted-foreground">
-            BOM/Part List 파일 헤더를 기준으로 속성 후보를 추출합니다.
+            BOM/부품 목록 파일 헤더를 기준으로 속성 후보를 추출해요.
           </p>
 
           <div
@@ -224,19 +254,45 @@ export function PartsTemplateAnalysisPage() {
 
         <section className="rounded-lg border bg-card p-5">
           <h2 className="text-sm font-semibold text-foreground">파일 형식 예시</h2>
+          <p className="mt-1 text-xs text-muted-foreground">
+            화면에는 이해하기 쉬운 설명만 보여드리고, 내부 분류 코드는 툴팁으로 확인하실 수 있어요.
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            용어 기준: {PARTS_TERMS.part.label}({PARTS_TERMS.part.aliases.join("/")}), {PARTS_TERMS.assemblyParentPart.label}(Assy/Parent Part)
+          </p>
 
           <div className="mt-3 space-y-4">
             <div className="rounded-md border p-3">
-              <p className="text-sm font-medium text-foreground">1) Part List (가능)</p>
-              <p className="mt-1 text-xs text-muted-foreground">Part 정보만 담긴 파일</p>
+              <div className="flex items-center gap-2">
+                <p className="text-sm font-medium text-foreground">1) 부품 목록형</p>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button className="text-[11px] text-muted-foreground underline underline-offset-2" type="button">
+                      내부 코드
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">PART_LIST (part_list)</TooltipContent>
+                </Tooltip>
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">
+                부품 속성만 있는 형식이에요. 관계 정보가 없어서 파일만 올려도 바로 합성할 수 있어요.
+              </p>
               <div className="mt-2 overflow-hidden rounded-md border">
                 <table className="w-full text-xs">
                   <thead>
                     <tr className="border-b bg-muted/30">
-                      <th className="px-3 py-2 text-left font-medium text-muted-foreground">part_number</th>
-                      <th className="px-3 py-2 text-left font-medium text-muted-foreground">part_name</th>
-                      <th className="px-3 py-2 text-left font-medium text-muted-foreground">material</th>
-                      <th className="px-3 py-2 text-left font-medium text-muted-foreground">revision</th>
+                      <th className="px-3 py-2 text-left font-medium text-muted-foreground">
+                        <HeaderLabel ko="품번" aliases="Part No. / 品番 / 零件编号" raw="part_number" />
+                      </th>
+                      <th className="px-3 py-2 text-left font-medium text-muted-foreground">
+                        <HeaderLabel ko="품명" aliases="Part Name / Description / 品名 / 名称" raw="part_name" />
+                      </th>
+                      <th className="px-3 py-2 text-left font-medium text-muted-foreground">
+                        <HeaderLabel ko="재질" aliases="Material / 材質 / 材料" raw="material" />
+                      </th>
+                      <th className="px-3 py-2 text-left font-medium text-muted-foreground">
+                        <HeaderLabel ko="리비전" aliases="Revision / Rev / 改訂 / 版本" raw="revision" />
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -254,16 +310,37 @@ export function PartsTemplateAnalysisPage() {
             </div>
 
             <div className="rounded-md border p-3">
-              <p className="text-sm font-medium text-foreground">2) Parent/Child BOM (가능)</p>
-              <p className="mt-1 text-xs text-muted-foreground">파일 내 상위 칼럼 있음 (Flat Parent, Hierarchical Parent)</p>
+              <div className="flex items-center gap-2">
+                <p className="text-sm font-medium text-foreground">2) 완전 BOM형</p>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button className="text-[11px] text-muted-foreground underline underline-offset-2" type="button">
+                      내부 코드
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">FULL_BOM (full_bom)</TooltipContent>
+                </Tooltip>
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">
+                관계 정보가 있고, 대상 노드를 찾는 데 필요한 키가 파일 컬럼에 모두 매핑된 형식이에요.
+                이 경우도 파일 업로드만으로 합성할 수 있어요.
+              </p>
               <div className="mt-2 overflow-hidden rounded-md border">
                 <table className="w-full text-xs">
                   <thead>
                     <tr className="border-b bg-muted/30">
-                      <th className="px-3 py-2 text-left font-medium text-muted-foreground">parent_part_number</th>
-                      <th className="px-3 py-2 text-left font-medium text-muted-foreground">parent_part_name</th>
-                      <th className="px-3 py-2 text-left font-medium text-muted-foreground">child_part_number</th>
-                      <th className="px-3 py-2 text-right font-medium text-muted-foreground">quantity</th>
+                      <th className="px-3 py-2 text-left font-medium text-muted-foreground">
+                        <HeaderLabel ko="조립품(상위 부품) 품번" aliases="Assembly Part No. / Parent Part No. / 親品番 / 上位件号" raw="parent_part_number" />
+                      </th>
+                      <th className="px-3 py-2 text-left font-medium text-muted-foreground">
+                        <HeaderLabel ko="조립품(상위 부품) 품명" aliases="Assembly Part Name / Parent Part Name / 親品名 / 上位件名称" raw="parent_part_name" />
+                      </th>
+                      <th className="px-3 py-2 text-left font-medium text-muted-foreground">
+                        <HeaderLabel ko="하위 품번" aliases="Child Part No. / 子品番 / 下位件号" raw="child_part_number" />
+                      </th>
+                      <th className="px-3 py-2 text-right font-medium text-muted-foreground">
+                        <HeaderLabel ko="수량" aliases="Qty / Quantity / 数量" raw="quantity" className="inline-block" />
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -280,22 +357,38 @@ export function PartsTemplateAnalysisPage() {
               </div>
             </div>
 
-            <div className="rounded-md border border-red-200 bg-red-50 p-3">
-              <p className="text-sm font-medium text-red-700">3) Root-Specified BOM (불가능 예시)</p>
-              <p className="mt-1 text-xs text-red-600">
-                파일 내 상위 칼럼이 없는 Root-Specified BOM은 현재 이 화면에서 지원하지 않습니다.
+            <div className="rounded-md border border-amber-200 bg-amber-50 p-3">
+              <div className="flex items-center gap-2">
+                <p className="text-sm font-medium text-amber-700">3) 루트 지정 BOM형</p>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button className="text-[11px] text-amber-700 underline underline-offset-2" type="button">
+                      내부 코드
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">ROOT_BOM (root_bom)</TooltipContent>
+                </Tooltip>
+              </div>
+              <p className="mt-1 text-xs text-amber-700">
+                관계 정보는 있지만 대상 노드의 merge key가 비어 있는 형식이에요.
+                합성 단계에서 루트 품번 같은 추가 기준값을 함께 입력해주셔야 해요.
               </p>
-              <p className="mt-1 text-xs text-red-600">
-                아이템 상세 화면에서 상위 아이템 클릭 후 BOM 탭 업로드를 사용하세요.
-              </p>
-              <div className="mt-2 overflow-hidden rounded-md border border-red-200 bg-white">
+              <div className="mt-2 overflow-hidden rounded-md border border-amber-200 bg-white">
                 <table className="w-full text-xs">
                   <thead>
-                    <tr className="border-b bg-red-50">
-                      <th className="px-3 py-2 text-left font-medium text-red-700">part_number</th>
-                      <th className="px-3 py-2 text-left font-medium text-red-700">part_name</th>
-                      <th className="px-3 py-2 text-right font-medium text-red-700">quantity</th>
-                      <th className="px-3 py-2 text-left font-medium text-red-700">unit</th>
+                    <tr className="border-b bg-amber-50">
+                      <th className="px-3 py-2 text-left font-medium text-amber-700">
+                        <HeaderLabel ko="품번" aliases="Part No. / 品番 / 零件编号" raw="part_number" className="text-amber-700" />
+                      </th>
+                      <th className="px-3 py-2 text-left font-medium text-amber-700">
+                        <HeaderLabel ko="품명" aliases="Part Name / Description / 品名 / 名称" raw="part_name" className="text-amber-700" />
+                      </th>
+                      <th className="px-3 py-2 text-right font-medium text-amber-700">
+                        <HeaderLabel ko="수량" aliases="Qty / Quantity / 数量" raw="quantity" className="inline-block text-amber-700" />
+                      </th>
+                      <th className="px-3 py-2 text-left font-medium text-amber-700">
+                        <HeaderLabel ko="단위" aliases="UoM / Unit / 単位 / 单位" raw="unit" className="text-amber-700" />
+                      </th>
                     </tr>
                   </thead>
                   <tbody>
@@ -315,7 +408,7 @@ export function PartsTemplateAnalysisPage() {
 
           <div className="mt-3 space-y-1.5 text-xs text-muted-foreground">
             <p className="flex items-center gap-1.5"><FileText className="h-3 w-3" />지원 포맷: Excel(.xlsx, .xls), CSV</p>
-            <p className="flex items-center gap-1.5"><Lightbulb className="h-3 w-3" />컬럼 헤더가 포함된 파일일수록 분석 정확도가 높습니다.</p>
+            <p className="flex items-center gap-1.5"><Lightbulb className="h-3 w-3" />컬럼 헤더를 명확하게 넣어주실수록 자동 매핑 정확도가 더 좋아져요.</p>
           </div>
         </section>
       </div>

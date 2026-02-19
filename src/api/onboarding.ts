@@ -10,7 +10,9 @@ import type {
   MappingPreviewRequest,
   MappingPreviewResponse,
   MappingConfirmRequest,
+  MappingUpdateRequest,
   MappingResponse,
+  MappingListResponse,
   MappingValidateRequest,
   MappingValidateResponse,
   SynthesisStartRequest,
@@ -121,6 +123,30 @@ export async function confirmMapping(
 ): Promise<MappingResponse> {
   const response = await apiClient.post<MappingResponse>(
     "/api/v1/mappings/confirm",
+    request,
+  );
+  return response.data;
+}
+
+/**
+ * 매핑 목록 조회
+ * GET /api/v1/mappings
+ */
+export async function listMappings(): Promise<MappingListResponse> {
+  const response = await apiClient.get<MappingListResponse>("/api/v1/mappings");
+  return response.data;
+}
+
+/**
+ * 매핑 업데이트
+ * PUT /api/v1/mappings/{mapping_id}
+ */
+export async function updateMapping(
+  mappingId: string,
+  request: MappingUpdateRequest,
+): Promise<MappingResponse> {
+  const response = await apiClient.put<MappingResponse>(
+    `/api/v1/mappings/${mappingId}`,
     request,
   );
   return response.data;
