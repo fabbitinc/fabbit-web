@@ -8,14 +8,38 @@ import {
 import { KanbanCard } from "./KanbanCard";
 import type { KanbanColumn as KanbanColumnType } from "@/features/onboarding/hooks/useMappingKanban";
 
-// 컬럼별 색상
+// 컬럼별 색상(테마 토큰 클래스)
 const COLUMN_COLORS: Record<string, { text: string; border: string; dropBg: string }> = {
-  blue: { text: "text-blue-600", border: "border-blue-200", dropBg: "bg-blue-50/50" },
-  indigo: { text: "text-indigo-600", border: "border-indigo-200", dropBg: "bg-indigo-50/50" },
-  emerald: { text: "text-emerald-600", border: "border-emerald-200", dropBg: "bg-emerald-50/50" },
-  amber: { text: "text-amber-600", border: "border-amber-200", dropBg: "bg-amber-50/50" },
-  violet: { text: "text-violet-600", border: "border-violet-200", dropBg: "bg-violet-50/50" },
-  gray: { text: "text-gray-500", border: "border-gray-300", dropBg: "bg-gray-50" },
+  blue: {
+    text: "mapping-column-part-text",
+    border: "mapping-column-part-border",
+    dropBg: "mapping-column-part-drop-bg",
+  },
+  indigo: {
+    text: "mapping-column-parent-part-text",
+    border: "mapping-column-parent-part-border",
+    dropBg: "mapping-column-parent-part-drop-bg",
+  },
+  emerald: {
+    text: "mapping-column-supplier-text",
+    border: "mapping-column-supplier-border",
+    dropBg: "mapping-column-supplier-drop-bg",
+  },
+  amber: {
+    text: "mapping-column-drawing-text",
+    border: "mapping-column-drawing-border",
+    dropBg: "mapping-column-drawing-drop-bg",
+  },
+  violet: {
+    text: "mapping-column-project-text",
+    border: "mapping-column-project-border",
+    dropBg: "mapping-column-project-drop-bg",
+  },
+  gray: {
+    text: "mapping-column-unmapped-text",
+    border: "mapping-column-unmapped-border",
+    dropBg: "mapping-column-unmapped-drop-bg",
+  },
 };
 
 interface KanbanColumnProps {

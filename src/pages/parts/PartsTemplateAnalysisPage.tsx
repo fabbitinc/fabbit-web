@@ -14,6 +14,7 @@ import { PARTS_TERMS } from "@/pages/parts/partsTerminology";
 import { createUpload } from "@/api/onboarding";
 import { useUploadStore } from "@/stores/onboarding";
 import type { UploadedFile } from "@/features/onboarding/types/onboarding.types";
+import "@/pages/parts/parts-template-mapping.css";
 
 const ANALYSIS_ACCEPT = ".xlsx,.xls,.csv";
 
@@ -47,16 +48,25 @@ function HeaderLabel({
   aliases,
   raw,
   className,
+  required = false,
 }: {
   ko: string;
   aliases: string;
   raw: string;
   className?: string;
+  required?: boolean;
 }) {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <span className={cn("cursor-help", className)}>{ko}</span>
+        <span className={cn("inline-flex items-center gap-1 cursor-help", className)}>
+          {ko}
+          {required && (
+            <span className="text-[10px] font-semibold text-red-500" aria-label="식별자 칼럼">
+              *
+            </span>
+          )}
+        </span>
       </TooltipTrigger>
       <TooltipContent side="top" className="max-w-xs text-xs">
         <p>{aliases}</p>
@@ -176,7 +186,7 @@ export function PartsTemplateAnalysisPage() {
 
   return (
     <div className="min-h-screen bg-background px-6 py-8">
-      <div className="dev-page-container space-y-4">
+      <div className="dev-page-container parts-template-mapping-theme space-y-4">
         <div className="flex items-start justify-between gap-2 rounded-lg border bg-card p-5">
           <div>
             <h1 className="text-xl font-bold text-foreground">속성 분석</h1>
@@ -281,16 +291,16 @@ export function PartsTemplateAnalysisPage() {
                 <table className="w-full text-xs">
                   <thead>
                     <tr className="border-b bg-muted/30">
-                      <th className="px-3 py-2 text-left font-medium text-muted-foreground">
-                        <HeaderLabel ko="품번" aliases="Part No. / 品番 / 零件编号" raw="part_number" />
+                      <th className="mapping-excel-header-part px-3 py-2 text-left font-medium">
+                        <HeaderLabel ko="품번" aliases="Part No. / 品番 / 零件编号" raw="part_number" required />
                       </th>
-                      <th className="px-3 py-2 text-left font-medium text-muted-foreground">
+                      <th className="mapping-excel-header-part px-3 py-2 text-left font-medium">
                         <HeaderLabel ko="품명" aliases="Part Name / Description / 品名 / 名称" raw="part_name" />
                       </th>
-                      <th className="px-3 py-2 text-left font-medium text-muted-foreground">
+                      <th className="mapping-excel-header-part px-3 py-2 text-left font-medium">
                         <HeaderLabel ko="재질" aliases="Material / 材質 / 材料" raw="material" />
                       </th>
-                      <th className="px-3 py-2 text-left font-medium text-muted-foreground">
+                      <th className="mapping-excel-header-part px-3 py-2 text-left font-medium">
                         <HeaderLabel ko="리비전" aliases="Revision / Rev / 改訂 / 版本" raw="revision" />
                       </th>
                     </tr>
@@ -329,16 +339,16 @@ export function PartsTemplateAnalysisPage() {
                 <table className="w-full text-xs">
                   <thead>
                     <tr className="border-b bg-muted/30">
-                      <th className="px-3 py-2 text-left font-medium text-muted-foreground">
-                        <HeaderLabel ko="조립품(상위 부품) 품번" aliases="Assembly Part No. / Parent Part No. / 親品番 / 上位件号" raw="parent_part_number" />
+                      <th className="mapping-excel-header-parent-part px-3 py-2 text-left font-medium">
+                        <HeaderLabel ko="조립품(상위 부품) 품번" aliases="Assembly Part No. / Parent Part No. / 親品番 / 上位件号" raw="parent_part_number" required />
                       </th>
-                      <th className="px-3 py-2 text-left font-medium text-muted-foreground">
+                      <th className="mapping-excel-header-parent-part px-3 py-2 text-left font-medium">
                         <HeaderLabel ko="조립품(상위 부품) 품명" aliases="Assembly Part Name / Parent Part Name / 親品名 / 上位件名称" raw="parent_part_name" />
                       </th>
-                      <th className="px-3 py-2 text-left font-medium text-muted-foreground">
-                        <HeaderLabel ko="하위 품번" aliases="Child Part No. / 子品番 / 下位件号" raw="child_part_number" />
+                      <th className="mapping-excel-header-part px-3 py-2 text-left font-medium">
+                        <HeaderLabel ko="하위 품번" aliases="Child Part No. / 子品番 / 下位件号" raw="child_part_number" required />
                       </th>
-                      <th className="px-3 py-2 text-right font-medium text-muted-foreground">
+                      <th className="mapping-excel-header-parent-part px-3 py-2 text-right font-medium">
                         <HeaderLabel ko="수량" aliases="Qty / Quantity / 数量" raw="quantity" className="inline-block" />
                       </th>
                     </tr>
@@ -369,25 +379,54 @@ export function PartsTemplateAnalysisPage() {
                   <TooltipContent side="right">ROOT_BOM (root_bom)</TooltipContent>
                 </Tooltip>
               </div>
-              <p className="mt-1 text-xs text-amber-700">
-                관계 정보는 있지만 대상 노드의 merge key가 비어 있는 형식이에요.
-                합성 단계에서 루트 품번 같은 추가 기준값을 함께 입력해주셔야 해요.
-              </p>
+              <div className="mt-1 space-y-1 text-xs text-amber-700">
+                <p>
+                  이 형식은 관계 정보는 있지만,
+                  어떤 조립품(상위 부품)을 구성하는 수량인지 파일만으로는 알기 어려워요.
+                </p>
+                <p>
+                  그래서 업로드할 때마다 상위 부품 정보를 함께 지정해주셔야 해요.
+                  기존 부품에 연결하거나 새 부품을 만들면서 업로드해야 정확하게 합성할 수 있어요.
+                </p>
+              </div>
               <div className="mt-2 overflow-hidden rounded-md border border-amber-200 bg-white">
                 <table className="w-full text-xs">
                   <thead>
-                    <tr className="border-b bg-amber-50">
-                      <th className="px-3 py-2 text-left font-medium text-amber-700">
-                        <HeaderLabel ko="품번" aliases="Part No. / 品番 / 零件编号" raw="part_number" className="text-amber-700" />
+                    <tr className="border-b bg-muted/30">
+                      <th className="px-3 py-2 text-left font-medium text-muted-foreground">업로드 파일 예시</th>
+                      <th className="px-3 py-2 text-left font-medium text-muted-foreground">연결할 조립품(상위 부품)</th>
+                      <th className="px-3 py-2 text-left font-medium text-muted-foreground">처리 방식</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr className="border-b">
+                      <td className="px-3 py-2">motor_bom_root.csv</td>
+                      <td className="px-3 py-2">ASM-100 (모터 어셈블리)</td>
+                      <td className="px-3 py-2">기존 부품에 연결</td>
+                    </tr>
+                    <tr>
+                      <td className="px-3 py-2">pump_bom_root.xlsx</td>
+                      <td className="px-3 py-2">ASM-220 (펌프 어셈블리)</td>
+                      <td className="px-3 py-2">새 부품 생성 후 연결</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div className="mt-2 overflow-hidden rounded-md border border-amber-200 bg-white">
+                <table className="w-full text-xs">
+                  <thead>
+                    <tr className="border-b bg-muted/30">
+                      <th className="mapping-excel-header-part px-3 py-2 text-left font-medium">
+                        <HeaderLabel ko="품번" aliases="Part No. / 品番 / 零件编号" raw="part_number" required />
                       </th>
-                      <th className="px-3 py-2 text-left font-medium text-amber-700">
-                        <HeaderLabel ko="품명" aliases="Part Name / Description / 品名 / 名称" raw="part_name" className="text-amber-700" />
+                      <th className="mapping-excel-header-part px-3 py-2 text-left font-medium">
+                        <HeaderLabel ko="품명" aliases="Part Name / Description / 品名 / 名称" raw="part_name" />
                       </th>
-                      <th className="px-3 py-2 text-right font-medium text-amber-700">
-                        <HeaderLabel ko="수량" aliases="Qty / Quantity / 数量" raw="quantity" className="inline-block text-amber-700" />
+                      <th className="mapping-excel-header-parent-part px-3 py-2 text-right font-medium">
+                        <HeaderLabel ko="수량" aliases="Qty / Quantity / 数量" raw="quantity" className="inline-block" />
                       </th>
-                      <th className="px-3 py-2 text-left font-medium text-amber-700">
-                        <HeaderLabel ko="단위" aliases="UoM / Unit / 単位 / 单位" raw="unit" className="text-amber-700" />
+                      <th className="mapping-excel-header-part px-3 py-2 text-left font-medium">
+                        <HeaderLabel ko="단위" aliases="UoM / Unit / 単位 / 单位" raw="unit" />
                       </th>
                     </tr>
                   </thead>
@@ -407,6 +446,10 @@ export function PartsTemplateAnalysisPage() {
           </div>
 
           <div className="mt-3 space-y-1.5 text-xs text-muted-foreground">
+            <p className="flex items-center gap-1.5">
+              <span className="text-[11px] font-semibold text-red-500">*</span>
+              표시는 식별자 칼럼이에요. 매핑/병합 기준으로 우선 확인해 주세요.
+            </p>
             <p className="flex items-center gap-1.5"><FileText className="h-3 w-3" />지원 포맷: Excel(.xlsx, .xls), CSV</p>
             <p className="flex items-center gap-1.5"><Lightbulb className="h-3 w-3" />컬럼 헤더를 명확하게 넣어주실수록 자동 매핑 정확도가 더 좋아져요.</p>
           </div>

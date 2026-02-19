@@ -21,6 +21,15 @@ import { useMappingKanban } from "@/features/onboarding/hooks/useMappingKanban";
 import type { KanbanCardData, KanbanColumnId } from "@/features/onboarding/hooks/useMappingKanban";
 import { COLUMN_TO_REL_TYPE } from "@/features/onboarding/hooks/useMappingKanban";
 
+const HEADER_COLOR_CLASS_MAP: Record<string, string> = {
+  blue: "mapping-excel-header-part",
+  indigo: "mapping-excel-header-parent-part",
+  emerald: "mapping-excel-header-supplier",
+  amber: "mapping-excel-header-drawing",
+  violet: "mapping-excel-header-project",
+  gray: "mapping-excel-header-unmapped",
+};
+
 export function KanbanBoard() {
   const kanban = useMappingKanban();
   const columnMappings = useMappingStore((s) => s.columnMappings);
@@ -150,22 +159,18 @@ export function KanbanBoard() {
                 <table className="w-full text-xs">
                   <thead>
                     <tr className="border-b border-gray-200 bg-gray-50">
-                      <th className="sticky left-0 z-10 min-w-10 border-r border-gray-200 bg-gray-100 px-2 py-2 text-center font-semibold text-gray-500">
+                      <th className="mapping-excel-index-header sticky left-0 z-10 min-w-10 border-r border-gray-200 bg-gray-100 px-2 py-2 text-center font-semibold text-gray-500">
                         #
                       </th>
                       {mappingHeaders.map((header) => {
                         const color = headerColorMap.get(header);
+                        const headerColorClass = color ? HEADER_COLOR_CLASS_MAP[color] : undefined;
                         return (
                           <th
                             key={header}
                             className={cn(
                               "min-w-[120px] whitespace-nowrap border-r border-gray-100 px-3 py-2 text-left text-xs font-semibold",
-                              color === "blue" && "bg-blue-50 text-blue-700",
-                              color === "indigo" && "bg-indigo-50 text-indigo-700",
-                              color === "emerald" && "bg-emerald-50 text-emerald-700",
-                              color === "amber" && "bg-amber-50 text-amber-700",
-                              color === "violet" && "bg-violet-50 text-violet-700",
-                              color === "gray" && "bg-gray-50 text-gray-400",
+                              headerColorClass,
                               !color && "text-gray-700",
                             )}
                           >
@@ -179,9 +184,9 @@ export function KanbanBoard() {
                     {mappingSampleRows.map((row, rowIdx) => (
                       <tr
                         key={rowIdx}
-                        className="border-b border-gray-100 last:border-b-0 hover:bg-blue-50/30"
+                        className="mapping-excel-row-hover border-b border-gray-100 last:border-b-0"
                       >
-                        <td className="sticky left-0 z-10 border-r border-gray-200 bg-gray-50 px-2 py-1.5 text-center font-medium text-gray-400">
+                        <td className="mapping-excel-index-header sticky left-0 z-10 border-r border-gray-200 bg-gray-50 px-2 py-1.5 text-center font-medium text-gray-400">
                           {rowIdx + 1}
                         </td>
                         {mappingHeaders.map((header) => (
