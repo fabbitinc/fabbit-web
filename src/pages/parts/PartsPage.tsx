@@ -16,6 +16,7 @@ import {
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { usePartsUploadStore } from "@/stores/partsUploadStore";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -124,6 +125,7 @@ function filtersEqual(a: Filters, b: Filters): boolean {
 
 export function PartsPage() {
   const navigate = useNavigate();
+  const openPartsUploadModal = usePartsUploadStore((s) => s.openModal);
 
   const handleRowClick = useCallback((partNumber: string) => {
     navigate(`/parts/${partNumber}`);
@@ -272,7 +274,7 @@ export function PartsPage() {
               <Sparkles className="ai-outline-btn__icon h-4 w-4" />
               속성 분석
             </Button>
-            <Button variant="outline" onClick={() => navigate("/parts/upload")}>
+            <Button variant="outline" onClick={() => openPartsUploadModal()}>
               <Upload className="h-4 w-4" />
               부품 업로드
             </Button>

@@ -1,13 +1,24 @@
-import { useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, ArrowRight, Check, FileUp, Sparkles, Upload, X } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import * as XLSX from "xlsx";
+import {
+  CheckCircle2,
+  AlertCircle,
+  Loader2,
+  Sparkles,
+  Upload,
+  X,
+} from "lucide-react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -17,572 +28,1010 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { getLatestTemplate, getTemplates, normalizeColumns, type TemplateType } from "@/pages/parts/partsTemplateStore";
-import { PARTS_TERMS } from "@/pages/parts/partsTerminology";
+import { cn } from "@/lib/utils";
+import { usePartsUploadStore } from "@/stores/partsUploadStore";
+import {
+  listMappings,
+  createUpload,
+  batchCreateUploads,
+  completeUpload,
+  batchCompleteUploads,
+  startSynthesis,
+  getSynthesisBatch,
+} from "@/api/onboarding";
+import type {
+  MappingResponse,
+  SynthesisBatchStatusResponse,
+} from "@/api/types/onboarding";
 
-type UploadType = "part_list" | "parent_child_bom" | "root_specified_bom";
-type PageStep = "upload" | "mapping" | "result";
+const UPLOAD_ACCEPT = ".xlsx,.xls,.csv";
 
-interface UploadedFile {
+type FileStatus = "validating" | "uploading" | "completed" | "failed";
+
+interface UploadFileEntry {
   id: string;
   name: string;
-  columns: string[];
-  type: UploadType | "invalid";
+  size: number;
+  status: FileStatus;
+  progress: number;
+  uploadId?: string;
+  error?: string;
 }
 
-interface FileGroup {
-  id: string;
-  representativeColumns: string[];
-  files: UploadedFile[];
+// --- 유틸리티 ---
+
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-const GROUP_SIMILARITY_THRESHOLD = 0.72;
-const FILE_SCHEMA_MATCH_THRESHOLD = 0.5;
-
-const EXISTING_COLUMNS = [
-  "part_number",
-  "part_name",
-  "material",
-  "revision",
-  "quantity",
-  "unit",
-  "parent_part_number",
-  "child_part_number",
-  "description",
-];
-
-const SAMPLE_FILES: Omit<UploadedFile, "id">[] = [
-  {
-    name: "part_list_v1.xlsx",
-    columns: ["part_number", "part_name", "material", "revision", "unit"],
-    type: "part_list",
-  },
-  {
-    name: "motor_bom_parent_child.xlsx",
-    columns: ["parent_part_number", "child_part_number", "quantity", "unit"],
-    type: "parent_child_bom",
-  },
-  {
-    name: "assy_without_parent.csv",
-    columns: ["part_number", "part_name", "quantity", "unit"],
-    type: "root_specified_bom",
-  },
-  {
-    name: "vendor_quote_sheet.xlsx",
-    columns: ["vendor", "quote_price", "currency", "delivery_days"],
-    type: "invalid",
-  },
-  {
-    name: "cost_tracking.csv",
-    columns: ["item", "maker", "cost", "stock"],
-    type: "invalid",
-  },
-];
-
-function setSimilarity(a: string[], b: string[]) {
-  const setA = new Set(normalizeColumns(a));
-  const setB = new Set(normalizeColumns(b));
-  const intersection = [...setA].filter((key) => setB.has(key)).length;
-  const union = new Set([...setA, ...setB]).size;
-  if (union === 0) return 0;
-  return intersection / union;
+function isSupportedFile(file: File): boolean {
+  const ext = `.${file.name.split(".").pop()?.toLowerCase()}`;
+  return UPLOAD_ACCEPT.split(",").includes(ext);
 }
 
-function groupFilesBySimilarity(files: UploadedFile[]): FileGroup[] {
-  const groups: FileGroup[] = [];
+/** 파일에서 헤더(첫 행)만 추출 — sheetRows:1 로 최소 파싱 */
+async function parseFileHeaders(file: File): Promise<string[]> {
+  const isCSV = file.name.toLowerCase().endsWith(".csv");
+  let workbook: XLSX.WorkBook;
 
-  for (const file of files) {
-    let bestGroupIndex = -1;
-    let bestScore = 0;
-
-    for (let i = 0; i < groups.length; i += 1) {
-      const score = setSimilarity(file.columns, groups[i].representativeColumns);
-      if (score > bestScore) {
-        bestScore = score;
-        bestGroupIndex = i;
-      }
-    }
-
-    if (bestGroupIndex >= 0 && bestScore >= GROUP_SIMILARITY_THRESHOLD) {
-      groups[bestGroupIndex].files.push(file);
-      continue;
-    }
-
-    groups.push({
-      id: file.id,
-      representativeColumns: file.columns,
-      files: [file],
-    });
+  if (isCSV) {
+    const text = await file.text();
+    workbook = XLSX.read(text, { type: "string", sheetRows: 1 });
+  } else {
+    const buf = await file.arrayBuffer();
+    workbook = XLSX.read(buf, { type: "array", sheetRows: 1 });
   }
 
-  return groups;
+  const sheetName = workbook.SheetNames[0];
+  if (!sheetName) return [];
+
+  const sheet = workbook.Sheets[sheetName];
+  const rows = XLSX.utils.sheet_to_json<string[]>(sheet, {
+    header: 1,
+    defval: "",
+    rawNumbers: false,
+  });
+
+  if (rows.length === 0) return [];
+
+  return rows[0].map((h) => String(h ?? "").trim()).filter(Boolean);
 }
 
-function getFileSchemaMatchRatio(file: UploadedFile) {
-  if (file.columns.length === 0) return 0;
-  const normalizedExisting = new Set(EXISTING_COLUMNS.map((value) => value.toLowerCase()));
-  const matched = file.columns.filter((column) => normalizedExisting.has(column.toLowerCase())).length;
-  return matched / file.columns.length;
-}
+/** mapped_headers가 파일 헤더에 모두 포함되는지 검증 (case-insensitive, 추가 컬럼은 허용) */
+function validateHeaders(
+  fileHeaders: string[],
+  mappedHeaders: string[],
+): { valid: boolean; missing: string[] } {
+  const normalized = new Set(fileHeaders.map((h) => h.toLowerCase().trim()));
+  const missing: string[] = [];
 
-function toTypeLabel(type: UploadType) {
-  if (type === "part_list") return "부품 목록형";
-  if (type === "parent_child_bom") return "완전 BOM형";
-  return "루트 지정 BOM형";
-}
-
-export function PartsUploadPage() {
-  const navigate = useNavigate();
-  const { partNumber } = useParams<{ partNumber: string }>();
-  const templateType: TemplateType = partNumber ? "part_detail" : "master";
-
-  const [step, setStep] = useState<PageStep>("upload");
-  const [selectedTemplateId, setSelectedTemplateId] = useState<string>("");
-  const [uploadType, setUploadType] = useState<UploadType>(
-    templateType === "master" ? "part_list" : "root_specified_bom"
-  );
-  const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
-  const [columnApproval, setColumnApproval] = useState<Record<string, string>>({});
-  const [isMappingApproved, setIsMappingApproved] = useState(false);
-  const [forceRevisionUpdate, setForceRevisionUpdate] = useState(true);
-  const [openNew, setOpenNew] = useState(true);
-  const [openChanged, setOpenChanged] = useState(true);
-
-  const scopedTemplates = useMemo(
-    () => getTemplates().filter((template) => template.templateType === templateType),
-    [templateType]
-  );
-
-  const latestTemplate = useMemo(() => getLatestTemplate(templateType), [templateType]);
-  const selectedTemplate =
-    scopedTemplates.find((template) => template.id === selectedTemplateId) ?? latestTemplate;
-
-  const allowTypes: UploadType[] =
-    templateType === "master"
-      ? ["part_list", "parent_child_bom"]
-      : ["root_specified_bom"];
-
-  const { acceptedFiles, rejectedFiles } = useMemo(() => {
-    const accepted: UploadedFile[] = [];
-    const rejected: UploadedFile[] = [];
-
-    for (const file of uploadedFiles) {
-      const schemaOk = getFileSchemaMatchRatio(file) >= FILE_SCHEMA_MATCH_THRESHOLD;
-      const typeOk = file.type === uploadType;
-      if (schemaOk && typeOk && file.type !== "invalid") {
-        accepted.push(file);
-      } else {
-        rejected.push(file);
-      }
+  for (const col of mappedHeaders) {
+    if (!normalized.has(col.toLowerCase().trim())) {
+      missing.push(col);
     }
-
-    return { acceptedFiles: accepted, rejectedFiles: rejected };
-  }, [uploadedFiles, uploadType]);
-
-  const groupedFiles = useMemo(
-    () => groupFilesBySimilarity(acceptedFiles),
-    [acceptedFiles]
-  );
-
-  const allColumns = useMemo(() => {
-    const bucket = new Set<string>();
-    for (const file of acceptedFiles) {
-      for (const column of file.columns) bucket.add(column);
-    }
-    return [...bucket];
-  }, [acceptedFiles]);
-
-  const fingerprintMatchOk = useMemo(() => {
-    if (!selectedTemplate) return false;
-    if (acceptedFiles.length === 0) return true;
-    const templateSet = new Set(selectedTemplate.fingerprint.split("|"));
-    return acceptedFiles.every((file) => {
-      const fileSet = new Set(normalizeColumns(file.columns));
-      const common = [...fileSet].filter((key) => templateSet.has(key)).length;
-      const ratio = fileSet.size === 0 ? 0 : common / fileSet.size;
-      return ratio >= 0.4;
-    });
-  }, [acceptedFiles, selectedTemplate]);
-
-  const resultSummary = {
-    newCount: 45,
-    changedCount: 12,
-    existingCount: 103,
-    newItems: ["PRT-001", "PRT-003", "PRT-007", "PRT-010", "PRT-011"],
-    changedItems: [
-      "PRT-001: material SS400 -> AL6061",
-      "PRT-003: unit EA -> SET",
-      "PRT-007: name 브라켓 -> 브래킷",
-    ],
-  };
-
-  function addMockFiles(type: "single" | "batch") {
-    const target = type === "single" ? [SAMPLE_FILES[0]] : SAMPLE_FILES;
-    setUploadedFiles((prev) => [
-      ...prev,
-      ...target.map((source) => ({
-        ...source,
-        id: `preview-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
-      })),
-    ]);
   }
 
-  function removeFile(fileId: string) {
-    setUploadedFiles((prev) => prev.filter((file) => file.id !== fileId));
-  }
+  return { valid: missing.length === 0, missing };
+}
 
-  if (!latestTemplate) {
+function uploadWithProgress(
+  url: string,
+  file: File,
+  onProgress: (percent: number) => void,
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("PUT", url);
+    xhr.setRequestHeader(
+      "Content-Type",
+      file.type || "application/octet-stream",
+    );
+    xhr.upload.onprogress = (event) => {
+      if (!event.lengthComputable) return;
+      onProgress(Math.round((event.loaded / event.total) * 100));
+    };
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) resolve();
+      else reject(new Error(`Upload failed: ${xhr.status}`));
+    };
+    xhr.onerror = () => reject(new Error("Upload failed"));
+    xhr.send(file);
+  });
+}
+
+// --- 데이터 처리 진행 상태 ---
+
+function normalizeStatus(status: string) {
+  return status.toLowerCase();
+}
+
+function SynthesisProgress({
+  batchStatus,
+  fileNames,
+}: {
+  batchStatus: SynthesisBatchStatusResponse | null;
+  fileNames: Map<string, string>;
+}) {
+  if (!batchStatus) {
     return (
-      <div className="min-h-screen bg-background px-6 py-8">
-        <div className="dev-page-container space-y-4">
-          <section className="rounded-lg border bg-card p-6">
-            <h1 className="text-xl font-bold text-foreground">데이터 업로드</h1>
-            <p className="mt-2 text-sm text-muted-foreground">
-              사용할 속성 템플릿이 없습니다. 외부에서 속성 분석을 먼저 실행해 주세요.
-            </p>
-            <div className="mt-4 flex items-center gap-2">
-              <Button
-                variant="outline"
-                className="ai-outline-btn ai-theme-1"
-                onClick={() =>
-                  navigate(
-                    templateType === "master"
-                      ? "/parts/templates"
-                      : `/parts/${partNumber}/templates`
-                  )
-                }
-              >
-                <Sparkles className="ai-outline-btn__icon h-4 w-4" />
-                속성 분석으로 이동
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => navigate(templateType === "master" ? "/parts" : `/parts/${partNumber}`)}
-              >
-                <ArrowLeft className="h-4 w-4" />
-                돌아가기
-              </Button>
-            </div>
-          </section>
-        </div>
+      <div className="flex items-center justify-center py-8">
+        <Loader2 className="h-5 w-5 animate-spin text-primary" />
+        <span className="ml-2 text-sm text-muted-foreground">
+          처리 상태를 불러오는 중…
+        </span>
       </div>
     );
   }
 
+  const {
+    accepted_count,
+    completed_count,
+    failed_job_count,
+    processing_count,
+    pending_count,
+    items,
+    failed,
+  } = batchStatus;
+  const doneCount = completed_count + failed_job_count;
+  const overallPercent =
+    accepted_count > 0 ? Math.round((doneCount / accepted_count) * 100) : 0;
+  const isDone = pending_count === 0 && processing_count === 0;
+
   return (
-    <div className="min-h-screen bg-background px-6 py-8">
-      <div className="dev-page-container space-y-4">
-        <div className="flex items-start justify-between gap-2">
-          <div>
-            <h1 className="text-xl font-bold text-foreground">데이터 업로드</h1>
-            <p className="mt-1 text-sm text-muted-foreground">
-              {templateType === "master"
-                ? "부품 마스터 화면: 부품 목록형, 완전 BOM형 지원"
-                : `부품 상세 화면 (${partNumber}): 루트 지정 BOM형 지원`}
-            </p>
-          </div>
-          <Button
-            variant="outline"
-            onClick={() => navigate(templateType === "master" ? "/parts" : `/parts/${partNumber}`)}
-          >
-            <ArrowLeft className="h-4 w-4" />
-            돌아가기
-          </Button>
+    <div className="space-y-4">
+      {/* 전체 요약 */}
+      <div className="rounded-md border bg-muted/20 p-3">
+        <div className="flex items-center justify-between">
+          <span className="text-sm font-medium text-foreground">
+            {isDone
+              ? failed_job_count > 0
+                ? "일부 파일 처리에 실패했어요"
+                : "처리가 완료되었어요"
+              : "데이터 처리 중…"}
+          </span>
+          {!isDone && (
+            <Loader2 className="h-4 w-4 animate-spin text-primary" />
+          )}
         </div>
 
-        <section className="rounded-lg border bg-card p-4">
-          <p className="text-sm font-semibold text-foreground">용어 정리</p>
-          <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
-            <li>- 부품 목록형: 부품 정보만 담긴 파일</li>
-            <li>- 완전 BOM형: 파일 내 {PARTS_TERMS.assemblyParentPart.label} 칼럼 포함</li>
-            <li>- 루트 지정 BOM형: 파일 내 {PARTS_TERMS.assemblyParentPart.label} 칼럼 없음 (합성 시 루트 기준 입력)</li>
-          </ul>
-        </section>
+        {/* 전체 진행률 바 */}
+        <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-muted">
+          <div
+            className={cn(
+              "h-full rounded-full transition-all duration-500",
+              isDone && failed_job_count > 0
+                ? "bg-amber-500"
+                : isDone
+                  ? "bg-emerald-500"
+                  : "bg-primary",
+            )}
+            style={{ width: `${overallPercent}%` }}
+          />
+        </div>
 
-        {step === "upload" && (
-          <section className="space-y-4 rounded-lg border bg-card p-5">
-            <h2 className="text-sm font-semibold text-foreground">파일 업로드</h2>
+        {/* 카운트 요약 */}
+        <div className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
+          <span>
+            전체 {accepted_count}개 · 완료 {completed_count}개
+            {failed_job_count > 0 && (
+              <span className="text-red-600">
+                {" "}
+                · 실패 {failed_job_count}개
+              </span>
+            )}
+            {processing_count > 0 && ` · 처리 중 ${processing_count}개`}
+            {pending_count > 0 && ` · 대기 ${pending_count}개`}
+          </span>
+        </div>
 
-            <div className="grid gap-4 md:grid-cols-2">
-              <div>
-                <Label className="text-xs">속성 선택 (최신 자동 선택)</Label>
-                <Select
-                  value={selectedTemplate?.id ?? ""}
-                  onValueChange={setSelectedTemplateId}
-                >
-                  <SelectTrigger className="mt-1">
-                    <SelectValue placeholder="템플릿 선택" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {scopedTemplates.map((template) => (
-                      <SelectItem key={template.id} value={template.id}>
-                        {template.name} (v{template.version})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+      </div>
 
-              <div>
-                <Label className="text-xs">업로드 타입</Label>
-                <Select
-                  value={uploadType}
-                  onValueChange={(value) => setUploadType(value as UploadType)}
-                >
-                  <SelectTrigger className="mt-1">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {allowTypes.map((type) => (
-                      <SelectItem key={type} value={type}>
-                        {toTypeLabel(type)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
+      {/* 파일별 상태 목록 */}
+      <div className="max-h-[280px] space-y-1.5 overflow-y-auto pr-1">
+        {items.map((item) => {
+          const s = normalizeStatus(item.status);
+          const fileName = fileNames.get(item.upload_id) ?? item.upload_id;
+          const itemPercent =
+            item.total_rows > 0
+              ? Math.round((item.processed_rows / item.total_rows) * 100)
+              : 0;
 
-            <div className="rounded-md border p-3">
-              <div className="flex items-center justify-between">
-                <Label className="text-sm">업데이트 옵션</Label>
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-muted-foreground">기존 부품 재활용</span>
-                  <Switch
-                    checked={forceRevisionUpdate}
-                    onCheckedChange={setForceRevisionUpdate}
-                  />
-                  <span className="text-xs text-muted-foreground">리비전 강제 생성</span>
+          return (
+            <div
+              key={item.job_id}
+              className={cn(
+                "rounded-md border px-3 py-2",
+                s === "failed"
+                  ? "border-red-500/20 bg-red-500/5"
+                  : "bg-background",
+              )}
+            >
+              <div className="flex items-center gap-3">
+                {/* 상태 아이콘 */}
+                {s === "completed" ? (
+                  <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-500" />
+                ) : s === "failed" ? (
+                  <AlertCircle className="h-4 w-4 shrink-0 text-red-500" />
+                ) : s === "processing" ? (
+                  <Loader2 className="h-4 w-4 shrink-0 animate-spin text-primary" />
+                ) : (
+                  <div className="h-4 w-4 shrink-0 rounded-full border-2 border-muted-foreground/30" />
+                )}
+
+                {/* 파일명 + 상태 텍스트 */}
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm font-medium text-foreground">
+                    {fileName}
+                  </p>
                 </div>
+
+                {/* 오른쪽 상태 뱃지 */}
+                <span
+                  className={cn(
+                    "shrink-0 text-xs font-medium",
+                    s === "completed" && "text-emerald-600",
+                    s === "failed" && "text-red-600",
+                    s === "processing" && "text-primary",
+                    s === "pending" && "text-muted-foreground",
+                  )}
+                >
+                  {s === "completed" && "완료"}
+                  {s === "failed" && "실패"}
+                  {s === "processing" && `${itemPercent}%`}
+                  {s === "pending" && "대기"}
+                </span>
               </div>
-              <p className="mt-2 text-xs text-muted-foreground">
-                {forceRevisionUpdate
-                  ? "켜짐: 기존 Part가 있어도 update된 리비전 생성"
-                  : "꺼짐: 기존 부품 정보를 활용"}
-              </p>
-            </div>
 
-            <div className="flex flex-wrap items-center gap-2">
-              <Button variant="outline" onClick={() => addMockFiles("single")}>
-                <Upload className="h-4 w-4" />
-                샘플 1개 추가
-              </Button>
-              <Button variant="outline" onClick={() => addMockFiles("batch")}>
-                <FileUp className="h-4 w-4" />
-                샘플 배치 추가
-              </Button>
-            </div>
+              {/* 상세 정보 */}
+              <div className="mt-1 pl-7">
+                {s === "processing" && (
+                  <>
+                    <div className="h-1 w-full overflow-hidden rounded-full bg-muted">
+                      <div
+                        className="h-full rounded-full bg-primary transition-all duration-300"
+                        style={{ width: `${itemPercent}%` }}
+                      />
+                    </div>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {item.processed_rows.toLocaleString()}/
+                      {item.total_rows.toLocaleString()}행 처리됨
+                    </p>
+                  </>
+                )}
 
-            {uploadedFiles.length === 0 ? (
-              <div className="rounded-md border border-dashed p-8 text-center text-sm text-muted-foreground">
-                단일/배치 파일을 추가해 주세요.
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {groupedFiles.map((group, index) => (
-                  <div key={group.id} className="rounded-lg border p-3">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-semibold">그룹 {index + 1}</span>
-                      <span className="text-xs text-muted-foreground">{group.files.length}개 파일</span>
-                    </div>
-                    <div className="mt-2 space-y-2">
-                      {group.files.map((file) => (
-                        <div key={file.id} className="flex items-center justify-between rounded-md border bg-background p-2">
-                          <div>
-                            <p className="text-sm font-medium">{file.name}</p>
-                            <p className="text-xs text-muted-foreground">{toTypeLabel(file.type as UploadType)}</p>
-                          </div>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            className="h-7 w-7"
-                            aria-label={`${file.name} 제거`}
-                            onClick={() => removeFile(file.id)}
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                ))}
+                {s === "completed" && (
+                  <p className="text-xs text-muted-foreground">
+                    {item.total_rows.toLocaleString()}행 처리 완료
+                  </p>
+                )}
 
-                {rejectedFiles.length > 0 && (
-                  <div className="rounded-lg border border-amber-300 bg-amber-50 p-3">
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm font-semibold text-amber-900">허용되지 않는 그룹 목록</p>
-                      <Badge variant="outline">{rejectedFiles.length}개 파일</Badge>
-                    </div>
-                    <p className="mt-1 text-xs text-amber-800">컬럼 구조가 올바르지 않거나 업로드 타입과 맞지 않는 파일</p>
-                    <div className="mt-2 space-y-2">
-                      {rejectedFiles.map((file) => (
-                        <div key={file.id} className="flex items-center justify-between rounded-md border border-amber-200 bg-white p-2">
-                          <p className="text-sm font-medium">{file.name}</p>
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            className="h-7 w-7"
-                            aria-label={`${file.name} 제거`}
-                            onClick={() => removeFile(file.id)}
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
+                {s === "failed" && (
+                  <div className="text-xs">
+                    <p className="text-red-600">
+                      {item.processed_rows.toLocaleString()}/
+                      {item.processed_rows.toLocaleString()}/
+                      {item.total_rows.toLocaleString()}행 처리 중 오류{" "}
+                      {item.error_count}건 발생
+                    </p>
                   </div>
                 )}
               </div>
-            )}
+            </div>
+          );
+        })}
 
-            <div className="flex items-center justify-end gap-2">
+        {/* 시작 실패 항목 */}
+        {failed.map((f) => (
+          <div
+            key={f.upload_id}
+            className="rounded-md border border-red-500/20 bg-red-500/5 px-3 py-2"
+          >
+            <div className="flex items-center gap-3">
+              <AlertCircle className="h-4 w-4 shrink-0 text-red-500" />
+              <p className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">
+                {fileNames.get(f.upload_id) ?? f.upload_id}
+              </p>
+              <span className="shrink-0 text-xs font-medium text-red-600">
+                시작 실패
+              </span>
+            </div>
+            <p className="mt-1 pl-7 text-xs text-red-600">{f.reason}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// --- 컴포넌트 ---
+
+export function PartsUploadDialog() {
+  const navigate = useNavigate();
+  const isOpen = usePartsUploadStore((s) => s.isOpen);
+  const partNumber = usePartsUploadStore((s) => s.partNumber);
+  const closeModal = usePartsUploadStore((s) => s.closeModal);
+
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [isDragOver, setIsDragOver] = useState(false);
+  const [selectedTemplateId, setSelectedTemplateId] = useState("");
+  const [overwrite, setOverwrite] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState<UploadFileEntry[]>([]);
+  const [mappingOptions, setMappingOptions] = useState<MappingResponse[]>([]);
+  const [isLoadingMappings, setIsLoadingMappings] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [synthesisState, setSynthesisState] = useState<{
+    batchId: string;
+    fileNames: Map<string, string>;
+  } | null>(null);
+  const [batchStatus, setBatchStatus] =
+    useState<SynthesisBatchStatusResponse | null>(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    let cancelled = false;
+    setIsLoadingMappings(true);
+
+    listMappings()
+      .then((response) => {
+        if (cancelled) return;
+        const items = [...(response.items || [])].sort((a, b) => {
+          const aTime = Date.parse(a.created_at || "");
+          const bTime = Date.parse(b.created_at || "");
+          if (!Number.isNaN(aTime) && !Number.isNaN(bTime))
+            return bTime - aTime;
+          return b.version - a.version;
+        });
+        setMappingOptions(items);
+        setSelectedTemplateId((prev) => {
+          if (prev && items.some((item) => item.id === prev)) return prev;
+          return items[0]?.id ?? "";
+        });
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setMappingOptions([]);
+        setSelectedTemplateId("");
+        toast.error("매핑 목록을 불러오지 못했습니다.");
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoadingMappings(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen]);
+
+  // 데이터 처리 배치 상태 polling
+  useEffect(() => {
+    if (!synthesisState) return;
+
+    let cancelled = false;
+    let timerId: ReturnType<typeof setTimeout>;
+
+    async function poll() {
+      try {
+        const status = await getSynthesisBatch(synthesisState!.batchId);
+        if (cancelled) return;
+        setBatchStatus(status);
+
+        const isDone =
+          status.pending_count === 0 && status.processing_count === 0;
+        if (isDone) return;
+      } catch (e) {
+        console.error("Batch status poll failed:", e);
+      }
+
+      if (!cancelled) {
+        timerId = setTimeout(poll, 2000);
+      }
+    }
+
+    poll();
+
+    return () => {
+      cancelled = true;
+      clearTimeout(timerId);
+    };
+  }, [synthesisState]);
+
+  const selectedTemplate =
+    mappingOptions.find((t) => t.id === selectedTemplateId) ??
+    mappingOptions[0];
+
+  const isSynthesisProcessing =
+    synthesisState !== null &&
+    (batchStatus === null ||
+      batchStatus.pending_count > 0 ||
+      batchStatus.processing_count > 0);
+  const isBusy =
+    isSubmitting ||
+    isSynthesisProcessing ||
+    uploadedFiles.some(
+      (f) => f.status === "validating" || f.status === "uploading",
+    );
+  const completedFiles = uploadedFiles.filter((f) => f.status === "completed");
+  const allSettled =
+    uploadedFiles.length > 0 &&
+    uploadedFiles.every(
+      (f) => f.status === "completed" || f.status === "failed",
+    );
+  const canSubmit =
+    Boolean(selectedTemplate) && completedFiles.length > 0 && allSettled;
+
+  function updateFileStatus(fileId: string, updates: Partial<UploadFileEntry>) {
+    setUploadedFiles((prev) =>
+      prev.map((f) => (f.id === fileId ? { ...f, ...updates } : f)),
+    );
+  }
+
+  // --- 파일 처리 플로우: 검증 → 업로드 ---
+
+  async function handleFiles(files: File[]) {
+    if (files.length === 0 || !selectedTemplate) return;
+
+    const validFiles = files.filter(isSupportedFile);
+    const invalidCount = files.length - validFiles.length;
+
+    if (invalidCount > 0) {
+      toast.warning("지원하지 않는 파일 형식이 포함되어 제외되었습니다", {
+        description: "Excel(.xlsx, .xls) 또는 CSV 파일만 업로드 가능합니다.",
+      });
+    }
+
+    if (validFiles.length === 0) return;
+
+    const { mapped_headers } = selectedTemplate;
+
+    // 1) 엔트리 생성 (validating 상태)
+    const entries: UploadFileEntry[] = validFiles.map((file) => ({
+      id: `upload-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      name: file.name,
+      size: file.size,
+      status: "validating" as const,
+      progress: 0,
+    }));
+
+    setUploadedFiles((prev) => [...prev, ...entries]);
+
+    // 2) 각 파일 헤더 검증
+    const validated: { entry: UploadFileEntry; file: File }[] = [];
+
+    for (let i = 0; i < validFiles.length; i++) {
+      const entry = entries[i];
+      const file = validFiles[i];
+
+      try {
+        const headers = await parseFileHeaders(file);
+
+        if (headers.length === 0) {
+          updateFileStatus(entry.id, {
+            status: "failed",
+            error: "파일에서 헤더를 찾을 수 없습니다",
+          });
+          continue;
+        }
+
+        const result = validateHeaders(headers, mapped_headers);
+
+        if (!result.valid) {
+          const preview = result.missing.slice(0, 3).join(", ");
+          const suffix =
+            result.missing.length > 3
+              ? ` 외 ${result.missing.length - 3}개`
+              : "";
+          updateFileStatus(entry.id, {
+            status: "failed",
+            error: `필수 컬럼 누락: ${preview}${suffix}`,
+          });
+          continue;
+        }
+
+        // 검증 통과
+        updateFileStatus(entry.id, { progress: 10 });
+        validated.push({ entry, file });
+      } catch (error) {
+        console.error(`Header parse failed: ${file.name}`, error);
+        updateFileStatus(entry.id, {
+          status: "failed",
+          error: "파일 헤더를 읽을 수 없습니다",
+        });
+      }
+    }
+
+    if (validated.length === 0) return;
+
+    // 3) 검증 통과 파일만 업로드
+    if (validated.length === 1) {
+      await uploadSingleFile(validated[0].entry, validated[0].file);
+    } else {
+      await uploadBatchFiles(
+        validated.map((v) => v.entry),
+        validated.map((v) => v.file),
+      );
+    }
+  }
+
+  async function uploadSingleFile(entry: UploadFileEntry, file: File) {
+    updateFileStatus(entry.id, { status: "uploading", progress: 15 });
+
+    try {
+      // URL 발급
+      const uploadInfo = await createUpload({
+        original_name: file.name,
+        content_type: file.type || "application/octet-stream",
+        file_size: file.size,
+      });
+
+      updateFileStatus(entry.id, {
+        uploadId: uploadInfo.upload_id,
+        progress: 20,
+      });
+
+      // S3 업로드 (20~85)
+      await uploadWithProgress(uploadInfo.upload_url, file, (percent) => {
+        updateFileStatus(entry.id, {
+          progress: Math.min(85, Math.max(20, Math.round(20 + percent * 0.65))),
+        });
+      });
+
+      updateFileStatus(entry.id, { progress: 90 });
+
+      // 업로드 완료 확인
+      await completeUpload(uploadInfo.upload_id);
+
+      updateFileStatus(entry.id, { status: "completed", progress: 100 });
+    } catch (error) {
+      console.error("File upload failed:", error);
+      updateFileStatus(entry.id, {
+        status: "failed",
+        progress: 0,
+        error: "업로드에 실패했습니다",
+      });
+    }
+  }
+
+  async function uploadBatchFiles(entries: UploadFileEntry[], files: File[]) {
+    for (const entry of entries) {
+      updateFileStatus(entry.id, { status: "uploading", progress: 15 });
+    }
+
+    try {
+      // URL 일괄 발급
+      const batchResponse = await batchCreateUploads({
+        items: files.map((file) => ({
+          original_name: file.name,
+          content_type: file.type || "application/octet-stream",
+          file_size: file.size,
+        })),
+      });
+
+      // entryId → uploadId 로컬 매핑 (React state와 무관하게 추적)
+      const entryUploadMap = new Map<string, string>();
+      const completedUploadIds: string[] = [];
+
+      await Promise.allSettled(
+        batchResponse.items.map(async (uploadInfo, idx) => {
+          const entry = entries[idx];
+          entryUploadMap.set(entry.id, uploadInfo.upload_id);
+          updateFileStatus(entry.id, {
+            uploadId: uploadInfo.upload_id,
+            progress: 20,
+          });
+
+          try {
+            // S3 업로드 (20~85)
+            await uploadWithProgress(
+              uploadInfo.upload_url,
+              files[idx],
+              (percent) => {
+                updateFileStatus(entry.id, {
+                  progress: Math.min(
+                    85,
+                    Math.max(20, Math.round(20 + percent * 0.65)),
+                  ),
+                });
+              },
+            );
+
+            updateFileStatus(entry.id, { progress: 90 });
+            completedUploadIds.push(uploadInfo.upload_id);
+          } catch (error) {
+            console.error(`File upload failed: ${entry.name}`, error);
+            updateFileStatus(entry.id, {
+              status: "failed",
+              progress: 0,
+              error: "업로드에 실패했습니다",
+            });
+          }
+        }),
+      );
+
+      // 업로드 완료 일괄 확인
+      if (completedUploadIds.length > 0) {
+        const completeResult = await batchCompleteUploads({
+          upload_ids: completedUploadIds,
+        });
+
+        const failedIds = new Set(
+          completeResult.failed.map((f) => f.upload_id),
+        );
+
+        for (const entry of entries) {
+          const uploadId = entryUploadMap.get(entry.id);
+          if (!uploadId) continue;
+          if (failedIds.has(uploadId)) {
+            updateFileStatus(entry.id, {
+              status: "failed",
+              progress: 0,
+              error: "업로드 완료 확인에 실패했습니다",
+            });
+          } else if (completedUploadIds.includes(uploadId)) {
+            updateFileStatus(entry.id, {
+              status: "completed",
+              progress: 100,
+            });
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Batch upload failed:", error);
+      for (const entry of entries) {
+        updateFileStatus(entry.id, {
+          status: "failed",
+          progress: 0,
+          error: "배치 업로드 요청에 실패했습니다",
+        });
+      }
+    }
+  }
+
+  function removeFile(fileId: string) {
+    setUploadedFiles((prev) => prev.filter((f) => f.id !== fileId));
+  }
+
+  function handleClose() {
+    if (isBusy) return;
+    setSelectedTemplateId("");
+    setOverwrite(false);
+    setUploadedFiles([]);
+    setSynthesisState(null);
+    setBatchStatus(null);
+    closeModal();
+  }
+
+  async function handleSubmit() {
+    if (!canSubmit || isSubmitting) return;
+
+    const uploadIds = completedFiles
+      .map((f) => f.uploadId)
+      .filter(Boolean) as string[];
+
+    setIsSubmitting(true);
+
+    try {
+      const result = await startSynthesis({
+        mapping_id: selectedTemplate!.id,
+        overwrite,
+        uploads: uploadIds.map((id) => ({ upload_id: id })),
+      });
+
+      if (result.accepted_count === 0) {
+        toast.error("처리를 시작하지 못했어요.");
+        setIsSubmitting(false);
+        return;
+      }
+
+      if (result.failed.length > 0) {
+        toast.warning(
+          `${result.failed.length}개 파일의 처리를 시작하지 못했어요.`,
+        );
+      }
+
+      // uploadId → fileName 매핑
+      const fileNames = new Map<string, string>();
+      for (const f of uploadedFiles) {
+        if (f.uploadId) fileNames.set(f.uploadId, f.name);
+      }
+
+      setSynthesisState({ batchId: result.batch_id, fileNames });
+      setIsSubmitting(false);
+    } catch (error) {
+      console.error("Synthesis start failed:", error);
+      toast.error("처리 시작에 실패했어요.", {
+        description: "잠시 후 다시 시도해 주세요.",
+      });
+      setIsSubmitting(false);
+    }
+  }
+
+  function handleMoveToTemplate() {
+    handleClose();
+    navigate(
+      partNumber ? `/parts/${partNumber}/templates` : "/parts/templates",
+    );
+  }
+
+  return (
+    <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
+      <DialogContent className="sm:max-w-xl">
+        <DialogHeader>
+          <DialogTitle>
+            {synthesisState ? "데이터 처리" : "부품 업로드"}
+          </DialogTitle>
+          <DialogDescription>
+            {synthesisState
+              ? "업로드한 파일을 처리하고 있어요. 완료될 때까지 잠시 기다려 주세요."
+              : "매핑과 파일을 선택하고 업로드를 실행해 주세요."}
+          </DialogDescription>
+        </DialogHeader>
+
+        {synthesisState ? (
+          <SynthesisProgress
+            batchStatus={batchStatus}
+            fileNames={synthesisState.fileNames}
+          />
+        ) : isLoadingMappings ? (
+          <div className="rounded-md border bg-muted/20 p-4 text-sm text-muted-foreground">
+            매핑 목록을 불러오는 중이에요...
+          </div>
+        ) : !selectedTemplate ? (
+          <div className="rounded-md border bg-muted/20 p-4 text-sm">
+            <p className="font-medium text-foreground">
+              사용할 매핑이 없습니다.
+            </p>
+            <p className="mt-1 text-muted-foreground">
+              먼저 속성 분석에서 매핑을 생성해 주세요.
+            </p>
+            <div className="mt-3">
               <Button
                 variant="outline"
                 className="ai-outline-btn ai-theme-1"
-                onClick={() =>
-                  navigate(
-                    templateType === "master"
-                      ? "/parts/templates"
-                      : `/parts/${partNumber}/templates`
-                  )
-                }
+                onClick={handleMoveToTemplate}
               >
                 <Sparkles className="ai-outline-btn__icon h-4 w-4" />
                 속성 분석으로 이동
               </Button>
-              <Button disabled={!selectedTemplate || acceptedFiles.length === 0} onClick={() => setStep("mapping")}>
-                칼럼 매칭으로 이동
-                <ArrowRight className="h-4 w-4" />
-              </Button>
             </div>
-          </section>
-        )}
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {/* 매핑 선택 */}
+            <div>
+              <Label className="text-xs">매핑 선택</Label>
+              <Select
+                value={selectedTemplate?.id ?? ""}
+                onValueChange={setSelectedTemplateId}
+              >
+                <SelectTrigger className="mt-1">
+                  <SelectValue placeholder="매핑 선택" />
+                </SelectTrigger>
+                <SelectContent>
+                  {mappingOptions.map((template) => (
+                    <SelectItem key={template.id} value={template.id}>
+                      {template.name} (v{template.version})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-        {step === "mapping" && (
-          <section className="space-y-4 rounded-lg border bg-card p-5">
-            <h2 className="text-sm font-semibold text-foreground">칼럼 매칭 (LLM 추천 기반)</h2>
-
-            {!fingerprintMatchOk && (
-              <div className="rounded-md border border-red-300 bg-red-50 p-3 text-xs text-red-700">
-                선택한 템플릿 fingerprint와 업로드 헤더가 맞지 않아 진행할 수 없습니다. 속성 분석을 다시 실행해 주세요.
+            {/* 필요한 컬럼 */}
+            {selectedTemplate.mapped_headers.length > 0 && (
+              <div>
+                <Label className="text-xs">필요한 컬럼</Label>
+                <div className="mt-1 flex flex-wrap gap-1.5">
+                  {selectedTemplate.mapped_headers.map((header) => (
+                    <span
+                      key={header}
+                      className="inline-flex items-center rounded-md border border-border bg-muted/30 px-2 py-1 text-xs text-foreground"
+                    >
+                      {header}
+                    </span>
+                  ))}
+                </div>
               </div>
             )}
 
-            <div className="space-y-2">
-              {allColumns.map((column) => {
-                const normalized = column.toLowerCase();
-                const recommended = EXISTING_COLUMNS.find((candidate) => candidate === normalized);
-                const defaultValue = columnApproval[column] ?? recommended ?? "__new";
-                const confidence = recommended ? "96%" : "74%";
-
-                return (
-                  <div key={column} className="grid gap-2 rounded-md border p-2 md:grid-cols-[160px_1fr_220px] md:items-center">
-                    <div className="text-xs font-medium">{column}</div>
-                    <div className="text-xs text-muted-foreground">
-                      <span className="inline-flex items-center gap-1">
-                        <Sparkles className="h-3 w-3" />
-                        LLM 추천 {recommended ?? "신규 속성"} ({confidence})
-                      </span>
-                    </div>
-                    <Select
-                      value={defaultValue}
-                      onValueChange={(value) => {
-                        setColumnApproval((prev) => ({
-                          ...prev,
-                          [column]: value,
-                        }));
-                      }}
-                    >
-                      <SelectTrigger className="h-8">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="__new">신규 속성 생성</SelectItem>
-                        {EXISTING_COLUMNS.map((candidate) => (
-                          <SelectItem key={candidate} value={candidate}>
-                            {candidate}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                );
-              })}
-            </div>
-
-            <div className="inline-flex items-center gap-2 text-sm">
-              <input
-                id="mapping-approval"
-                type="checkbox"
-                aria-label="컬럼 매칭 최종 승인"
-                className="h-4 w-4 rounded border-border"
-                checked={isMappingApproved}
-                onChange={(e) => setIsMappingApproved(e.target.checked)}
-              />
-              <Label htmlFor="mapping-approval">LLM 추천 결과와 내 수정값을 최종 승인합니다.</Label>
-            </div>
-
-            <div className="flex items-center justify-end gap-2">
-              <Button variant="outline" onClick={() => setStep("upload")}>이전</Button>
-              <Button
-                disabled={!isMappingApproved || !fingerprintMatchOk}
-                onClick={() => setStep("result")}
+            {/* 파일 업로드 드롭존 */}
+            <div>
+              <Label className="text-xs">파일 업로드</Label>
+              <div
+                onDragOver={(e) => {
+                  if (isBusy) return;
+                  e.preventDefault();
+                  setIsDragOver(true);
+                }}
+                onDragLeave={(e) => {
+                  if (isBusy) return;
+                  e.preventDefault();
+                  setIsDragOver(false);
+                }}
+                onDrop={(e) => {
+                  if (isBusy) return;
+                  e.preventDefault();
+                  setIsDragOver(false);
+                  void handleFiles(Array.from(e.dataTransfer.files));
+                }}
+                onClick={() => !isBusy && fileRef.current?.click()}
+                className={cn(
+                  "mt-1 rounded-lg border-2 border-dashed p-8 text-center transition-colors",
+                  isBusy
+                    ? "cursor-not-allowed border-border bg-muted/20 opacity-70"
+                    : isDragOver
+                      ? "border-primary bg-primary/5"
+                      : "cursor-pointer border-border bg-muted/20 hover:border-primary/40",
+                )}
               >
-                확인 및 업데이트 실행
-              </Button>
+                <input
+                  ref={fileRef}
+                  type="file"
+                  aria-label="부품 파일 업로드"
+                  accept={UPLOAD_ACCEPT}
+                  multiple
+                  className="hidden"
+                  onChange={(e) => {
+                    const files = e.target.files
+                      ? Array.from(e.target.files)
+                      : [];
+                    void handleFiles(files);
+                    e.target.value = "";
+                  }}
+                  disabled={isBusy}
+                />
+                <div className="flex flex-col items-center gap-2">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
+                    <Upload className="h-4 w-4 text-primary" />
+                  </div>
+                  <p className="text-sm font-medium text-foreground">
+                    파일을 드래그하거나 클릭하여 선택
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    Excel(.xlsx, .xls), CSV 지원 · 여러 파일 선택 가능
+                  </p>
+                </div>
+              </div>
             </div>
-          </section>
+
+            {/* 업로드된 파일 목록 */}
+            {uploadedFiles.length > 0 && (
+              <div>
+                <Label className="text-xs">
+                  업로드된 파일 ({completedFiles.length}/{uploadedFiles.length})
+                </Label>
+                <div className="mt-1 max-h-[240px] space-y-1.5 overflow-y-auto pr-1">
+                  {uploadedFiles.map((file) => (
+                    <div
+                      key={file.id}
+                      className={cn(
+                        "flex items-center gap-3 rounded-md border px-3 py-2",
+                        file.status === "failed"
+                          ? "border-red-500/20 bg-red-500/5"
+                          : "bg-background",
+                      )}
+                    >
+                      {/* 상태 아이콘 */}
+                      {file.status === "completed" ? (
+                        <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-500" />
+                      ) : file.status === "failed" ? (
+                        <AlertCircle className="h-4 w-4 shrink-0 text-red-500" />
+                      ) : (
+                        <Loader2 className="h-4 w-4 shrink-0 animate-spin text-primary" />
+                      )}
+
+                      {/* 파일 정보 */}
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-medium text-foreground">
+                          {file.name}
+                        </p>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-muted-foreground">
+                            {formatFileSize(file.size)}
+                          </span>
+                          {file.status === "validating" && (
+                            <span className="text-xs text-primary">
+                              검증 중…
+                            </span>
+                          )}
+                          {file.status === "uploading" && (
+                            <span className="text-xs text-primary">
+                              {file.progress}%
+                            </span>
+                          )}
+                        </div>
+                        {/* 에러 메시지 */}
+                        {file.status === "failed" && file.error && (
+                          <p className="mt-1 text-xs text-red-600">
+                            {file.error}
+                          </p>
+                        )}
+                        {/* 진행률 바 */}
+                        {(file.status === "validating" ||
+                          file.status === "uploading") && (
+                          <div className="mt-1.5 h-1 w-full overflow-hidden rounded-full bg-muted">
+                            <div
+                              className="h-full rounded-full bg-primary transition-all duration-300"
+                              style={{ width: `${file.progress}%` }}
+                            />
+                          </div>
+                        )}
+                      </div>
+
+                      {/* 제거 버튼 */}
+                      {file.status !== "uploading" &&
+                        file.status !== "validating" && (
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            className="h-7 w-7 shrink-0"
+                            aria-label={`${file.name} 제거`}
+                            onClick={() => removeFile(file.id)}
+                          >
+                            <X className="h-3.5 w-3.5" />
+                          </Button>
+                        )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* 덮어쓰기 옵션 */}
+            <div className="rounded-md border p-3">
+              <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-foreground">
+                    기존 값 덮어쓰기
+                  </p>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    {overwrite
+                      ? "이미 등록된 부품이 있으면 엑셀 값으로 모두 덮어써요."
+                      : "이미 등록된 부품이 있으면 비어 있는 항목만 엑셀에서 채워요."}
+                  </p>
+                </div>
+                <Switch
+                  checked={overwrite}
+                  onCheckedChange={setOverwrite}
+                />
+              </div>
+            </div>
+          </div>
         )}
 
-        {step === "result" && (
-          <section className="space-y-4 rounded-lg border bg-card p-5">
-            <h2 className="text-sm font-semibold text-foreground">업로드 요약 화면</h2>
-
-            <div className="rounded-md border bg-muted/20 p-3 text-sm">
-              <p>
-                신규: <strong>{resultSummary.newCount}건</strong> / 변경 감지: <strong>{resultSummary.changedCount}건</strong> / 기존 데이터: <strong>{resultSummary.existingCount}건</strong>
-              </p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                적재 job payload: template_id={selectedTemplate?.id ?? "-"}, update_option={String(forceRevisionUpdate)}
-              </p>
-            </div>
-
-            <Collapsible open={openNew} onOpenChange={setOpenNew}>
-              <CollapsibleTrigger className="w-full rounded-md border px-3 py-2 text-left text-sm font-medium">
-                신규 목록: {resultSummary.newItems.length}건 (접이식)
-              </CollapsibleTrigger>
-              <CollapsibleContent className="mt-2 rounded-md border bg-background p-3 text-sm">
-                <ul className="space-y-1">
-                  {resultSummary.newItems.map((item) => (
-                    <li key={item}>{item}</li>
-                  ))}
-                </ul>
-              </CollapsibleContent>
-            </Collapsible>
-
-            <Collapsible open={openChanged} onOpenChange={setOpenChanged}>
-              <CollapsibleTrigger className="w-full rounded-md border px-3 py-2 text-left text-sm font-medium">
-                변경 목록: {resultSummary.changedItems.length}건 (접이식)
-              </CollapsibleTrigger>
-              <CollapsibleContent className="mt-2 rounded-md border bg-background p-3 text-sm">
-                <ul className="space-y-1">
-                  {resultSummary.changedItems.map((item) => (
-                    <li key={item}>{item}</li>
-                  ))}
-                </ul>
-              </CollapsibleContent>
-            </Collapsible>
-
-            <div className="flex items-center gap-2">
-              <Button variant="outline" onClick={() => setStep("upload")}>다시 업로드</Button>
-              <Button onClick={() => navigate(templateType === "master" ? "/parts" : `/parts/${partNumber}`)}>
-                <Check className="h-4 w-4" />
-                완료
+        <DialogFooter>
+          {synthesisState ? (
+            <Button
+              variant="outline"
+              onClick={handleClose}
+              disabled={isSynthesisProcessing}
+            >
+              닫기
+            </Button>
+          ) : (
+            <>
+              <Button
+                variant="outline"
+                onClick={handleClose}
+                disabled={isBusy}
+              >
+                취소
               </Button>
-            </div>
-          </section>
-        )}
-      </div>
-    </div>
+              <Button
+                disabled={!canSubmit || isSubmitting}
+                onClick={() => void handleSubmit()}
+              >
+                {isSubmitting && (
+                  <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+                )}
+                {isSubmitting ? "처리 시작 중…" : "업로드 실행"}
+              </Button>
+            </>
+          )}
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
