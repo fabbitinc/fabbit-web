@@ -17,7 +17,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { getLatestTemplate, getTemplates, normalizeColumns, type TemplateScope } from "@/pages/dev/partsTemplateStore";
+import { getLatestTemplate, getTemplates, normalizeColumns, type TemplateType } from "@/pages/dev/partsTemplateStore";
 
 type UploadType = "part_list" | "parent_child_bom" | "root_specified_bom";
 type PageStep = "upload" | "mapping" | "result";
@@ -133,12 +133,12 @@ function toTypeLabel(type: UploadType) {
 export function PartsUploadPreview() {
   const navigate = useNavigate();
   const { partNumber } = useParams<{ partNumber: string }>();
-  const scope: TemplateScope = partNumber ? "part_detail" : "master";
+  const templateType: TemplateType = partNumber ? "part_detail" : "master";
 
   const [step, setStep] = useState<PageStep>("upload");
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>("");
   const [uploadType, setUploadType] = useState<UploadType>(
-    scope === "master" ? "part_list" : "root_specified_bom"
+    templateType === "master" ? "part_list" : "root_specified_bom"
   );
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [columnApproval, setColumnApproval] = useState<Record<string, string>>({});
@@ -148,16 +148,16 @@ export function PartsUploadPreview() {
   const [openChanged, setOpenChanged] = useState(true);
 
   const scopedTemplates = useMemo(
-    () => getTemplates().filter((template) => template.scope === scope),
-    [scope]
+    () => getTemplates().filter((template) => template.templateType === templateType),
+    [templateType]
   );
 
-  const latestTemplate = useMemo(() => getLatestTemplate(scope), [scope]);
+  const latestTemplate = useMemo(() => getLatestTemplate(templateType), [templateType]);
   const selectedTemplate =
     scopedTemplates.find((template) => template.id === selectedTemplateId) ?? latestTemplate;
 
   const allowTypes: UploadType[] =
-    scope === "master"
+    templateType === "master"
       ? ["part_list", "parent_child_bom"]
       : ["root_specified_bom"];
 
@@ -237,7 +237,7 @@ export function PartsUploadPreview() {
           <section className="rounded-lg border bg-card p-6">
             <h1 className="text-xl font-bold text-foreground">데이터 업로드</h1>
             <p className="mt-2 text-sm text-muted-foreground">
-              현재 스코프에 속성 템플릿이 없습니다. 외부에서 속성 분석을 먼저 실행해 주세요.
+              사용할 속성 템플릿이 없습니다. 외부에서 속성 분석을 먼저 실행해 주세요.
             </p>
             <div className="mt-4 flex items-center gap-2">
               <Button
@@ -245,9 +245,9 @@ export function PartsUploadPreview() {
                 className="ai-outline-btn ai-theme-1"
                 onClick={() =>
                   navigate(
-                    scope === "master"
-                      ? "/dev/parts/templates?scope=master"
-                      : `/dev/parts/${partNumber}/templates?scope=detail`
+                    templateType === "master"
+                      ? "/dev/parts/templates"
+                      : `/dev/parts/${partNumber}/templates`
                   )
                 }
               >
@@ -256,7 +256,7 @@ export function PartsUploadPreview() {
               </Button>
               <Button
                 variant="outline"
-                onClick={() => navigate(scope === "master" ? "/dev/parts" : `/dev/parts/${partNumber}`)}
+                onClick={() => navigate(templateType === "master" ? "/dev/parts" : `/dev/parts/${partNumber}`)}
               >
                 <ArrowLeft className="h-4 w-4" />
                 돌아가기
@@ -275,14 +275,14 @@ export function PartsUploadPreview() {
           <div>
             <h1 className="text-xl font-bold text-foreground">데이터 업로드</h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              {scope === "master"
+              {templateType === "master"
                 ? "Part Master 화면: Part List, Parent/Child BOM 지원"
                 : `Part 상세화면 (${partNumber}): Root-Specified BOM 지원`}
             </p>
           </div>
           <Button
             variant="outline"
-            onClick={() => navigate(scope === "master" ? "/dev/parts" : `/dev/parts/${partNumber}`)}
+            onClick={() => navigate(templateType === "master" ? "/dev/parts" : `/dev/parts/${partNumber}`)}
           >
             <ArrowLeft className="h-4 w-4" />
             돌아가기
@@ -440,9 +440,9 @@ export function PartsUploadPreview() {
                 className="ai-outline-btn ai-theme-1"
                 onClick={() =>
                   navigate(
-                    scope === "master"
-                      ? "/dev/parts/templates?scope=master"
-                      : `/dev/parts/${partNumber}/templates?scope=detail`
+                    templateType === "master"
+                      ? "/dev/parts/templates"
+                      : `/dev/parts/${partNumber}/templates`
                   )
                 }
               >
@@ -542,7 +542,7 @@ export function PartsUploadPreview() {
                 신규: <strong>{resultSummary.newCount}건</strong> / 변경 감지: <strong>{resultSummary.changedCount}건</strong> / 기존 데이터: <strong>{resultSummary.existingCount}건</strong>
               </p>
               <p className="mt-1 text-xs text-muted-foreground">
-                적재 job payload: template_id={selectedTemplate?.id ?? "-"}, scope={scope}, update_option={String(forceRevisionUpdate)}
+                적재 job payload: template_id={selectedTemplate?.id ?? "-"}, update_option={String(forceRevisionUpdate)}
               </p>
             </div>
 
@@ -574,7 +574,7 @@ export function PartsUploadPreview() {
 
             <div className="flex items-center gap-2">
               <Button variant="outline" onClick={() => setStep("upload")}>다시 업로드</Button>
-              <Button onClick={() => navigate(scope === "master" ? "/dev/parts" : `/dev/parts/${partNumber}`)}>
+              <Button onClick={() => navigate(templateType === "master" ? "/dev/parts" : `/dev/parts/${partNumber}`)}>
                 <Check className="h-4 w-4" />
                 완료
               </Button>

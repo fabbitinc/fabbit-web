@@ -11,6 +11,62 @@ import {
 } from "@/features/onboarding/utils/mappingUtils";
 import { AUTO_APPROVE_CONFIDENCE_THRESHOLD } from "@/features/onboarding/constants/mappingConfig";
 
+function normalizeRelationMappings(
+  relations: RelationMappingEntry[],
+  mappingHeaders: string[],
+): RelationMappingEntry[] {
+  const seenSources = new Set<string>();
+  const normalizedReversed: RelationMappingEntry[] = [];
+
+  for (let i = relations.length - 1; i >= 0; i -= 1) {
+    const rm = relations[i];
+    const trackSourceUniqueness = !rm.dismissed;
+
+    const nodeEntries = Object.entries(rm.node_columns).filter(([, source]) => {
+      if (!source || !mappingHeaders.includes(source)) return false;
+      if (trackSourceUniqueness) {
+        if (seenSources.has(source)) return false;
+        seenSources.add(source);
+      }
+      return true;
+    });
+
+    const relEntries = Object.entries(rm.rel_columns).filter(([source]) => {
+      if (!source || !mappingHeaders.includes(source)) return false;
+      if (trackSourceUniqueness) {
+        if (seenSources.has(source)) return false;
+        seenSources.add(source);
+      }
+      return true;
+    });
+
+    const nextNodeColumns = Object.fromEntries(nodeEntries);
+    const nextRelColumns = Object.fromEntries(relEntries);
+
+    const referencedRelProps = new Set(
+      Object.values(nextRelColumns).filter((prop) => Boolean(String(prop || "").trim())),
+    );
+    const nextRelColumnTypes = Object.fromEntries(
+      Object.entries(rm.rel_column_types).filter(([prop]) => referencedRelProps.has(prop)),
+    );
+
+    const shouldDismiss =
+      Object.keys(nextNodeColumns).length === 0 &&
+      Object.keys(nextRelColumns).length === 0;
+
+    normalizedReversed.push({
+      ...rm,
+      node_columns: nextNodeColumns,
+      rel_columns: nextRelColumns,
+      rel_column_types: nextRelColumnTypes,
+      dismissed: shouldDismiss || rm.dismissed,
+      dismissed_reason: shouldDismiss ? (rm.dismissed_reason || "missing_source_column") : rm.dismissed_reason,
+    });
+  }
+
+  return normalizedReversed.reverse();
+}
+
 /**
  * 매핑 CRUD 핸들러
  */
@@ -20,7 +76,6 @@ export function useMappingActions(
   const columnMappings = useMappingStore((s) => s.columnMappings);
   const relationMappings = useMappingStore((s) => s.relationMappings);
   const mappingHeaders = useMappingStore((s) => s.mappingHeaders);
-  const editableConstraints = useMappingStore((s) => s.editableConstraints);
   const setMappings = useMappingStore((s) => s.setMappings);
   const resetMappings = useMappingStore((s) => s.resetMappings);
 
@@ -30,7 +85,8 @@ export function useMappingActions(
     nextColumns: ColumnMappingEntry[],
     nextRelations: RelationMappingEntry[],
   ) => {
-    setMappings(nextColumns, nextRelations);
+    const normalizedRelations = normalizeRelationMappings(nextRelations, mappingHeaders);
+    setMappings(nextColumns, normalizedRelations);
     return true;
   };
 
@@ -174,19 +230,10 @@ export function useMappingActions(
     const {
       columnMappings: latestColumns,
       relationMappings: latestRelations,
-      editableConstraints: latestConstraints,
     } = useMappingStore.getState();
 
-    const constraints = latestConstraints || editableConstraints;
-    if (!constraints) {
-      toast.error("관계 속성 제약 정보를 찾을 수 없습니다.");
-      return;
-    }
-
     const targetInfo = relationTargetInfoByType[relType];
-    const relationCatalog = constraints.relation_catalog || [];
-    const relationDef = relationCatalog.find((item) => item.rel_type === relType);
-    const targetLabel = relationDef?.to_label || targetInfo?.targetLabel || "";
+    const targetLabel = targetInfo?.targetLabel || "";
 
     if (!targetLabel) {
       toast.error("선택한 관계 타입의 정의를 찾을 수 없습니다.");
@@ -287,7 +334,7 @@ export function useMappingActions(
 
   const handleRemoveExtendedMapping = (id: string) => {
     const state = useMappingStore.getState();
-    setMappings(
+    void applyValidatedState(
       state.columnMappings.filter((cm) => cm.id !== id),
       state.relationMappings,
     );
@@ -295,10 +342,58 @@ export function useMappingActions(
 
   const handleRemoveRelationMapping = (id: string) => {
     const state = useMappingStore.getState();
-    setMappings(
+    void applyValidatedState(
       state.columnMappings,
       state.relationMappings.filter((rm) => rm.id !== id),
     );
+  };
+
+  const handleRemoveRelationCardMapping = (sourceColumn: string) => {
+    const { columnMappings: cols, relationMappings: rels } = useMappingStore.getState();
+    let changed = false;
+
+    const nextRelations = rels.map((rm) => {
+      if (rm.dismissed) return rm;
+
+      const hasNode = Object.values(rm.node_columns).includes(sourceColumn);
+      const hasRel = Object.keys(rm.rel_columns).includes(sourceColumn);
+      if (!hasNode && !hasRel) return rm;
+
+      changed = true;
+
+      const nextNodeColumns = Object.fromEntries(
+        Object.entries(rm.node_columns).filter(([, value]) => value !== sourceColumn),
+      );
+
+      const nextRelColumns = { ...rm.rel_columns };
+      const removedRelProperty = nextRelColumns[sourceColumn];
+      delete nextRelColumns[sourceColumn];
+
+      const nextRelColumnTypes = { ...rm.rel_column_types };
+      if (
+        removedRelProperty &&
+        !Object.values(nextRelColumns).includes(removedRelProperty)
+      ) {
+        delete nextRelColumnTypes[removedRelProperty];
+      }
+
+      const shouldDismiss =
+        Object.keys(nextNodeColumns).length === 0 &&
+        Object.keys(nextRelColumns).length === 0;
+
+      return {
+        ...rm,
+        node_columns: nextNodeColumns,
+        rel_columns: nextRelColumns,
+        rel_column_types: nextRelColumnTypes,
+        approved: false,
+        dismissed: shouldDismiss,
+        dismissed_reason: shouldDismiss ? "missing_source_column" : null,
+      };
+    });
+
+    if (!changed) return;
+    void applyValidatedState(cols, nextRelations);
   };
 
   /**
@@ -366,7 +461,7 @@ export function useMappingActions(
             approved: false,
             is_extended: false,
           }];
-      setMappings(next, rels);
+      void applyValidatedState(next, rels);
       return;
     }
 
@@ -389,7 +484,7 @@ export function useMappingActions(
             approved: false,
             is_extended: true,
           }];
-      setMappings(next, rels);
+      void applyValidatedState(next, rels);
       return;
     }
 
@@ -421,17 +516,82 @@ export function useMappingActions(
     void applyValidatedState(nextColumns, rels);
   };
 
+  const handleSetRelationCardMapping = (
+    relType: string,
+    sourceColumn: string,
+    mappingType: "node" | "rel",
+    property: string,
+  ) => {
+    const { columnMappings: cols, relationMappings: rels } = useMappingStore.getState();
+    const relationIndex = rels.findIndex(
+      (rm) =>
+        !rm.dismissed &&
+        rm.rel_type === relType &&
+        (Object.values(rm.node_columns).includes(sourceColumn) ||
+          Object.keys(rm.rel_columns).includes(sourceColumn)),
+    );
+    if (relationIndex < 0) return;
+
+    const targetRelation = rels[relationIndex];
+    const currentNodeColumns = Object.fromEntries(
+      Object.entries(targetRelation.node_columns).filter(([, value]) => value !== sourceColumn),
+    );
+    const currentRelColumns = { ...targetRelation.rel_columns };
+    const removedRelProperty = currentRelColumns[sourceColumn];
+    delete currentRelColumns[sourceColumn];
+
+    const currentRelColumnTypes = { ...targetRelation.rel_column_types };
+    if (
+      removedRelProperty &&
+      !Object.values(currentRelColumns).includes(removedRelProperty)
+    ) {
+      delete currentRelColumnTypes[removedRelProperty];
+    }
+
+    if (mappingType === "node") {
+      const existingSource = currentNodeColumns[property];
+      if (existingSource && existingSource !== sourceColumn) {
+        toast.error(`"${property}" 매칭키는 이미 "${existingSource}" 컬럼에 할당되어 있습니다.`);
+        return;
+      }
+      currentNodeColumns[property] = sourceColumn;
+    } else {
+      currentRelColumns[sourceColumn] = property;
+      if (!currentRelColumnTypes[property]) {
+        currentRelColumnTypes[property] = "string";
+      }
+    }
+
+    const nextRelations = rels.map((rm, idx) =>
+      idx === relationIndex
+        ? {
+            ...rm,
+            node_columns: currentNodeColumns,
+            rel_columns: currentRelColumns,
+            rel_column_types: currentRelColumnTypes,
+            approved: false,
+            dismissed: false,
+            dismissed_reason: null,
+          }
+        : rm,
+    );
+
+    void applyValidatedState(cols, nextRelations);
+  };
+
   return {
     handleResetMappings,
     handleRemoveColumnMapping,
     handleCreateColumnMapping,
     handleChangeColumnMappingTarget,
     handleSetPartMapping,
+    handleSetRelationCardMapping,
     handleApproveRelationMapping,
     handleCreateExtendedMapping,
     handleCreateRelationMapping,
     handleRemoveExtendedMapping,
     handleRemoveRelationMapping,
+    handleRemoveRelationCardMapping,
     handleApproveAll,
   };
 }

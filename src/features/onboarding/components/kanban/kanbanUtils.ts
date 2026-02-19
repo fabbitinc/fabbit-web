@@ -8,7 +8,7 @@ export function removeExistingMapping(
   relationMappings: { id: string; rel_columns: Record<string, string>; node_columns: Record<string, string>; dismissed: boolean }[],
   onRemoveColumnMapping: (id: string) => Promise<void>,
   onRemoveExtendedMapping: (id: string) => void,
-  onRemoveRelationMapping: (id: string) => void,
+  onRemoveRelationCardMapping: (sourceColumn: string) => void,
 ) {
   if (fromColumnId === "unmapped") return;
 
@@ -33,6 +33,6 @@ export function removeExistingMapping(
         Object.values(r.node_columns).includes(sourceColumn)),
   );
   if (rm) {
-    onRemoveRelationMapping(rm.id);
+    onRemoveRelationCardMapping(sourceColumn);
   }
 }

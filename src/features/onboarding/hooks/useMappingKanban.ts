@@ -24,6 +24,7 @@ export interface KanbanCardData {
   isExtended: boolean;
   isRelation: boolean;
   relType?: string;
+  relNodeProperty?: string;
   relProperty?: string;
   sampleData: string[];
 }
@@ -82,6 +83,13 @@ export function useMappingKanban() {
     selectableRelationTypeOptions,
     relationPropertyByType,
     relationTargetInfoByType,
+    mergeKeysByLabel,
+    partMissingMergeKeys,
+    relationMergeKeyIssueByType,
+    hasRelationMergeKeyIssues,
+    issueCountByColumn,
+    issueSummaryByColumn,
+    blockingIssues,
   } = derived;
 
   // 스토어 데이터 → 칸반 컬럼 변환
@@ -128,7 +136,7 @@ export function useMappingKanban() {
       const columnId = REL_TYPE_TO_COLUMN[rm.rel_type] || "Part";
 
       // node_columns의 source_column → 해당 관계 컬럼에 배치
-      for (const [, nodeSourceCol] of Object.entries(rm.node_columns)) {
+      for (const [nodeProp, nodeSourceCol] of Object.entries(rm.node_columns)) {
         // 이미 다른 카드로 추가된 경우 중복 방지
         const alreadyAdded = Object.values(cardsByColumn).some(
           (cards) => cards.some((c) => c.id === nodeSourceCol),
@@ -144,6 +152,7 @@ export function useMappingKanban() {
           isExtended: false,
           isRelation: true,
           relType: rm.rel_type,
+          relNodeProperty: nodeProp,
           sampleData: getSampleData(nodeSourceCol),
         });
       }
@@ -207,6 +216,13 @@ export function useMappingKanban() {
     selectableRelationTypeOptions,
     relationPropertyByType,
     relationTargetInfoByType,
+    mergeKeysByLabel,
+    partMissingMergeKeys,
+    relationMergeKeyIssueByType,
+    hasRelationMergeKeyIssues,
+    issueCountByColumn,
+    issueSummaryByColumn,
+    blockingIssues,
     // 제출
     isSubmitting,
     handleSubmit,

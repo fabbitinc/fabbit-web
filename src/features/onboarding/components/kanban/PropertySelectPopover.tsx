@@ -88,6 +88,12 @@ function PropertySelectPopoverInner({
   const { t } = useTranslation(["mapping"]);
   const columnMappings = useMappingStore((s) => s.columnMappings);
   const relationMappings = useMappingStore((s) => s.relationMappings);
+  const targetPropertyOptions = useMappingStore((s) => s.targetPropertyOptions);
+  const partMergeKeys = new Set(
+    targetPropertyOptions
+      .filter((opt) => opt.label === "Part" && opt.is_merge_key)
+      .map((opt) => opt.property),
+  );
 
   const [partMode, setPartMode] = useState<PartMode>("base");
   const [selectedProperty, setSelectedProperty] = useState("");
@@ -162,6 +168,7 @@ function PropertySelectPopoverInner({
                       opt.property,
                     )}
                     original={opt.property}
+                    required={partMergeKeys.has(opt.property)}
                   />
                 ))}
               </SelectContent>
@@ -281,12 +288,13 @@ function PropertySelectPopoverInner({
               <SelectValue placeholder="매칭 키 선택..." />
             </SelectTrigger>
             <SelectContent>
-              {(targetInfo?.targetMergeKeys || []).map((key) => (
+              {(targetInfo?.targetProperties || targetInfo?.targetMergeKeys || []).map((key) => (
                 <SelectItemWithTooltip
                   key={key}
                   value={key}
                   display={t(`mapping:property.${key}`, key)}
                   original={key}
+                  required={(targetInfo?.targetMergeKeys || []).includes(key)}
                 />
               ))}
             </SelectContent>
@@ -344,19 +352,32 @@ function SelectItemWithTooltip({
   value,
   display,
   original,
+  required = false,
 }: {
   value: string;
   display: string;
   original: string;
+  required?: boolean;
 }) {
+  const content = (
+    <span className="inline-flex w-full items-center gap-1">
+      <span className="truncate">{display}</span>
+      {required && (
+        <span className="text-[10px] font-semibold text-red-500" aria-label="필수">
+          *
+        </span>
+      )}
+    </span>
+  );
+
   if (display === original) {
-    return <SelectItem value={value}>{display}</SelectItem>;
+    return <SelectItem value={value}>{content}</SelectItem>;
   }
 
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <SelectItem value={value}>{display}</SelectItem>
+        <SelectItem value={value}>{content}</SelectItem>
       </TooltipTrigger>
       <TooltipContent
         side="right"

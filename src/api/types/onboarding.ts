@@ -125,7 +125,6 @@ export interface MappingConfirmRequest {
   name: string;
   sheet_name?: string | null;
   mapping: MappingResultDTO;
-  scope?: string;
 }
 
 export interface MappingResponse {
@@ -136,13 +135,20 @@ export interface MappingResponse {
   original_headers: string[];
   mapping: MappingResultDTO;
   usage_count: number;
+  version: number;
   created_at: string;
-  scope?: string;
   is_active?: boolean;
 }
 
 export interface MappingListResponse {
   items: MappingResponse[];
+}
+
+export interface MappingUpdateRequest {
+  upload_id: string;
+  sheet_name?: string | null;
+  mapping: MappingResultDTO;
+  name?: string | null;
 }
 
 export interface MappingValidateRequest {
