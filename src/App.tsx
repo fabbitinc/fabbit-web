@@ -14,7 +14,7 @@ import { PartDetailPage } from "@/pages/parts/PartDetailPage";
 import { PartsTemplateAnalysisPage } from "@/pages/parts/PartsTemplateAnalysisPage";
 import { PartsTemplateMappingPage } from "@/pages/parts/PartsTemplateMappingPage";
 import { PartsTemplateProcessingPage } from "@/pages/parts/PartsTemplateProcessingPage";
-import { PartsUploadPage } from "@/pages/parts/PartsUploadPage";
+import { PartsUploadDialog } from "@/pages/parts/PartsUploadPage";
 import { UploadModal } from "@/features/upload/components/UploadModal";
 import { SimpleBomImportModal } from "@/features/items/components/SimpleBomImportModal";
 import { Toaster } from "@/components/ui/sonner";
@@ -220,6 +220,11 @@ function LegacyItemDetailRedirect() {
 function LegacyProjectSettingsRedirect() {
   const { projectId } = useParams<{ projectId: string }>();
   return <Navigate to={projectId ? `/projects/${projectId}` : "/projects"} replace />;
+}
+
+function LegacyPartUploadRedirect() {
+  const { partNumber } = useParams<{ partNumber: string }>();
+  return <Navigate to={partNumber ? `/parts/${partNumber}` : "/parts"} replace />;
 }
 
 function SiteNotFoundPage() {
@@ -499,11 +504,11 @@ function App() {
                   <Route path="/parts/templates" element={<PartsTemplateAnalysisPage />} />
                   <Route path="/parts/templates/processing" element={<PartsTemplateProcessingPage />} />
                   <Route path="/parts/templates/mapping" element={<PartsTemplateMappingPage />} />
-                  <Route path="/parts/upload" element={<PartsUploadPage />} />
+                  <Route path="/parts/upload" element={<Navigate to="/parts" replace />} />
                   <Route path="/parts/:partNumber/templates" element={<PartsTemplateAnalysisPage />} />
                   <Route path="/parts/:partNumber/templates/processing" element={<PartsTemplateProcessingPage />} />
                   <Route path="/parts/:partNumber/templates/mapping" element={<PartsTemplateMappingPage />} />
-                  <Route path="/parts/:partNumber/upload" element={<PartsUploadPage />} />
+                  <Route path="/parts/:partNumber/upload" element={<LegacyPartUploadRedirect />} />
                   <Route path="/parts/:partNumber" element={<PartDetailPage />} />
                   <Route path="/items" element={<Navigate to="/parts" replace />} />
                   <Route path="/items/:id" element={<LegacyItemDetailRedirect />} />
@@ -527,6 +532,7 @@ function App() {
         />
       </Routes>
       <UploadModal />
+      <PartsUploadDialog />
       <SimpleBomImportModal />
       <Toaster position="bottom-right" />
     </>

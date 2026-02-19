@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { usePartsUploadStore } from "@/stores/partsUploadStore";
 
 // --- 타입 ---
 
@@ -585,6 +586,7 @@ const TABS: { key: TabKey; label: string }[] = [
 export function PartDetailPage() {
   const { partNumber } = useParams<{ partNumber: string }>();
   const navigate = useNavigate();
+  const openPartsUploadModal = usePartsUploadStore((s) => s.openModal);
   const [activeTab, setActiveTab] = useState<TabKey>("info");
 
   const item = partNumber ? MOCK_PARTS[partNumber] : undefined;
@@ -682,7 +684,7 @@ export function PartDetailPage() {
             children={MOCK_BOM_CHILDREN}
             parents={MOCK_BOM_PARENTS}
             onAnalyze={() => navigate(`/parts/${item.part_number}/templates`)}
-            onUpload={() => navigate(`/parts/${item.part_number}/upload`)}
+            onUpload={() => openPartsUploadModal(item.part_number)}
           />
         )}
         {activeTab === "attachments" && <DrawingsTab drawings={MOCK_DRAWINGS} />}
