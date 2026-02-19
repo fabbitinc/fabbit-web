@@ -1,5 +1,7 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { josa } from "es-hangul";
+import { useTranslation } from "react-i18next";
 import * as XLSX from "xlsx";
 import {
   CheckCircle2,
@@ -11,6 +13,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
@@ -56,7 +59,15 @@ interface UploadFileEntry {
   progress: number;
   uploadId?: string;
   error?: string;
+  rootContext?: Record<string, string>;
 }
+
+const MERGE_KEY_HINTS: Record<string, string> = {
+  Part: "품번을 입력해 주세요.",
+  Supplier: "업체명을 입력해 주세요.",
+  Drawing: "도면번호를 입력해 주세요.",
+  Project: "프로젝트코드를 입력해 주세요.",
+};
 
 // --- 유틸리티 ---
 
@@ -191,9 +202,7 @@ function SynthesisProgress({
                 : "처리가 완료되었어요"
               : "데이터 처리 중…"}
           </span>
-          {!isDone && (
-            <Loader2 className="h-4 w-4 animate-spin text-primary" />
-          )}
+          {!isDone && <Loader2 className="h-4 w-4 animate-spin text-primary" />}
         </div>
 
         {/* 전체 진행률 바 */}
@@ -216,16 +225,12 @@ function SynthesisProgress({
           <span>
             전체 {accepted_count}개 · 완료 {completed_count}개
             {failed_job_count > 0 && (
-              <span className="text-red-600">
-                {" "}
-                · 실패 {failed_job_count}개
-              </span>
+              <span className="text-red-600"> · 실패 {failed_job_count}개</span>
             )}
             {processing_count > 0 && ` · 처리 중 ${processing_count}개`}
             {pending_count > 0 && ` · 대기 ${pending_count}개`}
           </span>
         </div>
-
       </div>
 
       {/* 파일별 상태 목록 */}
@@ -348,6 +353,7 @@ function SynthesisProgress({
 // --- 컴포넌트 ---
 
 export function PartsUploadDialog() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const isOpen = usePartsUploadStore((s) => s.isOpen);
   const partNumber = usePartsUploadStore((s) => s.partNumber);
@@ -439,8 +445,45 @@ export function PartsUploadDialog() {
   }, [synthesisState]);
 
   const selectedTemplate =
-    mappingOptions.find((t) => t.id === selectedTemplateId) ??
+    mappingOptions.find((m) => m.id === selectedTemplateId) ??
     mappingOptions[0];
+
+  // ROOT_BOM scope일 때, node_columns가 비어있는 relation의 target_label 추출
+  const requiredRootLabels = useMemo(() => {
+    if (
+      !selectedTemplate ||
+      selectedTemplate.scope.toUpperCase() !== "ROOT_BOM"
+    )
+      return [];
+    return selectedTemplate.mapping.relation_mappings
+      .filter((rm) => Object.keys(rm.node_columns).length === 0)
+      .map((rm) => rm.target_label)
+      .filter((v, i, a) => a.indexOf(v) === i);
+  }, [selectedTemplate]);
+
+  // 각 라벨별로 연결된 파일 컬럼명 (rel_columns의 키)
+  const rootLabelRelColumns = useMemo(() => {
+    if (!selectedTemplate || requiredRootLabels.length === 0)
+      return {} as Record<string, string[]>;
+    const map: Record<string, string[]> = {};
+    for (const rm of selectedTemplate.mapping.relation_mappings) {
+      if (Object.keys(rm.node_columns).length > 0) continue;
+      const cols = Object.values(rm.rel_columns);
+      if (cols.length > 0) {
+        map[rm.target_label] = [...(map[rm.target_label] || []), ...cols];
+      }
+    }
+    return map;
+  }, [selectedTemplate, requiredRootLabels]);
+
+  // root_context가 필요한 파일 컬럼명 Set (필요한 컬럼 뱃지 강조용)
+  const rootContextColumns = useMemo(() => {
+    const set = new Set<string>();
+    for (const cols of Object.values(rootLabelRelColumns)) {
+      for (const col of cols) set.add(col);
+    }
+    return set;
+  }, [rootLabelRelColumns]);
 
   const isSynthesisProcessing =
     synthesisState !== null &&
@@ -460,7 +503,13 @@ export function PartsUploadDialog() {
       (f) => f.status === "completed" || f.status === "failed",
     );
   const canSubmit =
-    Boolean(selectedTemplate) && completedFiles.length > 0 && allSettled;
+    Boolean(selectedTemplate) &&
+    completedFiles.length > 0 &&
+    allSettled &&
+    (requiredRootLabels.length === 0 ||
+      completedFiles.every((f) =>
+        requiredRootLabels.every((label) => f.rootContext?.[label]?.trim()),
+      ));
 
   function updateFileStatus(fileId: string, updates: Partial<UploadFileEntry>) {
     setUploadedFiles((prev) =>
@@ -716,7 +765,13 @@ export function PartsUploadDialog() {
       const result = await startSynthesis({
         mapping_id: selectedTemplate!.id,
         overwrite,
-        uploads: uploadIds.map((id) => ({ upload_id: id })),
+        uploads: uploadIds.map((id) => {
+          const file = uploadedFiles.find((f) => f.uploadId === id);
+          return {
+            upload_id: id,
+            root_context: file?.rootContext || null,
+          };
+        }),
       });
 
       if (result.accepted_count === 0) {
@@ -827,11 +882,38 @@ export function PartsUploadDialog() {
                   {selectedTemplate.mapped_headers.map((header) => (
                     <span
                       key={header}
-                      className="inline-flex items-center rounded-md border border-border bg-muted/30 px-2 py-1 text-xs text-foreground"
+                      className={cn(
+                        "inline-flex items-center rounded-md border px-2 py-1 text-xs",
+                        rootContextColumns.has(header)
+                          ? "border-amber-500/40 bg-amber-500/10 text-amber-700"
+                          : "border-border bg-muted/30 text-foreground",
+                      )}
                     >
                       {header}
                     </span>
                   ))}
+                </div>
+              </div>
+            )}
+
+            {/* ROOT_BOM: 파일에 없는 연결 정보 안내 */}
+            {requiredRootLabels.length > 0 && (
+              <div className="rounded-md border border-amber-500/30 bg-amber-500/5 px-3 py-2">
+                <p className="text-xs font-medium text-foreground">
+                  직접 지정이 필요한 연결 정보
+                </p>
+                <div className="mt-0.5 text-xs text-muted-foreground space-y-0.5">
+                  {requiredRootLabels.map((label) => {
+                    const localLabel = t(`mapping:nodeLabel.${label}`, label);
+                    const cols = rootLabelRelColumns[label];
+                    return (
+                      <p key={label}>
+                        {cols && cols.length > 0
+                          ? `'${cols.join("', '")}' 컬럼을 처리하려면 대상 ${josa(localLabel, "을/를")} 알아야 해요.`
+                          : `${localLabel} 정보가 파일에 포함되어 있지 않아요.`}{" "}
+                      </p>
+                    );
+                  })}
                 </div>
               </div>
             )}
@@ -907,71 +989,117 @@ export function PartsUploadDialog() {
                     <div
                       key={file.id}
                       className={cn(
-                        "flex items-center gap-3 rounded-md border px-3 py-2",
+                        "rounded-md border",
                         file.status === "failed"
                           ? "border-red-500/20 bg-red-500/5"
                           : "bg-background",
                       )}
                     >
-                      {/* 상태 아이콘 */}
-                      {file.status === "completed" ? (
-                        <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-500" />
-                      ) : file.status === "failed" ? (
-                        <AlertCircle className="h-4 w-4 shrink-0 text-red-500" />
-                      ) : (
-                        <Loader2 className="h-4 w-4 shrink-0 animate-spin text-primary" />
-                      )}
+                      <div className="flex items-center gap-3 px-3 py-2">
+                        {/* 상태 아이콘 */}
+                        {file.status === "completed" ? (
+                          <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-500" />
+                        ) : file.status === "failed" ? (
+                          <AlertCircle className="h-4 w-4 shrink-0 text-red-500" />
+                        ) : (
+                          <Loader2 className="h-4 w-4 shrink-0 animate-spin text-primary" />
+                        )}
 
-                      {/* 파일 정보 */}
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-medium text-foreground">
-                          {file.name}
-                        </p>
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs text-muted-foreground">
-                            {formatFileSize(file.size)}
-                          </span>
-                          {file.status === "validating" && (
-                            <span className="text-xs text-primary">
-                              검증 중…
+                        {/* 파일 정보 */}
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm font-medium text-foreground">
+                            {file.name}
+                          </p>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-muted-foreground">
+                              {formatFileSize(file.size)}
                             </span>
+                            {file.status === "validating" && (
+                              <span className="text-xs text-primary">
+                                검증 중…
+                              </span>
+                            )}
+                            {file.status === "uploading" && (
+                              <span className="text-xs text-primary">
+                                {file.progress}%
+                              </span>
+                            )}
+                          </div>
+                          {/* 에러 메시지 */}
+                          {file.status === "failed" && file.error && (
+                            <p className="mt-1 text-xs text-red-600">
+                              {file.error}
+                            </p>
                           )}
-                          {file.status === "uploading" && (
-                            <span className="text-xs text-primary">
-                              {file.progress}%
-                            </span>
+                          {/* 진행률 바 */}
+                          {(file.status === "validating" ||
+                            file.status === "uploading") && (
+                            <div className="mt-1.5 h-1 w-full overflow-hidden rounded-full bg-muted">
+                              <div
+                                className="h-full rounded-full bg-primary transition-all duration-300"
+                                style={{ width: `${file.progress}%` }}
+                              />
+                            </div>
                           )}
                         </div>
-                        {/* 에러 메시지 */}
-                        {file.status === "failed" && file.error && (
-                          <p className="mt-1 text-xs text-red-600">
-                            {file.error}
-                          </p>
-                        )}
-                        {/* 진행률 바 */}
-                        {(file.status === "validating" ||
-                          file.status === "uploading") && (
-                          <div className="mt-1.5 h-1 w-full overflow-hidden rounded-full bg-muted">
-                            <div
-                              className="h-full rounded-full bg-primary transition-all duration-300"
-                              style={{ width: `${file.progress}%` }}
-                            />
-                          </div>
-                        )}
+
+                        {/* 제거 버튼 */}
+                        {file.status !== "uploading" &&
+                          file.status !== "validating" && (
+                            <Button
+                              size="icon"
+                              variant="ghost"
+                              className="h-7 w-7 shrink-0"
+                              aria-label={`${file.name} 제거`}
+                              onClick={() => removeFile(file.id)}
+                            >
+                              <X className="h-3.5 w-3.5" />
+                            </Button>
+                          )}
                       </div>
 
-                      {/* 제거 버튼 */}
-                      {file.status !== "uploading" &&
-                        file.status !== "validating" && (
-                          <Button
-                            size="icon"
-                            variant="ghost"
-                            className="h-7 w-7 shrink-0"
-                            aria-label={`${file.name} 제거`}
-                            onClick={() => removeFile(file.id)}
-                          >
-                            <X className="h-3.5 w-3.5" />
-                          </Button>
+                      {/* ROOT_BOM: root_context 입력 */}
+                      {file.status === "completed" &&
+                        requiredRootLabels.length > 0 && (
+                          <div className="border-t px-3 py-2 space-y-1.5">
+                            <p className="text-[11px] text-muted-foreground">
+                              이 파일의 데이터를 연결할 대상을 지정해 주세요
+                            </p>
+                            {requiredRootLabels.map((label) => (
+                              <div
+                                key={label}
+                                className="flex items-center gap-2"
+                              >
+                                <span className="shrink-0 text-xs font-medium text-muted-foreground w-16">
+                                  {t(`mapping:nodeLabel.${label}`, label)}
+                                </span>
+                                <Input
+                                  className="h-7 text-xs"
+                                  placeholder={
+                                    MERGE_KEY_HINTS[label] ??
+                                    "식별값을 입력하세요"
+                                  }
+                                  value={file.rootContext?.[label] ?? ""}
+                                  onChange={(e) => {
+                                    const value = e.target.value;
+                                    setUploadedFiles((prev) =>
+                                      prev.map((f) =>
+                                        f.id === file.id
+                                          ? {
+                                              ...f,
+                                              rootContext: {
+                                                ...f.rootContext,
+                                                [label]: value,
+                                              },
+                                            }
+                                          : f,
+                                      ),
+                                    );
+                                  }}
+                                />
+                              </div>
+                            ))}
+                          </div>
                         )}
                     </div>
                   ))}
@@ -992,10 +1120,7 @@ export function PartsUploadDialog() {
                       : "이미 등록된 부품이 있으면 비어 있는 항목만 엑셀에서 채워요."}
                   </p>
                 </div>
-                <Switch
-                  checked={overwrite}
-                  onCheckedChange={setOverwrite}
-                />
+                <Switch checked={overwrite} onCheckedChange={setOverwrite} />
               </div>
             </div>
           </div>
@@ -1012,11 +1137,7 @@ export function PartsUploadDialog() {
             </Button>
           ) : (
             <>
-              <Button
-                variant="outline"
-                onClick={handleClose}
-                disabled={isBusy}
-              >
+              <Button variant="outline" onClick={handleClose} disabled={isBusy}>
                 취소
               </Button>
               <Button
