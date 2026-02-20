@@ -14,7 +14,7 @@ import { PartDetailPage } from "@/pages/parts/PartDetailPage";
 import { PartsTemplateAnalysisPage } from "@/pages/parts/PartsTemplateAnalysisPage";
 import { PartsTemplateMappingPage } from "@/pages/parts/PartsTemplateMappingPage";
 import { PartsTemplateProcessingPage } from "@/pages/parts/PartsTemplateProcessingPage";
-import { PartsUploadDialog } from "@/pages/parts/PartsUploadPage";
+import { PartsUploadDialog } from "@/pages/parts/PartsUploadDialog";
 import { UploadModal } from "@/features/upload/components/UploadModal";
 import { SimpleBomImportModal } from "@/features/items/components/SimpleBomImportModal";
 import { Toaster } from "@/components/ui/sonner";
@@ -223,8 +223,8 @@ function LegacyProjectSettingsRedirect() {
 }
 
 function LegacyPartUploadRedirect() {
-  const { partNumber } = useParams<{ partNumber: string }>();
-  return <Navigate to={partNumber ? `/parts/${partNumber}` : "/parts"} replace />;
+  const { partId } = useParams<{ partId: string }>();
+  return <Navigate to={partId ? `/parts/${partId}` : "/parts"} replace />;
 }
 
 function SiteNotFoundPage() {
@@ -505,11 +505,11 @@ function App() {
                   <Route path="/parts/templates/processing" element={<PartsTemplateProcessingPage />} />
                   <Route path="/parts/templates/mapping" element={<PartsTemplateMappingPage />} />
                   <Route path="/parts/upload" element={<Navigate to="/parts" replace />} />
-                  <Route path="/parts/:partNumber/templates" element={<PartsTemplateAnalysisPage />} />
-                  <Route path="/parts/:partNumber/templates/processing" element={<PartsTemplateProcessingPage />} />
-                  <Route path="/parts/:partNumber/templates/mapping" element={<PartsTemplateMappingPage />} />
-                  <Route path="/parts/:partNumber/upload" element={<LegacyPartUploadRedirect />} />
-                  <Route path="/parts/:partNumber" element={<PartDetailPage />} />
+                  <Route path="/parts/:partId/templates" element={<PartsTemplateAnalysisPage />} />
+                  <Route path="/parts/:partId/templates/processing" element={<PartsTemplateProcessingPage />} />
+                  <Route path="/parts/:partId/templates/mapping" element={<PartsTemplateMappingPage />} />
+                  <Route path="/parts/:partId/upload" element={<LegacyPartUploadRedirect />} />
+                  <Route path="/parts/:partId" element={<PartDetailPage />} />
                   <Route path="/items" element={<Navigate to="/parts" replace />} />
                   <Route path="/items/:id" element={<LegacyItemDetailRedirect />} />
                   <Route path="/items/:id/bom" element={<LegacyItemDetailRedirect />} />

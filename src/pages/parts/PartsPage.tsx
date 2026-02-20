@@ -11,8 +11,9 @@ import {
   ArrowDown,
   Upload,
   Sparkles,
-  FileText,
   Network,
+  FileText,
+  Loader2,
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -34,90 +35,42 @@ import {
   SelectItem,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Tooltip,
-  TooltipTrigger,
-  TooltipContent,
-} from "@/components/ui/tooltip";
-
-// --- Mock 데이터 ---
-
-interface PartSummary {
-  part_number: string;
-  name: string;
-  revision: string;
-  material: string | null;
-  category: string;
-  drawing_count: number;
-  child_count: number;
-}
-
-const PARTS_MOCK_ITEMS: PartSummary[] = [
-  { part_number: "BRK-001", name: "브라켓 A", revision: "A", material: "SUS304", category: "기구부품", drawing_count: 2, child_count: 5 },
-  { part_number: "BRK-002", name: "브라켓 B", revision: "B", material: "SUS316", category: "기구부품", drawing_count: 1, child_count: 3 },
-  { part_number: "GR-001", name: "스퍼 기어", revision: "A", material: "SCM440", category: "구동부품", drawing_count: 1, child_count: 0 },
-  { part_number: "GR-002", name: "헬리컬 기어", revision: "C", material: "SCM440", category: "구동부품", drawing_count: 2, child_count: 0 },
-  { part_number: "MTR-001", name: "스텝 모터 42", revision: "A", material: null, category: "전자부품", drawing_count: 0, child_count: 3 },
-  { part_number: "MTR-002", name: "서보 모터 60", revision: "B", material: null, category: "전자부품", drawing_count: 1, child_count: 4 },
-  { part_number: "SFT-001", name: "구동축", revision: "A", material: "S45C", category: "구동부품", drawing_count: 1, child_count: 0 },
-  { part_number: "SFT-002", name: "종동축", revision: "A", material: "S45C", category: "구동부품", drawing_count: 1, child_count: 0 },
-  { part_number: "PLT-001", name: "베이스 플레이트", revision: "D", material: "AL6061", category: "기구부품", drawing_count: 3, child_count: 8 },
-  { part_number: "PLT-002", name: "커버 플레이트", revision: "B", material: "AL5052", category: "기구부품", drawing_count: 1, child_count: 0 },
-  { part_number: "HSG-001", name: "모터 하우징", revision: "A", material: "AL6061", category: "기구부품", drawing_count: 2, child_count: 6 },
-  { part_number: "HSG-002", name: "기어박스 하우징", revision: "C", material: "FC250", category: "기구부품", drawing_count: 3, child_count: 12 },
-  { part_number: "BRG-001", name: "볼 베어링 6205", revision: "A", material: null, category: "구매부품", drawing_count: 0, child_count: 0 },
-  { part_number: "BRG-002", name: "볼 베어링 6208", revision: "A", material: null, category: "구매부품", drawing_count: 0, child_count: 0 },
-  { part_number: "BLT-001", name: "육각 볼트 M8x25", revision: "A", material: "SUS304", category: "구매부품", drawing_count: 0, child_count: 0 },
-  { part_number: "BLT-002", name: "육각 볼트 M10x30", revision: "A", material: "SUS304", category: "구매부품", drawing_count: 0, child_count: 0 },
-  { part_number: "NUT-001", name: "육각 너트 M8", revision: "A", material: "SUS304", category: "구매부품", drawing_count: 0, child_count: 0 },
-  { part_number: "PCB-001", name: "메인 제어보드", revision: "B", material: null, category: "전자부품", drawing_count: 1, child_count: 7 },
-  { part_number: "PCB-002", name: "드라이버 보드", revision: "A", material: null, category: "전자부품", drawing_count: 1, child_count: 5 },
-  { part_number: "SNS-001", name: "근접 센서", revision: "A", material: null, category: "전자부품", drawing_count: 0, child_count: 0 },
-  { part_number: "SNS-002", name: "엔코더 센서", revision: "B", material: null, category: "전자부품", drawing_count: 0, child_count: 0 },
-  { part_number: "CBL-001", name: "전원 케이블", revision: "A", material: null, category: "전자부품", drawing_count: 0, child_count: 0 },
-  { part_number: "SPR-001", name: "인장 스프링", revision: "A", material: "SWP", category: "기구부품", drawing_count: 1, child_count: 0 },
-  { part_number: "PIN-001", name: "다웰 핀 Ø6x20", revision: "A", material: "SUJ2", category: "구매부품", drawing_count: 0, child_count: 0 },
-  { part_number: "GSK-001", name: "오링 P20", revision: "A", material: "NBR", category: "구매부품", drawing_count: 0, child_count: 0 },
-  { part_number: "FRM-001", name: "프레임 조립체", revision: "B", material: "SPHC", category: "기구부품", drawing_count: 2, child_count: 15 },
-];
+import { usePartFilterOptions, useParts } from "@/api";
+import type { PartSummary, ListPartsParams } from "@/api";
 
 const PAGE_SIZE_OPTIONS = ["15", "30", "50"];
 
-// mock 데이터에서 고유값 추출
-const ALL_CATEGORIES = [...new Set(PARTS_MOCK_ITEMS.map((i) => i.category))];
-const ALL_MATERIALS = [...new Set(PARTS_MOCK_ITEMS.map((i) => i.material).filter(Boolean))] as string[];
-
-type SortKey = "part_number" | "name" | "category" | "material" | "revision";
+type SortKey = "part_number" | "name" | "category" | "revision" | "lifecycle_state";
 type SortDir = "asc" | "desc";
 
 interface Filters {
   search: string;
   categories: Set<string>;
-  materials: Set<string>;
+  lifecycleStates: Set<string>;
   hasDrawing: boolean | null;
-  hasBom: boolean | null;
+  hasChildren: boolean | null;
 }
 
 const INITIAL_FILTERS: Filters = {
   search: "",
   categories: new Set(),
-  materials: new Set(),
+  lifecycleStates: new Set(),
   hasDrawing: null,
-  hasBom: null,
+  hasChildren: null,
 };
 
 function cloneFilters(f: Filters): Filters {
-  return { ...f, categories: new Set(f.categories), materials: new Set(f.materials) };
+  return { ...f, categories: new Set(f.categories), lifecycleStates: new Set(f.lifecycleStates) };
 }
 
 function filtersEqual(a: Filters, b: Filters): boolean {
   if (a.search !== b.search) return false;
   if (a.hasDrawing !== b.hasDrawing) return false;
-  if (a.hasBom !== b.hasBom) return false;
+  if (a.hasChildren !== b.hasChildren) return false;
   if (a.categories.size !== b.categories.size) return false;
   for (const v of a.categories) if (!b.categories.has(v)) return false;
-  if (a.materials.size !== b.materials.size) return false;
-  for (const v of a.materials) if (!b.materials.has(v)) return false;
+  if (a.lifecycleStates.size !== b.lifecycleStates.size) return false;
+  for (const v of a.lifecycleStates) if (!b.lifecycleStates.has(v)) return false;
   return true;
 }
 
@@ -127,9 +80,14 @@ export function PartsPage() {
   const navigate = useNavigate();
   const openPartsUploadModal = usePartsUploadStore((s) => s.openModal);
 
-  const handleRowClick = useCallback((partNumber: string) => {
-    navigate(`/parts/${partNumber}`);
+  const handleRowClick = useCallback((partId: string) => {
+    navigate(`/parts/${partId}`);
   }, [navigate]);
+
+  // 필터 옵션 (카테고리, 수명주기 DISTINCT 값)
+  const { data: filterOptions } = usePartFilterOptions();
+  const allCategories = filterOptions?.categories ?? [];
+  const allLifecycleStates = filterOptions?.lifecycle_states ?? [];
 
   // draft: UI에서 편집 중인 필터 / applied: 테이블에 실제 적용된 필터
   const [draft, setDraft] = useState<Filters>(INITIAL_FILTERS);
@@ -138,6 +96,26 @@ export function PartsPage() {
   const [pageSize, setPageSize] = useState(15);
   const [sortKey, setSortKey] = useState<SortKey>("part_number");
   const [sortDir, setSortDir] = useState<SortDir>("asc");
+
+  // applied 필터 → API 쿼리 파라미터 변환 (서버 사이드 페이지네이션)
+  // API는 category/lifecycle_state를 단일 값만 지원하므로,
+  // 1개 선택 시 서버 필터링, 2개 이상 시 클라이언트 필터링
+  const apiParams = useMemo<ListPartsParams>(() => {
+    const params: ListPartsParams = {
+      offset: (page - 1) * pageSize,
+      limit: pageSize,
+    };
+    if (applied.search) params.search = applied.search.trim();
+    if (applied.categories.size === 1) params.category = [...applied.categories][0];
+    if (applied.lifecycleStates.size === 1) params.lifecycle_state = [...applied.lifecycleStates][0];
+    if (applied.hasDrawing !== null) params.has_drawing = applied.hasDrawing;
+    if (applied.hasChildren !== null) params.has_children = applied.hasChildren;
+    return params;
+  }, [applied, page, pageSize]);
+
+  const { data: partsData, isLoading } = useParts(apiParams);
+  const apiItems = partsData?.items ?? [];
+  const totalCount = partsData?.total ?? 0;
 
   // draft와 applied가 다른지 (= 미적용 변경사항 있음)
   const hasPendingChanges = useMemo(() => !filtersEqual(draft, applied), [draft, applied]);
@@ -155,12 +133,12 @@ export function PartsPage() {
         },
       });
     }
-    for (const mat of draft.materials) {
+    for (const state of draft.lifecycleStates) {
       chips.push({
-        key: `mat-${mat}`,
-        label: `재질: ${mat}`,
+        key: `lcs-${state}`,
+        label: `상태: ${state}`,
         onRemove: () => {
-          setDraft((prev) => ({ ...prev, materials: toggleSetItem(prev.materials, mat) }));
+          setDraft((prev) => ({ ...prev, lifecycleStates: toggleSetItem(prev.lifecycleStates, state) }));
         },
       });
     }
@@ -173,40 +151,30 @@ export function PartsPage() {
         },
       });
     }
-    if (draft.hasBom !== null) {
+    if (draft.hasChildren !== null) {
       chips.push({
-        key: "bom",
-        label: `BOM ${draft.hasBom ? "있음" : "없음"}`,
+        key: "children",
+        label: `하위 부품 ${draft.hasChildren ? "있음" : "없음"}`,
         onRemove: () => {
-          setDraft((prev) => ({ ...prev, hasBom: null }));
+          setDraft((prev) => ({ ...prev, hasChildren: null }));
         },
       });
     }
     return chips;
   }, [draft]);
 
-  // 테이블은 applied 기준으로 필터링
+  // API 결과에 대한 클라이언트 보조 필터링 (multi-select 대응)
   const filtered = useMemo(() => {
-    return PARTS_MOCK_ITEMS.filter((item) => {
-      if (applied.search) {
-        const q = applied.search.trim().toLowerCase();
-        if (
-          !item.part_number.toLowerCase().includes(q) &&
-          !item.name.toLowerCase().includes(q) &&
-          !(item.material?.toLowerCase().includes(q))
-        ) return false;
-      }
-      if (applied.categories.size > 0 && !applied.categories.has(item.category)) return false;
-      if (applied.materials.size > 0 && (!item.material || !applied.materials.has(item.material))) return false;
-      if (applied.hasDrawing === true && item.drawing_count === 0) return false;
-      if (applied.hasDrawing === false && item.drawing_count > 0) return false;
-      if (applied.hasBom === true && item.child_count === 0) return false;
-      if (applied.hasBom === false && item.child_count > 0) return false;
+    return apiItems.filter((item) => {
+      // 카테고리 multi-select: API에서 처리 못한 경우만 클라이언트 필터
+      if (applied.categories.size > 1 && (!item.category || !applied.categories.has(item.category))) return false;
+      // 수명주기 multi-select
+      if (applied.lifecycleStates.size > 1 && (!item.lifecycle_state || !applied.lifecycleStates.has(item.lifecycle_state))) return false;
       return true;
     });
-  }, [applied]);
+  }, [apiItems, applied.categories, applied.lifecycleStates]);
 
-  // 정렬
+  // 정렬 (현재 페이지 내)
   const sorted = useMemo(() => {
     return [...filtered].sort((a, b) => {
       const valA = a[sortKey] ?? "";
@@ -216,11 +184,10 @@ export function PartsPage() {
     });
   }, [filtered, sortKey, sortDir]);
 
-  // 페이지네이션
-  const totalPages = Math.max(1, Math.ceil(sorted.length / pageSize));
+  // 페이지네이션 (서버 사이드)
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
   const safePage = Math.min(page, totalPages);
-  const paged = sorted.slice((safePage - 1) * pageSize, safePage * pageSize);
-  const emptyRowCount = Math.max(0, pageSize - paged.length);
+  const emptyRowCount = Math.max(0, pageSize - sorted.length);
 
   // draft 업데이트 (UI만, 테이블 반영 안 됨)
   function updateDraft<K extends keyof Filters>(key: K, value: Filters[K]) {
@@ -254,7 +221,7 @@ export function PartsPage() {
     setPage(1);
   }
 
-  const draftAttrCount = (draft.hasDrawing !== null ? 1 : 0) + (draft.hasBom !== null ? 1 : 0);
+  const draftAttrCount = (draft.hasDrawing !== null ? 1 : 0) + (draft.hasChildren !== null ? 1 : 0);
 
   return (
     <div className="min-h-full">
@@ -290,7 +257,7 @@ export function PartsPage() {
           <div className="relative flex-1">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
-              placeholder="품번, 품명, 재질로 검색..."
+              placeholder="품번, 품명으로 검색..."
               value={draft.search}
               onChange={(e) => updateDraft("search", e.target.value)}
               onKeyDown={(e) => { if (e.key === "Enter") applyFilters(); }}
@@ -306,7 +273,11 @@ export function PartsPage() {
             검색
           </Button>
           <span className="shrink-0 text-sm text-muted-foreground">
-            <span className="font-semibold text-foreground">{filtered.length}</span>건
+            {isLoading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <><span className="font-semibold text-foreground">{totalCount}</span>건</>
+            )}
           </span>
         </div>
 
@@ -327,7 +298,7 @@ export function PartsPage() {
             <DropdownMenuContent align="start" className="w-44">
               <DropdownMenuLabel>카테고리</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              {ALL_CATEGORIES.map((cat) => (
+              {allCategories.map((cat) => (
                 <DropdownMenuCheckboxItem
                   key={cat}
                   checked={draft.categories.has(cat)}
@@ -351,36 +322,36 @@ export function PartsPage() {
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {/* 재질 드롭다운 */}
+          {/* 상태 드롭다운 */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="outline"
                 size="sm"
-                className={draft.materials.size > 0 ? "border-primary/50 text-primary" : ""}
+                className={draft.lifecycleStates.size > 0 ? "border-primary/50 text-primary" : ""}
               >
-                재질
+                상태
                 <ChevronDown className="h-3.5 w-3.5" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start" className="w-44">
-              <DropdownMenuLabel>재질</DropdownMenuLabel>
+              <DropdownMenuLabel>상태</DropdownMenuLabel>
               <DropdownMenuSeparator />
-              {ALL_MATERIALS.map((mat) => (
+              {allLifecycleStates.map((state) => (
                 <DropdownMenuCheckboxItem
-                  key={mat}
-                  checked={draft.materials.has(mat)}
-                  onCheckedChange={() => updateDraft("materials", toggleSetItem(draft.materials, mat))}
+                  key={state}
+                  checked={draft.lifecycleStates.has(state)}
+                  onCheckedChange={() => updateDraft("lifecycleStates", toggleSetItem(draft.lifecycleStates, state))}
                   onSelect={(e) => e.preventDefault()}
                 >
-                  {mat}
+                  {state}
                 </DropdownMenuCheckboxItem>
               ))}
-              {draft.materials.size > 0 && (
+              {draft.lifecycleStates.size > 0 && (
                 <>
                   <DropdownMenuSeparator />
                   <button
-                    onClick={() => updateDraft("materials", new Set())}
+                    onClick={() => updateDraft("lifecycleStates", new Set())}
                     className="w-full px-2 py-1.5 text-left text-sm text-muted-foreground hover:text-foreground"
                   >
                     선택 해제
@@ -419,20 +390,20 @@ export function PartsPage() {
                 도면 없음
               </DropdownMenuCheckboxItem>
               <DropdownMenuSeparator />
-              <DropdownMenuLabel>BOM</DropdownMenuLabel>
+              <DropdownMenuLabel>하위 부품</DropdownMenuLabel>
               <DropdownMenuCheckboxItem
-                checked={draft.hasBom === true}
-                onCheckedChange={() => updateDraft("hasBom", draft.hasBom === true ? null : true)}
+                checked={draft.hasChildren === true}
+                onCheckedChange={() => updateDraft("hasChildren", draft.hasChildren === true ? null : true)}
                 onSelect={(e) => e.preventDefault()}
               >
-                BOM 있음
+                하위 부품 있음
               </DropdownMenuCheckboxItem>
               <DropdownMenuCheckboxItem
-                checked={draft.hasBom === false}
-                onCheckedChange={() => updateDraft("hasBom", draft.hasBom === false ? null : false)}
+                checked={draft.hasChildren === false}
+                onCheckedChange={() => updateDraft("hasChildren", draft.hasChildren === false ? null : false)}
                 onSelect={(e) => e.preventDefault()}
               >
-                BOM 없음
+                하위 부품 없음
               </DropdownMenuCheckboxItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -471,31 +442,40 @@ export function PartsPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm table-fixed">
               <colgroup>
-                <col style={{ width: "14%" }} />
+                <col style={{ width: "12%" }} />
                 <col />
-                <col style={{ width: "12%" }} />
-                <col style={{ width: "12%" }} />
-                <col style={{ width: "7%" }} />
-                <col style={{ width: "7%" }} />
-                <col style={{ width: "7%" }} />
+                <col style={{ width: "10%" }} />
+                <col style={{ width: "5%" }} />
+                <col style={{ width: "8%" }} />
+                <col style={{ width: "5%" }} />
+                <col style={{ width: "8%" }} />
               </colgroup>
               <thead>
                 <tr className="border-b bg-muted/50 text-left">
                   <SortableHeader column="part_number" label="품번" sortKey={sortKey} sortDir={sortDir} onSort={handleSort} />
                   <SortableHeader column="name" label="품명" sortKey={sortKey} sortDir={sortDir} onSort={handleSort} />
-                  <SortableHeader column="category" label="카테고리" sortKey={sortKey} sortDir={sortDir} onSort={handleSort} />
-                  <SortableHeader column="material" label="재질" sortKey={sortKey} sortDir={sortDir} onSort={handleSort} />
-                  <SortableHeader column="revision" label="Rev" sortKey={sortKey} sortDir={sortDir} onSort={handleSort} />
-                  <th className="py-3 pl-4 pr-2 text-center text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                  <SortableHeader column="category" label="카테고리" sortKey={sortKey} sortDir={sortDir} onSort={handleSort} align="center" />
+                  <SortableHeader column="revision" label="Rev" sortKey={sortKey} sortDir={sortDir} onSort={handleSort} align="center" />
+                  <SortableHeader column="lifecycle_state" label="상태" sortKey={sortKey} sortDir={sortDir} onSort={handleSort} align="center" />
+                  <th className="py-3 px-2 text-center text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
                     도면
                   </th>
-                  <th className="py-3 pl-4 pr-2 text-center text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-                    BOM
+                  <th className="py-3 px-2 text-center text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                    하위 부품
                   </th>
                 </tr>
               </thead>
               <tbody>
-                {paged.length === 0 ? (
+                {isLoading ? (
+                  <tr>
+                    <td colSpan={7} className="py-20 text-center">
+                      <div className="flex flex-col items-center gap-3">
+                        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                        <p className="text-sm text-muted-foreground">불러오는 중...</p>
+                      </div>
+                    </td>
+                  </tr>
+                ) : sorted.length === 0 ? (
                   <tr>
                     <td colSpan={7} className="py-20 text-center">
                       <div className="flex flex-col items-center gap-3">
@@ -518,55 +498,61 @@ export function PartsPage() {
                   </tr>
                 ) : (
                   <>
-                    {paged.map((item) => (
+                    {sorted.map((item) => (
                       <tr
-                        key={item.part_number}
-                        onClick={() => handleRowClick(item.part_number)}
+                        key={item.id}
+                        onClick={() => handleRowClick(item.id)}
                         className="group h-[45px] border-b border-border/50 transition-colors hover:bg-muted/50 cursor-pointer"
                       >
                         <td className="py-2 pl-4 pr-2 font-mono text-xs font-medium text-primary">
                           {item.part_number}
                         </td>
                         <td className="py-2 pl-4 pr-2 text-foreground">
-                          {item.name}
+                          {item.name ?? <span className="text-muted-foreground/40">—</span>}
                         </td>
-                        <td className="py-2 pl-4 pr-2 text-muted-foreground">
-                          {item.category}
+                        <td className="py-2 px-2 text-center text-muted-foreground">
+                          {item.category ?? <span className="text-muted-foreground/40">—</span>}
                         </td>
-                        <td className="py-2 pl-4 pr-2 text-muted-foreground">
-                          {item.material ?? <span className="text-muted-foreground/40">—</span>}
-                        </td>
-                        <td className="py-2 pl-4 pr-2 text-center">
-                          <span className="inline-flex h-5 w-5 items-center justify-center rounded bg-muted text-[11px] font-medium text-muted-foreground">
-                            {item.revision}
-                          </span>
-                        </td>
-                        <td className="py-2 pl-4 pr-2 text-center">
-                          {item.drawing_count > 0 ? (
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <span className="inline-flex items-center gap-1 text-muted-foreground">
-                                  <FileText className="h-3.5 w-3.5" />
-                                  <span className="text-xs">{item.drawing_count}</span>
-                                </span>
-                              </TooltipTrigger>
-                              <TooltipContent>도면 {item.drawing_count}건</TooltipContent>
-                            </Tooltip>
+                        <td className="py-2 px-2 text-center">
+                          {item.revision ? (
+                            <span className="inline-flex h-5 w-5 items-center justify-center rounded bg-muted text-[11px] font-medium text-muted-foreground">
+                              {item.revision}
+                            </span>
                           ) : (
                             <span className="text-muted-foreground/40">—</span>
                           )}
                         </td>
-                        <td className="py-2 pl-4 pr-2 text-center">
-                          {item.child_count > 0 ? (
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <span className="inline-flex items-center gap-1 text-muted-foreground">
-                                  <Network className="h-3.5 w-3.5" />
-                                  <span className="text-xs">{item.child_count}</span>
-                                </span>
-                              </TooltipTrigger>
-                              <TooltipContent>하위 부품 {item.child_count}건</TooltipContent>
-                            </Tooltip>
+                        <td className="py-2 px-2 text-center">
+                          {item.lifecycle_state ? (
+                            <Badge
+                              variant="outline"
+                              className={
+                                item.lifecycle_state === "양산"
+                                  ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-400"
+                                  : item.lifecycle_state === "개발"
+                                    ? "border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-400"
+                                    : "border-muted bg-muted/50 text-muted-foreground"
+                              }
+                            >
+                              {item.lifecycle_state}
+                            </Badge>
+                          ) : (
+                            <span className="text-muted-foreground/40">—</span>
+                          )}
+                        </td>
+                        <td className="py-2 px-2 text-center">
+                          {item.drawing_number ? (
+                            <FileText className="mx-auto h-4 w-4 text-muted-foreground" />
+                          ) : (
+                            <span className="text-muted-foreground/40">—</span>
+                          )}
+                        </td>
+                        <td className="py-2 px-2 text-center">
+                          {item.children_count > 0 ? (
+                            <span className="inline-flex items-center gap-1 text-muted-foreground">
+                              <Network className="h-3.5 w-3.5" />
+                              <span className="text-xs">{item.children_count}</span>
+                            </span>
                           ) : (
                             <span className="text-muted-foreground/40">—</span>
                           )}
@@ -604,8 +590,8 @@ export function PartsPage() {
                 </SelectContent>
               </Select>
               <span className="text-xs text-muted-foreground">
-                {sorted.length > 0
-                  ? `${(safePage - 1) * pageSize + 1}–${Math.min(safePage * pageSize, sorted.length)} / ${sorted.length}건`
+                {totalCount > 0
+                  ? `${(safePage - 1) * pageSize + 1}–${Math.min(safePage * pageSize, totalCount)} / ${totalCount}건`
                   : "0건"}
               </span>
             </div>
@@ -660,12 +646,14 @@ function SortableHeader({
   sortKey,
   sortDir,
   onSort,
+  align,
 }: {
   column: SortKey;
   label: string;
   sortKey: SortKey;
   sortDir: SortDir;
   onSort: (key: SortKey) => void;
+  align?: "left" | "center";
 }) {
   const isActive = sortKey === column;
   const Icon = isActive
@@ -673,7 +661,7 @@ function SortableHeader({
     : ArrowUpDown;
 
   return (
-    <th className="py-3 pl-4 pr-2">
+    <th className={`py-3 px-2 ${align === "center" ? "text-center" : "pl-4"}`}>
       <button
         onClick={() => onSort(column)}
         className={`inline-flex items-center gap-1 text-[11px] font-medium uppercase tracking-wider transition-colors ${

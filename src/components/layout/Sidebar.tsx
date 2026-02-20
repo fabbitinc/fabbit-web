@@ -110,7 +110,7 @@ export function Sidebar({
                   return (
                     <Tooltip key={item.id}>
                       <TooltipTrigger asChild>{navItem}</TooltipTrigger>
-                      <TooltipContent side="right" className="sidebar-tooltip">
+                      <TooltipContent side="right" sideOffset={8} hideArrow className="sidebar-tooltip">
                         {item.label}
                       </TooltipContent>
                     </Tooltip>
@@ -145,7 +145,7 @@ export function Sidebar({
                     )}
                   </div>
                 </TooltipTrigger>
-                <TooltipContent side="right" className="sidebar-tooltip">
+                <TooltipContent side="right" sideOffset={8} hideArrow className="sidebar-tooltip">
                   <p className="font-medium">{activeUploads.length}개 파일 처리 중</p>
                   <p className="text-xs" style={{ color: "var(--nav-sidebar-ai-subtext)" }}>AI가 도면을 분석하고 있습니다</p>
                 </TooltipContent>

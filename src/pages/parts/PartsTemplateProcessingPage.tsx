@@ -49,11 +49,11 @@ function getStepIcon(status: StepStatus) {
 
 export function PartsTemplateProcessingPage() {
   const navigate = useNavigate();
-  const { partNumber } = useParams<{ partNumber: string }>();
+  const { partId } = useParams<{ partId: string }>();
   const location = useLocation();
   const { fileName } = (location.state as LocationState | null) ?? {};
 
-  const templateType: TemplateType = partNumber ? "part_detail" : "master";
+  const templateType: TemplateType = partId ? "part_detail" : "master";
   const [steps, setSteps] = useState<ProcessingStep[]>(INITIAL_STEPS);
   const [progress, setProgress] = useState(0);
   const [logs, setLogs] = useState<string[]>([]);
@@ -66,8 +66,8 @@ export function PartsTemplateProcessingPage() {
   const retryPreviewOnlyRef = useRef(false);
 
   const mappingPath = useMemo(
-    () => (templateType === "master" ? "/parts/templates/mapping" : `/parts/${partNumber}/templates/mapping`),
-    [templateType, partNumber],
+    () => (templateType === "master" ? "/parts/templates/mapping" : `/parts/${partId}/templates/mapping`),
+    [templateType, partId],
   );
 
   useEffect(() => {

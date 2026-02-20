@@ -11,3 +11,4 @@ export * from "./attribute";
 export * from "./adapters";
 export * from "./hooks";
 export * from "./onboarding";
+export * from "./parts";

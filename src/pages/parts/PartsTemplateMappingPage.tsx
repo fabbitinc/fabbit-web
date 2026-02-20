@@ -40,11 +40,11 @@ interface LocationState {
 
 export function PartsTemplateMappingPage() {
   const navigate = useNavigate();
-  const { partNumber } = useParams<{ partNumber: string }>();
+  const { partId } = useParams<{ partId: string }>();
   const location = useLocation();
   const { fileName } = (location.state as LocationState | null) ?? {};
 
-  const defaultMappingName = partNumber ? "부품 상세 템플릿" : "부품 마스터 템플릿";
+  const defaultMappingName = partId ? "부품 상세 템플릿" : "부품 마스터 템플릿";
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSaveDialogOpen, setIsSaveDialogOpen] = useState(false);
   const [isLoadingMappings, setIsLoadingMappings] = useState(false);
@@ -188,7 +188,7 @@ export function PartsTemplateMappingPage() {
           : "매핑이 확정되었습니다",
       );
       setIsSaveDialogOpen(false);
-      navigate(partNumber ? `/parts/${partNumber}` : "/parts");
+      navigate(partId ? `/parts/${partId}` : "/parts");
     } catch (err) {
       console.error("Mapping confirmation failed:", err);
       toast.error(extractApiErrorMessage(err, "매핑 확정에 실패했습니다"));
