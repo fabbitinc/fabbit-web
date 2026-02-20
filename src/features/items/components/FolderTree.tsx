@@ -272,7 +272,7 @@ export function FolderTree() {
                 <Plus className="h-3.5 w-3.5" />
               </button>
             </TooltipTrigger>
-            <TooltipContent side="right" className="sidebar-tooltip">
+            <TooltipContent side="right" sideOffset={8} hideArrow className="sidebar-tooltip">
               새 프로젝트
             </TooltipContent>
           </Tooltip>
@@ -559,7 +559,7 @@ function TreeNode({ node, level, projectId, searchTerm, onAddNode, onNodeClick, 
                   <FileSpreadsheet className="h-3.5 w-3.5" />
                 </button>
               </TooltipTrigger>
-              <TooltipContent side="right" className="sidebar-tooltip">
+              <TooltipContent side="right" sideOffset={8} hideArrow className="sidebar-tooltip">
                 BOM 가져오기
               </TooltipContent>
             </Tooltip>
@@ -577,7 +577,7 @@ function TreeNode({ node, level, projectId, searchTerm, onAddNode, onNodeClick, 
                 <Plus className="h-3.5 w-3.5" />
               </button>
             </TooltipTrigger>
-            <TooltipContent side="right" className="sidebar-tooltip">
+            <TooltipContent side="right" sideOffset={8} hideArrow className="sidebar-tooltip">
               {getAddTooltip()}
             </TooltipContent>
           </Tooltip>

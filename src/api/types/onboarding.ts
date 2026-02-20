@@ -284,6 +284,18 @@ export interface OntologySchemaResponse {
   relationship_types: RelationshipTypeSchemaDTO[];
 }
 
+// ─── Node Search ───
+
+export interface NodeSearchItem {
+  value: string;
+  label?: string | null;
+}
+
+export interface NodeSearchResponse {
+  node_label: string;
+  items: NodeSearchItem[];
+}
+
 // ─── Activation ───
 
 export interface HealthCheckIssueDTO {

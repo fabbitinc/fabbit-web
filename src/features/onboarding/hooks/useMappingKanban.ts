@@ -55,8 +55,8 @@ const REL_TYPE_TO_COLUMN: Record<string, KanbanColumnId> = {
 
 // 컬럼 정의
 const COLUMN_DEFS: { id: KanbanColumnId; title: string; color: string }[] = [
-  { id: "Part", title: "부품 (Part)", color: "blue" },
-  { id: "parent_part", title: "상위 Part", color: "indigo" },
+  { id: "Part", title: "부품", color: "blue" },
+  { id: "parent_part", title: "상위 부품", color: "indigo" },
   { id: "Supplier", title: "공급사", color: "emerald" },
   { id: "Drawing", title: "도면", color: "amber" },
   { id: "Project", title: "프로젝트", color: "violet" },

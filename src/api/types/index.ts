@@ -7,3 +7,4 @@ export * from "./file";
 export * from "./import";
 export * from "./attribute";
 export * from "./onboarding";
+export * from "./parts";

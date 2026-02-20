@@ -45,41 +45,31 @@ const ROOT_SPECIFIED_BOM_EXAMPLE = [
 
 function HeaderLabel({
   ko,
-  aliases,
-  raw,
   className,
   required = false,
 }: {
   ko: string;
-  aliases: string;
-  raw: string;
+  aliases?: string;
+  raw?: string;
   className?: string;
   required?: boolean;
 }) {
   return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <span className={cn("inline-flex items-center gap-1 cursor-help", className)}>
-          {ko}
-          {required && (
-            <span className="text-[10px] font-semibold text-red-500" aria-label="식별자 칼럼">
-              *
-            </span>
-          )}
+    <span className={cn("inline-flex items-center gap-1", className)}>
+      {ko}
+      {required && (
+        <span className="text-[10px] font-semibold text-red-500" aria-label="식별자 칼럼">
+          *
         </span>
-      </TooltipTrigger>
-      <TooltipContent side="top" className="max-w-xs text-xs">
-        <p>{aliases}</p>
-        <p className="mt-1 text-[11px] opacity-80">원문 키: {raw}</p>
-      </TooltipContent>
-    </Tooltip>
+      )}
+    </span>
   );
 }
 
 export function PartsTemplateAnalysisPage() {
   const navigate = useNavigate();
-  const { partNumber } = useParams<{ partNumber: string }>();
-  const templateType: TemplateType = partNumber ? "part_detail" : "master";
+  const { partId } = useParams<{ partId: string }>();
+  const templateType: TemplateType = partId ? "part_detail" : "master";
   const [isDragOver, setIsDragOver] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -180,7 +170,7 @@ export function PartsTemplateAnalysisPage() {
     }
 
     setIsUploading(false);
-    const nextPath = templateType === "master" ? "/parts/templates/processing" : `/parts/${partNumber}/templates/processing`;
+    const nextPath = templateType === "master" ? "/parts/templates/processing" : `/parts/${partId}/templates/processing`;
     navigate(nextPath, { state: { fileName: file.name } });
   }
 
@@ -193,12 +183,12 @@ export function PartsTemplateAnalysisPage() {
             <p className="mt-1 text-sm text-muted-foreground">
               {templateType === "master"
                 ? "업로드 파일을 분석해 부품 속성 템플릿을 생성합니다."
-                : `부품(${partNumber}) 기준으로 상세 속성 템플릿을 생성합니다.`}
+                : `부품(${partId}) 기준으로 상세 속성 템플릿을 생성합니다.`}
             </p>
           </div>
           <Button
             variant="outline"
-            onClick={() => navigate(templateType === "master" ? "/parts" : `/parts/${partNumber}`)}
+            onClick={() => navigate(templateType === "master" ? "/parts" : `/parts/${partId}`)}
           >
             <ArrowLeft className="h-4 w-4" />
             돌아가기

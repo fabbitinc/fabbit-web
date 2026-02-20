@@ -1,4 +1,12 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import { josa } from "es-hangul";
 import { useTranslation } from "react-i18next";
@@ -7,6 +15,7 @@ import {
   CheckCircle2,
   AlertCircle,
   Loader2,
+  Plus,
   Sparkles,
   Upload,
   X,
@@ -33,6 +42,7 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { cn } from "@/lib/utils";
 import { usePartsUploadStore } from "@/stores/partsUploadStore";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   listMappings,
   createUpload,
@@ -41,9 +51,12 @@ import {
   batchCompleteUploads,
   startSynthesis,
   getSynthesisBatch,
+  searchNodes,
 } from "@/api/onboarding";
+import { PARTS_QUERY_KEY, PART_FILTER_OPTIONS_QUERY_KEY } from "@/api/hooks/useParts";
 import type {
   MappingResponse,
+  NodeSearchItem,
   SynthesisBatchStatusResponse,
 } from "@/api/types/onboarding";
 
@@ -68,6 +81,183 @@ const MERGE_KEY_HINTS: Record<string, string> = {
   Drawing: "도면번호를 입력해 주세요.",
   Project: "프로젝트코드를 입력해 주세요.",
 };
+
+// --- 노드 검색 입력 ---
+
+function NodeSearchInput({
+  label,
+  value,
+  placeholder,
+  onChange,
+}: {
+  label: string;
+  value: string;
+  placeholder: string;
+  onChange: (value: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [results, setResults] = useState<NodeSearchItem[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout>>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const [pos, setPos] = useState({ top: 0, left: 0, width: 0 });
+
+  const doSearch = useCallback(
+    (query: string) => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+      if (!query.trim()) {
+        setResults([]);
+        setOpen(false);
+        return;
+      }
+      timerRef.current = setTimeout(async () => {
+        setIsLoading(true);
+        try {
+          const res = await searchNodes(label, query.trim());
+          setResults(res.items);
+          setOpen(true);
+        } catch {
+          setResults([]);
+          setOpen(false);
+        } finally {
+          setIsLoading(false);
+        }
+      }, 500);
+    },
+    [label],
+  );
+
+  useLayoutEffect(() => {
+    if (!open || !inputRef.current) return;
+    const rect = inputRef.current.getBoundingClientRect();
+    setPos({ top: rect.bottom + 4, left: rect.left, width: rect.width });
+  }, [open, results]);
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, []);
+
+  // 드롭다운 열림 시: 드롭다운만 스크롤 허용, 나머지(파일 목록 등) 스크롤 비활성화
+  useEffect(() => {
+    if (!open) return;
+    function handleWheel(e: WheelEvent) {
+      if (dropdownRef.current?.contains(e.target as Node)) {
+        e.stopPropagation();
+        e.preventDefault();
+        dropdownRef.current.querySelector("ul")?.scrollBy(0, e.deltaY);
+        return;
+      }
+      e.preventDefault();
+    }
+    document.addEventListener("wheel", handleWheel, {
+      capture: true,
+      passive: false,
+    });
+    return () =>
+      document.removeEventListener("wheel", handleWheel, { capture: true });
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    function handleClick(e: MouseEvent) {
+      const target = e.target as Node;
+      if (
+        inputRef.current?.contains(target) ||
+        dropdownRef.current?.contains(target)
+      )
+        return;
+      setOpen(false);
+    }
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, [open]);
+
+  return (
+    <div className="relative flex-1">
+      <Input
+        ref={inputRef}
+        className="h-7 text-xs"
+        placeholder={placeholder}
+        value={value}
+        onChange={(e) => {
+          onChange(e.target.value);
+          doSearch(e.target.value);
+        }}
+        onFocus={() => {
+          if (value.trim() && results.length > 0) setOpen(true);
+        }}
+      />
+      {isLoading && (
+        <div className="absolute right-2 top-1/2 -translate-y-1/2">
+          <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />
+        </div>
+      )}
+      {open &&
+        value.trim() &&
+        createPortal(
+          <div
+            ref={dropdownRef}
+            className="pointer-events-auto fixed z-[9999] rounded-md border bg-popover shadow-md"
+            style={{ top: pos.top, left: pos.left, width: pos.width }}
+          >
+            <ul className="max-h-[140px] overflow-y-auto overscroll-contain py-1">
+              {results.map((item) => (
+                <li key={item.value}>
+                  <button
+                    type="button"
+                    className="w-full px-2 py-1.5 text-left text-xs hover:bg-accent hover:text-accent-foreground"
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      onChange(item.value);
+                      setOpen(false);
+                    }}
+                  >
+                    {item.label || item.value}
+                    {item.label && item.value && item.label !== item.value && (
+                      <span className="ml-1.5 text-muted-foreground">
+                        {item.value}
+                      </span>
+                    )}
+                  </button>
+                </li>
+              ))}
+              {!isLoading &&
+                !results.some((r) => r.value === value.trim()) && (
+                  <>
+                    {results.length > 0 && (
+                      <li aria-hidden className="my-1 border-t" />
+                    )}
+                    <li>
+                      <button
+                        type="button"
+                        className="flex w-full items-center gap-1.5 px-2 py-1.5 text-xs text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                        onMouseDown={(e) => {
+                          e.preventDefault();
+                          onChange(value.trim());
+                          setOpen(false);
+                        }}
+                      >
+                        <Plus className="h-3 w-3 shrink-0" />
+                        <span className="truncate">
+                          <span className="font-medium text-foreground">
+                            {value.trim()}
+                          </span>{" "}
+                          새로 추가
+                        </span>
+                      </button>
+                    </li>
+                  </>
+                )}
+            </ul>
+          </div>,
+          document.body,
+        )}
+    </div>
+  );
+}
 
 // --- 유틸리티 ---
 
@@ -359,6 +549,7 @@ export function PartsUploadDialog() {
   const partNumber = usePartsUploadStore((s) => s.partNumber);
   const closeModal = usePartsUploadStore((s) => s.closeModal);
 
+  const queryClient = useQueryClient();
   const fileRef = useRef<HTMLInputElement>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [selectedTemplateId, setSelectedTemplateId] = useState("");
@@ -373,7 +564,6 @@ export function PartsUploadDialog() {
   } | null>(null);
   const [batchStatus, setBatchStatus] =
     useState<SynthesisBatchStatusResponse | null>(null);
-
   useEffect(() => {
     if (!isOpen) return;
 
@@ -426,7 +616,12 @@ export function PartsUploadDialog() {
 
         const isDone =
           status.pending_count === 0 && status.processing_count === 0;
-        if (isDone) return;
+        if (isDone) {
+          // 합성 완료 → 부품 목록 갱신
+          void queryClient.invalidateQueries({ queryKey: [...PARTS_QUERY_KEY] });
+          void queryClient.invalidateQueries({ queryKey: [...PART_FILTER_OPTIONS_QUERY_KEY] });
+          return;
+        }
       } catch (e) {
         console.error("Batch status poll failed:", e);
       }
@@ -752,6 +947,7 @@ export function PartsUploadDialog() {
     closeModal();
   }
 
+
   async function handleSubmit() {
     if (!canSubmit || isSubmitting) return;
 
@@ -853,7 +1049,7 @@ export function PartsUploadDialog() {
             </div>
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="space-y-3">
             {/* 매핑 선택 */}
             <div>
               <Label className="text-xs">매핑 선택</Label>
@@ -940,7 +1136,7 @@ export function PartsUploadDialog() {
                 }}
                 onClick={() => !isBusy && fileRef.current?.click()}
                 className={cn(
-                  "mt-1 rounded-lg border-2 border-dashed p-8 text-center transition-colors",
+                  "mt-1 rounded-lg border-2 border-dashed p-4 text-center transition-colors",
                   isBusy
                     ? "cursor-not-allowed border-border bg-muted/20 opacity-70"
                     : isDragOver
@@ -964,9 +1160,9 @@ export function PartsUploadDialog() {
                   }}
                   disabled={isBusy}
                 />
-                <div className="flex flex-col items-center gap-2">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10">
-                    <Upload className="h-4 w-4 text-primary" />
+                <div className="flex flex-col items-center gap-1.5">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10">
+                    <Upload className="h-3.5 w-3.5 text-primary" />
                   </div>
                   <p className="text-sm font-medium text-foreground">
                     파일을 드래그하거나 클릭하여 선택
@@ -984,7 +1180,7 @@ export function PartsUploadDialog() {
                 <Label className="text-xs">
                   업로드된 파일 ({completedFiles.length}/{uploadedFiles.length})
                 </Label>
-                <div className="mt-1 max-h-[240px] space-y-1.5 overflow-y-auto pr-1">
+                <div className="mt-1 max-h-[320px] space-y-1.5 overflow-y-auto pr-1">
                   {uploadedFiles.map((file) => (
                     <div
                       key={file.id}
@@ -1073,15 +1269,14 @@ export function PartsUploadDialog() {
                                 <span className="shrink-0 text-xs font-medium text-muted-foreground w-16">
                                   {t(`mapping:nodeLabel.${label}`, label)}
                                 </span>
-                                <Input
-                                  className="h-7 text-xs"
+                                <NodeSearchInput
+                                  label={label}
                                   placeholder={
                                     MERGE_KEY_HINTS[label] ??
                                     "식별값을 입력하세요"
                                   }
                                   value={file.rootContext?.[label] ?? ""}
-                                  onChange={(e) => {
-                                    const value = e.target.value;
+                                  onChange={(val) => {
                                     setUploadedFiles((prev) =>
                                       prev.map((f) =>
                                         f.id === file.id
@@ -1089,7 +1284,7 @@ export function PartsUploadDialog() {
                                               ...f,
                                               rootContext: {
                                                 ...f.rootContext,
-                                                [label]: value,
+                                                [label]: val,
                                               },
                                             }
                                           : f,
@@ -1097,6 +1292,32 @@ export function PartsUploadDialog() {
                                     );
                                   }}
                                 />
+                                {completedFiles.length > 1 && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-7 shrink-0 px-2 text-[11px] text-muted-foreground"
+                                    disabled={!file.rootContext?.[label]?.trim()}
+                                    onClick={() => {
+                                      const value = file.rootContext?.[label] ?? "";
+                                      setUploadedFiles((prev) =>
+                                        prev.map((f) =>
+                                          f.status === "completed"
+                                            ? {
+                                                ...f,
+                                                rootContext: {
+                                                  ...f.rootContext,
+                                                  [label]: value,
+                                                },
+                                              }
+                                            : f,
+                                        ),
+                                      );
+                                    }}
+                                  >
+                                    모두 적용
+                                  </Button>
+                                )}
                               </div>
                             ))}
                           </div>

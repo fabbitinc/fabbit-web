@@ -20,6 +20,7 @@ import type {
   SynthesisBatchStatusResponse,
   SynthesisJobResponse,
   OntologySchemaResponse,
+  NodeSearchResponse,
   HealthCheckResponse,
   QueryRequest,
   QueryResponse,
@@ -219,6 +220,22 @@ export async function getSynthesisJob(
 export async function getOntologySchema(): Promise<OntologySchemaResponse> {
   const response = await apiClient.get<OntologySchemaResponse>(
     "/api/v1/ontology/schema",
+  );
+  return response.data;
+}
+
+/**
+ * 노드 라벨별 merge key 검색 (root_context 자동완성용)
+ * GET /api/v1/ontology/nodes/search
+ */
+export async function searchNodes(
+  label: string,
+  search: string,
+  limit = 10,
+): Promise<NodeSearchResponse> {
+  const response = await apiClient.get<NodeSearchResponse>(
+    "/api/v1/ontology/nodes/search",
+    { params: { label, search, limit } },
   );
   return response.data;
 }
