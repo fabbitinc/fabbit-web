@@ -50,11 +50,12 @@ export interface PartDetailResponse {
   extended_properties: Record<string, unknown>;
   children: BomChild[];
   parents: BomParent[];
-  drawings: RelatedDrawing[];
+  drawing: RelatedDrawing | null;
   suppliers: RelatedSupplier[];
 }
 
 export interface BomChild {
+  id: string;
   part_number: string;
   name: string | null;
   quantity: number;
@@ -62,6 +63,7 @@ export interface BomChild {
 }
 
 export interface BomParent {
+  id: string;
   part_number: string;
   name: string | null;
   quantity: number;

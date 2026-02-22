@@ -1,15 +1,31 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import {
   ArrowLeft,
   Pencil,
   MoreHorizontal,
-  Sparkles,
   Network,
   FileText,
-  GitBranch,
-  Upload,
+  Building2,
+  ExternalLink,
+  Package,
+  ChevronRight,
+  MapPin,
+  Layers,
+  ZoomIn,
+  Maximize2,
   Loader2,
+  Upload,
+  Paperclip,
+  File,
+  FileImage,
+  FileSpreadsheet,
+  FileVideo,
+  FileAudio,
+  FileArchive,
+  FileCode,
+  FileAxis3d,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -19,214 +35,413 @@ import type {
   PartDetailResponse,
   BomChild,
   BomParent,
-  RelatedDrawing,
   RelatedSupplier,
 } from "@/api/types/parts";
 
-// --- 서브 컴포넌트 ---
+// --- 헬퍼 ---
 
-function StatusBadge({ state }: { state: string | null }) {
+function LifecycleBadge({ state }: { state: string | null }) {
   if (!state) return <span className="text-muted-foreground/40">—</span>;
 
-  const config =
+  const cls =
     state === "양산"
-      ? {
-          className:
-            "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-400",
-        }
+      ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-400"
       : state === "개발"
-        ? {
-            className:
-              "border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-400",
-          }
-        : {
-            className: "border-muted bg-muted/50 text-muted-foreground",
-          };
-
+        ? "border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-400"
+        : "border-muted bg-muted/50 text-muted-foreground";
   return (
-    <Badge variant="outline" className={config.className}>
+    <Badge variant="outline" className={cls}>
       {state}
     </Badge>
   );
 }
 
-function PropertyRow({
-  label,
-  value,
-}: {
-  label: string;
-  value: React.ReactNode;
-}) {
-  return (
-    <tr className="border-b border-border/50 last:border-b-0">
-      <td className="w-28 py-2.5 pr-4 text-sm text-muted-foreground">
-        {label}
-      </td>
-      <td className="py-2.5 text-sm text-foreground">
-        {value ?? <span className="text-muted-foreground/40">—</span>}
-      </td>
-    </tr>
-  );
+function Dash() {
+  return <span className="text-muted-foreground/30">—</span>;
 }
 
-function SummaryCard({
-  icon: Icon,
-  label,
-  value,
+function EmptyBlock({
+  message,
+  icon: Icon = FileText,
+  action,
 }: {
-  icon: React.ElementType;
-  label: string;
-  value: React.ReactNode;
+  message: string;
+  icon?: React.ElementType;
+  action?: React.ReactNode;
 }) {
   return (
-    <div className="flex flex-col items-center gap-1 rounded-lg border bg-muted/30 px-4 py-3">
-      <Icon className="h-4 w-4 text-muted-foreground" />
-      <span className="text-lg font-semibold text-foreground">{value}</span>
-      <span className="text-xs text-muted-foreground">{label}</span>
+    <div className="flex items-center gap-3 rounded-lg border border-dashed px-4 py-3">
+      <div className="flex h-8 w-8 items-center justify-center rounded-md bg-muted">
+        <Icon className="h-4 w-4 text-muted-foreground/30" />
+      </div>
+      <p className="text-sm text-muted-foreground/50">{message}</p>
+      {action && <div className="ml-auto">{action}</div>}
     </div>
   );
 }
 
-// 기본정보 탭
-function InfoTab({ item }: { item: PartDetailResponse }) {
+// --- 파일 아이콘 헬퍼 ---
+
+function getFileExtension(filename: string): string {
+  return filename.split(".").pop()?.toLowerCase() ?? "";
+}
+
+function FileIcon({ filename }: { filename: string }) {
+  const ext = getFileExtension(filename);
+
+  // PDF
+  if (ext === "pdf") return <FileText className="h-4 w-4 text-red-500" />;
+  // CAD 2D (도면)
+  if (["dwg", "dxf"].includes(ext))
+    return <FileText className="h-4 w-4 text-orange-500" />;
+  // CAD 3D (모델)
+  if (
+    [
+      "stp",
+      "step",
+      "igs",
+      "iges",
+      "stl",
+      "obj",
+      "3mf",
+      "sat",
+      "x_t",
+      "x_b",
+      "prt",
+      "asm",
+      "sldprt",
+      "sldasm",
+      "catpart",
+      "catproduct",
+    ].includes(ext)
+  )
+    return <FileAxis3d className="h-4 w-4 text-violet-500" />;
+  // 이미지
+  if (
+    [
+      "png",
+      "jpg",
+      "jpeg",
+      "gif",
+      "bmp",
+      "svg",
+      "webp",
+      "tiff",
+      "tif",
+      "ico",
+      "heic",
+      "avif",
+    ].includes(ext)
+  )
+    return <FileImage className="h-4 w-4 text-emerald-500" />;
+  // 동영상
+  if (
+    [
+      "mp4",
+      "avi",
+      "mov",
+      "mkv",
+      "wmv",
+      "flv",
+      "webm",
+      "m4v",
+      "mpeg",
+      "mpg",
+      "3gp",
+    ].includes(ext)
+  )
+    return <FileVideo className="h-4 w-4 text-pink-500" />;
+  // 오디오
+  if (["mp3", "wav", "flac", "aac", "ogg", "wma", "m4a"].includes(ext))
+    return <FileAudio className="h-4 w-4 text-amber-500" />;
+  // 스프레드시트
+  if (["xls", "xlsx", "csv", "ods", "cell"].includes(ext))
+    return <FileSpreadsheet className="h-4 w-4 text-green-600" />;
+  // 문서
+  if (["doc", "docx", "txt", "rtf", "odt", "hwp", "hwpx"].includes(ext))
+    return <FileText className="h-4 w-4 text-blue-600" />;
+  // 압축 파일
+  if (["zip", "rar", "7z", "tar", "gz", "bz2", "xz", "tgz"].includes(ext))
+    return <FileArchive className="h-4 w-4 text-yellow-600" />;
+  // 프레젠테이션
+  if (["ppt", "pptx", "odp", "key"].includes(ext))
+    return <FileText className="h-4 w-4 text-orange-600" />;
+  // 코드/설정
+  if (
+    [
+      "json",
+      "xml",
+      "yaml",
+      "yml",
+      "html",
+      "css",
+      "js",
+      "ts",
+      "py",
+      "java",
+      "c",
+      "cpp",
+      "h",
+      "ini",
+      "cfg",
+      "conf",
+      "toml",
+    ].includes(ext)
+  )
+    return <FileCode className="h-4 w-4 text-slate-500" />;
+
+  return <File className="h-4 w-4 text-muted-foreground" />;
+}
+
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+// --- 헤더 영역 ---
+
+function HeaderCard({ item }: { item: PartDetailResponse }) {
   return (
-    <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
-      {/* 속성 테이블 */}
+    <div className="rounded-lg border bg-card">
+      <div className="p-5">
+        {/* 품번 + 상태 + 액션 */}
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-2.5">
+            <h1 className="font-mono text-xl font-bold text-foreground">
+              {item.part_number}
+            </h1>
+            <LifecycleBadge state={item.lifecycle_state} />
+          </div>
+          <div className="flex items-center gap-1.5">
+            <Button variant="outline" size="sm">
+              <Pencil className="h-3.5 w-3.5" />
+              편집
+            </Button>
+            <Button variant="outline" size="icon-sm">
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+
+        {/* 품명 */}
+        {item.name && (
+          <p className="mt-1 text-base text-foreground">{item.name}</p>
+        )}
+
+        {/* 핵심 속성 — 인라인 그리드 */}
+        <div className="mt-4 grid grid-cols-2 gap-x-8 gap-y-1.5 sm:grid-cols-4">
+          <div>
+            <dt className="text-[10px] text-muted-foreground/60">리비전</dt>
+            <dd className="text-sm font-medium text-foreground">
+              {item.revision ?? "—"}
+            </dd>
+          </div>
+          <div>
+            <dt className="text-[10px] text-muted-foreground/60">재질</dt>
+            <dd className="text-sm text-foreground">{item.material ?? "—"}</dd>
+          </div>
+          <div>
+            <dt className="text-[10px] text-muted-foreground/60">카테고리</dt>
+            <dd className="text-sm text-foreground">{item.category ?? "—"}</dd>
+          </div>
+          <div>
+            <dt className="text-[10px] text-muted-foreground/60">단위</dt>
+            <dd className="text-sm text-foreground">{item.unit ?? "—"}</dd>
+          </div>
+        </div>
+
+        {/* 설명 (한 줄 truncate) */}
+        {item.description && (
+          <p className="mt-3 truncate text-sm text-muted-foreground">
+            {item.description}
+          </p>
+        )}
+
+      </div>
+    </div>
+  );
+}
+
+// 도면 프리뷰 (속성 탭용)
+function DrawingPreview({ item }: { item: PartDetailResponse }) {
+  const hasDrawing = item.drawing != null;
+  const [isDragging, setIsDragging] = useState(false);
+
+  function handleDragOver(e: React.DragEvent) {
+    e.preventDefault();
+    setIsDragging(true);
+  }
+
+  function handleDragLeave(e: React.DragEvent) {
+    e.preventDefault();
+    setIsDragging(false);
+  }
+
+  function handleDrop(e: React.DragEvent) {
+    e.preventDefault();
+    setIsDragging(false);
+    // TODO: 파일 처리 (API 연결 시)
+  }
+
+  function handleClick() {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".pdf,.dwg,.dxf";
+    input.onchange = () => {
+      // TODO: 파일 처리 (API 연결 시)
+    };
+    input.click();
+  }
+
+  if (hasDrawing) {
+    return (
+      <div className="relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-lg border bg-muted/20">
+        <div className="flex flex-col items-center gap-2 text-muted-foreground/40">
+          <div className="relative">
+            <FileText className="h-14 w-14" strokeWidth={1} />
+            <div className="absolute -right-1 -bottom-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary/10 text-primary">
+              <Layers className="h-3 w-3" />
+            </div>
+          </div>
+          <span className="text-[10px]">도면 미리보기</span>
+        </div>
+        <div className="absolute right-2 bottom-2 flex gap-1">
+          <button className="flex h-6 w-6 items-center justify-center rounded bg-background/80 text-muted-foreground shadow-sm hover:text-foreground">
+            <ZoomIn className="h-3 w-3" />
+          </button>
+          <button className="flex h-6 w-6 items-center justify-center rounded bg-background/80 text-muted-foreground shadow-sm hover:text-foreground">
+            <Maximize2 className="h-3 w-3" />
+          </button>
+        </div>
+        <div className="absolute left-2 bottom-2">
+          <span className="rounded bg-background/80 px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground shadow-sm">
+            {item.drawing!.drawing_number}
+          </span>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={handleClick}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+      className={`group flex aspect-[4/3] w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed transition-all ${
+        isDragging
+          ? "border-primary bg-primary/5"
+          : "border-muted-foreground/15 bg-muted/10 hover:border-primary/40 hover:bg-muted/20"
+      }`}
+    >
+      <div
+        className={`mb-3 flex h-12 w-12 items-center justify-center rounded-full transition-colors ${
+          isDragging
+            ? "border-primary/40 bg-primary/10"
+            : "border-2 border-dashed border-muted-foreground/15 group-hover:border-primary/30 group-hover:bg-primary/5"
+        }`}
+      >
+        <Upload
+          className={`h-5 w-5 transition-colors ${
+            isDragging
+              ? "text-primary"
+              : "text-muted-foreground/25 group-hover:text-primary/50"
+          }`}
+        />
+      </div>
+      <p
+        className={`text-sm font-medium transition-colors ${
+          isDragging
+            ? "text-primary"
+            : "text-muted-foreground/35 group-hover:text-foreground/60"
+        }`}
+      >
+        {isDragging ? "여기에 놓으세요" : "도면 등록"}
+      </p>
+      <p
+        className={`mt-1 text-[11px] transition-colors ${
+          isDragging
+            ? "text-primary/60"
+            : "text-muted-foreground/20 group-hover:text-muted-foreground/40"
+        }`}
+      >
+        파일을 드래그하거나 클릭하여 업로드 · PDF, DWG, DXF
+      </p>
+    </button>
+  );
+}
+
+// --- 탭 콘텐츠 ---
+
+// 속성 탭
+function PropertiesTab({ item }: { item: PartDetailResponse }) {
+  const rows: { label: string; value: React.ReactNode }[] = [
+    {
+      label: "품번",
+      value: <span className="font-mono text-xs">{item.part_number}</span>,
+    },
+    { label: "품명", value: item.name ?? <Dash /> },
+    { label: "리비전", value: item.revision ?? <Dash /> },
+    {
+      label: "상태",
+      value: <LifecycleBadge state={item.lifecycle_state} />,
+    },
+    { label: "카테고리", value: item.category ?? <Dash /> },
+    { label: "재질", value: item.material ?? <Dash /> },
+    { label: "단위", value: item.unit ?? <Dash /> },
+    {
+      label: "리드타임",
+      value:
+        item.lead_time_days != null ? `${item.lead_time_days}일` : <Dash />,
+    },
+    {
+      label: "팬텀",
+      value:
+        item.is_phantom != null ? item.is_phantom ? "예" : "아니오" : <Dash />,
+    },
+  ];
+
+  return (
+    <div className="grid grid-cols-1 gap-5 lg:grid-cols-5">
+      {/* 좌: 도면 프리뷰 */}
       <div className="lg:col-span-3">
-        <h3 className="mb-3 text-sm font-medium text-foreground">속성</h3>
+        <DrawingPreview item={item} />
+      </div>
+
+      {/* 우: 속성 + 설명 */}
+      <div className="space-y-4 lg:col-span-2">
         <div className="rounded-lg border">
           <table className="w-full">
             <tbody>
-              <PropertyRow
-                label="품번"
-                value={
-                  <span className="font-mono text-xs">
-                    {item.part_number}
-                  </span>
-                }
-              />
-              <PropertyRow label="품명" value={item.name} />
-              <PropertyRow label="리비전" value={item.revision} />
-              <PropertyRow label="카테고리" value={item.category} />
-              <PropertyRow label="재질" value={item.material} />
-              <PropertyRow
-                label="상태"
-                value={<StatusBadge state={item.lifecycle_state} />}
-              />
-              <PropertyRow label="단위" value={item.unit} />
-              <PropertyRow
-                label="팬텀"
-                value={
-                  item.is_phantom != null
-                    ? item.is_phantom
-                      ? "예"
-                      : "아니오"
-                    : null
-                }
-              />
-              <PropertyRow
-                label="리드타임"
-                value={
-                  item.lead_time_days != null
-                    ? `${item.lead_time_days}일`
-                    : null
-                }
-              />
+              {rows.map((row) => (
+                <tr
+                  key={row.label}
+                  className="border-b border-border/40 last:border-b-0"
+                >
+                  <td className="w-24 py-2.5 pl-4 pr-2 text-xs text-muted-foreground">
+                    {row.label}
+                  </td>
+                  <td className="py-2.5 pr-4 text-sm text-foreground">
+                    {row.value}
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
-      </div>
 
-      {/* 요약 + 설명 */}
-      <div className="lg:col-span-2">
-        <h3 className="mb-3 text-sm font-medium text-foreground">요약</h3>
-        <div className="mb-6 grid grid-cols-3 gap-3">
-          <SummaryCard
-            icon={Network}
-            label="BOM"
-            value={item.children.length}
-          />
-          <SummaryCard
-            icon={FileText}
-            label="도면"
-            value={item.drawings.length}
-          />
-          <SummaryCard
-            icon={GitBranch}
-            label="Rev"
-            value={item.revision ?? "—"}
-          />
-        </div>
-
-        <h3 className="mb-3 text-sm font-medium text-foreground">설명</h3>
-        <p className="text-sm leading-relaxed text-muted-foreground">
-          {item.description || (
-            <span className="text-muted-foreground/40">
-              설명이 없습니다.
-            </span>
-          )}
-        </p>
-      </div>
-    </div>
-  );
-}
-
-// BOM 단순 테이블
-function BomFlatTable({
-  title,
-  items,
-  emptyMessage,
-}: {
-  title: string;
-  items: (BomChild | BomParent)[];
-  emptyMessage: string;
-}) {
-  if (items.length === 0) return <EmptyState message={emptyMessage} />;
-
-  return (
-    <div>
-      <h3 className="mb-3 text-sm font-medium text-foreground">{title}</h3>
-      <div className="overflow-hidden rounded-lg border">
-        <table className="w-full table-fixed text-sm">
-          <colgroup>
-            <col style={{ width: "25%" }} />
-            <col />
-            <col style={{ width: "12%" }} />
-          </colgroup>
-          <thead>
-            <tr className="border-b bg-muted/50 text-left">
-              <th className="py-2.5 pl-4 pr-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-                품번
-              </th>
-              <th className="py-2.5 pl-4 pr-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-                품명
-              </th>
-              <th className="py-2.5 pl-4 pr-2 text-right text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-                수량
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {items.map((item) => (
-              <tr
-                key={item.part_number}
-                className="border-b border-border/50 last:border-b-0 hover:bg-muted/50"
-              >
-                <td className="py-2.5 pl-4 pr-2 font-mono text-xs font-medium text-primary">
-                  {item.part_number}
-                </td>
-                <td className="py-2.5 pl-4 pr-2 text-foreground">
-                  {item.name ?? (
-                    <span className="text-muted-foreground/40">—</span>
-                  )}
-                </td>
-                <td className="py-2.5 pl-4 pr-2 text-right font-medium text-foreground">
-                  {item.quantity}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        {item.description && (
+          <div>
+            <h4 className="mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground/70">
+              설명
+            </h4>
+            <p className="text-sm leading-relaxed text-foreground/80">
+              {item.description}
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -236,102 +451,257 @@ function BomFlatTable({
 function BomTab({
   children,
   parents,
-  onAnalyze,
-  onUpload,
 }: {
   children: BomChild[];
   parents: BomParent[];
-  onAnalyze: () => void;
-  onUpload: () => void;
 }) {
-  return (
-    <div>
-      <div className="mb-4 flex items-center justify-end gap-2">
-        <Button
-          size="sm"
-          variant="outline"
-          onClick={onAnalyze}
-          className="ai-outline-btn ai-theme-1"
-        >
-          <Sparkles className="ai-outline-btn__icon h-4 w-4" />
-          속성 분석
-        </Button>
-        <Button size="sm" variant="outline" onClick={onUpload}>
-          <Upload className="h-4 w-4" />
-          부품 업로드
-        </Button>
-      </div>
+  const navigate = useNavigate();
 
-      <div className="space-y-6">
-        <BomFlatTable
-          title="하위 부품"
-          items={children}
-          emptyMessage="하위 부품이 없습니다"
-        />
-        <BomFlatTable
-          title="상위 부품"
-          items={parents}
-          emptyMessage="상위 부품이 없습니다"
-        />
-      </div>
+  return (
+    <div className="space-y-8">
+      <section>
+        <div className="mb-3 flex items-center justify-between">
+          <h4 className="flex items-center gap-2 text-sm font-medium text-foreground">
+            하위 부품
+            <span className="text-xs font-normal text-muted-foreground">
+              ({children.length})
+            </span>
+          </h4>
+          {children.length > 0 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 text-xs text-muted-foreground"
+            >
+              BOM 전체 보기 <ExternalLink className="h-3 w-3" />
+            </Button>
+          )}
+        </div>
+        {children.length === 0 ? (
+          <div className="rounded-lg border border-dashed px-4 py-3">
+            <div className="flex items-center gap-3">
+              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-muted">
+                <Package className="h-4 w-4 text-muted-foreground/30" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground/50">
+                  하위 부품이 없습니다
+                </p>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-1.5">
+            {children.map((c) => (
+              <div
+                key={c.part_number}
+                onClick={() => navigate(`/parts/${c.id}`)}
+                className="flex cursor-pointer items-center justify-between rounded-lg border px-4 py-3 transition-colors hover:bg-muted/30"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-md bg-muted">
+                    <Package className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                  <div>
+                    <span className="font-mono text-xs font-medium">
+                      {c.part_number}
+                    </span>
+                    <p className="text-sm text-foreground">
+                      {c.name ?? (
+                        <span className="text-muted-foreground/40">—</span>
+                      )}
+                    </p>
+                  </div>
+                </div>
+                <span className="text-sm font-medium text-foreground">
+                  ×{c.quantity}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+
+      <section>
+        <h4 className="mb-3 flex items-center gap-2 text-sm font-medium text-foreground">
+          상위 부품
+          <span className="text-xs font-normal text-muted-foreground">
+            ({parents.length})
+          </span>
+        </h4>
+        {parents.length === 0 ? (
+          <div className="rounded-lg border border-dashed px-4 py-3">
+            <div className="flex items-center gap-3">
+              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-muted">
+                <Package className="h-4 w-4 text-muted-foreground/30" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground/50">
+                  상위 부품이 없습니다
+                </p>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-1.5">
+            {parents.map((p) => (
+              <div
+                key={p.part_number}
+                onClick={() => navigate(`/parts/${p.id}`)}
+                className="flex cursor-pointer items-center justify-between rounded-lg border px-4 py-3 transition-colors hover:bg-muted/30"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-md bg-muted">
+                    <Package className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                  <div>
+                    <span className="font-mono text-xs font-medium">
+                      {p.part_number}
+                    </span>
+                    <p className="text-sm text-foreground">
+                      {p.name ?? (
+                        <span className="text-muted-foreground/40">—</span>
+                      )}
+                    </p>
+                  </div>
+                </div>
+                <span className="text-sm font-medium text-foreground">
+                  ×{p.quantity}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
     </div>
   );
 }
 
-// 도면 탭
-function DrawingsTab({ drawings }: { drawings: RelatedDrawing[] }) {
-  if (drawings.length === 0)
-    return <EmptyState message="등록된 도면이 없습니다" />;
+// 첨부 파일 탭
+function AttachmentsTab() {
+  const [files, setFiles] = useState<File[]>([]);
+  const [isDragging, setIsDragging] = useState(false);
+
+  const addFiles = useCallback((newFiles: FileList | null) => {
+    if (!newFiles) return;
+    setFiles((prev) => [...prev, ...Array.from(newFiles)]);
+  }, []);
+
+  function handleDragOver(e: React.DragEvent) {
+    e.preventDefault();
+    setIsDragging(true);
+  }
+
+  function handleDragLeave(e: React.DragEvent) {
+    e.preventDefault();
+    setIsDragging(false);
+  }
+
+  function handleDrop(e: React.DragEvent) {
+    e.preventDefault();
+    setIsDragging(false);
+    addFiles(e.dataTransfer.files);
+  }
+
+  function handleClick() {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.multiple = true;
+    input.onchange = () => addFiles(input.files);
+    input.click();
+  }
+
+  function removeFile(index: number) {
+    setFiles((prev) => prev.filter((_, i) => i !== index));
+  }
 
   return (
-    <div className="overflow-hidden rounded-lg border">
-      <table className="w-full table-fixed text-sm">
-        <colgroup>
-          <col style={{ width: "25%" }} />
-          <col />
-          <col style={{ width: "12%" }} />
-          <col style={{ width: "12%" }} />
-        </colgroup>
-        <thead>
-          <tr className="border-b bg-muted/50 text-left">
-            <th className="py-2.5 pl-4 pr-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-              도면번호
-            </th>
-            <th className="py-2.5 pl-4 pr-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-              도면명
-            </th>
-            <th className="py-2.5 pl-4 pr-2 text-center text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-              버전
-            </th>
-            <th className="py-2.5 pl-4 pr-2 text-center text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-              상태
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {drawings.map((d) => (
-            <tr
-              key={d.drawing_number}
-              className="border-b border-border/50 last:border-b-0 hover:bg-muted/50"
+    <div className="space-y-4">
+      {/* 파일 목록 */}
+      {files.length > 0 && (
+        <div className="space-y-1.5">
+          {files.map((file, idx) => (
+            <div
+              key={`${file.name}-${idx}`}
+              className="flex items-center justify-between rounded-lg border px-4 py-3 transition-colors hover:bg-muted/30"
             >
-              <td className="py-2.5 pl-4 pr-2 font-mono text-xs font-medium text-primary">
-                {d.drawing_number}
-              </td>
-              <td className="py-2.5 pl-4 pr-2 text-foreground">
-                {d.name ?? (
-                  <span className="text-muted-foreground/40">—</span>
-                )}
-              </td>
-              <td className="py-2.5 pl-4 pr-2 text-center text-muted-foreground">
-                {d.version ?? "—"}
-              </td>
-              <td className="py-2.5 pl-4 pr-2 text-center text-muted-foreground">
-                {d.status ?? "—"}
-              </td>
-            </tr>
+              <div className="flex items-center gap-3">
+                <div className="flex h-8 w-8 items-center justify-center rounded-md bg-muted">
+                  <FileIcon filename={file.name} />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-foreground">
+                    {file.name}
+                  </p>
+                  <p className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <span className="uppercase">
+                      {getFileExtension(file.name)}
+                    </span>
+                    <span>·</span>
+                    <span>{formatFileSize(file.size)}</span>
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => removeFile(idx)}
+                className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground/40 transition-colors hover:bg-muted hover:text-foreground"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
           ))}
-        </tbody>
-      </table>
+        </div>
+      )}
+
+      {/* 드롭존 */}
+      <button
+        type="button"
+        onClick={handleClick}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+        className={`group flex w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed transition-all ${
+          files.length === 0 ? "py-16" : "py-8"
+        } ${
+          isDragging
+            ? "border-primary bg-primary/5"
+            : "border-muted-foreground/15 hover:border-primary/40 hover:bg-muted/20"
+        }`}
+      >
+        <div
+          className={`mb-3 flex h-12 w-12 items-center justify-center rounded-full transition-colors ${
+            isDragging
+              ? "bg-primary/10"
+              : "border-2 border-dashed border-muted-foreground/15 group-hover:border-primary/30 group-hover:bg-primary/5"
+          }`}
+        >
+          <Upload
+            className={`h-5 w-5 transition-colors ${
+              isDragging
+                ? "text-primary"
+                : "text-muted-foreground/25 group-hover:text-primary/50"
+            }`}
+          />
+        </div>
+        <p
+          className={`text-sm font-medium transition-colors ${
+            isDragging
+              ? "text-primary"
+              : "text-muted-foreground/35 group-hover:text-foreground/60"
+          }`}
+        >
+          {isDragging ? "여기에 놓으세요" : "파일 추가"}
+        </p>
+        <p
+          className={`mt-1 text-[11px] transition-colors ${
+            isDragging
+              ? "text-primary/60"
+              : "text-muted-foreground/20 group-hover:text-muted-foreground/40"
+          }`}
+        >
+          파일을 드래그하거나 클릭하여 업로드
+        </p>
+      </button>
     </div>
   );
 }
@@ -339,95 +709,82 @@ function DrawingsTab({ drawings }: { drawings: RelatedDrawing[] }) {
 // 공급사 탭
 function SuppliersTab({ suppliers }: { suppliers: RelatedSupplier[] }) {
   if (suppliers.length === 0)
-    return <EmptyState message="등록된 공급사가 없습니다" />;
+    return <EmptyBlock message="등록된 공급사가 없습니다" icon={Building2} />;
 
   return (
-    <div className="overflow-hidden rounded-lg border">
-      <table className="w-full table-fixed text-sm">
-        <colgroup>
-          <col />
-          <col style={{ width: "15%" }} />
-          <col style={{ width: "15%" }} />
-          <col style={{ width: "15%" }} />
-        </colgroup>
-        <thead>
-          <tr className="border-b bg-muted/50 text-left">
-            <th className="py-2.5 pl-4 pr-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-              업체명
-            </th>
-            <th className="py-2.5 pl-4 pr-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-              코드
-            </th>
-            <th className="py-2.5 pl-4 pr-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-              국가
-            </th>
-            <th className="py-2.5 pl-4 pr-2 text-right text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-              단가
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {suppliers.map((s) => (
-            <tr
-              key={`${s.company_name}-${s.code}`}
-              className="border-b border-border/50 last:border-b-0 hover:bg-muted/50"
-            >
-              <td className="py-2.5 pl-4 pr-2 font-medium text-foreground">
+    <div className="space-y-1.5">
+      {suppliers.map((s) => (
+        <div
+          key={`${s.company_name}-${s.code}`}
+          className="flex items-center justify-between rounded-lg border px-4 py-3 transition-colors hover:bg-muted/30"
+        >
+          <div className="flex items-center gap-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-muted">
+              <Building2 className="h-4 w-4 text-muted-foreground" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-foreground">
                 {s.company_name}
-              </td>
-              <td className="py-2.5 pl-4 pr-2 font-mono text-xs text-muted-foreground">
-                {s.code ?? "—"}
-              </td>
-              <td className="py-2.5 pl-4 pr-2 text-muted-foreground">
-                {s.country ?? "—"}
-              </td>
-              <td className="py-2.5 pl-4 pr-2 text-right text-foreground">
-                {s.unit_cost != null
-                  ? s.unit_cost.toLocaleString("ko-KR")
-                  : "—"}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+              </p>
+              <p className="flex items-center gap-2 text-xs text-muted-foreground">
+                {s.code && <span className="font-mono">{s.code}</span>}
+                {s.country && (
+                  <span className="flex items-center gap-0.5">
+                    <MapPin className="h-3 w-3" />
+                    {s.country}
+                  </span>
+                )}
+              </p>
+            </div>
+          </div>
+          {s.unit_cost != null && (
+            <span className="text-sm font-medium text-foreground">
+              ₩{s.unit_cost.toLocaleString("ko-KR")}
+            </span>
+          )}
+        </div>
+      ))}
     </div>
   );
 }
 
-// 이력 탭
-function HistoryTab() {
-  return <EmptyState message="변경 이력이 없습니다" />;
-}
-
-// 빈 상태
-function EmptyState({ message }: { message: string }) {
-  return (
-    <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
-      <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-        <FileText className="h-6 w-6" />
-      </div>
-      <p className="text-sm">{message}</p>
-    </div>
-  );
-}
+// BACKLOG: 이력 탭 — Part의 리비전 이력(Rev.A→B 변경 사유) 및 감사 로그(속성 변경, 첨부 추가 등) 표시. 백엔드 리비전/감사 API 설계 후 구현.
 
 // --- 메인 컴포넌트 ---
 
-type TabKey = "info" | "bom" | "drawings" | "suppliers" | "history";
+type TabKey = "properties" | "bom" | "attachments" | "suppliers";
 
-const TABS: { key: TabKey; label: string }[] = [
-  { key: "info", label: "기본정보" },
-  { key: "bom", label: "BOM" },
-  { key: "drawings", label: "도면" },
-  { key: "suppliers", label: "공급사" },
-  { key: "history", label: "이력" },
+const TABS: {
+  key: TabKey;
+  label: string;
+  icon: React.ElementType;
+  count?: (item: PartDetailResponse) => number;
+}[] = [
+  { key: "properties", label: "속성", icon: Package },
+  {
+    key: "bom",
+    label: "BOM",
+    icon: Network,
+    count: (i) => i.children.length,
+  },
+  {
+    key: "attachments",
+    label: "첨부 파일",
+    icon: Paperclip,
+  },
+  {
+    key: "suppliers",
+    label: "공급사",
+    icon: Building2,
+    count: (i) => i.suppliers.length,
+  },
 ];
 
 export function PartDetailPage() {
   const { partId } = useParams<{ partId: string }>();
   const navigate = useNavigate();
   const openPartsUploadModal = usePartsUploadStore((s) => s.openModal);
-  const [activeTab, setActiveTab] = useState<TabKey>("info");
+  const [activeTab, setActiveTab] = useState<TabKey>("properties");
 
   const { data: item, isLoading, isError } = usePartDetail(partId);
 
@@ -445,9 +802,7 @@ export function PartDetailPage() {
           </button>
           <div className="flex flex-col items-center justify-center py-20">
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-            <p className="mt-3 text-sm text-muted-foreground">
-              불러오는 중...
-            </p>
+            <p className="mt-3 text-sm text-muted-foreground">불러오는 중...</p>
           </div>
         </div>
       </div>
@@ -466,115 +821,69 @@ export function PartDetailPage() {
             <ArrowLeft className="h-4 w-4" />
             부품 관리
           </button>
-          <EmptyState
-            message={`해당하는 부품을 찾을 수 없습니다`}
-          />
+          <EmptyBlock message="해당하는 부품을 찾을 수 없습니다" />
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background px-6 py-8">
-      <div className="dev-page-container">
-        {/* 헤더 영역 */}
-        <div className="mb-6">
-          {/* 상단: 뒤로가기 + 액션 버튼 */}
-          <div className="mb-4 flex items-center justify-between">
-            <button
-              onClick={() => navigate("/parts")}
-              className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              부품 관리
-            </button>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm">
-                <Pencil className="h-3.5 w-3.5" />
-                편집
-              </Button>
-              <Button variant="outline" size="icon-sm">
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
+    <div className="min-h-full">
+      {/* 네비게이션 */}
+      <div className="mb-4">
+        <button
+          onClick={() => navigate("/parts")}
+          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          부품 관리
+        </button>
+      </div>
 
-          {/* 품번 + 상태 + 카테고리 */}
-          <div className="flex items-center gap-3">
-            <h1 className="font-mono text-xl font-bold text-foreground">
-              {item.part_number}
-            </h1>
-            <StatusBadge state={item.lifecycle_state} />
-            {item.category && (
-              <span className="text-sm text-muted-foreground">
-                {item.category}
-              </span>
-            )}
-          </div>
+      {/* 비주얼 헤더 카드 */}
+      <div className="mb-5">
+        <HeaderCard item={item} />
+      </div>
 
-          {/* 품명 */}
-          {item.name && (
-            <p className="mt-1 text-lg text-foreground">{item.name}</p>
-          )}
-
-          {/* 메타 정보 */}
-          <div className="mt-2 flex items-center gap-2 text-sm text-muted-foreground">
-            {item.revision && <span>Rev {item.revision}</span>}
-            {item.material && (
-              <>
-                <span className="text-border">&middot;</span>
-                <span>{item.material}</span>
-              </>
-            )}
-            <span className="text-border">&middot;</span>
-            <span>도면 {item.drawings.length}건</span>
-            <span className="text-border">&middot;</span>
-            <span>하위부품 {item.children.length}건</span>
-          </div>
-        </div>
-
-        {/* 탭 네비게이션 */}
-        <div className="mb-6 border-b">
-          <div className="flex gap-0">
-            {TABS.map((tab) => (
+      {/* 아이콘 탭 바 */}
+      <div className="mb-5 border-b">
+        <div className="flex">
+          {TABS.map((tab) => {
+            const Icon = tab.icon;
+            const count = tab.count?.(item);
+            return (
               <button
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
-                className={`relative px-4 py-2.5 text-sm font-medium transition-colors ${
+                className={`relative flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium transition-colors ${
                   activeTab === tab.key
                     ? "text-foreground"
                     : "text-muted-foreground hover:text-foreground"
                 }`}
               >
+                <Icon className="h-3.5 w-3.5" />
                 {tab.label}
+                {count != null && count > 0 && (
+                  <span className="inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-muted px-1 text-[10px] font-medium text-muted-foreground">
+                    {count}
+                  </span>
+                )}
                 {activeTab === tab.key && (
                   <span className="absolute inset-x-0 -bottom-px h-0.5 bg-primary" />
                 )}
               </button>
-            ))}
-          </div>
+            );
+          })}
         </div>
-
-        {/* 탭 내용 */}
-        {activeTab === "info" && <InfoTab item={item} />}
-        {activeTab === "bom" && (
-          <BomTab
-            children={item.children}
-            parents={item.parents}
-            onAnalyze={() =>
-              navigate(`/parts/${item.id}/templates`)
-            }
-            onUpload={() => openPartsUploadModal(item.part_number)}
-          />
-        )}
-        {activeTab === "drawings" && (
-          <DrawingsTab drawings={item.drawings} />
-        )}
-        {activeTab === "suppliers" && (
-          <SuppliersTab suppliers={item.suppliers} />
-        )}
-        {activeTab === "history" && <HistoryTab />}
       </div>
+
+      {/* 탭 콘텐츠 */}
+      {activeTab === "properties" && <PropertiesTab item={item} />}
+      {activeTab === "bom" && (
+        <BomTab children={item.children} parents={item.parents} />
+      )}
+      {activeTab === "attachments" && <AttachmentsTab />}
+      {activeTab === "suppliers" && <SuppliersTab suppliers={item.suppliers} />}
     </div>
   );
 }

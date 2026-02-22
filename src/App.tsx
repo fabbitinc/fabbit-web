@@ -42,6 +42,9 @@ import { ProjectRepoPreview } from "@/pages/dev/ProjectRepoPreview";
 import { ProjectOpsItemDetailPreview } from "@/pages/dev/ProjectOpsItemDetailPreview";
 import { ProjectScheduleDetailPreview } from "@/pages/dev/ProjectScheduleDetailPreview";
 import { TemplatesPreview } from "@/pages/dev/TemplatesPreview";
+import { PartDetailPreviewA } from "@/pages/dev/PartDetailPreviewA";
+import { PartDetailPreviewB } from "@/pages/dev/PartDetailPreviewB";
+import { PartDetailPreviewC } from "@/pages/dev/PartDetailPreviewC";
 
 // 온보딩 관련 임포트
 import { OnboardingLayout } from "@/features/onboarding/components/OnboardingLayout";
@@ -395,6 +398,8 @@ function App() {
         await fetchMe();
       }
 
+      // BACKLOG: 자동 로그인 토큰 유효성 검증 — localStorage에 토큰이 있으면 fetchMe()로 유효성 확인 후 인증 상태 복원. 현재는 zustand persist가 isAuthenticated를 바로 복원하여 만료 토큰 시 첫 API 호출까지 감지 불가.
+
       // 2. 서브도메인 사이트 검증
       const subdomain = getSubdomain();
       if (subdomain) {
@@ -444,6 +449,9 @@ function App() {
         <Route path="/dev/parts/:partNumber/templates" element={<PartsTemplateAnalysisPreview />} />
         <Route path="/dev/parts/:partNumber/upload" element={<PartsUploadPreview />} />
         <Route path="/dev/parts/:partNumber" element={<ItemDetailPreview />} />
+        <Route path="/dev/parts2/:partNumber" element={<PartDetailPreviewA />} />
+        <Route path="/dev/parts3/:partNumber" element={<PartDetailPreviewB />} />
+        <Route path="/dev/parts4/:partNumber" element={<PartDetailPreviewC />} />
 
         {/* Public Routes */}
         <Route
