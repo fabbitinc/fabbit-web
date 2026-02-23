@@ -36,7 +36,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { usePartFilterOptions, useParts } from "@/api";
-import type { PartSummary, ListPartsParams } from "@/api";
+import type { ListPartsParams } from "@/api";
 
 const PAGE_SIZE_OPTIONS = ["15", "30", "50"];
 

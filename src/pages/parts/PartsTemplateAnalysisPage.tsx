@@ -11,9 +11,9 @@ import {
 import { cn } from "@/lib/utils";
 import { type TemplateType } from "@/pages/parts/partsTemplateStore";
 import { PARTS_TERMS } from "@/pages/parts/partsTerminology";
-import { createUpload } from "@/api/onboarding";
-import { useUploadStore } from "@/stores/onboarding";
-import type { UploadedFile } from "@/features/onboarding/types/onboarding.types";
+import { createUpload } from "@/api/upload";
+import { useUploadStore } from "@/stores/mapping";
+import type { UploadedFile } from "@/features/mapping/types/mapping.types";
 import "@/pages/parts/parts-template-mapping.css";
 
 const ANALYSIS_ACCEPT = ".xlsx,.xls,.csv";
@@ -139,8 +139,8 @@ export function PartsTemplateAnalysisPage() {
         file_size: file.size,
       });
 
-      addUploadId(fileId, uploadInfo.upload_id);
-      setPrimaryUploadId(uploadInfo.upload_id);
+      addUploadId(fileId, uploadInfo.file_id);
+      setPrimaryUploadId(uploadInfo.file_id);
 
       await new Promise<void>((resolve, reject) => {
         const xhr = new XMLHttpRequest();

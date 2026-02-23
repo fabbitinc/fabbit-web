@@ -4,9 +4,10 @@ import { AlertCircle, CheckCircle2, Circle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { useMappingStore, useUploadStore } from "@/stores/onboarding";
+import { useMappingStore, useUploadStore } from "@/stores/mapping";
 import { type TemplateType } from "@/pages/parts/partsTemplateStore";
-import { completeUpload, previewMapping } from "@/api/onboarding";
+import { completeUpload } from "@/api/upload";
+import { previewMapping } from "@/api/mapping";
 
 type StepStatus = "pending" | "in_progress" | "completed";
 
@@ -122,7 +123,7 @@ export function PartsTemplateProcessingPage() {
           setProgress(p);
         }, 3000);
 
-        const response = await previewMapping({ upload_id: primaryUploadId });
+        const response = await previewMapping({ file_id: primaryUploadId });
 
         done = true;
         if (animationInterval) clearInterval(animationInterval);

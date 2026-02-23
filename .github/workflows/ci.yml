@@ -8,8 +8,6 @@ on:
 jobs:
   build-and-lint:
     name: Build & Lint
-    runs-on:
-      group: self-hosted
 
     steps:
       - name: Checkout

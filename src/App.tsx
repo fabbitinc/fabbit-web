@@ -22,6 +22,7 @@ import { useAuthStore } from "@/stores/authStore";
 import { getAuthCookies, clearAuthCookies } from "@/lib/auth-cookies";
 import { getSubdomain } from "@/lib/subdomain";
 import { getSite } from "@/api";
+import { useDashboardStats } from "@/api/hooks/useDashboard";
 import type { SiteResponse } from "@/api/types/auth";
 
 // Registration 관련 임포트
@@ -30,28 +31,6 @@ import { SignupPage } from "@/features/registration/pages/SignupPage";
 import { WorkspaceSetupPage } from "@/features/registration/pages/WorkspaceSetupPage";
 import { PlanSelectionPage } from "@/features/registration/pages/PlanSelectionPage";
 
-// Dev 프리뷰
-import { MappingCardPreview } from "@/pages/dev/MappingCardPreview";
-import { ItemsMasterPreview } from "@/pages/dev/ItemsMasterPreview";
-import { ItemDetailPreview } from "@/pages/dev/ItemDetailPreview";
-import { PartsUploadPreview } from "@/pages/dev/PartsUploadPreview";
-import { PartsTemplateAnalysisPreview } from "@/pages/dev/PartsTemplateAnalysisPreview";
-import { DesignSystemPreview } from "@/pages/dev/DesignSystemPreview";
-import { ProjectsHubPreview } from "@/pages/dev/ProjectsHubPreview";
-import { ProjectRepoPreview } from "@/pages/dev/ProjectRepoPreview";
-import { ProjectOpsItemDetailPreview } from "@/pages/dev/ProjectOpsItemDetailPreview";
-import { ProjectScheduleDetailPreview } from "@/pages/dev/ProjectScheduleDetailPreview";
-import { TemplatesPreview } from "@/pages/dev/TemplatesPreview";
-import { PartDetailPreviewA } from "@/pages/dev/PartDetailPreviewA";
-import { PartDetailPreviewB } from "@/pages/dev/PartDetailPreviewB";
-import { PartDetailPreviewC } from "@/pages/dev/PartDetailPreviewC";
-
-// 온보딩 관련 임포트
-import { OnboardingLayout } from "@/features/onboarding/components/OnboardingLayout";
-import { DataUploadPage } from "@/features/onboarding/pages/DataUploadPage";
-import { AIMappingPage } from "@/features/onboarding/pages/AIMappingPage";
-import { DataProcessingPage } from "@/features/onboarding/pages/DataProcessingPage";
-import { ExplorePage } from "@/features/onboarding/pages/ExplorePage";
 
 function AnimatedCount({ value, durationMs = 420 }: { value: number; durationMs?: number }) {
   const [display, setDisplay] = useState(0);
@@ -107,43 +86,44 @@ function DeltaBadge({ value, label }: { value: number; label: string }) {
 
 function DashboardPage() {
   const navigate = useNavigate();
-  const stats = {
-    parts: {
-      total: 0,
-      added_this_week: 0,
-      added_today: 0,
-    },
-    bom_links: {
-      total: 387,
-    },
-    last_synthesis: {
-      completed_at: "2026-02-16T11:20:00Z",
-      nodes_created: 45,
-    },
-  };
+  const { data: stats, isLoading } = useDashboardStats();
+
+  if (isLoading || !stats) {
+    return (
+      <div className="space-y-4">
+        <div className="grid gap-4 md:grid-cols-3">
+          <div className="h-36 animate-pulse rounded-lg bg-muted md:col-span-2" />
+          <div className="h-36 animate-pulse rounded-lg bg-muted" />
+          <div className="h-20 animate-pulse rounded-lg bg-muted md:col-span-3" />
+        </div>
+      </div>
+    );
+  }
 
   const totalManagedParts = stats.parts.total;
-  const lastSynthesisAt = new Date(stats.last_synthesis.completed_at).toLocaleString("ko-KR", {
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  });
+  const lastSynthesis = stats.last_synthesis;
+  const lastSynthesisAt = lastSynthesis?.completed_at
+    ? new Date(lastSynthesis.completed_at).toLocaleString("ko-KR", {
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      })
+    : null;
 
   return (
     <div className="space-y-4">
       <div className="grid gap-4 md:grid-cols-3">
         {totalManagedParts > 0 ? (
           <section className="rounded-lg border border-border bg-card p-5 md:col-span-2">
-            <p className="text-xs text-muted-foreground">Part 현황</p>
+            <p className="text-xs text-muted-foreground">부품 현황</p>
             <p className="mt-2 text-3xl font-bold text-foreground">
               <AnimatedCount value={stats.parts.total} />개
             </p>
             <p className="mt-1 text-xs text-muted-foreground">현재 시스템에서 관리 중인 부품 수</p>
             <div className="mt-3 flex flex-wrap items-center gap-2">
               <DeltaBadge label="이번 주" value={stats.parts.added_this_week} />
-              <DeltaBadge label="오늘" value={stats.parts.added_today} />
             </div>
           </section>
         ) : (
@@ -154,11 +134,11 @@ function DashboardPage() {
               backgroundColor: "var(--status-info-bg)",
             }}
           >
-            <p className="text-xs text-muted-foreground">Part 현황</p>
+            <p className="text-xs text-muted-foreground">부품 현황</p>
             <p className="mt-2 text-lg font-semibold" style={{ color: "var(--status-info)" }}>
               아직 등록된 부품이 없습니다.
             </p>
-            <p className="mt-1 text-sm text-muted-foreground">아이템 등록을 하러 가볼까요?</p>
+            <p className="mt-1 text-sm text-muted-foreground">부품 등록을 하러 가볼까요?</p>
             <div className="mt-3">
               <Button
                 variant="outline"
@@ -172,27 +152,50 @@ function DashboardPage() {
         )}
 
         <section className="rounded-lg border border-border bg-card p-5">
-          <p className="text-xs text-muted-foreground">BOM Link</p>
+          <p className="text-xs text-muted-foreground">BOM 연결</p>
           <p className="mt-2 text-3xl font-bold text-foreground">
             <AnimatedCount value={stats.bom_links.total} />개
           </p>
-          <p className="mt-1 text-xs text-muted-foreground">생성된 연결 관계 수</p>
+          <p className="mt-1 text-xs text-muted-foreground">부품 간 구성 관계 수</p>
         </section>
 
-        <section className="rounded-lg border border-border bg-card p-5 md:col-span-3">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div>
-              <p className="text-xs text-muted-foreground">마지막 Synthesis</p>
-              <p className="mt-1 text-sm font-medium text-foreground">완료 시각: {lastSynthesisAt}</p>
+        {lastSynthesis ? (
+          <section className="rounded-lg border border-border bg-card p-5 md:col-span-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <p className="text-xs text-muted-foreground">마지막 부품 업로드</p>
+                <p className="mt-1 text-sm font-medium text-foreground">
+                  {lastSynthesisAt ? `완료 시각: ${lastSynthesisAt}` : `상태: ${lastSynthesis.status}`}
+                </p>
+              </div>
+              <div className="flex gap-6">
+                <div className="text-right">
+                  <p className="text-xs text-muted-foreground">등록 항목</p>
+                  <p className="text-2xl font-bold text-foreground">
+                    <AnimatedCount value={lastSynthesis.nodes_created} />
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs text-muted-foreground">등록 관계</p>
+                  <p className="text-2xl font-bold text-foreground">
+                    <AnimatedCount value={lastSynthesis.relationships_created} />
+                  </p>
+                </div>
+              </div>
             </div>
-            <div className="text-right">
-              <p className="text-xs text-muted-foreground">생성 노드</p>
-              <p className="text-2xl font-bold text-foreground">
-                <AnimatedCount value={stats.last_synthesis.nodes_created} />
-              </p>
-            </div>
-          </div>
-        </section>
+          </section>
+        ) : (
+          <section
+            className="rounded-lg border border-dashed p-5 md:col-span-3"
+            style={{
+              borderColor: "var(--status-info-border)",
+              backgroundColor: "var(--status-info-bg)",
+            }}
+          >
+            <p className="text-xs text-muted-foreground">부품 업로드</p>
+            <p className="mt-1 text-sm text-muted-foreground">아직 부품 업로드 이력이 없습니다.</p>
+          </section>
+        )}
       </div>
 
     </div>
@@ -314,19 +317,12 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 // 루트 도메인(www 포함)에서는 로그인 불필요 → 회원가입으로
 function PublicRoute({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-  const onboardingCompleted = useAuthStore(
-    (state) => state.onboardingCompleted,
-  );
 
   if (!getSubdomain()) {
     return <Navigate to="/register/signup" replace />;
   }
 
-  if (isAuthenticated && onboardingCompleted) {
-    return <Navigate to="/" replace />;
-  }
-
-  if (isAuthenticated && !onboardingCompleted) {
+  if (isAuthenticated) {
     return <Navigate to="/" replace />;
   }
 
@@ -337,44 +333,14 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
 // 미인증 사용자만 접근 가능
 function RegistrationRoute({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-  const onboardingCompleted = useAuthStore(
-    (state) => state.onboardingCompleted,
-  );
 
-  if (isAuthenticated && onboardingCompleted) {
-    return <Navigate to="/" replace />;
-  }
-
-  if (isAuthenticated && !onboardingCompleted) {
+  if (isAuthenticated) {
     return <Navigate to="/" replace />;
   }
 
   // 서브도메인(워크스페이스)에서는 회원가입 불가 → 로그인으로
   if (getSubdomain()) {
     return <Navigate to="/login" replace />;
-  }
-
-  return <>{children}</>;
-}
-
-// 온보딩 플로우 라우트 (데이터 온보딩 4-7단계)
-// 인증 + 온보딩 미완료 사용자만 접근 가능
-function OnboardingRoute({ children }: { children: React.ReactNode }) {
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-  const onboardingCompleted = useAuthStore(
-    (state) => state.onboardingCompleted,
-  );
-
-  // 온보딩 완료된 사용자 → 메인으로
-  if (isAuthenticated && onboardingCompleted) {
-    return <Navigate to="/" replace />;
-  }
-
-  // 미인증 사용자 → 서브도메인이면 로그인, 루트면 회원가입
-  if (!isAuthenticated) {
-    return (
-      <Navigate to={getSubdomain() ? "/login" : "/register/signup"} replace />
-    );
   }
 
   return <>{children}</>;
@@ -433,26 +399,6 @@ function App() {
   return (
     <>
       <Routes>
-        {/* TODO 삭제 Dev Preview (인증 불필요) */}
-        <Route path="/dev/mapping-preview" element={<MappingCardPreview />} />
-        <Route path="/dev/design" element={<DesignSystemPreview />} />
-        <Route path="/dev/templates" element={<TemplatesPreview />} />
-        <Route path="/dev/projects" element={<ProjectsHubPreview />} />
-        <Route path="/dev/projects/:projectId" element={<ProjectRepoPreview />} />
-        <Route path="/dev/projects/:projectId/approvals/:itemId" element={<ProjectOpsItemDetailPreview />} />
-        <Route path="/dev/projects/:projectId/changes/:itemId" element={<ProjectOpsItemDetailPreview />} />
-        <Route path="/dev/projects/:projectId/issues/:itemId" element={<ProjectOpsItemDetailPreview />} />
-        <Route path="/dev/projects/:projectId/schedules/:scheduleId" element={<ProjectScheduleDetailPreview />} />
-        <Route path="/dev/parts" element={<ItemsMasterPreview />} />
-        <Route path="/dev/parts/templates" element={<PartsTemplateAnalysisPreview />} />
-        <Route path="/dev/parts/upload" element={<PartsUploadPreview />} />
-        <Route path="/dev/parts/:partNumber/templates" element={<PartsTemplateAnalysisPreview />} />
-        <Route path="/dev/parts/:partNumber/upload" element={<PartsUploadPreview />} />
-        <Route path="/dev/parts/:partNumber" element={<ItemDetailPreview />} />
-        <Route path="/dev/parts2/:partNumber" element={<PartDetailPreviewA />} />
-        <Route path="/dev/parts3/:partNumber" element={<PartDetailPreviewB />} />
-        <Route path="/dev/parts4/:partNumber" element={<PartDetailPreviewC />} />
-
         {/* Public Routes */}
         <Route
           path="/login"
@@ -482,22 +428,6 @@ function App() {
           <Route path="workspace" element={<WorkspaceSetupPage />} />
           <Route path="plan" element={<PlanSelectionPage />} />
           <Route index element={<Navigate to="signup" replace />} />
-        </Route>
-
-        {/* Onboarding Routes (데이터 온보딩 4-7단계) */}
-        <Route
-          path="/onboarding"
-          element={
-            <OnboardingRoute>
-              <OnboardingLayout />
-            </OnboardingRoute>
-          }
-        >
-          <Route path="upload" element={<DataUploadPage />} />
-          <Route path="mapping" element={<AIMappingPage />} />
-          <Route path="processing" element={<DataProcessingPage />} />
-          <Route path="explore" element={<ExplorePage />} />
-          <Route index element={<Navigate to="upload" replace />} />
         </Route>
 
         {/* Protected Routes */}

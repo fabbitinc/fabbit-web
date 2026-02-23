@@ -1,10 +1,19 @@
-import { useQuery } from "@tanstack/react-query";
+import { useEffect, useRef } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import {
   getPartFilterOptions,
   listParts,
   getPartDetail,
   getPartBomTree,
+  registerDrawingForPart,
+  deleteDrawingFromPart,
 } from "../parts";
+import {
+  createFileUpload,
+  uploadFileToPresignedUrl,
+  completeFileUpload,
+} from "../file";
 import type { ListPartsParams } from "../types/parts";
 
 export const PART_FILTER_OPTIONS_QUERY_KEY = ["partFilterOptions"] as const;
@@ -28,13 +37,47 @@ export function useParts(params: ListPartsParams) {
   });
 }
 
-/** Part 상세 조회 훅 */
+const CONVERSION_POLL_INTERVAL = 5_000;
+const CONVERSION_POLL_TIMEOUT = 5 * 60 * 1000;
+
+/** Part 상세 조회 훅 (도면 변환 PENDING 시 자동 폴링) */
 export function usePartDetail(partId: string | undefined) {
-  return useQuery({
+  const pollStartRef = useRef<number | null>(null);
+
+  const query = useQuery({
     queryKey: [...PART_DETAIL_QUERY_KEY, partId],
     queryFn: () => getPartDetail(partId!),
     enabled: !!partId,
   });
+
+  const conversionStatus = query.data?.drawing?.conversion_status;
+  const isPending = conversionStatus === "PENDING";
+
+  // PENDING 상태 시작 시점 기록
+  useEffect(() => {
+    if (isPending && pollStartRef.current === null) {
+      pollStartRef.current = Date.now();
+    } else if (!isPending) {
+      pollStartRef.current = null;
+    }
+  }, [isPending]);
+
+  // PENDING인 동안 5초 간격 refetch, 5분 초과 시 중단
+  useEffect(() => {
+    if (!isPending) return;
+
+    const id = setInterval(() => {
+      if (pollStartRef.current && Date.now() - pollStartRef.current > CONVERSION_POLL_TIMEOUT) {
+        clearInterval(id);
+        return;
+      }
+      query.refetch();
+    }, CONVERSION_POLL_INTERVAL);
+
+    return () => clearInterval(id);
+  }, [isPending, query]);
+
+  return query;
 }
 
 /** Part BOM 트리 조회 훅 */
@@ -43,5 +86,62 @@ export function usePartBomTree(partId: string | undefined) {
     queryKey: [...PART_BOM_TREE_QUERY_KEY, partId],
     queryFn: () => getPartBomTree(partId!),
     enabled: !!partId,
+  });
+}
+
+/**
+ * 도면 업로드 + Part 등록 통합 mutation
+ * 1. presigned URL 발급
+ * 2. S3 업로드
+ * 3. 업로드 완료 확인
+ * 4. Part에 도면 등록
+ */
+export function useUploadDrawing(partId: string | undefined) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (file: File) => {
+      const contentType = file.type || "application/octet-stream";
+      const { file_id, upload_url } = await createFileUpload({
+        original_name: file.name,
+        content_type: contentType,
+        file_size: file.size,
+      });
+
+      await uploadFileToPresignedUrl(upload_url, file, contentType);
+
+      await completeFileUpload(file_id);
+
+      return registerDrawingForPart(partId!, file_id);
+    },
+    onSuccess: () => {
+      toast.success("도면이 등록되었습니다");
+      queryClient.invalidateQueries({
+        queryKey: [...PART_DETAIL_QUERY_KEY, partId],
+      });
+    },
+    onError: (err) => {
+      const axiosErr = err as { response?: { data?: { message?: string } } };
+      toast.error(axiosErr?.response?.data?.message || "도면 업로드에 실패했습니다");
+    },
+  });
+}
+
+/** Part에 연결된 도면 삭제 mutation */
+export function useDeleteDrawing(partId: string | undefined) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => deleteDrawingFromPart(partId!),
+    onSuccess: () => {
+      toast.success("도면이 삭제되었습니다");
+      queryClient.invalidateQueries({
+        queryKey: [...PART_DETAIL_QUERY_KEY, partId],
+      });
+    },
+    onError: (err) => {
+      const axiosErr = err as { response?: { data?: { message?: string } } };
+      toast.error(axiosErr?.response?.data?.message || "도면 삭제에 실패했습니다");
+    },
   });
 }

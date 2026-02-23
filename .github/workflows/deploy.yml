@@ -1,38 +1,14 @@
 name: Deploy
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
 
 jobs:
   deploy:
-    name: Deploy to Cloudflare Pages
-    runs-on:
-      group: self-hosted
-
-    permissions:
-      contents: read
-      deployments: write
+    name: Trigger Cloudflare Pages Build
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version-file: ".node-version"
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build
-        run: npm run build
-
-      - name: Deploy to Cloudflare Pages
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy dist --project-name=${{ vars.CLOUDFLARE_PROJECT_NAME }}
+      - name: Trigger Cloudflare build webhook
+        run: |
+          curl -sf -X POST "${{ secrets.CLOUDFLARE_BUILD_WEBHOOK_URL }}"

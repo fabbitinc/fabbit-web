@@ -44,21 +44,18 @@ import { cn } from "@/lib/utils";
 import { usePartsUploadStore } from "@/stores/partsUploadStore";
 import { useQueryClient } from "@tanstack/react-query";
 import {
-  listMappings,
   createUpload,
   batchCreateUploads,
   completeUpload,
   batchCompleteUploads,
-  startSynthesis,
-  getSynthesisBatch,
-  searchNodes,
-} from "@/api/onboarding";
+} from "@/api/upload";
+import { listMappings } from "@/api/mapping";
+import { startSynthesis, getSynthesisBatch } from "@/api/synthesis";
+import { searchNodes } from "@/api/ontology";
 import { PARTS_QUERY_KEY, PART_FILTER_OPTIONS_QUERY_KEY } from "@/api/hooks/useParts";
-import type {
-  MappingResponse,
-  NodeSearchItem,
-  SynthesisBatchStatusResponse,
-} from "@/api/types/onboarding";
+import type { MappingResponse } from "@/api/types/mapping";
+import type { NodeSearchItem } from "@/api/types/ontology";
+import type { SynthesisBatchStatusResponse } from "@/api/types/synthesis";
 
 const UPLOAD_ACCEPT = ".xlsx,.xls,.csv";
 
@@ -427,7 +424,7 @@ function SynthesisProgress({
       <div className="max-h-[280px] space-y-1.5 overflow-y-auto pr-1">
         {items.map((item) => {
           const s = normalizeStatus(item.status);
-          const fileName = fileNames.get(item.upload_id) ?? item.upload_id;
+          const fileName = fileNames.get(item.file_id) ?? item.file_id;
           const itemPercent =
             item.total_rows > 0
               ? Math.round((item.processed_rows / item.total_rows) * 100)
@@ -520,13 +517,13 @@ function SynthesisProgress({
         {/* 시작 실패 항목 */}
         {failed.map((f) => (
           <div
-            key={f.upload_id}
+            key={f.file_id}
             className="rounded-md border border-red-500/20 bg-red-500/5 px-3 py-2"
           >
             <div className="flex items-center gap-3">
               <AlertCircle className="h-4 w-4 shrink-0 text-red-500" />
               <p className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">
-                {fileNames.get(f.upload_id) ?? f.upload_id}
+                {fileNames.get(f.file_id) ?? f.file_id}
               </p>
               <span className="shrink-0 text-xs font-medium text-red-600">
                 시작 실패
@@ -811,7 +808,7 @@ export function PartsUploadDialog() {
       });
 
       updateFileStatus(entry.id, {
-        uploadId: uploadInfo.upload_id,
+        uploadId: uploadInfo.file_id,
         progress: 20,
       });
 
@@ -825,7 +822,7 @@ export function PartsUploadDialog() {
       updateFileStatus(entry.id, { progress: 90 });
 
       // 업로드 완료 확인
-      await completeUpload(uploadInfo.upload_id);
+      await completeUpload(uploadInfo.file_id);
 
       updateFileStatus(entry.id, { status: "completed", progress: 100 });
     } catch (error) {
@@ -860,9 +857,9 @@ export function PartsUploadDialog() {
       await Promise.allSettled(
         batchResponse.items.map(async (uploadInfo, idx) => {
           const entry = entries[idx];
-          entryUploadMap.set(entry.id, uploadInfo.upload_id);
+          entryUploadMap.set(entry.id, uploadInfo.file_id);
           updateFileStatus(entry.id, {
-            uploadId: uploadInfo.upload_id,
+            uploadId: uploadInfo.file_id,
             progress: 20,
           });
 
@@ -882,7 +879,7 @@ export function PartsUploadDialog() {
             );
 
             updateFileStatus(entry.id, { progress: 90 });
-            completedUploadIds.push(uploadInfo.upload_id);
+            completedUploadIds.push(uploadInfo.file_id);
           } catch (error) {
             console.error(`File upload failed: ${entry.name}`, error);
             updateFileStatus(entry.id, {
@@ -897,11 +894,11 @@ export function PartsUploadDialog() {
       // 업로드 완료 일괄 확인
       if (completedUploadIds.length > 0) {
         const completeResult = await batchCompleteUploads({
-          upload_ids: completedUploadIds,
+          file_ids: completedUploadIds,
         });
 
         const failedIds = new Set(
-          completeResult.failed.map((f) => f.upload_id),
+          completeResult.failed.map((f) => f.file_id),
         );
 
         for (const entry of entries) {
@@ -964,7 +961,7 @@ export function PartsUploadDialog() {
         uploads: uploadIds.map((id) => {
           const file = uploadedFiles.find((f) => f.uploadId === id);
           return {
-            upload_id: id,
+            file_id: id,
             root_context: file?.rootContext || null,
           };
         }),
