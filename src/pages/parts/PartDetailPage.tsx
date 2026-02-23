@@ -1,5 +1,6 @@
 import { useState, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 import {
   ArrowLeft,
   Pencil,
@@ -9,13 +10,14 @@ import {
   Building2,
   ExternalLink,
   Package,
-  ChevronRight,
   MapPin,
   Layers,
-  ZoomIn,
-  Maximize2,
   Loader2,
   Upload,
+  Download,
+  Trash2,
+  FileDown,
+  ImageDown,
   Paperclip,
   File,
   FileImage,
@@ -29,8 +31,13 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { usePartsUploadStore } from "@/stores/partsUploadStore";
-import { usePartDetail } from "@/api/hooks/useParts";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { usePartDetail, useUploadDrawing, useDeleteDrawing } from "@/api/hooks/useParts";
 import type {
   PartDetailResponse,
   BomChild,
@@ -264,9 +271,26 @@ function HeaderCard({ item }: { item: PartDetailResponse }) {
 }
 
 // 도면 프리뷰 (속성 탭용)
-function DrawingPreview({ item }: { item: PartDetailResponse }) {
+function DrawingPreview({
+  item,
+  onUpload,
+  isUploading,
+  onDelete,
+}: {
+  item: PartDetailResponse;
+  onUpload: (file: File) => void;
+  isUploading: boolean;
+  onDelete: () => void;
+}) {
   const hasDrawing = item.drawing != null;
   const [isDragging, setIsDragging] = useState(false);
+
+  const DRAWING_ACCEPT = [".pdf", ".dwg", ".dxf", ".png", ".jpg", ".jpeg", ".tif", ".tiff"];
+
+  function isAcceptedFile(file: File): boolean {
+    const ext = "." + file.name.split(".").pop()?.toLowerCase();
+    return DRAWING_ACCEPT.includes(ext);
+  }
 
   function handleDragOver(e: React.DragEvent) {
     e.preventDefault();
@@ -281,44 +305,173 @@ function DrawingPreview({ item }: { item: PartDetailResponse }) {
   function handleDrop(e: React.DragEvent) {
     e.preventDefault();
     setIsDragging(false);
-    // TODO: 파일 처리 (API 연결 시)
+    const file = e.dataTransfer.files[0];
+    if (!file) return;
+    if (!isAcceptedFile(file)) {
+      toast.error("지원하지 않는 파일 형식입니다", {
+        description: `도면 파일(${DRAWING_ACCEPT.join(", ")})만 업로드 가능합니다.`,
+      });
+      return;
+    }
+    onUpload(file);
   }
 
   function handleClick() {
+    if (isUploading) return;
     const input = document.createElement("input");
     input.type = "file";
-    input.accept = ".pdf,.dwg,.dxf";
+    input.accept = DRAWING_ACCEPT.join(",");
     input.onchange = () => {
-      // TODO: 파일 처리 (API 연결 시)
+      const file = input.files?.[0];
+      if (file) onUpload(file);
     };
     input.click();
   }
 
   if (hasDrawing) {
+    const drawing = item.drawing!;
+    const hasThumbnail = !!drawing.thumbnail_url;
+    const isConverting = drawing.conversion_status === "PENDING";
+
+    function handleDrawingClick() {
+      if (drawing.pdf_url) {
+        window.open(drawing.pdf_url, "_blank", "noopener,noreferrer");
+      }
+    }
+
+    async function handleDownload(url: string) {
+      try {
+        const pathname = new URL(url).pathname;
+        const filename = decodeURIComponent(pathname.split("/").pop() || drawing.drawing_number);
+        const res = await fetch(url);
+        const blob = await res.blob();
+        const blobUrl = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = blobUrl;
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(blobUrl);
+      } catch {
+        toast.error("다운로드에 실패했습니다");
+      }
+    }
+
+    function handleDelete() {
+      if (!window.confirm("도면을 삭제하시겠습니까?")) return;
+      onDelete();
+    }
+
+    const downloadOptions = [
+      { label: "원본 다운로드", icon: Download, url: drawing.original_file_url },
+      { label: "PDF 다운로드", icon: FileDown, url: drawing.pdf_url },
+      { label: "이미지 다운로드", icon: ImageDown, url: drawing.thumbnail_url },
+    ].filter((opt) => opt.url != null);
+
     return (
-      <div className="relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-lg border bg-muted/20">
-        <div className="flex flex-col items-center gap-2 text-muted-foreground/40">
-          <div className="relative">
-            <FileText className="h-14 w-14" strokeWidth={1} />
-            <div className="absolute -right-1 -bottom-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary/10 text-primary">
-              <Layers className="h-3 w-3" />
+      <div
+        className="group relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-lg border bg-muted/20"
+      >
+        {/* 프리뷰 영역 (클릭 시 PDF 보기) */}
+        <div
+          onClick={drawing.pdf_url ? handleDrawingClick : undefined}
+          className={`flex h-full w-full items-center justify-center ${
+            drawing.pdf_url ? "cursor-pointer" : ""
+          }`}
+        >
+          {hasThumbnail ? (
+            <img
+              src={drawing.thumbnail_url!}
+              alt={drawing.name ?? drawing.drawing_number}
+              className="h-full w-full object-contain"
+            />
+          ) : (
+            <div className="flex flex-col items-center gap-2 text-muted-foreground/40">
+              <div className="relative">
+                {isConverting ? (
+                  <>
+                    <Loader2 className="h-14 w-14 animate-spin" strokeWidth={1} />
+                    <span className="mt-1 text-[10px]">변환 중...</span>
+                  </>
+                ) : (
+                  <>
+                    <FileText className="h-14 w-14" strokeWidth={1} />
+                    <div className="absolute -right-1 -bottom-1 flex h-5 w-5 items-center justify-center rounded-full bg-primary/10 text-primary">
+                      <Layers className="h-3 w-3" />
+                    </div>
+                  </>
+                )}
+              </div>
+              {!isConverting && <span className="text-[10px]">도면 미리보기</span>}
             </div>
-          </div>
-          <span className="text-[10px]">도면 미리보기</span>
+          )}
         </div>
-        <div className="absolute right-2 bottom-2 flex gap-1">
-          <button className="flex h-6 w-6 items-center justify-center rounded bg-background/80 text-muted-foreground shadow-sm hover:text-foreground">
-            <ZoomIn className="h-3 w-3" />
-          </button>
-          <button className="flex h-6 w-6 items-center justify-center rounded bg-background/80 text-muted-foreground shadow-sm hover:text-foreground">
-            <Maximize2 className="h-3 w-3" />
+
+        {/* 우상단 오버레이 액션 */}
+        <div className="absolute right-2 top-2 flex gap-1.5 opacity-0 transition-opacity group-hover:opacity-100">
+          {downloadOptions.length > 0 && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <button
+                  onClick={(e) => e.stopPropagation()}
+                  className="flex h-8 items-center gap-1.5 rounded-md bg-background/95 px-2.5 text-xs font-medium text-muted-foreground shadow-sm backdrop-blur-sm transition-colors hover:bg-background hover:text-foreground"
+                >
+                  <Download className="h-3.5 w-3.5" />
+                  다운로드
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="min-w-[150px]">
+                {downloadOptions.map((opt) => (
+                  <DropdownMenuItem
+                    key={opt.label}
+                    onClick={() => handleDownload(opt.url!)}
+                  >
+                    <opt.icon className="mr-2 h-4 w-4" />
+                    {opt.label}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              handleDelete();
+            }}
+            className="flex h-8 items-center gap-1.5 rounded-md bg-background/95 px-2.5 text-xs font-medium text-muted-foreground shadow-sm backdrop-blur-sm transition-colors hover:bg-destructive/10 hover:text-destructive"
+          >
+            <Trash2 className="h-3.5 w-3.5" />
+            삭제
           </button>
         </div>
+
+        {/* 좌하단 도면번호 */}
         <div className="absolute left-2 bottom-2">
           <span className="rounded bg-background/80 px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground shadow-sm">
-            {item.drawing!.drawing_number}
+            {drawing.drawing_number}
           </span>
         </div>
+
+        {/* 우하단 PDF 보기 */}
+        {drawing.pdf_url && (
+          <div className="absolute right-2 bottom-2">
+            <span className="flex h-6 items-center gap-1 rounded bg-background/80 px-2 text-muted-foreground shadow-sm">
+              <ExternalLink className="h-3 w-3" />
+              <span className="text-[10px]">PDF 보기</span>
+            </span>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  if (isUploading) {
+    return (
+      <div className="flex aspect-[4/3] w-full flex-col items-center justify-center rounded-lg border-2 border-dashed border-primary/30 bg-primary/5">
+        <Loader2 className="mb-3 h-8 w-8 animate-spin text-primary/60" />
+        <p className="text-sm font-medium text-primary/70">업로드 중...</p>
+        <p className="mt-1 text-[11px] text-primary/40">
+          도면을 등록하고 있습니다
+        </p>
       </div>
     );
   }
@@ -376,7 +529,17 @@ function DrawingPreview({ item }: { item: PartDetailResponse }) {
 // --- 탭 콘텐츠 ---
 
 // 속성 탭
-function PropertiesTab({ item }: { item: PartDetailResponse }) {
+function PropertiesTab({
+  item,
+  onUploadDrawing,
+  isUploadingDrawing,
+  onDeleteDrawing,
+}: {
+  item: PartDetailResponse;
+  onUploadDrawing: (file: File) => void;
+  isUploadingDrawing: boolean;
+  onDeleteDrawing: () => void;
+}) {
   const rows: { label: string; value: React.ReactNode }[] = [
     {
       label: "품번",
@@ -407,7 +570,12 @@ function PropertiesTab({ item }: { item: PartDetailResponse }) {
     <div className="grid grid-cols-1 gap-5 lg:grid-cols-5">
       {/* 좌: 도면 프리뷰 */}
       <div className="lg:col-span-3">
-        <DrawingPreview item={item} />
+        <DrawingPreview
+          item={item}
+          onUpload={onUploadDrawing}
+          isUploading={isUploadingDrawing}
+          onDelete={onDeleteDrawing}
+        />
       </div>
 
       {/* 우: 속성 + 설명 */}
@@ -783,10 +951,11 @@ const TABS: {
 export function PartDetailPage() {
   const { partId } = useParams<{ partId: string }>();
   const navigate = useNavigate();
-  const openPartsUploadModal = usePartsUploadStore((s) => s.openModal);
   const [activeTab, setActiveTab] = useState<TabKey>("properties");
 
   const { data: item, isLoading, isError } = usePartDetail(partId);
+  const uploadDrawing = useUploadDrawing(partId);
+  const deleteDrawing = useDeleteDrawing(partId);
 
   // 로딩 상태
   if (isLoading) {
@@ -878,7 +1047,14 @@ export function PartDetailPage() {
       </div>
 
       {/* 탭 콘텐츠 */}
-      {activeTab === "properties" && <PropertiesTab item={item} />}
+      {activeTab === "properties" && (
+        <PropertiesTab
+          item={item}
+          onUploadDrawing={(file) => uploadDrawing.mutate(file)}
+          isUploadingDrawing={uploadDrawing.isPending}
+          onDeleteDrawing={() => deleteDrawing.mutate()}
+        />
+      )}
       {activeTab === "bom" && (
         <BomTab children={item.children} parents={item.parents} />
       )}

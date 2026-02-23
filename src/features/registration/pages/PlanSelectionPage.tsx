@@ -113,7 +113,7 @@ export function PlanSelectionPage() {
       } else if (!result.isAdmin) {
         setDialogPhase("denied");
       } else {
-        window.location.href = buildSubdomainUrl(result.slug, "/onboarding/upload");
+        window.location.href = buildSubdomainUrl(result.slug, "/");
       }
     } catch (error) {
       setCompletedSteps(0);

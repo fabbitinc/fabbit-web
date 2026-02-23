@@ -71,10 +71,15 @@ export interface BomParent {
 }
 
 export interface RelatedDrawing {
+  id: string;
   drawing_number: string;
   name: string | null;
   version: string | null;
   status: string | null;
+  conversion_status: string | null;
+  thumbnail_url: string | null;
+  pdf_url: string | null;
+  original_file_url: string | null;
 }
 
 export interface RelatedSupplier {
@@ -94,4 +99,17 @@ export interface BomTreeNode {
 
 export interface BomTreeResponse {
   root: BomTreeNode;
+}
+
+// POST /api/v1/parts/{part_id}/drawings
+
+export interface RegisterDrawingRequest {
+  file_id: string;
+}
+
+export interface RegisterDrawingResponse {
+  drawing_id: string;
+  drawing_number: string;
+  name: string;
+  conversion_status: string | null;
 }

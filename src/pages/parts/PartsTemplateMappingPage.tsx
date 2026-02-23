@@ -24,13 +24,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useMappingStore, useUploadStore } from "@/stores/onboarding";
-import { confirmMapping, listMappings, updateMapping } from "@/api/onboarding";
-import type { MappingResponse } from "@/api/types/onboarding";
-import { extractApiErrorMessage } from "@/features/onboarding/utils/mappingUtils";
-import { useMappingDerivedState } from "@/features/onboarding/hooks/useMappingDerivedState";
-import { useMappingActions } from "@/features/onboarding/hooks/useMappingActions";
-import { KanbanBoard } from "@/features/onboarding/components/kanban/KanbanBoard";
+import { useMappingStore, useUploadStore } from "@/stores/mapping";
+import { confirmMapping, listMappings, updateMapping } from "@/api/mapping";
+import type { MappingResponse } from "@/api/types/mapping";
+import { extractApiErrorMessage } from "@/features/mapping/utils/mappingUtils";
+import { useMappingDerivedState } from "@/features/mapping/hooks/useMappingDerivedState";
+import { useMappingActions } from "@/features/mapping/hooks/useMappingActions";
+import { KanbanBoard } from "@/features/mapping/components/kanban/KanbanBoard";
 import { cn } from "@/lib/utils";
 import "@/pages/parts/parts-template-mapping.css";
 
@@ -172,11 +172,11 @@ export function PartsTemplateMappingPage() {
       const response =
         payload.saveMode === "existing"
           ? await updateMapping(selectedMappingId, {
-              upload_id: primaryUploadId,
+              file_id: primaryUploadId,
               mapping: normalizedMapping,
             })
           : await confirmMapping({
-              upload_id: primaryUploadId,
+              file_id: primaryUploadId,
               name: finalName,
               mapping: normalizedMapping,
             });

@@ -2274,6 +2274,46 @@
             }
         },
         "/api/v1/parts/{part_id}/drawings": {
+            "delete": {
+                "tags": [
+                    "parts"
+                ],
+                "summary": "Delete Drawing From Part",
+                "description": "Part\uc5d0 \uc5f0\uacb0\ub41c \ub3c4\uba74\uc744 \uc0ad\uc81c\ud569\ub2c8\ub2e4.\n\nDrawing \ub808\ucf54\ub4dc\uc640 \uc5f0\uacb0\ub41c \ud30c\uc77c(\uc6d0\ubcf8, PDF, \uc378\ub124\uc77c)\uc774 \ud568\uaed8 \uc0ad\uc81c\ub429\ub2c8\ub2e4.\n\ud30c\uc77c\uc740 \uc18c\ud504\ud2b8 \uc0ad\uc81c\ub418\uba70, S3 \ud30c\uc77c\uc740 \ubcf4\uc874 \uae30\uac04 \ud6c4 \ubc30\uce58 \uc815\ub9ac\ub429\ub2c8\ub2e4.",
+                "operationId": "delete_drawing_from_part_api_v1_parts__part_id__drawings_delete",
+                "security": [
+                    {
+                        "HTTPBearer": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "part_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "title": "Part Id"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Successful Response"
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
             "post": {
                 "tags": [
                     "parts"
@@ -3384,6 +3424,16 @@
                 "title": "ConversionResultRequest",
                 "description": "Drawing Converter webhook \ub2e8\uac74 \uc218\uc2e0 \ud398\uc774\ub85c\ub4dc."
             },
+            "ConversionStatus": {
+                "type": "string",
+                "enum": [
+                    "PENDING",
+                    "COMPLETED",
+                    "FAILED"
+                ],
+                "title": "ConversionStatus",
+                "description": "DWG \u2192 PDF/\uc378\ub124\uc77c \ubcc0\ud658 \uc0c1\ud0dc."
+            },
             "CreateFileRequest": {
                 "properties": {
                     "original_name": {
@@ -3835,13 +3885,12 @@
                     "conversion_status": {
                         "anyOf": [
                             {
-                                "type": "string"
+                                "$ref": "#/components/schemas/ConversionStatus"
                             },
                             {
                                 "type": "null"
                             }
-                        ],
-                        "title": "Conversion Status"
+                        ]
                     }
                 },
                 "type": "object",
@@ -5832,13 +5881,12 @@
                     "conversion_status": {
                         "anyOf": [
                             {
-                                "type": "string"
+                                "$ref": "#/components/schemas/ConversionStatus"
                             },
                             {
                                 "type": "null"
                             }
-                        ],
-                        "title": "Conversion Status"
+                        ]
                     }
                 },
                 "type": "object",
@@ -6019,6 +6067,49 @@
                             }
                         ],
                         "title": "Status"
+                    },
+                    "conversion_status": {
+                        "anyOf": [
+                            {
+                                "$ref": "#/components/schemas/ConversionStatus"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ]
+                    },
+                    "thumbnail_url": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Thumbnail Url"
+                    },
+                    "pdf_url": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Pdf Url"
+                    },
+                    "original_file_url": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Original File Url"
                     }
                 },
                 "type": "object",

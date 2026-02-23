@@ -28,8 +28,9 @@ import { cn } from "@/lib/utils";
 import { useBomImportStore } from "@/stores/bomImportStore";
 import { useAttributes } from "@/api/hooks/useAttributes";
 import {
-  generateTempPresignedUrl,
+  createFileUpload,
   uploadFileToPresignedUrl,
+  completeFileUpload,
   importBomSimple,
 } from "@/api";
 import {
@@ -207,19 +208,20 @@ export function SimpleBomImportModal() {
       if (ext === "csv") contentType = "text/csv";
       else if (ext === "xls") contentType = "application/vnd.ms-excel";
 
-      const presigned = await generateTempPresignedUrl({
-        fileName: file.name,
-        contentType,
-        fileSizeBytes: file.size,
+      const { file_id, upload_url, file_key } = await createFileUpload({
+        original_name: file.name,
+        content_type: contentType,
+        file_size: file.size,
       });
 
-      await uploadFileToPresignedUrl(presigned.uploadUrl, file);
+      await uploadFileToPresignedUrl(upload_url, file, contentType);
+      await completeFileUpload(file_id);
 
       // 매핑 정보와 함께 서버 전송
       const response = await importBomSimple({
         projectId,
         folderId: folderId ?? undefined,
-        fileKey: presigned.fileKey,
+        fileKey: file_key,
         columnMappings: columnMappings.map((m) => ({
           excelColumn: m.excelColumn,
           attributeId: m.attributeId,
