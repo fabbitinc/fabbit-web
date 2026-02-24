@@ -63,12 +63,12 @@ export function PlanSelectionPage() {
 
   const handleContinue = () => {
     if (!signupData.name || !signupData.email || !signupData.password) {
-      navigate("/register/signup");
+      navigate("/signup");
       return;
     }
 
     if (!workspaceData.organizationName.trim() || !workspaceData.slug.trim()) {
-      navigate("/register/workspace");
+      navigate("/workspace");
       return;
     }
 
@@ -125,7 +125,7 @@ export function PlanSelectionPage() {
   const handleDeniedClose = async () => {
     await logout();
     setDialogPhase("idle");
-    navigate("/register/signup");
+    navigate("/signup");
   };
 
   const handleDialogClose = () => {
@@ -268,7 +268,7 @@ export function PlanSelectionPage() {
           type="button"
           variant="outline"
           className="h-12 px-8 text-base font-semibold border-gray-200 hover:bg-gray-50 hover:border-gray-300 transition-all"
-          onClick={() => navigate("/register/workspace")}
+          onClick={() => navigate("/workspace")}
         >
           이전
         </Button>
