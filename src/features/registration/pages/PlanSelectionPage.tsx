@@ -96,6 +96,7 @@ export function PlanSelectionPage() {
         team_size: workspaceData.teamSize || null,
         job_role: workspaceData.role || null,
         plan_type: toApiPlanType(selectedPlan),
+        turnstile_token: signupData.turnstileToken || null,
       });
 
       // progress 나머지 단계 완료

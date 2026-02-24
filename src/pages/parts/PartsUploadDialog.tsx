@@ -58,6 +58,7 @@ import type { NodeSearchItem } from "@/api/types/ontology";
 import type { SynthesisBatchStatusResponse } from "@/api/types/synthesis";
 
 const UPLOAD_ACCEPT = ".xlsx,.xls,.csv";
+const BATCH_POLL_INTERVAL = 1_000;
 
 type FileStatus = "validating" | "uploading" | "completed" | "failed";
 
@@ -624,7 +625,7 @@ export function PartsUploadDialog() {
       }
 
       if (!cancelled) {
-        timerId = setTimeout(poll, 2000);
+        timerId = setTimeout(poll, BATCH_POLL_INTERVAL);
       }
     }
 

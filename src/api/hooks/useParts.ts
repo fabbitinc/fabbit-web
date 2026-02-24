@@ -37,8 +37,8 @@ export function useParts(params: ListPartsParams) {
   });
 }
 
-const CONVERSION_POLL_INTERVAL = 5_000;
-const CONVERSION_POLL_TIMEOUT = 5 * 60 * 1000;
+const CONVERSION_POLL_INTERVAL = 1_000;
+const CONVERSION_POLL_TIMEOUT = 1 * 60 * 1000;
 
 /** Part 상세 조회 훅 (도면 변환 PENDING 시 자동 폴링) */
 export function usePartDetail(partId: string | undefined) {
@@ -67,7 +67,10 @@ export function usePartDetail(partId: string | undefined) {
     if (!isPending) return;
 
     const id = setInterval(() => {
-      if (pollStartRef.current && Date.now() - pollStartRef.current > CONVERSION_POLL_TIMEOUT) {
+      if (
+        pollStartRef.current &&
+        Date.now() - pollStartRef.current > CONVERSION_POLL_TIMEOUT
+      ) {
         clearInterval(id);
         return;
       }
@@ -122,7 +125,9 @@ export function useUploadDrawing(partId: string | undefined) {
     },
     onError: (err) => {
       const axiosErr = err as { response?: { data?: { message?: string } } };
-      toast.error(axiosErr?.response?.data?.message || "도면 업로드에 실패했습니다");
+      toast.error(
+        axiosErr?.response?.data?.message || "도면 업로드에 실패했습니다",
+      );
     },
   });
 }
@@ -141,7 +146,9 @@ export function useDeleteDrawing(partId: string | undefined) {
     },
     onError: (err) => {
       const axiosErr = err as { response?: { data?: { message?: string } } };
-      toast.error(axiosErr?.response?.data?.message || "도면 삭제에 실패했습니다");
+      toast.error(
+        axiosErr?.response?.data?.message || "도면 삭제에 실패했습니다",
+      );
     },
   });
 }

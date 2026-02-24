@@ -3,6 +3,7 @@ export interface SignupFormData {
   name: string;
   email: string;
   password: string;
+  turnstileToken: string;
 }
 
 // 워크스페이스 설정 (Step 2)

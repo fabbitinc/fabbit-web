@@ -152,6 +152,7 @@ export function SignupPage() {
       name: name.trim(),
       email: email.trim().toLowerCase(),
       password,
+      turnstileToken: turnstileToken!,
     });
     navigate("/workspace");
   };
