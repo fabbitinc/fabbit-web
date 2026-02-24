@@ -20,6 +20,7 @@ export const useRegistrationStore = create<RegistrationState>()((set) => ({
     name: "",
     email: "",
     password: "",
+    turnstileToken: "",
   },
 
   workspaceData: {
