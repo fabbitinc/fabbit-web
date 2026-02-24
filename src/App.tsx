@@ -20,7 +20,7 @@ import { SimpleBomImportModal } from "@/features/items/components/SimpleBomImpor
 import { Toaster } from "@/components/ui/sonner";
 import { useAuthStore } from "@/stores/authStore";
 import { getAuthCookies, clearAuthCookies } from "@/lib/auth-cookies";
-import { getSubdomain } from "@/lib/subdomain";
+import { getSubdomain, isRegisterDomain } from "@/lib/subdomain";
 import { getSite } from "@/api";
 import { useDashboardStats } from "@/api/hooks/useDashboard";
 import type { SiteResponse } from "@/api/types/auth";
@@ -304,9 +304,9 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   if (!isAuthenticated) {
-    // 서브도메인(워크스페이스) → 로그인, 루트 도메인(www 포함) → 회원가입
+    // 워크스페이스 서브도메인 → 로그인, register/루트 도메인 → 회원가입
     return (
-      <Navigate to={getSubdomain() ? "/login" : "/register/signup"} replace />
+      <Navigate to={isRegisterDomain() ? "/signup" : "/login"} replace />
     );
   }
 
@@ -314,12 +314,12 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 // 비인증 사용자만 접근 가능한 라우트 (로그인 페이지)
-// 루트 도메인(www 포함)에서는 로그인 불필요 → 회원가입으로
+// register/루트 도메인에서는 로그인 불필요 → 회원가입으로
 function PublicRoute({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
-  if (!getSubdomain()) {
-    return <Navigate to="/register/signup" replace />;
+  if (isRegisterDomain()) {
+    return <Navigate to="/signup" replace />;
   }
 
   if (isAuthenticated) {
@@ -338,8 +338,8 @@ function RegistrationRoute({ children }: { children: React.ReactNode }) {
     return <Navigate to="/" replace />;
   }
 
-  // 서브도메인(워크스페이스)에서는 회원가입 불가 → 로그인으로
-  if (getSubdomain()) {
+  // 워크스페이스 서브도메인에서는 회원가입 불가 → 로그인으로
+  if (!isRegisterDomain()) {
     return <Navigate to="/login" replace />;
   }
 
@@ -366,9 +366,9 @@ function App() {
 
       // BACKLOG: 자동 로그인 토큰 유효성 검증 — localStorage에 토큰이 있으면 fetchMe()로 유효성 확인 후 인증 상태 복원. 현재는 zustand persist가 isAuthenticated를 바로 복원하여 만료 토큰 시 첫 API 호출까지 감지 불가.
 
-      // 2. 서브도메인 사이트 검증
+      // 2. 서브도메인 사이트 검증 (register 서브도메인은 스킵)
       const subdomain = getSubdomain();
-      if (subdomain) {
+      if (subdomain && subdomain !== "register") {
         try {
           const siteData = await getSite();
           setSite(siteData);
@@ -409,25 +409,17 @@ function App() {
           }
         />
 
-        {/* /signup → /register/signup 리다이렉트 */}
+        {/* Registration Routes (회원가입 1-3단계) — register 서브도메인에서만 진입 */}
         <Route
-          path="/signup"
-          element={<Navigate to="/register/signup" replace />}
-        />
-
-        {/* Registration Routes (회원가입 1-3단계) */}
-        <Route
-          path="/register"
           element={
             <RegistrationRoute>
               <RegistrationLayout />
             </RegistrationRoute>
           }
         >
-          <Route path="signup" element={<SignupPage />} />
-          <Route path="workspace" element={<WorkspaceSetupPage />} />
-          <Route path="plan" element={<PlanSelectionPage />} />
-          <Route index element={<Navigate to="signup" replace />} />
+          <Route path="/signup" element={<SignupPage />} />
+          <Route path="/workspace" element={<WorkspaceSetupPage />} />
+          <Route path="/plan" element={<PlanSelectionPage />} />
         </Route>
 
         {/* Protected Routes */}

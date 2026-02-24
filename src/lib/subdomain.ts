@@ -2,11 +2,16 @@ const APP_DOMAIN = import.meta.env.VITE_APP_DOMAIN || "localhost";
 const ROOT_DOMAIN = APP_DOMAIN.split(":")[0]; // 포트 제거
 
 /**
- * 현재 URL에서 서브도메인을 추출합니다.
- * - `moseoh.lvh.me` → `"moseoh"`
- * - `www.lvh.me` → `null` (메인 도메인 취급)
- * - `lvh.me` → `null`
+ * register 서브도메인 또는 루트 도메인(localhost 등)인지 판별합니다.
+ * - `register.lvh.me` → `true`
+ * - `lvh.me` / `localhost` → `true` (로컬 개발 호환)
+ * - `myworkspace.lvh.me` → `false`
  */
+export function isRegisterDomain(): boolean {
+  const sub = getSubdomain();
+  return sub === null || sub === "register";
+}
+
 export function getSubdomain(): string | null {
   const hostname = window.location.hostname;
 

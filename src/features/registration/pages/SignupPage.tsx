@@ -153,7 +153,7 @@ export function SignupPage() {
       email: email.trim().toLowerCase(),
       password,
     });
-    navigate("/register/workspace");
+    navigate("/workspace");
   };
 
   const handleSocialSignup = async (provider: "google" | "naver" | "kakao") => {
@@ -161,7 +161,7 @@ export function SignupPage() {
 
     try {
       await loginWithProvider(provider);
-      navigate("/register/workspace");
+      navigate("/workspace");
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "소셜 가입에 실패했습니다.",

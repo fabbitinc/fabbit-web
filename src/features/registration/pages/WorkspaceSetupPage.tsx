@@ -174,7 +174,7 @@ export function WorkspaceSetupPage() {
     if (!workspaceData.organizationName.trim() || !workspaceData.slug.trim()) return;
     if (slugStatus !== "available") return;
 
-    navigate("/register/plan");
+    navigate("/plan");
   };
 
   const isFormValid =
@@ -413,7 +413,7 @@ export function WorkspaceSetupPage() {
               type="button"
               variant="outline"
               className="h-12 px-8 text-base font-semibold border-gray-200 hover:bg-gray-50 hover:border-gray-300 transition-all"
-              onClick={() => navigate("/register/signup")}
+              onClick={() => navigate("/signup")}
             >
               이전
             </Button>
