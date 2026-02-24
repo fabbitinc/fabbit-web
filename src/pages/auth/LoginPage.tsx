@@ -58,8 +58,12 @@ export function LoginPage() {
   const { login, loginWithProvider, isLoading } = useAuthStore();
 
   // TODO: 개발용 기본값 제거
-  const [email, setEmail] = useState("test@gmail.com");
-  const [password, setPassword] = useState("qwer1234");
+  const [email, setEmail] = useState(
+    import.meta.env.DEV ? "test@gmail.com" : "",
+  );
+  const [password, setPassword] = useState(
+    import.meta.env.DEV ? "qwer1234" : "",
+  );
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
 
