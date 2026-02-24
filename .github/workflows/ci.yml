@@ -8,6 +8,7 @@ on:
 jobs:
   build-and-lint:
     name: Build & Lint
+    runs-on: ubuntu
 
     steps:
       - name: Checkout
