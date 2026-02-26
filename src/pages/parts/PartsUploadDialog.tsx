@@ -53,6 +53,7 @@ import { listMappings } from "@/api/mapping";
 import { startSynthesis, getSynthesisBatch } from "@/api/synthesis";
 import { searchNodes } from "@/api/ontology";
 import { PARTS_QUERY_KEY, PART_FILTER_OPTIONS_QUERY_KEY } from "@/api/hooks/useParts";
+import { DASHBOARD_STATS_QUERY_KEY } from "@/api/hooks/useDashboard";
 import type { MappingResponse } from "@/api/types/mapping";
 import type { NodeSearchItem } from "@/api/types/ontology";
 import type { SynthesisBatchStatusResponse } from "@/api/types/synthesis";
@@ -618,6 +619,7 @@ export function PartsUploadDialog() {
           // 합성 완료 → 부품 목록 갱신
           void queryClient.invalidateQueries({ queryKey: [...PARTS_QUERY_KEY] });
           void queryClient.invalidateQueries({ queryKey: [...PART_FILTER_OPTIONS_QUERY_KEY] });
+          void queryClient.invalidateQueries({ queryKey: [...DASHBOARD_STATS_QUERY_KEY] });
           return;
         }
       } catch (e) {

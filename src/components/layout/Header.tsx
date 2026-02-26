@@ -197,11 +197,6 @@ export function Header({ onToggleSideNav }: HeaderProps) {
                   )}
                 </DropdownMenuItem>
               ))}
-              <DropdownMenuSeparator />
-              <DropdownMenuItem className="gap-2 text-muted-foreground" onClick={() => navigate("/organization/settings")}>
-                <Building2 className="size-4" />
-                조직 관리
-              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         )}
