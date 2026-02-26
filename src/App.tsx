@@ -5,12 +5,11 @@ import { Button } from "@/components/ui/button";
 import { LoginPage } from "@/pages/auth/LoginPage";
 import { ProjectListPage } from "@/pages/projects/ProjectListPage";
 import { ProjectDetailPage } from "@/pages/projects/ProjectDetailPage";
-import { ProjectOpsItemDetailPage } from "@/pages/projects/ProjectOpsItemDetailPage";
-import { ProjectScheduleDetailPage } from "@/pages/projects/ProjectScheduleDetailPage";
 import { OrganizationSettingsPage } from "@/pages/organization/OrganizationSettingsPage";
 import { UserSettingsPage } from "@/pages/user/UserSettingsPage";
 import { PartsPage } from "@/pages/parts/PartsPage";
 import { PartDetailPage } from "@/pages/parts/PartDetailPage";
+import { BomExplorePage } from "@/pages/parts/BomExplorePage";
 import { PartsTemplateAnalysisPage } from "@/pages/parts/PartsTemplateAnalysisPage";
 import { PartsTemplateMappingPage } from "@/pages/parts/PartsTemplateMappingPage";
 import { PartsTemplateProcessingPage } from "@/pages/parts/PartsTemplateProcessingPage";
@@ -221,11 +220,6 @@ function ConflictsPage() {
 function LegacyItemDetailRedirect() {
   const { id } = useParams<{ id: string }>();
   return <Navigate to={id ? `/parts/${id}` : "/parts"} replace />;
-}
-
-function LegacyProjectSettingsRedirect() {
-  const { projectId } = useParams<{ projectId: string }>();
-  return <Navigate to={projectId ? `/projects/${projectId}` : "/projects"} replace />;
 }
 
 function LegacyPartUploadRedirect() {
@@ -439,17 +433,13 @@ function App() {
                   <Route path="/parts/:partId/templates/processing" element={<PartsTemplateProcessingPage />} />
                   <Route path="/parts/:partId/templates/mapping" element={<PartsTemplateMappingPage />} />
                   <Route path="/parts/:partId/upload" element={<LegacyPartUploadRedirect />} />
+                  <Route path="/parts/:partId/bom" element={<BomExplorePage />} />
                   <Route path="/parts/:partId" element={<PartDetailPage />} />
                   <Route path="/items" element={<Navigate to="/parts" replace />} />
                   <Route path="/items/:id" element={<LegacyItemDetailRedirect />} />
                   <Route path="/items/:id/bom" element={<LegacyItemDetailRedirect />} />
                   <Route path="/projects" element={<ProjectListPage />} />
-                  <Route path="/projects/:projectId" element={<ProjectDetailPage />} />
-                  <Route path="/projects/:projectId/approvals/:itemId" element={<ProjectOpsItemDetailPage />} />
-                  <Route path="/projects/:projectId/changes/:itemId" element={<ProjectOpsItemDetailPage />} />
-                  <Route path="/projects/:projectId/issues/:itemId" element={<ProjectOpsItemDetailPage />} />
-                  <Route path="/projects/:projectId/schedules/:scheduleId" element={<ProjectScheduleDetailPage />} />
-                  <Route path="/projects/:projectId/settings" element={<LegacyProjectSettingsRedirect />} />
+                  <Route path="/projects/:projectId/*" element={<ProjectDetailPage />} />
                   <Route path="/organization/settings" element={<OrganizationSettingsPage />} />
                   <Route path="/user/settings" element={<UserSettingsPage />} />
                   <Route path="/approval" element={<ApprovalPage />} />

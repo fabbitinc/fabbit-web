@@ -1,0 +1,97 @@
+import type { PartHistoryEntry } from "./types";
+
+// V6 엔진 부품 이력 mock 데이터 (최신순)
+export const MOCK_HISTORY: PartHistoryEntry[] = [
+  {
+    id: "h-001",
+    type: "revision",
+    revision: "C",
+    previous_revision: "B",
+    summary: "양산 도면 반영 — 공차 수정 및 재질 변경",
+    details: [
+      { field: "material", label: "재질", old_value: "SUS304", new_value: "SUS316L" },
+      { field: "tolerance", label: "공차", old_value: "±0.1mm", new_value: "±0.05mm" },
+    ],
+    user_name: "김설계",
+    created_at: "2025-12-15T09:30:00Z",
+  },
+  {
+    id: "h-002",
+    type: "lifecycle_change",
+    revision: null,
+    previous_revision: null,
+    summary: "상태 변경: 개발 → 양산",
+    details: [
+      { field: "lifecycle_state", label: "상태", old_value: "개발", new_value: "양산" },
+    ],
+    user_name: "박관리",
+    created_at: "2025-12-14T15:00:00Z",
+  },
+  {
+    id: "h-003",
+    type: "drawing_change",
+    revision: null,
+    previous_revision: null,
+    summary: "도면 교체: DWG-V6-ENG-002.pdf 업로드",
+    details: null,
+    user_name: "김설계",
+    created_at: "2025-12-10T11:20:00Z",
+  },
+  {
+    id: "h-004",
+    type: "revision",
+    revision: "B",
+    previous_revision: "A",
+    summary: "설계 검토 반영 — 치수 보정",
+    details: [
+      { field: "dimension_w", label: "폭", old_value: "120mm", new_value: "118mm" },
+      { field: "dimension_h", label: "높이", old_value: "85mm", new_value: "84mm" },
+    ],
+    user_name: "이엔지니어",
+    created_at: "2025-11-20T14:00:00Z",
+  },
+  {
+    id: "h-005",
+    type: "bom_change",
+    revision: null,
+    previous_revision: null,
+    summary: "하위 부품 추가: 가스켓 (P/N: GSK-004)",
+    details: [
+      { field: "child_add", label: "추가 부품", old_value: null, new_value: "GSK-004 × 2" },
+    ],
+    user_name: "이엔지니어",
+    created_at: "2025-11-18T10:45:00Z",
+  },
+  {
+    id: "h-006",
+    type: "property_change",
+    revision: null,
+    previous_revision: null,
+    summary: "카테고리 변경",
+    details: [
+      { field: "category", label: "카테고리", old_value: "엔진부품", new_value: "엔진-V6" },
+    ],
+    user_name: "박관리",
+    created_at: "2025-11-15T09:10:00Z",
+  },
+  {
+    id: "h-007",
+    type: "attachment_change",
+    revision: null,
+    previous_revision: null,
+    summary: "시험 성적서 첨부: V6-TEST-REPORT.pdf",
+    details: null,
+    user_name: "최품질",
+    created_at: "2025-11-10T16:30:00Z",
+  },
+  {
+    id: "h-008",
+    type: "revision",
+    revision: "A",
+    previous_revision: null,
+    summary: "초기 등록",
+    details: null,
+    user_name: "김설계",
+    created_at: "2025-10-01T10:00:00Z",
+  },
+];

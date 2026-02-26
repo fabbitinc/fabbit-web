@@ -229,8 +229,15 @@ export function PartsTemplateMappingPage() {
         {/* 칸반보드 (요약바 포함) */}
         <KanbanBoard />
 
-        {/* 확정 버튼 */}
-        <div className="flex items-center justify-end">
+        {/* 하단 버튼 */}
+        <div className="flex items-center justify-end gap-2">
+          <Button
+            variant="outline"
+            disabled={isSubmitting}
+            onClick={() => navigate("/parts")}
+          >
+            취소
+          </Button>
           {(!hasMappings || hasUnselectedMappings || !hasRequiredPartMergeKeys || hasRelationMergeKeyIssues) && !isSubmitting ? (
             <Tooltip>
               <TooltipTrigger asChild>

@@ -15,16 +15,20 @@ import {
   FileText,
   Loader2,
   X,
+  Download,
+  FolderPlus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePartsUploadStore } from "@/stores/partsUploadStore";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuCheckboxItem,
+  DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuLabel,
 } from "@/components/ui/dropdown-menu";
@@ -35,8 +39,19 @@ import {
   SelectItem,
   SelectValue,
 } from "@/components/ui/select";
-import { usePartFilterOptions, useParts } from "@/api";
+import { usePartFilterOptions, useParts, useProjects } from "@/api";
+import { exportParts } from "@/api/parts";
+import { addPartToProject } from "@/api/project";
 import type { ListPartsParams } from "@/api";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { toast } from "sonner";
 
 const PAGE_SIZE_OPTIONS = ["15", "30", "50"];
 
@@ -96,6 +111,9 @@ export function PartsPage() {
   const [pageSize, setPageSize] = useState(15);
   const [sortKey, setSortKey] = useState<SortKey>("part_number");
   const [sortDir, setSortDir] = useState<SortDir>("asc");
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [isExporting, setIsExporting] = useState(false);
+  const [linkDialogOpen, setLinkDialogOpen] = useState(false);
 
   // applied 필터 → API 쿼리 파라미터 변환 (서버 사이드 페이지네이션)
   // API는 category/lifecycle_state를 단일 값만 지원하므로,
@@ -221,6 +239,62 @@ export function PartsPage() {
     setPage(1);
   }
 
+  // 현재 페이지 행의 전체 선택 여부
+  const allChecked = sorted.length > 0 && sorted.every((item) => selectedIds.has(item.id));
+  const someChecked = sorted.some((item) => selectedIds.has(item.id));
+
+  function toggleSelectAll() {
+    if (allChecked) {
+      // 현재 페이지 전체 해제
+      setSelectedIds((prev) => {
+        const next = new Set(prev);
+        for (const item of sorted) next.delete(item.id);
+        return next;
+      });
+    } else {
+      // 현재 페이지 전체 선택
+      setSelectedIds((prev) => {
+        const next = new Set(prev);
+        for (const item of sorted) next.add(item.id);
+        return next;
+      });
+    }
+  }
+
+  function toggleSelectOne(id: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  // 필터가 적용된 상태인지 (검색어 또는 필터 존재)
+  const hasActiveFilters = useMemo(() => !filtersEqual(applied, INITIAL_FILTERS), [applied]);
+
+  // 내려받기 핸들러
+  async function handleExport(mode: "all" | "filtered" | "selected") {
+    setIsExporting(true);
+    try {
+      if (mode === "selected") {
+        await exportParts({ part_ids: [...selectedIds] });
+      } else if (mode === "filtered") {
+        await exportParts({
+          search: applied.search || undefined,
+          category: applied.categories.size === 1 ? [...applied.categories][0] : undefined,
+          lifecycle_state: applied.lifecycleStates.size === 1 ? [...applied.lifecycleStates][0] : undefined,
+          has_drawing: applied.hasDrawing ?? undefined,
+          has_children: applied.hasChildren ?? undefined,
+        });
+      } else {
+        await exportParts({});
+      }
+    } finally {
+      setIsExporting(false);
+    }
+  }
+
   const draftAttrCount = (draft.hasDrawing !== null ? 1 : 0) + (draft.hasChildren !== null ? 1 : 0);
 
   return (
@@ -281,133 +355,212 @@ export function PartsPage() {
           </span>
         </div>
 
-        {/* 2행: 필터 드롭다운 + 결과 업데이트 버튼 */}
+        {/* 2행: 선택 시 액션 바 / 기본 시 필터 + 내려받기 */}
         <div className="mb-2 flex items-center gap-2">
-          {/* 카테고리 드롭다운 */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                size="sm"
-                className={draft.categories.size > 0 ? "border-primary/50 text-primary" : ""}
-              >
-                카테고리
-                <ChevronDown className="h-3.5 w-3.5" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-44">
-              <DropdownMenuLabel>카테고리</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {allCategories.map((cat) => (
-                <DropdownMenuCheckboxItem
-                  key={cat}
-                  checked={draft.categories.has(cat)}
-                  onCheckedChange={() => updateDraft("categories", toggleSetItem(draft.categories, cat))}
-                  onSelect={(e) => e.preventDefault()}
+          {selectedIds.size > 0 ? (
+            <>
+              {/* 선택 컨텍스트 바 */}
+              <div className="flex items-center gap-2 ml-2">
+                <span className="text-sm font-medium text-foreground">
+                  {selectedIds.size}건 선택
+                </span>
+                <button
+                  onClick={() => setSelectedIds(new Set())}
+                  className="text-xs text-muted-foreground hover:text-foreground"
                 >
-                  {cat}
-                </DropdownMenuCheckboxItem>
-              ))}
-              {draft.categories.size > 0 && (
-                <>
-                  <DropdownMenuSeparator />
-                  <button
-                    onClick={() => updateDraft("categories", new Set())}
-                    className="w-full px-2 py-1.5 text-left text-sm text-muted-foreground hover:text-foreground"
-                  >
-                    선택 해제
-                  </button>
-                </>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
+                  선택 해제
+                </button>
+              </div>
 
-          {/* 상태 드롭다운 */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
+              <div className="flex-1" />
+
               <Button
                 variant="outline"
                 size="sm"
-                className={draft.lifecycleStates.size > 0 ? "border-primary/50 text-primary" : ""}
+                onClick={() => setLinkDialogOpen(true)}
               >
-                상태
-                <ChevronDown className="h-3.5 w-3.5" />
+                <FolderPlus className="h-4 w-4" />
+                프로젝트 연결
               </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-44">
-              <DropdownMenuLabel>상태</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              {allLifecycleStates.map((state) => (
-                <DropdownMenuCheckboxItem
-                  key={state}
-                  checked={draft.lifecycleStates.has(state)}
-                  onCheckedChange={() => updateDraft("lifecycleStates", toggleSetItem(draft.lifecycleStates, state))}
-                  onSelect={(e) => e.preventDefault()}
-                >
-                  {state}
-                </DropdownMenuCheckboxItem>
-              ))}
-              {draft.lifecycleStates.size > 0 && (
-                <>
-                  <DropdownMenuSeparator />
-                  <button
-                    onClick={() => updateDraft("lifecycleStates", new Set())}
-                    className="w-full px-2 py-1.5 text-left text-sm text-muted-foreground hover:text-foreground"
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" disabled={isExporting}>
+                    {isExporting ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Download className="h-4 w-4" />
+                    )}
+                    내려받기
+                    <ChevronDown className="h-3.5 w-3.5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => handleExport("selected")}>
+                    선택 내려받기 ({selectedIds.size}건)
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleExport("all")}>
+                    전체 내려받기
+                  </DropdownMenuItem>
+                  {hasActiveFilters && (
+                    <DropdownMenuItem onClick={() => handleExport("filtered")}>
+                      검색 결과 내려받기
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
+          ) : (
+            <>
+              {/* 필터 드롭다운 */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className={draft.categories.size > 0 ? "border-primary/50 text-primary" : ""}
                   >
-                    선택 해제
-                  </button>
-                </>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
+                    카테고리
+                    <ChevronDown className="h-3.5 w-3.5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-44">
+                  <DropdownMenuLabel>카테고리</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  {allCategories.map((cat) => (
+                    <DropdownMenuCheckboxItem
+                      key={cat}
+                      checked={draft.categories.has(cat)}
+                      onCheckedChange={() => updateDraft("categories", toggleSetItem(draft.categories, cat))}
+                      onSelect={(e) => e.preventDefault()}
+                    >
+                      {cat}
+                    </DropdownMenuCheckboxItem>
+                  ))}
+                  {draft.categories.size > 0 && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <button
+                        onClick={() => updateDraft("categories", new Set())}
+                        className="w-full px-2 py-1.5 text-left text-sm text-muted-foreground hover:text-foreground"
+                      >
+                        선택 해제
+                      </button>
+                    </>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
 
-          {/* 속성 드롭다운 */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button
-                variant="outline"
-                size="sm"
-                className={draftAttrCount > 0 ? "border-primary/50 text-primary" : ""}
-              >
-                속성
-                <ChevronDown className="h-3.5 w-3.5" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-44">
-              <DropdownMenuLabel>도면</DropdownMenuLabel>
-              <DropdownMenuCheckboxItem
-                checked={draft.hasDrawing === true}
-                onCheckedChange={() => updateDraft("hasDrawing", draft.hasDrawing === true ? null : true)}
-                onSelect={(e) => e.preventDefault()}
-              >
-                도면 있음
-              </DropdownMenuCheckboxItem>
-              <DropdownMenuCheckboxItem
-                checked={draft.hasDrawing === false}
-                onCheckedChange={() => updateDraft("hasDrawing", draft.hasDrawing === false ? null : false)}
-                onSelect={(e) => e.preventDefault()}
-              >
-                도면 없음
-              </DropdownMenuCheckboxItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuLabel>하위 부품</DropdownMenuLabel>
-              <DropdownMenuCheckboxItem
-                checked={draft.hasChildren === true}
-                onCheckedChange={() => updateDraft("hasChildren", draft.hasChildren === true ? null : true)}
-                onSelect={(e) => e.preventDefault()}
-              >
-                하위 부품 있음
-              </DropdownMenuCheckboxItem>
-              <DropdownMenuCheckboxItem
-                checked={draft.hasChildren === false}
-                onCheckedChange={() => updateDraft("hasChildren", draft.hasChildren === false ? null : false)}
-                onSelect={(e) => e.preventDefault()}
-              >
-                하위 부품 없음
-              </DropdownMenuCheckboxItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className={draft.lifecycleStates.size > 0 ? "border-primary/50 text-primary" : ""}
+                  >
+                    상태
+                    <ChevronDown className="h-3.5 w-3.5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-44">
+                  <DropdownMenuLabel>상태</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  {allLifecycleStates.map((state) => (
+                    <DropdownMenuCheckboxItem
+                      key={state}
+                      checked={draft.lifecycleStates.has(state)}
+                      onCheckedChange={() => updateDraft("lifecycleStates", toggleSetItem(draft.lifecycleStates, state))}
+                      onSelect={(e) => e.preventDefault()}
+                    >
+                      {state}
+                    </DropdownMenuCheckboxItem>
+                  ))}
+                  {draft.lifecycleStates.size > 0 && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <button
+                        onClick={() => updateDraft("lifecycleStates", new Set())}
+                        className="w-full px-2 py-1.5 text-left text-sm text-muted-foreground hover:text-foreground"
+                      >
+                        선택 해제
+                      </button>
+                    </>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
 
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className={draftAttrCount > 0 ? "border-primary/50 text-primary" : ""}
+                  >
+                    속성
+                    <ChevronDown className="h-3.5 w-3.5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-44">
+                  <DropdownMenuLabel>도면</DropdownMenuLabel>
+                  <DropdownMenuCheckboxItem
+                    checked={draft.hasDrawing === true}
+                    onCheckedChange={() => updateDraft("hasDrawing", draft.hasDrawing === true ? null : true)}
+                    onSelect={(e) => e.preventDefault()}
+                  >
+                    도면 있음
+                  </DropdownMenuCheckboxItem>
+                  <DropdownMenuCheckboxItem
+                    checked={draft.hasDrawing === false}
+                    onCheckedChange={() => updateDraft("hasDrawing", draft.hasDrawing === false ? null : false)}
+                    onSelect={(e) => e.preventDefault()}
+                  >
+                    도면 없음
+                  </DropdownMenuCheckboxItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuLabel>하위 부품</DropdownMenuLabel>
+                  <DropdownMenuCheckboxItem
+                    checked={draft.hasChildren === true}
+                    onCheckedChange={() => updateDraft("hasChildren", draft.hasChildren === true ? null : true)}
+                    onSelect={(e) => e.preventDefault()}
+                  >
+                    하위 부품 있음
+                  </DropdownMenuCheckboxItem>
+                  <DropdownMenuCheckboxItem
+                    checked={draft.hasChildren === false}
+                    onCheckedChange={() => updateDraft("hasChildren", draft.hasChildren === false ? null : false)}
+                    onSelect={(e) => e.preventDefault()}
+                  >
+                    하위 부품 없음
+                  </DropdownMenuCheckboxItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              <div className="flex-1" />
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm" disabled={isExporting}>
+                    {isExporting ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Download className="h-4 w-4" />
+                    )}
+                    내려받기
+                    <ChevronDown className="h-3.5 w-3.5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => handleExport("all")}>
+                    전체 내려받기
+                  </DropdownMenuItem>
+                  {hasActiveFilters && (
+                    <DropdownMenuItem onClick={() => handleExport("filtered")}>
+                      검색 결과 내려받기
+                    </DropdownMenuItem>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
+          )}
         </div>
 
         {/* 적용된 필터 칩 */}
@@ -442,6 +595,7 @@ export function PartsPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm table-fixed">
               <colgroup>
+                <col style={{ width: "40px" }} />
                 <col style={{ width: "12%" }} />
                 <col />
                 <col style={{ width: "10%" }} />
@@ -452,6 +606,13 @@ export function PartsPage() {
               </colgroup>
               <thead>
                 <tr className="border-b bg-muted/50 text-left">
+                  <th className="py-3 px-2 text-center">
+                    <Checkbox
+                      checked={allChecked ? true : someChecked ? "indeterminate" : false}
+                      onCheckedChange={toggleSelectAll}
+                      aria-label="전체 선택"
+                    />
+                  </th>
                   <SortableHeader column="part_number" label="품번" sortKey={sortKey} sortDir={sortDir} onSort={handleSort} />
                   <SortableHeader column="name" label="품명" sortKey={sortKey} sortDir={sortDir} onSort={handleSort} />
                   <SortableHeader column="category" label="카테고리" sortKey={sortKey} sortDir={sortDir} onSort={handleSort} align="center" />
@@ -468,7 +629,7 @@ export function PartsPage() {
               <tbody>
                 {isLoading ? (
                   <tr>
-                    <td colSpan={7} className="py-20 text-center">
+                    <td colSpan={8} className="py-20 text-center">
                       <div className="flex flex-col items-center gap-3">
                         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                         <p className="text-sm text-muted-foreground">불러오는 중...</p>
@@ -477,7 +638,7 @@ export function PartsPage() {
                   </tr>
                 ) : sorted.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="py-20 text-center">
+                    <td colSpan={8} className="py-20 text-center">
                       <div className="flex flex-col items-center gap-3">
                         <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
                           <Search className="h-6 w-6 text-muted-foreground" />
@@ -504,6 +665,13 @@ export function PartsPage() {
                         onClick={() => handleRowClick(item.id)}
                         className="group h-[45px] border-b border-border/50 transition-colors hover:bg-muted/50 cursor-pointer"
                       >
+                        <td className="py-2 px-2 text-center" onClick={(e) => e.stopPropagation()}>
+                          <Checkbox
+                            checked={selectedIds.has(item.id)}
+                            onCheckedChange={() => toggleSelectOne(item.id)}
+                            aria-label={`${item.part_number} 선택`}
+                          />
+                        </td>
                         <td className="py-2 pl-4 pr-2 font-mono text-xs font-medium text-primary">
                           {item.part_number}
                         </td>
@@ -561,7 +729,7 @@ export function PartsPage() {
                     ))}
                     {Array.from({ length: emptyRowCount }).map((_, idx) => (
                       <tr key={`empty-row-${idx}`} className="h-[45px] border-b border-border/50">
-                        <td colSpan={7} className="px-0 py-0" />
+                        <td colSpan={8} className="px-0 py-0" />
                       </tr>
                     ))}
                   </>
@@ -633,7 +801,148 @@ export function PartsPage() {
           </div>
         </div>
       </div>
+
+      <LinkToProjectDialog
+        open={linkDialogOpen}
+        onOpenChange={setLinkDialogOpen}
+        selectedPartIds={selectedIds}
+        onComplete={() => setSelectedIds(new Set())}
+      />
     </div>
+  );
+}
+
+// --- 프로젝트 연결 다이얼로그 ---
+
+function LinkToProjectDialog({
+  open,
+  onOpenChange,
+  selectedPartIds,
+  onComplete,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  selectedPartIds: Set<string>;
+  onComplete: () => void;
+}) {
+  const { data: projects, isLoading } = useProjects();
+  const [search, setSearch] = useState("");
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+  const [isLinking, setIsLinking] = useState(false);
+
+  const filtered = useMemo(() => {
+    if (!projects) return [];
+    if (!search.trim()) return projects;
+    const q = search.trim().toLowerCase();
+    return projects.filter((p) => p.name.toLowerCase().includes(q));
+  }, [projects, search]);
+
+  // 다이얼로그 닫힐 때 상태 초기화
+  function handleOpenChange(next: boolean) {
+    if (!next) {
+      setSearch("");
+      setSelectedProjectId(null);
+    }
+    onOpenChange(next);
+  }
+
+  async function handleLink() {
+    if (!selectedProjectId) return;
+    setIsLinking(true);
+    try {
+      const partIds = [...selectedPartIds];
+      const results = await Promise.allSettled(
+        partIds.map((partId) => addPartToProject(selectedProjectId, partId)),
+      );
+      const succeeded = results.filter((r) => r.status === "fulfilled").length;
+      const failed = results.filter((r) => r.status === "rejected").length;
+      if (failed === 0) {
+        toast.success(`${succeeded}건의 부품이 프로젝트에 연결되었습니다`);
+      } else {
+        toast.warning(`${succeeded}건 성공, ${failed}건 실패`);
+      }
+      onComplete();
+      handleOpenChange(false);
+    } finally {
+      setIsLinking(false);
+    }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>프로젝트에 연결</DialogTitle>
+          <DialogDescription>
+            {selectedPartIds.size}건의 부품을 연결할 프로젝트를 선택하세요.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-3">
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="프로젝트 검색..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+
+          <div className="max-h-60 overflow-y-auto rounded-md border">
+            {isLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+              </div>
+            ) : filtered.length === 0 ? (
+              <p className="py-8 text-center text-sm text-muted-foreground">
+                {search ? "검색 결과가 없습니다" : "프로젝트가 없습니다"}
+              </p>
+            ) : (
+              filtered.map((project) => (
+                <label
+                  key={project.id}
+                  className={`flex cursor-pointer items-center gap-3 px-3 py-2.5 transition-colors hover:bg-muted/50 ${
+                    selectedProjectId === project.id ? "bg-muted" : ""
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="project"
+                    checked={selectedProjectId === project.id}
+                    onChange={() => setSelectedProjectId(project.id)}
+                    className="h-4 w-4 accent-primary"
+                  />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium">{project.name}</p>
+                    {project.description && (
+                      <p className="truncate text-xs text-muted-foreground">
+                        {project.description}
+                      </p>
+                    )}
+                  </div>
+                </label>
+              ))
+            )}
+          </div>
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={() => handleOpenChange(false)} disabled={isLinking}>
+            취소
+          </Button>
+          <Button
+            onClick={handleLink}
+            disabled={!selectedProjectId || isLinking}
+          >
+            {isLinking ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : null}
+            연결 ({selectedPartIds.size}건)
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 

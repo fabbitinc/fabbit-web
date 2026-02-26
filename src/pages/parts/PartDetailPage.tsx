@@ -1,8 +1,7 @@
-import { useState, useCallback } from "react";
+import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import {
-  ArrowLeft,
   Pencil,
   MoreHorizontal,
   Network,
@@ -18,6 +17,7 @@ import {
   Trash2,
   FileDown,
   ImageDown,
+  Clock,
   Paperclip,
   File,
   FileImage,
@@ -27,7 +27,6 @@ import {
   FileArchive,
   FileCode,
   FileAxis3d,
-  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -37,13 +36,17 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { usePartDetail, useUploadDrawing, useDeleteDrawing } from "@/api/hooks/useParts";
+import { usePartDetail, useUploadDrawing, useDeleteDrawing, useAttachFiles, useDetachFile } from "@/api/hooks/useParts";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import type {
   PartDetailResponse,
+  PartFileItem,
   BomChild,
   BomParent,
   RelatedSupplier,
 } from "@/api/types/parts";
+import { HistoryTimeline } from "./history/HistoryTimeline";
+import { MOCK_HISTORY } from "./history/mock-data";
 
 // --- 헬퍼 ---
 
@@ -617,9 +620,11 @@ function PropertiesTab({
 
 // BOM 탭
 function BomTab({
+  partId,
   children,
   parents,
 }: {
+  partId: string;
   children: BomChild[];
   parents: BomParent[];
 }) {
@@ -640,6 +645,7 @@ function BomTab({
               variant="ghost"
               size="sm"
               className="h-7 text-xs text-muted-foreground"
+              onClick={() => navigate(`/parts/${partId}/bom`)}
             >
               BOM 전체 보기 <ExternalLink className="h-3 w-3" />
             </Button>
@@ -691,12 +697,24 @@ function BomTab({
       </section>
 
       <section>
-        <h4 className="mb-3 flex items-center gap-2 text-sm font-medium text-foreground">
-          상위 부품
-          <span className="text-xs font-normal text-muted-foreground">
-            ({parents.length})
-          </span>
-        </h4>
+        <div className="mb-3 flex items-center justify-between">
+          <h4 className="flex items-center gap-2 text-sm font-medium text-foreground">
+            상위 부품
+            <span className="text-xs font-normal text-muted-foreground">
+              ({parents.length})
+            </span>
+          </h4>
+          {parents.length > 0 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 text-xs text-muted-foreground"
+              onClick={() => navigate(`/parts/${partId}/bom?direction=reverse`)}
+            >
+              역전개 보기 <ExternalLink className="h-3 w-3" />
+            </Button>
+          )}
+        </div>
         {parents.length === 0 ? (
           <div className="rounded-lg border border-dashed px-4 py-3">
             <div className="flex items-center gap-3">
@@ -746,14 +764,19 @@ function BomTab({
 }
 
 // 첨부 파일 탭
-function AttachmentsTab() {
-  const [files, setFiles] = useState<File[]>([]);
+function AttachmentsTab({
+  files,
+  onAttach,
+  isAttaching,
+  onDetach,
+}: {
+  files: PartFileItem[];
+  onAttach: (files: File[]) => void;
+  isAttaching: boolean;
+  onDetach: (fileId: string) => void;
+}) {
   const [isDragging, setIsDragging] = useState(false);
-
-  const addFiles = useCallback((newFiles: FileList | null) => {
-    if (!newFiles) return;
-    setFiles((prev) => [...prev, ...Array.from(newFiles)]);
-  }, []);
+  const [deleteTarget, setDeleteTarget] = useState<PartFileItem | null>(null);
 
   function handleDragOver(e: React.DragEvent) {
     e.preventDefault();
@@ -768,19 +791,30 @@ function AttachmentsTab() {
   function handleDrop(e: React.DragEvent) {
     e.preventDefault();
     setIsDragging(false);
-    addFiles(e.dataTransfer.files);
+    if (e.dataTransfer.files.length > 0) {
+      onAttach(Array.from(e.dataTransfer.files));
+    }
   }
 
   function handleClick() {
+    if (isAttaching) return;
     const input = document.createElement("input");
     input.type = "file";
     input.multiple = true;
-    input.onchange = () => addFiles(input.files);
+    input.onchange = () => {
+      if (input.files && input.files.length > 0) {
+        onAttach(Array.from(input.files));
+      }
+    };
     input.click();
   }
 
-  function removeFile(index: number) {
-    setFiles((prev) => prev.filter((_, i) => i !== index));
+  function formatDate(iso: string): string {
+    return new Date(iso).toLocaleDateString("ko-KR", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+    });
   }
 
   return (
@@ -788,36 +822,69 @@ function AttachmentsTab() {
       {/* 파일 목록 */}
       {files.length > 0 && (
         <div className="space-y-1.5">
-          {files.map((file, idx) => (
+          {files.map((file) => (
             <div
-              key={`${file.name}-${idx}`}
+              key={file.file_id}
               className="flex items-center justify-between rounded-lg border px-4 py-3 transition-colors hover:bg-muted/30"
             >
               <div className="flex items-center gap-3">
                 <div className="flex h-8 w-8 items-center justify-center rounded-md bg-muted">
-                  <FileIcon filename={file.name} />
+                  <FileIcon filename={file.original_name} />
                 </div>
                 <div>
                   <p className="text-sm font-medium text-foreground">
-                    {file.name}
+                    {file.original_name}
                   </p>
                   <p className="flex items-center gap-2 text-xs text-muted-foreground">
                     <span className="uppercase">
-                      {getFileExtension(file.name)}
+                      {getFileExtension(file.original_name)}
                     </span>
                     <span>·</span>
-                    <span>{formatFileSize(file.size)}</span>
+                    <span>{formatFileSize(file.file_size)}</span>
+                    <span>·</span>
+                    <span>{formatDate(file.created_at)}</span>
                   </p>
                 </div>
               </div>
-              <button
-                onClick={() => removeFile(idx)}
-                className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground/40 transition-colors hover:bg-muted hover:text-foreground"
-              >
-                <X className="h-3.5 w-3.5" />
-              </button>
+              <div className="flex items-center gap-1">
+                {file.file_url && (
+                  <button
+                    onClick={async () => {
+                      try {
+                        const res = await fetch(file.file_url!);
+                        const blob = await res.blob();
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement("a");
+                        a.href = url;
+                        a.download = file.original_name;
+                        a.click();
+                        URL.revokeObjectURL(url);
+                      } catch {
+                        toast.error("다운로드에 실패했습니다");
+                      }
+                    }}
+                    className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground/40 transition-colors hover:bg-muted hover:text-foreground"
+                  >
+                    <Download className="h-3.5 w-3.5" />
+                  </button>
+                )}
+                <button
+                  onClick={() => setDeleteTarget(file)}
+                  className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground/40 transition-colors hover:bg-destructive/10 hover:text-destructive"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                </button>
+              </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* 업로드 중 표시 */}
+      {isAttaching && (
+        <div className="flex items-center gap-3 rounded-lg border border-primary/20 bg-primary/5 px-4 py-3">
+          <Loader2 className="h-4 w-4 animate-spin text-primary" />
+          <p className="text-sm text-primary/70">파일을 업로드하고 있습니다...</p>
         </div>
       )}
 
@@ -828,13 +895,14 @@ function AttachmentsTab() {
         onDragOver={handleDragOver}
         onDragLeave={handleDragLeave}
         onDrop={handleDrop}
+        disabled={isAttaching}
         className={`group flex w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed transition-all ${
-          files.length === 0 ? "py-16" : "py-8"
+          files.length === 0 && !isAttaching ? "py-16" : "py-8"
         } ${
           isDragging
             ? "border-primary bg-primary/5"
             : "border-muted-foreground/15 hover:border-primary/40 hover:bg-muted/20"
-        }`}
+        } ${isAttaching ? "pointer-events-none opacity-50" : ""}`}
       >
         <div
           className={`mb-3 flex h-12 w-12 items-center justify-center rounded-full transition-colors ${
@@ -870,6 +938,20 @@ function AttachmentsTab() {
           파일을 드래그하거나 클릭하여 업로드
         </p>
       </button>
+
+      {/* 삭제 확인 다이얼로그 */}
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
+        title="첨부 파일 삭제"
+        description={`"${deleteTarget?.original_name}"을(를) 삭제하시겠습니까?`}
+        confirmLabel="삭제"
+        variant="destructive"
+        onConfirm={() => {
+          if (deleteTarget) onDetach(deleteTarget.file_id);
+          setDeleteTarget(null);
+        }}
+      />
     </div>
   );
 }
@@ -916,11 +998,14 @@ function SuppliersTab({ suppliers }: { suppliers: RelatedSupplier[] }) {
   );
 }
 
-// BACKLOG: 이력 탭 — Part의 리비전 이력(Rev.A→B 변경 사유) 및 감사 로그(속성 변경, 첨부 추가 등) 표시. 백엔드 리비전/감사 API 설계 후 구현.
+// 이력 탭
+function HistoryTab() {
+  return <HistoryTimeline entries={MOCK_HISTORY} />;
+}
 
 // --- 메인 컴포넌트 ---
 
-type TabKey = "properties" | "bom" | "attachments" | "suppliers";
+type TabKey = "properties" | "bom" | "attachments" | "suppliers" | "history";
 
 const TABS: {
   key: TabKey;
@@ -933,12 +1018,13 @@ const TABS: {
     key: "bom",
     label: "BOM",
     icon: Network,
-    count: (i) => i.children.length,
+    count: (i) => i.children.length + i.parents.length,
   },
   {
     key: "attachments",
     label: "첨부 파일",
     icon: Paperclip,
+    count: (i) => i.files?.length ?? 0,
   },
   {
     key: "suppliers",
@@ -946,6 +1032,7 @@ const TABS: {
     icon: Building2,
     count: (i) => i.suppliers.length,
   },
+  { key: "history", label: "이력", icon: Clock },
 ];
 
 export function PartDetailPage() {
@@ -956,19 +1043,19 @@ export function PartDetailPage() {
   const { data: item, isLoading, isError } = usePartDetail(partId);
   const uploadDrawing = useUploadDrawing(partId);
   const deleteDrawing = useDeleteDrawing(partId);
+  const attachFiles = useAttachFiles(partId);
+  const detachFile = useDetachFile(partId);
 
   // 로딩 상태
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background px-6 py-8">
         <div className="dev-page-container">
-          <button
-            onClick={() => navigate("/parts")}
-            className="mb-8 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            부품 관리
-          </button>
+          <div className="mb-8 flex items-center gap-1.5 text-sm">
+            <button onClick={() => navigate("/parts")} className="text-muted-foreground hover:text-primary transition-colors">부품 관리</button>
+            <span className="text-muted-foreground/40">/</span>
+            <span className="text-muted-foreground/50">...</span>
+          </div>
           <div className="flex flex-col items-center justify-center py-20">
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             <p className="mt-3 text-sm text-muted-foreground">불러오는 중...</p>
@@ -983,13 +1070,11 @@ export function PartDetailPage() {
     return (
       <div className="min-h-screen bg-background px-6 py-8">
         <div className="dev-page-container">
-          <button
-            onClick={() => navigate("/parts")}
-            className="mb-8 inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            부품 관리
-          </button>
+          <div className="mb-8 flex items-center gap-1.5 text-sm">
+            <button onClick={() => navigate("/parts")} className="text-muted-foreground hover:text-primary transition-colors">부품 관리</button>
+            <span className="text-muted-foreground/40">/</span>
+            <span className="text-muted-foreground/50">알 수 없음</span>
+          </div>
           <EmptyBlock message="해당하는 부품을 찾을 수 없습니다" />
         </div>
       </div>
@@ -998,15 +1083,11 @@ export function PartDetailPage() {
 
   return (
     <div className="min-h-full">
-      {/* 네비게이션 */}
-      <div className="mb-4">
-        <button
-          onClick={() => navigate("/parts")}
-          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          부품 관리
-        </button>
+      {/* 브레드크럼 네비게이션 */}
+      <div className="mb-4 flex items-center gap-1.5 text-sm">
+        <button onClick={() => navigate("/parts")} className="text-muted-foreground hover:text-primary transition-colors">부품 관리</button>
+        <span className="text-muted-foreground/40">/</span>
+        <span className="font-semibold text-foreground">{item.part_number}</span>
       </div>
 
       {/* 비주얼 헤더 카드 */}
@@ -1056,10 +1137,18 @@ export function PartDetailPage() {
         />
       )}
       {activeTab === "bom" && (
-        <BomTab children={item.children} parents={item.parents} />
+        <BomTab partId={partId!} children={item.children} parents={item.parents} />
       )}
-      {activeTab === "attachments" && <AttachmentsTab />}
+      {activeTab === "attachments" && (
+        <AttachmentsTab
+          files={item.files ?? []}
+          onAttach={(files) => attachFiles.mutate(files)}
+          isAttaching={attachFiles.isPending}
+          onDetach={(fileId) => detachFile.mutate(fileId)}
+        />
+      )}
       {activeTab === "suppliers" && <SuppliersTab suppliers={item.suppliers} />}
+      {activeTab === "history" && <HistoryTab />}
     </div>
   );
 }

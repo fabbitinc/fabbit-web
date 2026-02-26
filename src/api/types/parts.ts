@@ -33,6 +33,21 @@ export interface ListPartsParams {
   limit?: number;
 }
 
+// --- Part 첨부 파일 ---
+
+export interface PartFileItem {
+  file_id: string;
+  original_name: string;
+  content_type: string;
+  file_size: number;
+  file_url: string | null;
+  created_at: string;
+}
+
+export interface AttachFilesRequest {
+  file_ids: string[];
+}
+
 // --- Part 상세 ---
 
 export interface PartDetailResponse {
@@ -52,6 +67,7 @@ export interface PartDetailResponse {
   parents: BomParent[];
   drawing: RelatedDrawing | null;
   suppliers: RelatedSupplier[];
+  files: PartFileItem[];
 }
 
 export interface BomChild {
@@ -90,18 +106,42 @@ export interface RelatedSupplier {
 }
 
 export interface BomTreeNode {
+  id: string;
   part_number: string;
   name: string | null;
+  revision: string;
+  material: string | null;
+  unit: string | null;
+  category: string | null;
+  lifecycle_state: string | null;
   quantity: number;
-  reference_designator: string | null;
   children: BomTreeNode[];
 }
 
 export interface BomTreeResponse {
   root: BomTreeNode;
+  direction: string;
+  total_count: number;
 }
 
 // POST /api/v1/parts/{part_id}/drawings
+
+// --- 내보내기 ---
+
+export interface ExportPartsParams {
+  search?: string;
+  category?: string;
+  lifecycle_state?: string;
+  has_drawing?: boolean;
+  has_children?: boolean;
+  mapping_id?: string;
+  part_ids?: string[]; // 선택 내려받기용
+}
+
+export interface ExportBomParams {
+  direction?: "forward" | "reverse";
+  mapping_id?: string;
+}
 
 export interface RegisterDrawingRequest {
   file_id: string;
