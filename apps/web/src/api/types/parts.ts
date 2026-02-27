@@ -29,6 +29,7 @@ export interface ListPartsParams {
   lifecycle_state?: string;
   has_drawing?: boolean;
   has_children?: boolean;
+  project_id?: string;
   offset?: number;
   limit?: number;
 }

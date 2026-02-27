@@ -4,8 +4,14 @@ export type ChangeRequestStatus = "open" | "closed" | "merged";
 export type ChangeRequestType = "issue" | "pr";
 
 export interface ChangeLabel {
+  id?: string;
   name: string;
-  color: string; // tailwind bg class
+  colorHex: string;
+}
+
+export interface ChangeAssignee {
+  id?: string;
+  name: string;
 }
 
 export type TimelineEventType =
@@ -23,7 +29,7 @@ export interface TimelineEvent {
   type: TimelineEventType;
   author: string;
   createdAt: string;
-  content?: string;
+  content?: string | Record<string, unknown> | null;
   label?: string;
   assignee?: string;
   ref?: string;
@@ -53,20 +59,20 @@ export interface ChangeRequest {
   author: string;
   createdAt: string;
   labels: ChangeLabel[];
-  assignees: string[];
-  description: string;
+  assignees: ChangeAssignee[];
+  description: Record<string, unknown> | string;
   timeline: TimelineEvent[];
   attachments: CRAttachment[];
   relatedParts: CRRelatedPart[];
 }
 
 const CHANGE_LABELS: Record<string, ChangeLabel> = {
-  설계변경: { name: "설계변경", color: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300" },
-  BOM변경: { name: "BOM변경", color: "bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300" },
-  재질변경: { name: "재질변경", color: "bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300" },
-  긴급: { name: "긴급", color: "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300" },
-  리뷰필요: { name: "리뷰필요", color: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300" },
-  공정변경: { name: "공정변경", color: "bg-teal-100 text-teal-700 dark:bg-teal-900 dark:text-teal-300" },
+  설계변경: { name: "설계변경", colorHex: "#3b82f6" },
+  BOM변경: { name: "BOM변경", colorHex: "#8b5cf6" },
+  재질변경: { name: "재질변경", colorHex: "#f59e0b" },
+  긴급: { name: "긴급", colorHex: "#ef4444" },
+  리뷰필요: { name: "리뷰필요", colorHex: "#eab308" },
+  공정변경: { name: "공정변경", colorHex: "#14b8a6" },
 };
 
 export const MOCK_CHANGE_REQUESTS: ChangeRequest[] = [
@@ -79,7 +85,7 @@ export const MOCK_CHANGE_REQUESTS: ChangeRequest[] = [
     author: "김설계",
     createdAt: "2025-02-25T09:30:00",
     labels: [CHANGE_LABELS["설계변경"], CHANGE_LABELS["리뷰필요"]],
-    assignees: ["이엔지", "박관리"],
+    assignees: [{ name: "이엔지" }, { name: "박관리" }],
     description: "HSG-002 Rev.C 변경사항을 양산 도면에 반영합니다.\n\n### 변경 내용\n- 체결부 공차: ±0.05 → ±0.03\n- 방열핀 추가 (4ea)\n- 표면처리 변경: 아노다이징 → 니켈도금",
     attachments: [
       { id: "a1", name: "HSG-002_RevC_도면.pdf", size: "2.4 MB", type: "pdf", uploadedBy: "김설계", uploadedAt: "2025-02-25T09:30:00" },
@@ -110,7 +116,7 @@ export const MOCK_CHANGE_REQUESTS: ChangeRequest[] = [
     author: "이엔지",
     createdAt: "2025-02-18T10:00:00",
     labels: [CHANGE_LABELS["BOM변경"]],
-    assignees: ["김설계"],
+    assignees: [{ name: "김설계" }],
     description: "FRAME-ASM 하위 BOM에 실리콘 가스켓(GKT-010)을 추가합니다.\n\n방수 등급 IP67 대응을 위한 필수 부품 추가.",
     attachments: [
       { id: "a4", name: "FRAME-ASM_BOM_변경안.xlsx", size: "128 KB", type: "xlsx", uploadedBy: "이엔지", uploadedAt: "2025-02-18T10:00:00" },
@@ -137,7 +143,7 @@ export const MOCK_CHANGE_REQUESTS: ChangeRequest[] = [
     author: "박관리",
     createdAt: "2025-02-10T11:00:00",
     labels: [CHANGE_LABELS["재질변경"]],
-    assignees: ["이엔지", "김설계"],
+    assignees: [{ name: "이엔지" }, { name: "김설계" }],
     description: "SFT-200 재질을 S45C에서 SCM440으로 변경하면 원가 절감이 가능한지 검토 요청.\n\n예상 원가 절감: 부품당 약 ₩2,300",
     attachments: [
       { id: "a5", name: "SFT-200_강도해석_보고서.pdf", size: "5.1 MB", type: "pdf", uploadedBy: "이엔지", uploadedAt: "2025-02-12T16:30:00" },
@@ -163,7 +169,7 @@ export const MOCK_CHANGE_REQUESTS: ChangeRequest[] = [
     author: "김설계",
     createdAt: "2025-01-20T10:00:00",
     labels: [CHANGE_LABELS["설계변경"]],
-    assignees: ["이엔지", "박관리"],
+    assignees: [{ name: "이엔지" }, { name: "박관리" }],
     description: "Drive Unit Gen4 초기 설계안 리뷰.\n\n### 주요 결정 사항\n- 모터: BLDC 400W\n- 감속기: 하모닉 50:1\n- 하우징: 알루미늄 다이캐스팅",
     attachments: [],
     relatedParts: [

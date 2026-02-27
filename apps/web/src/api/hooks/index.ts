@@ -4,3 +4,5 @@ export * from "./useItems";
 export * from "./useAttributes";
 export * from "./useParts";
 export * from "./useDashboard";
+export * from "./useIssues";
+export * from "./useMembers";

@@ -48,33 +48,102 @@ function toSlug(name: string): string {
 // 서브도메인 유효성 검사
 const RESERVED_SUBDOMAINS = [
   // 인프라 / 시스템
-  "www", "www1", "www2", "web", "site",
-  "api", "app", "cdn", "static", "assets", "media",
-  "mail", "smtp", "imap", "pop", "mx",
-  "ftp", "sftp", "ssh",
-  "ns1", "ns2", "ns3", "ns4", "dns",
-  "vpn", "proxy", "gateway",
+  "www",
+  "www1",
+  "www2",
+  "web",
+  "site",
+  "api",
+  "app",
+  "cdn",
+  "static",
+  "assets",
+  "media",
+  "mail",
+  "smtp",
+  "imap",
+  "pop",
+  "mx",
+  "ftp",
+  "sftp",
+  "ssh",
+  "ns1",
+  "ns2",
+  "ns3",
+  "ns4",
+  "dns",
+  "vpn",
+  "proxy",
+  "gateway",
   // 환경
-  "dev", "staging", "test", "qa", "uat", "sandbox",
-  "prod", "production", "preview", "canary",
-  "local", "localhost",
+  "dev",
+  "staging",
+  "test",
+  "qa",
+  "uat",
+  "sandbox",
+  "prod",
+  "production",
+  "preview",
+  "canary",
+  "local",
+  "localhost",
   // 서비스 / 내부 도구
-  "admin", "dashboard", "console", "panel",
-  "auth", "login", "signup", "register", "sso", "oauth",
-  "billing", "payment", "checkout",
-  "help", "support", "docs", "wiki", "faq",
-  "blog", "news", "press",
-  "status", "health", "monitor", "metrics", "grafana",
+  "admin",
+  "dashboard",
+  "console",
+  "panel",
+  "auth",
+  "login",
+  "signup",
+  "register",
+  "sso",
+  "oauth",
+  "billing",
+  "payment",
+  "checkout",
+  "help",
+  "support",
+  "docs",
+  "wiki",
+  "faq",
+  "blog",
+  "news",
+  "press",
+  "status",
+  "health",
+  "monitor",
+  "metrics",
+  "grafana",
   // 브랜드 보호
-  "fabbit", "fabbitinc", "fabbitapp",
+  "fabbit",
+  "fabbitinc",
+  "fabbitapp",
+  "fabbit1",
+  "fabbit2",
+  "fabbit3",
   // 악용 방지
-  "abuse", "spam", "phishing", "security",
-  "postmaster", "webmaster", "hostmaster",
-  "noreply", "no-reply", "mailer-daemon",
-  "root", "sysadmin", "administrator",
+  "abuse",
+  "spam",
+  "phishing",
+  "security",
+  "postmaster",
+  "webmaster",
+  "hostmaster",
+  "noreply",
+  "no-reply",
+  "mailer-daemon",
+  "root",
+  "sysadmin",
+  "administrator",
   // 기타
-  "internal", "intranet", "extranet",
-  "download", "downloads", "update", "updates",
+  "internal",
+  "intranet",
+  "extranet",
+  "download",
+  "downloads",
+  "update",
+  "updates",
 ];
 
 interface SlugValidation {
@@ -84,13 +153,23 @@ interface SlugValidation {
 
 function validateSubdomain(value: string): SlugValidation {
   if (!value) return { valid: false };
-  if (value.length < 2) return { valid: false, error: "2자 이상 입력해 주세요" };
-  if (value.length > 63) return { valid: false, error: "63자 이하로 입력해 주세요" };
-  if (/^-|-$/.test(value)) return { valid: false, error: "하이픈(-)으로 시작하거나 끝날 수 없습니다" };
-  if (/--/.test(value)) return { valid: false, error: "하이픈(-)을 연속으로 사용할 수 없습니다" };
-  if (!/^[a-z0-9-]+$/.test(value)) return { valid: false, error: "영문 소문자, 숫자, 하이픈(-)만 사용할 수 있습니다" };
-  if (/^\d+$/.test(value)) return { valid: false, error: "숫자로만 구성할 수 없습니다" };
-  if (RESERVED_SUBDOMAINS.includes(value)) return { valid: false, error: "사용할 수 없는 주소입니다" };
+  if (value.length < 2)
+    return { valid: false, error: "2자 이상 입력해 주세요" };
+  if (value.length > 63)
+    return { valid: false, error: "63자 이하로 입력해 주세요" };
+  if (/^-|-$/.test(value))
+    return { valid: false, error: "하이픈(-)으로 시작하거나 끝날 수 없습니다" };
+  if (/--/.test(value))
+    return { valid: false, error: "하이픈(-)을 연속으로 사용할 수 없습니다" };
+  if (!/^[a-z0-9-]+$/.test(value))
+    return {
+      valid: false,
+      error: "영문 소문자, 숫자, 하이픈(-)만 사용할 수 있습니다",
+    };
+  if (/^\d+$/.test(value))
+    return { valid: false, error: "숫자로만 구성할 수 없습니다" };
+  if (RESERVED_SUBDOMAINS.includes(value))
+    return { valid: false, error: "사용할 수 없는 주소입니다" };
   return { valid: true };
 }
 
@@ -98,7 +177,8 @@ type SlugStatus = "idle" | "checking" | "available" | "taken" | "invalid";
 
 export function WorkspaceSetupPage() {
   const navigate = useNavigate();
-  const { workspaceData, setWorkspaceData } = useRegistrationStore();
+  const { workspaceData, setWorkspaceData, scopedToken } =
+    useRegistrationStore();
   const [slugStatus, setSlugStatus] = useState<SlugStatus>("idle");
   const [slugError, setSlugError] = useState<string>();
   const [slugTouched, setSlugTouched] = useState(false);
@@ -171,7 +251,8 @@ export function WorkspaceSetupPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!workspaceData.organizationName.trim() || !workspaceData.slug.trim()) return;
+    if (!workspaceData.organizationName.trim() || !workspaceData.slug.trim())
+      return;
     if (slugStatus !== "available") return;
 
     navigate("/plan");
@@ -194,7 +275,13 @@ export function WorkspaceSetupPage() {
         <div className="relative z-10">
           <div className="mb-8 flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 backdrop-blur-sm border border-white/20">
-              <svg className="h-6 w-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg
+                className="h-6 w-6 text-white"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
                 <path d="M12 2L2 7l10 5 10-5-10-5z" />
                 <path d="M2 17l10 5 10-5" />
                 <path d="M2 12l10 5 10-5" />
@@ -204,11 +291,13 @@ export function WorkspaceSetupPage() {
           </div>
 
           <h2 className="mb-4 text-3xl font-bold leading-tight">
-            팀의 공간을<br />
+            팀의 공간을
+            <br />
             만들어보세요.
           </h2>
           <p className="text-blue-100 leading-relaxed opacity-90">
-            워크스페이스는 팀의 모든 활동이 이루어지는<br />
+            워크스페이스는 팀의 모든 활동이 이루어지는
+            <br />
             공간입니다. 조직에 맞게 설정하세요.
           </p>
         </div>
@@ -217,7 +306,9 @@ export function WorkspaceSetupPage() {
       {/* Right Column: Form */}
       <div className="flex flex-col justify-center p-8 md:p-12 bg-white">
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">워크스페이스 설정</h1>
+          <h1 className="text-2xl font-bold text-gray-900">
+            워크스페이스 설정
+          </h1>
           <p className="mt-2 text-sm text-gray-500">
             조직 정보를 입력해 주세요.
           </p>
@@ -226,7 +317,10 @@ export function WorkspaceSetupPage() {
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* 조직명 */}
           <div className="space-y-1.5">
-            <Label htmlFor="orgName" className="text-sm font-medium text-gray-700">
+            <Label
+              htmlFor="orgName"
+              className="text-sm font-medium text-gray-700"
+            >
               조직명
             </Label>
             <Input
@@ -242,7 +336,10 @@ export function WorkspaceSetupPage() {
           {/* 워크스페이스 주소 (slug) */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <Label htmlFor="slug" className="text-sm font-medium text-gray-700">
+              <Label
+                htmlFor="slug"
+                className="text-sm font-medium text-gray-700"
+              >
                 워크스페이스 주소
               </Label>
               {slugError && (
@@ -255,9 +352,14 @@ export function WorkspaceSetupPage() {
             <div
               className={cn(
                 "flex items-center h-11 rounded-md border bg-gray-50 transition-all focus-within:bg-white focus-within:ring-[3px]",
-                slugStatus === "available" && "border-green-500 focus-within:border-green-500 focus-within:ring-green-500/20",
-                (slugStatus === "taken" || slugStatus === "invalid") && "border-red-300 focus-within:border-red-400 focus-within:ring-red-400/20",
-                slugStatus !== "available" && slugStatus !== "taken" && slugStatus !== "invalid" && "border-gray-200 focus-within:border-blue-500 focus-within:ring-blue-500/20",
+                slugStatus === "available" &&
+                  "border-green-500 focus-within:border-green-500 focus-within:ring-green-500/20",
+                (slugStatus === "taken" || slugStatus === "invalid") &&
+                  "border-red-300 focus-within:border-red-400 focus-within:ring-red-400/20",
+                slugStatus !== "available" &&
+                  slugStatus !== "taken" &&
+                  slugStatus !== "invalid" &&
+                  "border-gray-200 focus-within:border-blue-500 focus-within:ring-blue-500/20",
               )}
             >
               <input
@@ -267,7 +369,7 @@ export function WorkspaceSetupPage() {
                 value={workspaceData.slug}
                 onChange={(e) => handleSlugChange(e.target.value)}
                 className="flex-1 h-full px-3 bg-transparent text-sm outline-none placeholder:text-gray-400"
-                />
+              />
               <div className="flex items-center gap-2 pr-3 text-sm text-gray-400 whitespace-nowrap select-none border-l border-gray-200 pl-3 h-full bg-gray-100 rounded-r-md">
                 .fabbit.app
                 {slugStatus === "checking" && (
@@ -285,16 +387,20 @@ export function WorkspaceSetupPage() {
 
           {/* 산업 분야 */}
           <div className="space-y-1.5">
-            <Label className="text-sm font-medium text-gray-700">산업 분야</Label>
+            <Label className="text-sm font-medium text-gray-700">
+              산업 분야
+            </Label>
             {isCustomIndustry ? (
               <div className="relative">
                 <Input
                   type="text"
                   placeholder="산업 분야를 입력하세요"
                   value={workspaceData.industry}
-                  onChange={(e) => setWorkspaceData({ industry: e.target.value })}
+                  onChange={(e) =>
+                    setWorkspaceData({ industry: e.target.value })
+                  }
                   className="h-11 pr-9 bg-gray-50 border-gray-200 focus:bg-white transition-colors"
-                      autoFocus
+                  autoFocus
                 />
                 <button
                   type="button"
@@ -319,7 +425,7 @@ export function WorkspaceSetupPage() {
                     setWorkspaceData({ industry: value });
                   }
                 }}
-                >
+              >
                 <SelectTrigger className="h-11 bg-gray-50 border-gray-200 focus:bg-white transition-colors">
                   <SelectValue placeholder="산업 분야를 선택하세요" />
                 </SelectTrigger>
@@ -343,7 +449,7 @@ export function WorkspaceSetupPage() {
                   key={option.value}
                   type="button"
                   onClick={() => setWorkspaceData({ teamSize: option.value })}
-                      className={cn(
+                  className={cn(
                     "h-10 rounded-lg border text-sm font-medium transition-all",
                     workspaceData.teamSize === option.value
                       ? "bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-600/20"
@@ -367,7 +473,7 @@ export function WorkspaceSetupPage() {
                   value={workspaceData.role}
                   onChange={(e) => setWorkspaceData({ role: e.target.value })}
                   className="h-11 pr-9 bg-gray-50 border-gray-200 focus:bg-white transition-colors"
-                      autoFocus
+                  autoFocus
                 />
                 <button
                   type="button"
@@ -392,7 +498,7 @@ export function WorkspaceSetupPage() {
                     setWorkspaceData({ role: value });
                   }
                 }}
-                >
+              >
                 <SelectTrigger className="h-11 bg-gray-50 border-gray-200 focus:bg-white transition-colors">
                   <SelectValue placeholder="직무를 선택하세요" />
                 </SelectTrigger>
@@ -408,15 +514,22 @@ export function WorkspaceSetupPage() {
           </div>
 
           {/* 버튼 */}
-          <div className="flex items-center justify-between pt-2">
-            <Button
-              type="button"
-              variant="outline"
-              className="h-12 px-8 text-base font-semibold border-gray-200 hover:bg-gray-50 hover:border-gray-300 transition-all"
-              onClick={() => navigate("/signup")}
-            >
-              이전
-            </Button>
+          <div
+            className={cn(
+              "flex items-center pt-2",
+              scopedToken ? "justify-end" : "justify-between",
+            )}
+          >
+            {!scopedToken && (
+              <Button
+                type="button"
+                variant="outline"
+                className="h-12 px-8 text-base font-semibold border-gray-200 hover:bg-gray-50 hover:border-gray-300 transition-all"
+                onClick={() => navigate("/signup")}
+              >
+                이전
+              </Button>
+            )}
             <Button
               type="submit"
               className="h-12 px-8 bg-blue-600 hover:bg-blue-700 text-base font-semibold shadow-lg shadow-blue-600/20 transition-all hover:shadow-blue-600/30"

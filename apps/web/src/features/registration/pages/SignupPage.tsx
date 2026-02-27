@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Navigate, Link } from "react-router-dom";
 import { Eye, EyeOff, Loader2, Check, X } from "lucide-react";
 import { Turnstile } from "@marsidev/react-turnstile";
 import { Button } from "@/components/ui/button";
@@ -62,7 +62,12 @@ type EmailStatus = "idle" | "invalid" | "checking" | "available" | "taken";
 export function SignupPage() {
   const navigate = useNavigate();
   const { loginWithProvider, isLoading } = useAuthStore();
-  const { signupData, setSignupData } = useRegistrationStore();
+  const { signupData, setSignupData, scopedToken } = useRegistrationStore();
+
+  // scopedToken이 있으면 이미 로그인된 상태 → workspace로 리다이렉트
+  if (scopedToken) {
+    return <Navigate to="/workspace" replace />;
+  }
 
   const [name, setName] = useState(signupData.name);
   const [email, setEmail] = useState(signupData.email);
@@ -419,6 +424,13 @@ export function SignupPage() {
             <KakaoIcon className="h-5 w-5" />
           </Button>
         </div>
+
+        <p className="text-center text-sm text-gray-500">
+          이미 계정이 있으신가요?{" "}
+          <Link to="/login" className="font-medium text-blue-600 hover:text-blue-700 transition-colors">
+            로그인
+          </Link>
+        </p>
       </div>
     </div>
   );

@@ -1,4 +1,4 @@
-import { useEditor, EditorContent, type Editor } from "@tiptap/react";
+import { useEditor, EditorContent, type Content, type Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
 import {
@@ -136,10 +136,12 @@ function EditorToolbar({ editor }: { editor: Editor }) {
 // ── 메인 에디터 ────────────────────────────────────────────
 
 export interface TiptapEditorProps {
-  content?: string;
+  content?: Content;
   placeholder?: string;
   editable?: boolean;
   onChange?: (html: string) => void;
+  onChangeJson?: (content: Content) => void;
+  onChangeText?: (text: string) => void;
   className?: string;
   /** 툴바 숨기기 (읽기 전용 등) */
   hideToolbar?: boolean;
@@ -152,6 +154,8 @@ export function TiptapEditor({
   placeholder = "내용을 입력하세요...",
   editable = true,
   onChange,
+  onChangeJson,
+  onChangeText,
   className,
   hideToolbar = false,
   minHeight = 120,
@@ -165,6 +169,8 @@ export function TiptapEditor({
     editable,
     onUpdate: ({ editor: e }) => {
       onChange?.(e.getHTML());
+      onChangeJson?.(e.getJSON());
+      onChangeText?.(e.getText());
     },
   });
 

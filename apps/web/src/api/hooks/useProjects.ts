@@ -9,20 +9,25 @@ import {
   getProjectParts,
   addPartToProject,
   removePartFromProject,
+  getProjectMembers,
+  addProjectMembers,
+  removeProjectMembers,
 } from "../project";
-import type { CreateProjectRequest, UpdateProjectRequest } from "../types";
+import type { CreateProjectRequest, ListProjectsParams, UpdateProjectRequest } from "../types";
 
 export const PROJECTS_QUERY_KEY = ["projects"] as const;
 export const PROJECT_QUERY_KEY = ["project"] as const;
 export const PROJECT_PARTS_QUERY_KEY = ["projectParts"] as const;
+export const PROJECT_MEMBERS_QUERY_KEY = ["projectMembers"] as const;
 
 /**
  * 프로젝트 목록 조회 훅
  */
-export function useProjects() {
+export function useProjects(params?: ListProjectsParams, options?: { enabled?: boolean }) {
   return useQuery({
-    queryKey: PROJECTS_QUERY_KEY,
-    queryFn: getProjects,
+    queryKey: [...PROJECTS_QUERY_KEY, params],
+    queryFn: () => getProjects(params),
+    enabled: options?.enabled,
   });
 }
 
@@ -126,6 +131,44 @@ export function useRemovePartFromProject(projectId: string) {
     },
     onError: () => {
       toast.error("부품 연결 해제에 실패했습니다");
+    },
+  });
+}
+
+/** 프로젝트 멤버 목록 조회 훅 */
+export function useProjectMembers(projectId: string) {
+  return useQuery({
+    queryKey: [...PROJECT_MEMBERS_QUERY_KEY, projectId],
+    queryFn: () => getProjectMembers(projectId),
+  });
+}
+
+/** 프로젝트에 멤버 추가 뮤테이션 */
+export function useAddProjectMembers(projectId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (userIds: string[]) => addProjectMembers(projectId, userIds),
+    onSuccess: (data) => {
+      toast.success(`${data.count}명의 멤버를 추가했습니다`);
+      queryClient.invalidateQueries({ queryKey: [...PROJECT_MEMBERS_QUERY_KEY, projectId] });
+    },
+    onError: () => {
+      toast.error("멤버 추가에 실패했습니다");
+    },
+  });
+}
+
+/** 프로젝트에서 멤버 제거 뮤테이션 */
+export function useRemoveProjectMembers(projectId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (userIds: string[]) => removeProjectMembers(projectId, userIds),
+    onSuccess: () => {
+      toast.success("멤버를 제거했습니다");
+      queryClient.invalidateQueries({ queryKey: [...PROJECT_MEMBERS_QUERY_KEY, projectId] });
+    },
+    onError: () => {
+      toast.error("멤버 제거에 실패했습니다");
     },
   });
 }

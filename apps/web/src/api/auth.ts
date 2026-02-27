@@ -1,3 +1,4 @@
+import axios from "axios";
 import { apiClient } from "./client";
 import type {
   LoginRequest,
@@ -11,6 +12,13 @@ import type {
   SiteResponse,
   CheckEmailResponse,
   CheckSlugResponse,
+  VerifyInvitationResponse,
+  AcceptInvitationRequest,
+  AcceptInvitationResponse,
+  ScopedLoginResponse,
+  CreateOrganizationRequest,
+  CreateOrganizationResponse,
+  SwitchOrgRequest,
 } from "./types";
 
 /**
@@ -94,5 +102,68 @@ export async function checkSlug(slug: string): Promise<CheckSlugResponse> {
   const response = await apiClient.get<CheckSlugResponse>("/api/v1/auth/check-slug", {
     params: { slug },
   });
+  return response.data;
+}
+
+/**
+ * 초대 토큰 검증
+ * GET /api/v1/auth/invitations/verify?token=...
+ */
+export async function verifyInvitation(token: string): Promise<VerifyInvitationResponse> {
+  const response = await apiClient.get<VerifyInvitationResponse>("/api/v1/auth/invitations/verify", {
+    params: { token },
+  });
+  return response.data;
+}
+
+/**
+ * 초대 수락
+ * POST /api/v1/auth/accept-invitation
+ */
+export async function acceptInvitation(request: AcceptInvitationRequest): Promise<AcceptInvitationResponse> {
+  const response = await apiClient.post<AcceptInvitationResponse>("/api/v1/auth/accept-invitation", request);
+  return response.data;
+}
+
+/**
+ * 조직 전환
+ * POST /api/v1/auth/switch-org
+ */
+export async function switchOrg(request: SwitchOrgRequest): Promise<LoginResponse> {
+  const response = await apiClient.post<LoginResponse>("/api/v1/auth/switch-org", request);
+  return response.data;
+}
+
+/**
+ * register 도메인 전용 로그인 (scoped_token 반환)
+ * POST /api/v1/auth/login (slug 없이 호출 시)
+ */
+export async function loginScoped(request: LoginRequest): Promise<ScopedLoginResponse> {
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+  const response = await axios.post<ScopedLoginResponse>(`${API_BASE_URL}/api/v1/auth/login`, request, {
+    headers: { "Content-Type": "application/json" },
+  });
+  return response.data;
+}
+
+/**
+ * 조직 생성 (scopedToken 인증)
+ * POST /api/v1/auth/organizations
+ */
+export async function createOrganization(
+  request: CreateOrganizationRequest,
+  scopedToken: string,
+): Promise<CreateOrganizationResponse> {
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+  const response = await axios.post<CreateOrganizationResponse>(
+    `${API_BASE_URL}/api/v1/auth/organizations`,
+    request,
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${scopedToken}`,
+      },
+    },
+  );
   return response.data;
 }

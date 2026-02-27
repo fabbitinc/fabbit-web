@@ -14,5 +14,8 @@ export default defineConfig({
   server: {
     host: true,
     allowedHosts: [".lvh.me"],
+    fs: {
+      allow: [path.resolve(__dirname, "../..")],
+    },
   },
 })

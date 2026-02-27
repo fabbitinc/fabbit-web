@@ -24,6 +24,8 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { useAuthStore } from "@/stores/authStore";
+import { switchOrg } from "@/api";
+import { setAuthCookies } from "@/lib/auth-cookies";
 import { cn } from "@/lib/utils";
 
 function getInitials(name: string): string {
@@ -69,6 +71,22 @@ export function Header({ onToggleSideNav }: HeaderProps) {
   const { user, memberships, currentMembership, logout } = useAuthStore();
   const currentOrg = currentMembership?.organization;
   const [searchOpen, setSearchOpen] = useState(false);
+  const [switchingSlug, setSwitchingSlug] = useState<string | null>(null);
+
+  const APP_DOMAIN = import.meta.env.VITE_APP_DOMAIN;
+
+  const handleSwitchOrg = async (slug: string) => {
+    if (slug === currentOrg?.slug || switchingSlug) return;
+    setSwitchingSlug(slug);
+    try {
+      const response = await switchOrg({ slug });
+      setAuthCookies(response.tokens.access_token, response.tokens.refresh_token);
+      const protocol = window.location.protocol;
+      window.location.href = `${protocol}//${slug}.${APP_DOMAIN}/`;
+    } catch {
+      setSwitchingSlug(null);
+    }
+  };
 
   // "/" 키보드 단축키로 검색 Dialog 열기
   useEffect(() => {
@@ -178,25 +196,31 @@ export function Header({ onToggleSideNav }: HeaderProps) {
               <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
                 조직 전환
               </DropdownMenuLabel>
-              {memberships.map((m) => (
-                <DropdownMenuItem
-                  key={m.orgId}
-                  className="flex items-center gap-3 py-2"
-                >
-                  <InitialsAvatar name={m.organization.name} className="size-9" variant="rounded" />
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-foreground">
-                      {m.organization.name}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {getRoleLabel(m.role)}
-                    </p>
-                  </div>
-                  {currentOrg.id === m.organization.id && (
-                    <Check className="size-4" style={{ color: "var(--brand-500)" }} />
-                  )}
-                </DropdownMenuItem>
-              ))}
+              {memberships.map((m) => {
+                const isCurrent = currentOrg.id === m.organization.id;
+                const isSwitching = switchingSlug === m.organization.slug;
+                return (
+                  <DropdownMenuItem
+                    key={m.orgId}
+                    className={cn("flex items-center gap-3 py-2", isCurrent && "opacity-60")}
+                    disabled={isCurrent || !!switchingSlug}
+                    onClick={() => handleSwitchOrg(m.organization.slug)}
+                  >
+                    <InitialsAvatar name={m.organization.name} className="size-9" variant="rounded" />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium text-foreground">
+                        {m.organization.name}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {isSwitching ? "전환 중..." : getRoleLabel(m.role)}
+                      </p>
+                    </div>
+                    {isCurrent && (
+                      <Check className="size-4" style={{ color: "var(--brand-500)" }} />
+                    )}
+                  </DropdownMenuItem>
+                );
+              })}
             </DropdownMenuContent>
           </DropdownMenu>
         )}

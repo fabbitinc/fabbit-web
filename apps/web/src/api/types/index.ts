@@ -12,3 +12,5 @@ export * from "./synthesis";
 export * from "./ontology";
 export * from "./parts";
 export * from "./dashboard";
+export * from "./issue";
+export * from "./member";

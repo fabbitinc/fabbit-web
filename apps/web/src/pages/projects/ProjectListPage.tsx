@@ -4,15 +4,27 @@ import {
   Plus,
   Search,
   FolderKanban,
+  ChevronLeft,
+  ChevronRight,
   ArrowUpDown,
   ArrowUp,
   ArrowDown,
   Network,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useProjects, useCreateProject } from "@/api/hooks";
+import type { ListProjectsParams, ProjectDto } from "@/api/types";
 import {
   Dialog,
   DialogContent,
@@ -22,67 +34,18 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 
-// --- Mock 데이터 ---
-
-interface MockProject {
+interface ProjectRow {
   id: string;
   name: string;
   description: string | null;
   partCount: number;
-  createdAt: string;
 }
 
-const INITIAL_PROJECTS: MockProject[] = [
-  {
-    id: "drive-unit-gen4",
-    name: "Drive Unit Gen4",
-    description: "4세대 구동 유닛 개발 프로젝트. 기존 대비 효율 15% 향상 목표.",
-    partCount: 24,
-    createdAt: "2025-01-15",
-  },
-  {
-    id: "ev-inverter-rev2",
-    name: "EV Inverter Rev2",
-    description: "전기차 인버터 2차 리비전. IGBT 모듈 변경 및 방열 구조 개선.",
-    partCount: 18,
-    createdAt: "2025-02-01",
-  },
-  {
-    id: "robot-arm-v3",
-    name: "Robot Arm V3",
-    description: "산업용 로봇팔 3세대. 6축 관절 구조 및 감속기 모듈 재설계.",
-    partCount: 42,
-    createdAt: "2024-11-20",
-  },
-  {
-    id: "battery-pack-module",
-    name: "Battery Pack Module",
-    description: "배터리 팩 모듈 설계. 셀 배치 최적화 및 냉각 구조 검증.",
-    partCount: 9,
-    createdAt: "2025-01-28",
-  },
-  {
-    id: "sensor-housing-asm",
-    name: "Sensor Housing Assembly",
-    description: "센서 하우징 조립체. IP67 방수 규격 대응 설계 완료.",
-    partCount: 0,
-    createdAt: "2024-09-05",
-  },
-];
-
-// --- 헬퍼 ---
-
-function formatDate(dateString: string): string {
-  return new Date(dateString).toLocaleDateString("ko-KR", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-}
+const PAGE_SIZE_OPTIONS = [15, 30, 50];
 
 // --- 정렬 ---
 
-type SortKey = "name" | "partCount" | "createdAt";
+type SortKey = "name" | "partCount";
 type SortDir = "asc" | "desc";
 
 function SortableHeader({
@@ -129,18 +92,22 @@ function CreateProjectDialog({
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onCreate: (name: string, description: string) => void;
+  onCreate: (name: string, description: string) => Promise<void>;
 }) {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!name.trim()) return;
-    onCreate(name.trim(), description.trim());
-    setName("");
-    setDescription("");
-    onOpenChange(false);
+    try {
+      await onCreate(name.trim(), description.trim());
+      setName("");
+      setDescription("");
+      onOpenChange(false);
+    } catch {
+      return;
+    }
   }
 
   return (
@@ -191,37 +158,46 @@ function CreateProjectDialog({
 
 export function ProjectListPage() {
   const navigate = useNavigate();
-  const [projects, setProjects] = useState<MockProject[]>(INITIAL_PROJECTS);
+  const createProjectMutation = useCreateProject();
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(15);
   const [createOpen, setCreateOpen] = useState(false);
   const [sortKey, setSortKey] = useState<SortKey>("partCount");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
 
-  // 클라이언트 사이드 검색
-  const filtered = useMemo(() => {
-    if (!search.trim()) return projects;
-    const q = search.toLowerCase();
-    return projects.filter(
-      (p) =>
-        p.name.toLowerCase().includes(q) ||
-        p.description?.toLowerCase().includes(q),
-    );
-  }, [projects, search]);
+  const apiParams = useMemo<ListProjectsParams>(() => ({
+    search: search.trim() || undefined,
+    offset: (page - 1) * pageSize,
+    limit: pageSize,
+  }), [search, page, pageSize]);
+
+  const { data: projectsResponse, isLoading, isError, refetch } = useProjects(apiParams);
+  const totalCount = projectsResponse?.total ?? 0;
+  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
+  const safePage = Math.min(page, totalPages);
+
+  const projects = useMemo<ProjectRow[]>(() => {
+    return (projectsResponse?.items ?? []).map((project: ProjectDto) => ({
+      id: project.id,
+      name: project.name,
+      description: project.description,
+      partCount: project.partCount,
+    }));
+  }, [projectsResponse?.items]);
 
   // 정렬
   const sorted = useMemo(() => {
-    return [...filtered].sort((a, b) => {
-      let cmp: number;
+    return [...projects].sort((a, b) => {
+      let cmp = 0;
       if (sortKey === "name") {
         cmp = a.name.localeCompare(b.name, "ko");
       } else if (sortKey === "partCount") {
         cmp = a.partCount - b.partCount;
-      } else {
-        cmp = a[sortKey].localeCompare(b[sortKey]);
       }
       return sortDir === "asc" ? cmp : -cmp;
     });
-  }, [filtered, sortKey, sortDir]);
+  }, [projects, sortKey, sortDir]);
 
   function handleSort(key: SortKey) {
     if (sortKey === key) {
@@ -232,15 +208,11 @@ export function ProjectListPage() {
     }
   }
 
-  function handleCreate(name: string, description: string) {
-    const newProject: MockProject = {
-      id: `project-${Date.now()}`,
+  async function handleCreate(name: string, description: string) {
+    await createProjectMutation.mutateAsync({
       name,
       description: description || null,
-      partCount: 0,
-      createdAt: new Date().toISOString().split("T")[0],
-    };
-    setProjects((prev) => [newProject, ...prev]);
+    });
   }
 
   return (
@@ -266,7 +238,10 @@ export function ProjectListPage() {
           <Input
             placeholder="프로젝트 검색..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
             className="pl-10"
           />
         </div>
@@ -274,13 +249,28 @@ export function ProjectListPage() {
 
       {/* 테이블 */}
       <div className="overflow-hidden rounded-lg border bg-card shadow-sm">
+        {isLoading && (
+          <div className="flex h-64 items-center justify-center">
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          </div>
+        )}
+
+        {isError && !isLoading && (
+          <div className="flex h-64 flex-col items-center justify-center gap-3 px-4 text-center">
+            <p className="text-sm text-muted-foreground">프로젝트 목록을 불러오지 못했습니다.</p>
+            <Button variant="outline" size="sm" onClick={() => refetch()}>
+              다시 시도
+            </Button>
+          </div>
+        )}
+
+        {!isLoading && !isError && (
         <div className="overflow-x-auto">
           <table className="w-full text-sm table-fixed">
             <colgroup>
               <col />
-              <col style={{ width: "45%" }} />
+              <col style={{ width: "55%" }} />
               <col style={{ width: "80px" }} />
-              <col style={{ width: "15%" }} />
             </colgroup>
             <thead>
               <tr className="border-b bg-muted/50 text-left">
@@ -289,13 +279,12 @@ export function ProjectListPage() {
                   설명
                 </th>
                 <SortableHeader column="partCount" label="부품" sortKey={sortKey} sortDir={sortDir} onSort={handleSort} />
-                <SortableHeader column="createdAt" label="생성일" sortKey={sortKey} sortDir={sortDir} onSort={handleSort} />
               </tr>
             </thead>
             <tbody>
               {sorted.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="py-20 text-center">
+                  <td colSpan={3} className="py-20 text-center">
                     <EmptyState hasSearch={!!search.trim()} onCreateClick={() => setCreateOpen(true)} />
                   </td>
                 </tr>
@@ -326,22 +315,74 @@ export function ProjectListPage() {
                         <span className="text-sm text-muted-foreground/40">—</span>
                       )}
                     </td>
-                    <td className="py-2 pl-4 pr-2 text-muted-foreground text-sm">
-                      {formatDate(project.createdAt)}
-                    </td>
                   </tr>
                 ))
               )}
             </tbody>
           </table>
         </div>
+        )}
 
-        {/* 총 건수 */}
-        {sorted.length > 0 && (
-          <div className="border-t bg-muted/30 px-4 py-3">
-            <span className="text-xs text-muted-foreground">
-              총 <span className="font-semibold text-foreground">{sorted.length}</span>개 프로젝트
-            </span>
+        {!isLoading && !isError && (
+          <div className="flex items-center justify-between border-t bg-muted/30 px-4 py-3">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Select
+                value={String(pageSize)}
+                onValueChange={(v) => {
+                  setPageSize(Number(v));
+                  setPage(1);
+                }}
+              >
+                <SelectTrigger className="h-8 w-[80px] text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {PAGE_SIZE_OPTIONS.map((n) => (
+                    <SelectItem key={n} value={String(n)}>{n}개씩</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <span className="text-xs text-muted-foreground">
+                {totalCount > 0
+                  ? `${(safePage - 1) * pageSize + 1}-${Math.min(safePage * pageSize, totalCount)} / ${totalCount}건`
+                  : "0건"}
+              </span>
+            </div>
+            <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={safePage === 1}
+              >
+                <ChevronLeft />
+              </Button>
+              {getPageNumbers(safePage, totalPages).map((p, i) =>
+                p === "..." ? (
+                  <span key={`ellipsis-${i}`} className="flex h-8 w-8 items-center justify-center text-xs text-muted-foreground">
+                    ...
+                  </span>
+                ) : (
+                  <Button
+                    key={p}
+                    variant={p === safePage ? "default" : "ghost"}
+                    size="icon-sm"
+                    onClick={() => setPage(p as number)}
+                    className="text-xs"
+                  >
+                    {p}
+                  </Button>
+                ),
+              )}
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={safePage === totalPages}
+              >
+                <ChevronRight />
+              </Button>
+            </div>
           </div>
         )}
       </div>
@@ -379,4 +420,19 @@ function EmptyState({ hasSearch, onCreateClick }: { hasSearch: boolean; onCreate
       )}
     </div>
   );
+}
+
+function getPageNumbers(current: number, total: number): (number | "...")[] {
+  if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
+
+  const pages: (number | "...")[] = [1];
+  if (current > 3) pages.push("...");
+
+  const start = Math.max(2, current - 1);
+  const end = Math.min(total - 1, current + 1);
+  for (let i = start; i <= end; i++) pages.push(i);
+
+  if (current < total - 2) pages.push("...");
+  pages.push(total);
+  return pages;
 }

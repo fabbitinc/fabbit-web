@@ -1,3 +1,5 @@
+import { useState, useRef } from "react";
+import type { Content } from "@tiptap/react";
 import {
   CheckCircle2,
   XCircle,
@@ -8,7 +10,6 @@ import {
   Tag,
   UserPlus,
   Package,
-  Paperclip,
   FileText,
   FileSpreadsheet,
   Image,
@@ -21,7 +22,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { TiptapEditor } from "@/components/ui/tiptap-editor";
+import { LabelBadge } from "@fabbit/ui";
 import {
   type ChangeRequest,
   type TimelineEvent,
@@ -39,6 +44,7 @@ function getInitials(name: string): string {
 function timeAgo(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime();
   const minutes = Math.floor(diff / 60000);
+  if (minutes < 1) return "방금";
   if (minutes < 60) return `${minutes}분 전`;
   const hours = Math.floor(minutes / 60);
   if (hours < 24) return `${hours}시간 전`;
@@ -132,9 +138,16 @@ const STATUS_LABEL = {
 // 타임라인 이벤트 아이템
 // ============================================================
 
-function TimelineEventItem({ event }: { event: TimelineEvent }) {
+function TimelineEventItem({
+  event,
+  labelHex,
+}: {
+  event: TimelineEvent;
+  labelHex?: string;
+}) {
   // 댓글
   if (event.type === "comment") {
+    const isRichContent = event.content && typeof event.content === "object";
     return (
       <div className="flex gap-3">
         <div className="flex flex-col items-center">
@@ -153,9 +166,21 @@ function TimelineEventItem({ event }: { event: TimelineEvent }) {
               {timeAgo(event.createdAt)}
             </span>
           </div>
-          <div className="px-4 py-3 text-sm text-foreground/90 whitespace-pre-wrap leading-relaxed">
-            {event.content}
-          </div>
+          {isRichContent ? (
+            <div className="px-4 py-3">
+              <TiptapEditor
+                content={event.content as Content}
+                editable={false}
+                hideToolbar
+                minHeight={0}
+                className="border-0 bg-transparent"
+              />
+            </div>
+          ) : (
+            <div className="px-4 py-3 text-sm text-foreground/90 whitespace-pre-wrap leading-relaxed">
+              {typeof event.content === "string" ? event.content : null}
+            </div>
+          )}
         </div>
       </div>
     );
@@ -236,9 +261,14 @@ function TimelineEventItem({ event }: { event: TimelineEvent }) {
         <p className="flex-1 text-sm text-muted-foreground">
           <span className="font-medium text-foreground">{event.author}</span>
           {" 님이 라벨 "}
-          <Badge variant="secondary" className="mx-0.5 text-[10px] py-0 px-1.5">
-            {event.label}
-          </Badge>
+          {event.label ? (
+            <LabelBadge
+              label={event.label}
+              colorHex={labelHex ?? "#64748b"}
+              design="soft-4"
+              className="mx-0.5"
+            />
+          ) : null}
           {event.type === "label_added"
             ? "을(를) 추가했습니다"
             : "을(를) 제거했습니다"}
@@ -300,11 +330,42 @@ function TimelineEventItem({ event }: { event: TimelineEvent }) {
 export interface ChangeRequestDetailProps {
   cr: ChangeRequest;
   onBack: () => void;
+  onAddAssignee?: (assigneeId: string) => void;
+  onRemoveAssignee?: (assigneeId: string) => void;
+  onAddLabels?: (labelIds: string[]) => void;
+  onAddComment?: (body: Record<string, unknown>) => void;
+  isCommentPending?: boolean;
+  availableLabels?: { id: string; name: string; colorHex: string }[];
+  selectedLabelIds?: string[];
+  isMetaUpdating?: boolean;
 }
 
-export function ChangeRequestDetail({ cr, onBack }: ChangeRequestDetailProps) {
+export function ChangeRequestDetail({
+  cr,
+  onBack,
+  onAddAssignee,
+  onRemoveAssignee,
+  onAddLabels,
+  onAddComment,
+  isCommentPending,
+  availableLabels = [],
+  selectedLabelIds = [],
+  isMetaUpdating,
+}: ChangeRequestDetailProps) {
   const backLabel = cr.type === "pr" ? "변경 반영" : "이슈";
   const commentCount = cr.timeline.filter((e) => e.type === "comment").length;
+  const [assigneeInput, setAssigneeInput] = useState("");
+  const [labelPopoverOpen, setLabelPopoverOpen] = useState(false);
+  const [labelQuery, setLabelQuery] = useState("");
+  const [draftLabelIds, setDraftLabelIds] = useState<string[]>([]);
+  const [commentEditorKey, setCommentEditorKey] = useState(0);
+  const commentJsonRef = useRef<Content | null>(null);
+  const commentTextRef = useRef("");
+
+  const filteredLabels = availableLabels.filter((label) => {
+    if (!labelQuery.trim()) return true;
+    return label.name.toLowerCase().includes(labelQuery.toLowerCase());
+  });
 
   return (
     <div className="mx-auto max-w-[1160px]">
@@ -368,15 +429,30 @@ export function ChangeRequestDetail({ cr, onBack }: ChangeRequestDetailProps) {
                   작성자
                 </Badge>
               </div>
-              <div className="px-4 py-3 text-sm text-foreground/90 whitespace-pre-wrap leading-relaxed">
-                {cr.description}
+              <div className="px-4 py-3">
+                <TiptapEditor
+                  content={cr.description}
+                  editable={false}
+                  hideToolbar
+                  minHeight={0}
+                  className="border-0 bg-transparent"
+                />
               </div>
             </div>
           </div>
 
           {/* 타임라인 이벤트 */}
           {cr.timeline.map((event) => (
-            <TimelineEventItem key={event.id} event={event} />
+            <TimelineEventItem
+              key={event.id}
+              event={event}
+              labelHex={
+                event.label
+                  ? cr.labels.find((label) => label.name === event.label)
+                      ?.colorHex
+                  : undefined
+              }
+            />
           ))}
 
           {/* 구분선 */}
@@ -389,27 +465,39 @@ export function ChangeRequestDetail({ cr, onBack }: ChangeRequestDetailProps) {
             </Avatar>
             <div className="min-w-0 flex-1">
               <TiptapEditor
+                key={commentEditorKey}
                 placeholder="댓글을 작성하세요..."
                 minHeight={100}
+                onChangeJson={(json) => {
+                  commentJsonRef.current = json;
+                }}
+                onChangeText={(text) => {
+                  commentTextRef.current = text;
+                }}
               />
               <div className="mt-3 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="h-7 gap-1 px-2 text-muted-foreground"
-                  >
-                    <Paperclip className="h-3.5 w-3.5" />
-                    <span className="text-xs">파일 첨부</span>
-                  </Button>
-                </div>
+                <div />
                 <div className="flex gap-2">
                   {cr.status === "open" && (
                     <Button size="sm" variant="outline">
                       {cr.type === "pr" ? "승인" : "닫기"}
                     </Button>
                   )}
-                  <Button size="sm">댓글</Button>
+                  <Button
+                    size="sm"
+                    disabled={isCommentPending}
+                    onClick={() => {
+                      const json = commentJsonRef.current;
+                      const text = commentTextRef.current;
+                      if (!text.trim() || !json || !onAddComment) return;
+                      onAddComment(json as Record<string, unknown>);
+                      commentJsonRef.current = null;
+                      commentTextRef.current = "";
+                      setCommentEditorKey((k) => k + 1);
+                    }}
+                  >
+                    댓글
+                  </Button>
                 </div>
               </div>
             </div>
@@ -421,18 +509,66 @@ export function ChangeRequestDetail({ cr, onBack }: ChangeRequestDetailProps) {
           <div className="space-y-5">
             {/* 담당자 */}
             <div>
-              <h3 className="text-xs font-medium text-muted-foreground">
-                담당자
-              </h3>
+              <div className="flex items-center justify-between">
+                <h3 className="text-xs font-medium text-muted-foreground">담당자</h3>
+                {onAddAssignee && (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        className="inline-flex h-5 w-5 items-center justify-center rounded text-muted-foreground/50 hover:bg-muted hover:text-foreground transition-colors"
+                      >
+                        <Plus className="h-3 w-3" />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-72 p-3" align="end">
+                      <div className="space-y-2">
+                        <p className="text-xs font-medium text-foreground">담당자 추가</p>
+                        <Input
+                          value={assigneeInput}
+                          onChange={(e) => setAssigneeInput(e.target.value)}
+                          placeholder="사용자 UUID"
+                        />
+                        <Button
+                          type="button"
+                          size="sm"
+                          className="w-full"
+                          disabled={!assigneeInput.trim() || isMetaUpdating}
+                          onClick={() => {
+                            onAddAssignee(assigneeInput.trim());
+                            setAssigneeInput("");
+                          }}
+                        >
+                          추가
+                        </Button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                )}
+              </div>
               <div className="mt-2 space-y-2">
-                {cr.assignees.map((name) => (
-                  <div key={name} className="flex items-center gap-2">
+                {cr.assignees.map((assignee) => (
+                  <div key={assignee.id ?? assignee.name} className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2">
                     <Avatar className="h-6 w-6">
                       <AvatarFallback className="text-[10px]">
-                        {getInitials(name)}
+                        {getInitials(assignee.name)}
                       </AvatarFallback>
                     </Avatar>
-                    <span className="text-sm text-foreground">{name}</span>
+                      <span className="text-sm text-foreground">{assignee.name}</span>
+                    </div>
+                    {onRemoveAssignee && assignee.id && (
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        className="h-6 px-1.5 text-[11px]"
+                        disabled={isMetaUpdating}
+                        onClick={() => onRemoveAssignee(assignee.id!)}
+                      >
+                        제거
+                      </Button>
+                    )}
                   </div>
                 ))}
               </div>
@@ -440,17 +576,80 @@ export function ChangeRequestDetail({ cr, onBack }: ChangeRequestDetailProps) {
 
             {/* 라벨 */}
             <div>
-              <h3 className="text-xs font-medium text-muted-foreground">
-                라벨
-              </h3>
+              <div className="flex items-center justify-between">
+                <h3 className="text-xs font-medium text-muted-foreground">라벨</h3>
+                {onAddLabels && (
+                  <Popover
+                    open={labelPopoverOpen}
+                    onOpenChange={(open) => {
+                      setLabelPopoverOpen(open);
+                      if (open) {
+                        setDraftLabelIds(selectedLabelIds);
+                      } else {
+                        setLabelQuery("");
+                      }
+                    }}
+                  >
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        className="inline-flex h-5 w-5 items-center justify-center rounded text-muted-foreground/50 hover:bg-muted hover:text-foreground transition-colors"
+                      >
+                        <Plus className="h-3 w-3" />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-72 p-3" align="end">
+                      <div className="space-y-2">
+                        <p className="text-xs font-medium text-foreground">라벨 추가</p>
+                        <Input
+                          value={labelQuery}
+                          onChange={(e) => setLabelQuery(e.target.value)}
+                          placeholder="라벨 검색"
+                        />
+                        <div className="max-h-48 space-y-1 overflow-auto">
+                          {filteredLabels.length === 0 ? (
+                            <p className="px-1 py-2 text-xs text-muted-foreground">추가 가능한 라벨이 없습니다.</p>
+                          ) : (
+                            filteredLabels.map((label) => (
+                              <label
+                                key={label.id}
+                                className="flex w-full cursor-pointer items-center gap-2 rounded-md px-1 py-1.5 hover:bg-muted"
+                              >
+                                <Checkbox
+                                  checked={draftLabelIds.includes(label.id)}
+                                  onCheckedChange={(checked) => {
+                                    setDraftLabelIds((prev) => {
+                                      if (checked) return [...prev, label.id];
+                                      return prev.filter((id) => id !== label.id);
+                                    });
+                                  }}
+                                />
+                                <LabelBadge label={label.name} colorHex={label.colorHex} size="sm" />
+                              </label>
+                            ))
+                          )}
+                        </div>
+                        <Button
+                          type="button"
+                          size="sm"
+                          className="w-full"
+                          disabled={isMetaUpdating}
+                          onClick={() => {
+                            onAddLabels?.(draftLabelIds);
+                            setLabelPopoverOpen(false);
+                            setLabelQuery("");
+                          }}
+                        >
+                          라벨 적용
+                        </Button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                )}
+              </div>
               <div className="mt-2 flex flex-wrap gap-1.5">
                 {cr.labels.map((l) => (
-                  <span
-                    key={l.name}
-                    className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${l.color}`}
-                  >
-                    {l.name}
-                  </span>
+                  <LabelBadge key={l.id ?? l.name} label={l.name} colorHex={l.colorHex} size="md" />
                 ))}
               </div>
             </div>
@@ -466,16 +665,6 @@ export function ChangeRequestDetail({ cr, onBack }: ChangeRequestDetailProps) {
                   {cr.type === "pr" ? "변경 반영" : "이슈"}
                 </span>
               </div>
-            </div>
-
-            {/* 생성일 */}
-            <div>
-              <h3 className="text-xs font-medium text-muted-foreground">
-                생성일
-              </h3>
-              <p className="mt-1 text-sm text-foreground">
-                {formatFullDate(cr.createdAt)}
-              </p>
             </div>
 
             {/* 관련 부품 */}

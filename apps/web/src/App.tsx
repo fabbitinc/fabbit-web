@@ -19,7 +19,7 @@ import { SimpleBomImportModal } from "@/features/items/components/SimpleBomImpor
 import { Toaster } from "@/components/ui/sonner";
 import { useAuthStore } from "@/stores/authStore";
 import { getAuthCookies, clearAuthCookies } from "@/lib/auth-cookies";
-import { getSubdomain, isRegisterDomain } from "@/lib/subdomain";
+import { getSubdomain, isRootDomain } from "@/lib/subdomain";
 import { getSite } from "@/api";
 import { useDashboardStats } from "@/api/hooks/useDashboard";
 import type { SiteResponse } from "@/api/types/auth";
@@ -29,6 +29,9 @@ import { RegistrationLayout } from "@/features/registration/components/Registrat
 import { SignupPage } from "@/features/registration/pages/SignupPage";
 import { WorkspaceSetupPage } from "@/features/registration/pages/WorkspaceSetupPage";
 import { PlanSelectionPage } from "@/features/registration/pages/PlanSelectionPage";
+
+// 초대 수락 페이지
+import { AcceptInvitePage } from "@/pages/invite/AcceptInvitePage";
 
 
 function AnimatedCount({ value, durationMs = 420 }: { value: number; durationMs?: number }) {
@@ -298,9 +301,9 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   if (!isAuthenticated) {
-    // 워크스페이스 서브도메인 → 로그인, register/루트 도메인 → 회원가입
+    // 루트 도메인 → 회원가입, 워크스페이스 서브도메인 → 로그인
     return (
-      <Navigate to={isRegisterDomain() ? "/signup" : "/login"} replace />
+      <Navigate to={isRootDomain() ? "/signup" : "/login"} replace />
     );
   }
 
@@ -308,13 +311,8 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 // 비인증 사용자만 접근 가능한 라우트 (로그인 페이지)
-// register/루트 도메인에서는 로그인 불필요 → 회원가입으로
 function PublicRoute({ children }: { children: React.ReactNode }) {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
-
-  if (isRegisterDomain()) {
-    return <Navigate to="/signup" replace />;
-  }
 
   if (isAuthenticated) {
     return <Navigate to="/" replace />;
@@ -333,7 +331,7 @@ function RegistrationRoute({ children }: { children: React.ReactNode }) {
   }
 
   // 워크스페이스 서브도메인에서는 회원가입 불가 → 로그인으로
-  if (!isRegisterDomain()) {
+  if (!isRootDomain()) {
     return <Navigate to="/login" replace />;
   }
 
@@ -360,9 +358,9 @@ function App() {
 
       // BACKLOG: 자동 로그인 토큰 유효성 검증 — localStorage에 토큰이 있으면 fetchMe()로 유효성 확인 후 인증 상태 복원. 현재는 zustand persist가 isAuthenticated를 바로 복원하여 만료 토큰 시 첫 API 호출까지 감지 불가.
 
-      // 2. 서브도메인 사이트 검증 (register 서브도메인은 스킵)
+      // 2. 서브도메인 사이트 검증 (루트 도메인은 스킵)
       const subdomain = getSubdomain();
-      if (subdomain && subdomain !== "register") {
+      if (subdomain) {
         try {
           const siteData = await getSite();
           setSite(siteData);
@@ -415,6 +413,13 @@ function App() {
           <Route path="/workspace" element={<WorkspaceSetupPage />} />
           <Route path="/plan" element={<PlanSelectionPage />} />
         </Route>
+
+        {/* 초대 수락 — 인증 불필요, 워크스페이스 서브도메인에서만 접근 (getSite() 검증 후) */}
+        {!isRootDomain() && (
+          <Route element={<RegistrationLayout />}>
+            <Route path="/invite/accept" element={<AcceptInvitePage />} />
+          </Route>
+        )}
 
         {/* Protected Routes */}
         <Route

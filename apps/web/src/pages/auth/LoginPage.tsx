@@ -1,10 +1,13 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Eye, EyeOff, Loader2, Mail, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuthStore } from "@/stores/authStore";
+import { useRegistrationStore } from "@/stores/registrationStore";
+import { loginScoped } from "@/api";
+import { isRootDomain } from "@/lib/subdomain";
 import { cn } from "@/lib/utils";
 
 // 소셜 로그인 아이콘 SVG
@@ -67,21 +70,32 @@ export function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
 
+  const isRegister = isRootDomain();
+  const setScopedToken = useRegistrationStore((s) => s.setScopedToken);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
     try {
-      const result = await login(email, password);
+      if (isRegister) {
+        // register 도메인: scoped login → 조직 생성 플로우
+        const response = await loginScoped({ email, password });
+        setScopedToken(response.scoped_token);
+        navigate("/workspace");
+      } else {
+        // 워크스페이스 도메인: 기존 로그인
+        const result = await login(email, password);
 
-      if (!result.onboarded && !result.isAdmin) {
-        setError(
-          "워크스페이스 초기 설정이 완료되지 않았습니다. 관리자에게 문의해 주세요.",
-        );
-        return;
+        if (!result.onboarded && !result.isAdmin) {
+          setError(
+            "워크스페이스 초기 설정이 완료되지 않았습니다. 관리자에게 문의해 주세요.",
+          );
+          return;
+        }
+
+        navigate("/");
       }
-
-      navigate("/");
     } catch (err) {
       setError(err instanceof Error ? err.message : "로그인에 실패했습니다.");
     }
@@ -325,6 +339,16 @@ export function LoginPage() {
               <KakaoIcon className="h-5 w-5" />
             </Button>
           </div>
+
+          {/* Register 도메인에서 회원가입 링크 */}
+          {isRegister && (
+            <p className="text-center text-sm text-[#64748b]">
+              아직 계정이 없으신가요?{" "}
+              <Link to="/signup" className="font-medium text-[#3b82f6] hover:text-[#2563eb] transition-colors">
+                회원가입
+              </Link>
+            </p>
+          )}
 
           {/* Footer Note */}
           <p className="text-center text-sm text-[#64748b]">

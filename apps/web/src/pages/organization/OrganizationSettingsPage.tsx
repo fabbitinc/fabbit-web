@@ -1,10 +1,17 @@
 import { useMemo, useState, type ComponentType } from "react";
-import { ShieldCheck, Building2, ListChecks, History, Tag, Plus, Trash2 } from "lucide-react";
+import { ShieldCheck, Building2, ListChecks, History, Users, Plus, Trash2, Mail, X, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,10 +24,10 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useAuthStore } from "@/stores/authStore";
-import { COLOR_PRESETS, ORG_DEFAULT_LABELS } from "@/constants/labelConfig";
-import type { ChangeLabel } from "@/pages/projects/changeRequestMock";
+import { useMembers, useInvitations, useCreateInvitation, useCancelInvitation } from "@/api/hooks/useMembers";
+import type { MemberRole } from "@/api/types/member";
 
-type SettingsTab = "general" | "security" | "labels" | "logs" | "advanced";
+type SettingsTab = "general" | "members" | "security" | "logs" | "advanced";
 
 interface AllowedIpEntry {
   id: string;
@@ -29,8 +36,8 @@ interface AllowedIpEntry {
 
 const settingsTabs: Array<{ id: SettingsTab; label: string; icon: ComponentType<{ className?: string }> }> = [
   { id: "general", label: "일반", icon: Building2 },
+  { id: "members", label: "멤버", icon: Users },
   { id: "security", label: "보안", icon: ShieldCheck },
-  { id: "labels", label: "라벨", icon: Tag },
   { id: "logs", label: "로그 기록", icon: History },
   { id: "advanced", label: "기타 설정", icon: ListChecks },
 ];
@@ -92,10 +99,29 @@ export function OrganizationSettingsPage() {
   ]);
   const [newIp, setNewIp] = useState("");
 
-  // 라벨 탭 상태
-  const [orgLabels, setOrgLabels] = useState<ChangeLabel[]>(ORG_DEFAULT_LABELS);
-  const [newLabelName, setNewLabelName] = useState("");
-  const [newLabelColor, setNewLabelColor] = useState<ChangeLabel["color"]>(COLOR_PRESETS[0].value);
+  // 멤버 탭 상태
+  const { data: membersData, isLoading: membersLoading } = useMembers();
+  const { data: invitationsData, isLoading: invitationsLoading } = useInvitations();
+  const createInvitationMutation = useCreateInvitation();
+  const cancelInvitationMutation = useCancelInvitation();
+  const [inviteEmail, setInviteEmail] = useState("");
+  const [inviteRole, setInviteRole] = useState<MemberRole>("MEMBER");
+
+  const pendingInvitations = invitationsData?.invitations.filter((inv) => inv.status === "PENDING") ?? [];
+
+  const handleInvite = () => {
+    const trimmed = inviteEmail.trim();
+    if (!trimmed) return;
+    createInvitationMutation.mutate(
+      { email: trimmed, role: inviteRole },
+      {
+        onSuccess: () => {
+          setInviteEmail("");
+          setInviteRole("MEMBER");
+        },
+      },
+    );
+  };
 
   const saveSettings = () => {
     toast.success("조직 설정을 저장했습니다. (목데이터)");
@@ -200,6 +226,164 @@ export function OrganizationSettingsPage() {
             </div>
           )}
 
+          {activeTab === "members" && (
+            <div className="space-y-6">
+              {/* 멤버 초대 */}
+              <div>
+                <h2 className="text-base font-semibold text-foreground">멤버 초대</h2>
+                <p className="mt-1 text-xs text-muted-foreground">이메일로 새 멤버를 초대합니다. 관리자만 초대할 수 있습니다.</p>
+                <div className="mt-3 flex gap-2">
+                  <Input
+                    type="email"
+                    placeholder="초대할 이메일 주소"
+                    value={inviteEmail}
+                    onChange={(e) => setInviteEmail(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") handleInvite();
+                    }}
+                    className="flex-1"
+                  />
+                  <Select value={inviteRole} onValueChange={(v) => setInviteRole(v as MemberRole)}>
+                    <SelectTrigger className="w-32">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="MEMBER">멤버</SelectItem>
+                      <SelectItem value="ADMIN">관리자</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    className="gap-1"
+                    onClick={handleInvite}
+                    disabled={!inviteEmail.trim() || createInvitationMutation.isPending}
+                  >
+                    {createInvitationMutation.isPending ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Mail className="h-4 w-4" />
+                    )}
+                    초대
+                  </Button>
+                </div>
+              </div>
+
+              {/* 대기 중인 초대 */}
+              {pendingInvitations.length > 0 && (
+                <div>
+                  <h2 className="text-base font-semibold text-foreground">대기 중인 초대</h2>
+                  <div className="mt-3 overflow-hidden rounded-md border border-border">
+                    <div className="grid grid-cols-[1fr_100px_auto] bg-muted/40 px-4 py-2 text-xs font-medium text-muted-foreground">
+                      <p>이메일</p>
+                      <p>역할</p>
+                      <p className="text-right">관리</p>
+                    </div>
+                    {pendingInvitations.map((inv) => (
+                      <div
+                        key={inv.id}
+                        className="grid grid-cols-[1fr_100px_auto] items-center border-t border-border px-4 py-2.5 text-sm"
+                      >
+                        <div className="flex items-center gap-2">
+                          <Mail className="h-3.5 w-3.5 text-muted-foreground" />
+                          <span className="text-foreground">{inv.email}</span>
+                        </div>
+                        <Badge variant="outline" className="w-fit text-xs">
+                          {inv.role === "ADMIN" ? "관리자" : "멤버"}
+                        </Badge>
+                        <div className="flex justify-end">
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                              >
+                                <X className="h-3.5 w-3.5" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>초대 취소</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  {inv.email}에 대한 초대를 취소하시겠습니까?
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>닫기</AlertDialogCancel>
+                                <AlertDialogAction
+                                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                  onClick={() => cancelInvitationMutation.mutate(inv.id)}
+                                >
+                                  초대 취소
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* 멤버 목록 */}
+              <div>
+                <div className="flex items-center justify-between">
+                  <h2 className="text-base font-semibold text-foreground">멤버 목록</h2>
+                  {membersData && (
+                    <p className="text-xs text-muted-foreground">{membersData.items.length}명</p>
+                  )}
+                </div>
+
+                {(membersLoading || invitationsLoading) ? (
+                  <div className="mt-4 flex items-center justify-center py-8">
+                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                  </div>
+                ) : (
+                  <div className="mt-3 overflow-hidden rounded-md border border-border">
+                    <table className="w-full text-sm">
+                      <thead className="bg-muted/40 text-muted-foreground">
+                        <tr>
+                          <th className="px-4 py-3 text-left font-medium">이름</th>
+                          <th className="px-4 py-3 text-left font-medium">이메일</th>
+                          <th className="px-4 py-3 text-left font-medium">직무</th>
+                          <th className="px-4 py-3 text-left font-medium">역할</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {membersData?.items.map((member) => (
+                          <tr key={member.userId} className="border-t border-border">
+                            <td className="px-4 py-3">
+                              <div className="flex items-center gap-2.5">
+                                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-muted text-xs font-medium text-muted-foreground">
+                                  {member.fullName.charAt(0)}
+                                </div>
+                                <span className="font-medium text-foreground">{member.fullName}</span>
+                              </div>
+                            </td>
+                            <td className="px-4 py-3 text-muted-foreground">{member.email}</td>
+                            <td className="px-4 py-3 text-muted-foreground">{member.jobRole ?? "—"}</td>
+                            <td className="px-4 py-3">
+                              <Badge variant={member.role === "ADMIN" ? "default" : "secondary"}>
+                                {member.role === "ADMIN" ? "관리자" : "멤버"}
+                              </Badge>
+                            </td>
+                          </tr>
+                        ))}
+                        {membersData?.items.length === 0 && (
+                          <tr>
+                            <td colSpan={4} className="px-4 py-8 text-center text-sm text-muted-foreground">
+                              등록된 멤버가 없습니다.
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           {activeTab === "security" && (
             <div className="space-y-6">
               <div>
@@ -267,123 +451,6 @@ export function OrganizationSettingsPage() {
                       </div>
                     </div>
                   ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {activeTab === "labels" && (
-            <div className="space-y-6">
-              {/* 라벨 추가 */}
-              <div>
-                <h2 className="text-base font-semibold text-foreground">새 라벨 추가</h2>
-                <div className="mt-3 space-y-4">
-                  <div className="flex gap-2">
-                    <Input
-                      placeholder="라벨 이름"
-                      value={newLabelName}
-                      onChange={(e) => setNewLabelName(e.target.value)}
-                      className="flex-1"
-                    />
-                    <Button
-                      className="gap-1"
-                      onClick={() => {
-                        const trimmed = newLabelName.trim();
-                        if (!trimmed) return;
-                        if (orgLabels.some((l) => l.name === trimmed)) {
-                          toast.info("이미 존재하는 라벨입니다.");
-                          return;
-                        }
-                        setOrgLabels((prev) => [...prev, { name: trimmed, color: newLabelColor }]);
-                        setNewLabelName("");
-                        toast.success(`"${trimmed}" 라벨을 추가했습니다.`);
-                      }}
-                    >
-                      <Plus className="h-4 w-4" />
-                      추가
-                    </Button>
-                  </div>
-                  {/* 색상 팔레트 */}
-                  <div className="flex flex-wrap gap-2">
-                    {COLOR_PRESETS.map((preset) => (
-                      <button
-                        key={preset.label}
-                        onClick={() => setNewLabelColor(preset.value)}
-                        className={`inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs transition-colors ${
-                          newLabelColor === preset.value
-                            ? "border-foreground/30 bg-muted font-medium"
-                            : "border-border hover:bg-muted/50"
-                        }`}
-                      >
-                        <span className={`inline-block h-3 w-3 rounded-full ${preset.value.split(" ")[0]}`} />
-                        {preset.label}
-                      </button>
-                    ))}
-                  </div>
-                  {/* 미리보기 */}
-                  {newLabelName.trim() && (
-                    <div className="flex items-center gap-2">
-                      <p className="text-xs text-muted-foreground">미리보기:</p>
-                      <Badge variant="secondary" className={newLabelColor}>
-                        {newLabelName.trim()}
-                      </Badge>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* 라벨 목록 */}
-              <div>
-                <h2 className="text-base font-semibold text-foreground">라벨 목록</h2>
-                <div className="mt-3 space-y-2">
-                  {orgLabels.map((label) => (
-                    <div
-                      key={label.name}
-                      className="flex items-center gap-3 rounded-md border border-border px-4 py-2.5"
-                    >
-                      <Badge variant="secondary" className={label.color}>
-                        {label.name}
-                      </Badge>
-                      <span className="flex-1" />
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                          >
-                            <Trash2 className="h-3.5 w-3.5" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>라벨을 영구 삭제</AlertDialogTitle>
-                            <AlertDialogDescription className="space-y-2">
-                              <p>이 라벨을 삭제하면 다시 복구할 수 없습니다.</p>
-                              <p>삭제 시 모든 이슈 및 변경 요청에서 해당 라벨이 제거됩니다.</p>
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>취소</AlertDialogCancel>
-                            <AlertDialogAction
-                              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                              onClick={() => {
-                                setOrgLabels((prev) => prev.filter((l) => l.name !== label.name));
-                                toast.success(`"${label.name}" 라벨을 삭제했습니다.`);
-                              }}
-                            >
-                              라벨 삭제
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </div>
-                  ))}
-                  {orgLabels.length === 0 && (
-                    <p className="text-sm text-muted-foreground py-4 text-center">
-                      등록된 라벨이 없습니다.
-                    </p>
-                  )}
                 </div>
               </div>
             </div>

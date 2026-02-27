@@ -1,7 +1,12 @@
 import type { ProjectStatus } from "./common";
 
 // GET /api/v1/projects
-// API는 ProjectResponseSchema[] 배열을 직접 반환
+export interface ListProjectsParams {
+  search?: string;
+  offset?: number;
+  limit?: number;
+}
+
 export interface ProjectDto {
   id: string;
   name: string;
@@ -10,9 +15,15 @@ export interface ProjectDto {
   status: ProjectStatus;
   createdAt: string;
   updatedAt: string;
+  partCount: number;
 }
 
-export type ProjectListResponse = ProjectDto[];
+export interface ProjectListResponse {
+  total: number;
+  offset: number;
+  limit: number;
+  items: ProjectDto[];
+}
 
 // POST /api/v1/projects
 export interface CreateProjectRequest {
@@ -37,4 +48,32 @@ export interface ProjectPartResponse {
 
 export interface ProjectPartListResponse {
   parts: ProjectPartResponse[];
+}
+
+export interface LinkPartsRequest {
+  part_ids: string[];
+}
+
+export interface LinkPartsResponse {
+  linked_count: number;
+}
+
+// GET /api/v1/projects/{project_id}/members
+export interface ProjectMemberDto {
+  userId: string;
+  fullName: string;
+  email: string;
+}
+
+export interface ProjectMemberListResponse {
+  items: ProjectMemberDto[];
+}
+
+// POST/DELETE /api/v1/projects/{project_id}/members
+export interface ManageMembersRequest {
+  user_ids: string[];
+}
+
+export interface ManageMembersResponse {
+  count: number;
 }

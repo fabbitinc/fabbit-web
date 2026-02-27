@@ -32,10 +32,11 @@ export function usePartFilterOptions() {
 }
 
 /** Part 목록 조회 훅 */
-export function useParts(params: ListPartsParams) {
+export function useParts(params: ListPartsParams, options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: [...PARTS_QUERY_KEY, params],
     queryFn: () => listParts(params),
+    enabled: options?.enabled,
   });
 }
 

@@ -1,5 +1,6 @@
 import { useState, useMemo, useRef, useEffect, useCallback } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   Pencil,
   MoreHorizontal,
@@ -23,15 +24,33 @@ import {
   FileX,
   MessageSquare,
   Settings,
+  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { TiptapEditor } from "@/components/ui/tiptap-editor";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
+import { LabelBadge } from "@fabbit/ui";
+import { useParts, useProject } from "@/api/hooks";
+import type { IssueDto, ProjectDto } from "@/api/types";
+import {
+  useAssignIssueUsers,
+  useCreateIssueComment,
+  useCreateProjectIssue,
+  useIssueTimeline,
+  useProjectIssue,
+  useProjectIssues,
+  useProjectLabels,
+  useSyncIssueLabels,
+  useUnassignIssueUsers,
+} from "@/api/hooks/useIssues";
+import { linkPartsToProject, unlinkPartsFromProject } from "@/api/project";
+import { toast } from "sonner";
 import {
   Dialog,
   DialogContent,
@@ -56,63 +75,18 @@ import {
 import {
   type ChangeRequest,
   type ChangeRequestType,
+  type TimelineEvent,
   MOCK_ISSUES,
   MOCK_PRS,
 } from "./changeRequestMock";
+import type { IssueTimelineItemDto } from "@/api/types";
 import { ChangeRequestDetail } from "./ChangeRequestDetailPage";
 import { ProjectSettingsView } from "./ProjectSettingsView";
+import { PartsTableContent } from "@/components/parts/PartsTableContent";
 
 // ============================================================
 // Mock 데이터
 // ============================================================
-
-// --- 프로젝트 ---
-
-interface MockProject {
-  id: string;
-  name: string;
-  description: string | null;
-  createdAt: string;
-  updatedAt: string;
-}
-
-const MOCK_PROJECTS: Record<string, MockProject> = {
-  "drive-unit-gen4": {
-    id: "drive-unit-gen4",
-    name: "Drive Unit Gen4",
-    description: "4세대 구동 유닛 개발 프로젝트. 기존 대비 효율 15% 향상 목표.",
-    createdAt: "2025-01-15",
-    updatedAt: "2025-02-24",
-  },
-  "ev-inverter-rev2": {
-    id: "ev-inverter-rev2",
-    name: "EV Inverter Rev2",
-    description: "전기차 인버터 2차 리비전. IGBT 모듈 변경 및 방열 구조 개선.",
-    createdAt: "2025-02-01",
-    updatedAt: "2025-02-20",
-  },
-  "robot-arm-v3": {
-    id: "robot-arm-v3",
-    name: "Robot Arm V3",
-    description: "산업용 로봇팔 3세대. 6축 관절 구조 및 감속기 모듈 재설계.",
-    createdAt: "2024-11-20",
-    updatedAt: "2025-02-22",
-  },
-  "battery-pack-module": {
-    id: "battery-pack-module",
-    name: "Battery Pack Module",
-    description: "배터리 팩 모듈 설계. 셀 배치 최적화 및 냉각 구조 검증.",
-    createdAt: "2025-01-28",
-    updatedAt: "2025-02-10",
-  },
-  "sensor-housing-asm": {
-    id: "sensor-housing-asm",
-    name: "Sensor Housing Assembly",
-    description: "센서 하우징 조립체. IP67 방수 규격 대응 설계 완료.",
-    createdAt: "2024-09-05",
-    updatedAt: "2025-01-30",
-  },
-};
 
 // --- 부품 ---
 
@@ -122,47 +96,6 @@ interface MockProjectPart {
   name: string | null;
   category: string | null;
 }
-
-const MOCK_PROJECT_PARTS: Record<string, MockProjectPart[]> = {
-  "drive-unit-gen4": [
-    { id: "p1", part_number: "HSG-002", name: "모터 하우징 Rev.C", category: "하우징" },
-    { id: "p2", part_number: "SFT-200", name: "드라이브 샤프트", category: "샤프트" },
-    { id: "p3", part_number: "GKT-010", name: "실리콘 가스켓", category: "씰" },
-    { id: "p4", part_number: "BRG-105", name: "앵귤러 베어링 6205", category: "베어링" },
-    { id: "p5", part_number: "FRAME-ASM", name: "프레임 조립체", category: "조립체" },
-    { id: "p6", part_number: "MTR-400", name: "BLDC 모터 400W", category: "모터" },
-  ],
-  "ev-inverter-rev2": [
-    { id: "p7", part_number: "IGBT-M01", name: "IGBT 모듈 1200V", category: "반도체" },
-    { id: "p8", part_number: "HS-PLT-01", name: "히트싱크 플레이트", category: "방열" },
-    { id: "p9", part_number: "PCB-INV-02", name: "인버터 제어보드 Rev.2", category: "PCB" },
-  ],
-  "robot-arm-v3": [
-    { id: "p10", part_number: "JNT-601", name: "6축 관절 모듈", category: "관절" },
-    { id: "p11", part_number: "RDC-050", name: "하모닉 감속기 50:1", category: "감속기" },
-    { id: "p12", part_number: "ARM-LNK-03", name: "링크 암 #3", category: "구조체" },
-    { id: "p13", part_number: "SRV-200", name: "서보 모터 200W", category: "모터" },
-  ],
-};
-
-const ALL_MOCK_PARTS: MockProjectPart[] = [
-  { id: "p1", part_number: "HSG-002", name: "모터 하우징 Rev.C", category: "하우징" },
-  { id: "p2", part_number: "SFT-200", name: "드라이브 샤프트", category: "샤프트" },
-  { id: "p3", part_number: "GKT-010", name: "실리콘 가스켓", category: "씰" },
-  { id: "p4", part_number: "BRG-105", name: "앵귤러 베어링 6205", category: "베어링" },
-  { id: "p5", part_number: "FRAME-ASM", name: "프레임 조립체", category: "조립체" },
-  { id: "p6", part_number: "MTR-400", name: "BLDC 모터 400W", category: "모터" },
-  { id: "p7", part_number: "IGBT-M01", name: "IGBT 모듈 1200V", category: "반도체" },
-  { id: "p8", part_number: "HS-PLT-01", name: "히트싱크 플레이트", category: "방열" },
-  { id: "p9", part_number: "PCB-INV-02", name: "인버터 제어보드 Rev.2", category: "PCB" },
-  { id: "p10", part_number: "JNT-601", name: "6축 관절 모듈", category: "관절" },
-  { id: "p11", part_number: "RDC-050", name: "하모닉 감속기 50:1", category: "감속기" },
-  { id: "p12", part_number: "ARM-LNK-03", name: "링크 암 #3", category: "구조체" },
-  { id: "p13", part_number: "SRV-200", name: "서보 모터 200W", category: "모터" },
-  { id: "p14", part_number: "CAP-220", name: "전해 콘덴서 220μF", category: "전자부품" },
-  { id: "p15", part_number: "FAN-80", name: "냉각팬 80mm", category: "냉각" },
-  { id: "p16", part_number: "BOLT-M8", name: "육각볼트 M8x25", category: "체결" },
-];
 
 // --- 활동 로그 ---
 
@@ -287,7 +220,7 @@ function ProjectHeader({
   onEdit,
   onDelete,
 }: {
-  project: MockProject;
+  project: Pick<ProjectDto, "name" | "description">;
   onEdit: () => void;
   onDelete: () => void;
 }) {
@@ -529,117 +462,6 @@ function OverviewTab({
 }
 
 // ============================================================
-// 부품 탭
-// ============================================================
-
-function PartsTab({
-  parts,
-  onRemove,
-  onAddClick,
-}: {
-  parts: MockProjectPart[];
-  onRemove: (id: string) => void;
-  onAddClick: () => void;
-}) {
-  const navigate = useNavigate();
-  const [search, setSearch] = useState("");
-
-  const filtered = useMemo(() => {
-    if (!search.trim()) return parts;
-    const q = search.toLowerCase();
-    return parts.filter(
-      (p) =>
-        p.part_number.toLowerCase().includes(q) ||
-        p.name?.toLowerCase().includes(q) ||
-        p.category?.toLowerCase().includes(q),
-    );
-  }, [parts, search]);
-
-  return (
-    <div className="rounded-lg border bg-card">
-      {/* 헤더 */}
-      <div className="flex items-center justify-between border-b px-5 py-3.5">
-        <div className="flex items-center gap-2">
-          <h2 className="text-sm font-medium text-foreground">부품</h2>
-          <span className="text-xs text-muted-foreground">({parts.length})</span>
-        </div>
-        <Button size="sm" onClick={onAddClick}>
-          <Plus className="h-3.5 w-3.5" />
-          부품 연결
-        </Button>
-      </div>
-
-      {/* 검색 */}
-      {parts.length > 0 && (
-        <div className="border-b px-5 py-2.5">
-          <div className="relative max-w-xs">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="품번, 품명 검색..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="h-8 pl-9 text-sm"
-            />
-          </div>
-        </div>
-      )}
-
-      {/* 테이블 */}
-      {parts.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-12">
-          <Package className="h-8 w-8 text-muted-foreground/30" />
-          <p className="mt-3 text-sm text-muted-foreground">연결된 부품이 없습니다</p>
-          <p className="mt-1 text-xs text-muted-foreground/60">부품 연결 버튼으로 부품을 추가하세요</p>
-        </div>
-      ) : filtered.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-12">
-          <p className="text-sm text-muted-foreground">검색 결과가 없습니다</p>
-        </div>
-      ) : (
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="border-b bg-muted/30 text-left">
-                <th className="py-2.5 pl-5 pr-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">품번</th>
-                <th className="py-2.5 px-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">품명</th>
-                <th className="py-2.5 px-2 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">카테고리</th>
-                <th className="py-2.5 px-2 pr-5 text-right text-[11px] font-medium uppercase tracking-wider text-muted-foreground" />
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((part) => (
-                <tr
-                  key={part.id}
-                  onClick={() => navigate(`/parts/${part.id}`)}
-                  className="border-b border-border/50 transition-colors hover:bg-muted/50 cursor-pointer"
-                >
-                  <td className="py-2.5 pl-5 pr-2 font-mono text-xs font-medium text-primary">{part.part_number}</td>
-                  <td className="py-2.5 px-2 text-foreground">{part.name ?? <span className="text-muted-foreground/40">—</span>}</td>
-                  <td className="py-2.5 px-2 text-muted-foreground">{part.category ?? <span className="text-muted-foreground/40">—</span>}</td>
-                  <td className="py-2.5 px-2 pr-5 text-right">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-7 text-xs text-muted-foreground hover:text-destructive"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onRemove(part.id);
-                      }}
-                    >
-                      연결 해제
-                    </Button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ============================================================
 // 부품 연결 다이얼로그
 // ============================================================
 
@@ -652,19 +474,39 @@ function AddPartDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
   existingPartIds: Set<string>;
-  onAdd: (ids: string[]) => void;
+  onAdd: (ids: string[]) => Promise<void>;
 }) {
   const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
+  useEffect(() => {
+    const id = window.setTimeout(() => {
+      setDebouncedSearch(search.trim());
+    }, 300);
+    return () => window.clearTimeout(id);
+  }, [search]);
+
+  const { data: partsResponse, isLoading } = useParts(
+    {
+      search: debouncedSearch || undefined,
+      offset: 0,
+      limit: 15,
+    },
+    { enabled: open },
+  );
+
   const available = useMemo(() => {
-    const filtered = ALL_MOCK_PARTS.filter((p) => !existingPartIds.has(p.id));
-    if (!search.trim()) return filtered;
-    const q = search.toLowerCase();
-    return filtered.filter(
-      (p) => p.part_number.toLowerCase().includes(q) || p.name?.toLowerCase().includes(q),
-    );
-  }, [existingPartIds, search]);
+    const apiItems = partsResponse?.items ?? [];
+    return apiItems
+      .filter((p) => !existingPartIds.has(p.id))
+      .map((p) => ({
+        id: p.id,
+        part_number: p.part_number,
+        name: p.name,
+        category: p.category,
+      }));
+  }, [partsResponse?.items, existingPartIds]);
 
   function toggleSelect(id: string) {
     setSelectedIds((prev) => {
@@ -675,8 +517,8 @@ function AddPartDialog({
     });
   }
 
-  function handleAdd() {
-    onAdd([...selectedIds]);
+  async function handleAdd() {
+    await onAdd([...selectedIds]);
     setSelectedIds(new Set());
     setSearch("");
     onOpenChange(false);
@@ -686,6 +528,7 @@ function AddPartDialog({
     if (!v) {
       setSelectedIds(new Set());
       setSearch("");
+      setDebouncedSearch("");
     }
     onOpenChange(v);
   }
@@ -713,7 +556,11 @@ function AddPartDialog({
         )}
 
         <div className="max-h-[320px] overflow-y-auto rounded-md border">
-          {available.length === 0 ? (
+          {isLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+            </div>
+          ) : available.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-8">
               <p className="text-sm text-muted-foreground">{search ? "검색 결과가 없습니다" : "연결 가능한 부품이 없습니다"}</p>
             </div>
@@ -766,6 +613,7 @@ function CRStatusIcon({ cr }: { cr: ChangeRequest }) {
 function timeAgo(iso: string): string {
   const diff = Date.now() - new Date(iso).getTime();
   const minutes = Math.floor(diff / 60000);
+  if (minutes < 1) return "방금";
   if (minutes < 60) return `${minutes}분 전`;
   const hours = Math.floor(minutes / 60);
   if (hours < 24) return `${hours}시간 전`;
@@ -774,16 +622,167 @@ function timeAgo(iso: string): string {
   return formatShortDate(iso);
 }
 
+function toIssueStatus(state: string): "open" | "closed" {
+  return state.toLowerCase() === "open" ? "open" : "closed";
+}
+
+function toIssueAuthor(issue: IssueDto): string {
+  if (issue.createdByName) return issue.createdByName;
+  if (issue.createdBy) return issue.createdBy.slice(0, 8);
+  return "알 수 없음";
+}
+
+function toDisplayActorName(id: string | null | undefined, issue: IssueDto): string {
+  if (!id) return "알 수 없음";
+  if (id === issue.createdBy && issue.createdByName) return issue.createdByName;
+
+  const assignee = issue.assignees.find((item) => item.id === id);
+  if (assignee) return assignee.fullName;
+
+  return id.slice(0, 8);
+}
+
+function toTimelineEvents(items: IssueTimelineItemDto[], issue: IssueDto): TimelineEvent[] {
+  return items.map((item) => {
+    if (item.type === "comment") {
+      return {
+        id: item.id,
+        type: "comment",
+        author: toDisplayActorName(item.authorId, issue),
+        createdAt: item.createdAt,
+        content: item.body,
+      };
+    }
+
+    const action = item.action.toLowerCase();
+    const detail = item.detail ?? {};
+    const detailLabelName =
+      (detail.label_name as string | undefined) ??
+      (detail.label as string | undefined) ??
+      (detail.name as string | undefined);
+    const detailAssigneeName =
+      (detail.assignee_name as string | undefined) ??
+      (detail.user_name as string | undefined) ??
+      (detail.full_name as string | undefined) ??
+      (detail.assignee_id as string | undefined);
+
+    if ((action.includes("label") && action.includes("link")) || action.includes("label_added")) {
+      return {
+        id: item.id,
+        type: "label_added",
+        author: toDisplayActorName(item.actorId, issue),
+        createdAt: item.createdAt,
+        label: detailLabelName,
+      };
+    }
+
+    if ((action.includes("label") && action.includes("unlink")) || action.includes("label_removed")) {
+      return {
+        id: item.id,
+        type: "label_removed",
+        author: toDisplayActorName(item.actorId, issue),
+        createdAt: item.createdAt,
+        label: detailLabelName,
+      };
+    }
+
+    if (action.includes("assign")) {
+      return {
+        id: item.id,
+        type: "assigned",
+        author: toDisplayActorName(item.actorId, issue),
+        createdAt: item.createdAt,
+        assignee: detailAssigneeName ?? "담당자",
+      };
+    }
+
+    if (action.includes("close") || action.includes("reopen")) {
+      return {
+        id: item.id,
+        type: "status_change",
+        author: toDisplayActorName(item.actorId, issue),
+        createdAt: item.createdAt,
+        content: action.includes("reopen") ? "open" : "closed",
+      };
+    }
+
+    return {
+      id: item.id,
+      type: "referenced",
+      author: toDisplayActorName(item.actorId, issue),
+      createdAt: item.createdAt,
+      ref: item.action,
+    };
+  });
+}
+
+function formatFileSize(bytes: number): string {
+  if (bytes >= 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  if (bytes >= 1024) return `${Math.round(bytes / 1024)} KB`;
+  return `${bytes} B`;
+}
+
+function getAttachmentType(fileName: string, contentType: string): "pdf" | "step" | "dwg" | "xlsx" | "image" | "other" {
+  const normalizedFileName = fileName.toLowerCase();
+  const normalizedContentType = contentType.toLowerCase();
+
+  if (normalizedContentType.includes("pdf") || normalizedFileName.endsWith(".pdf")) return "pdf";
+  if (normalizedContentType.startsWith("image/") || /\.(png|jpe?g|gif|webp|svg)$/.test(normalizedFileName)) return "image";
+  if (normalizedFileName.endsWith(".step") || normalizedFileName.endsWith(".stp")) return "step";
+  if (normalizedFileName.endsWith(".dwg")) return "dwg";
+  if (normalizedContentType.includes("spreadsheet") || /\.(xlsx?|csv)$/.test(normalizedFileName)) return "xlsx";
+
+  return "other";
+}
+
+function toIssueChangeRequest(issue: IssueDto, timeline: TimelineEvent[] = []): ChangeRequest {
+  return {
+    id: issue.id,
+    number: issue.number,
+    type: "issue",
+    title: issue.title,
+    status: toIssueStatus(issue.state),
+    author: toIssueAuthor(issue),
+    createdAt: issue.createdAt,
+    labels: issue.labels.map((label) => ({
+      id: label.id,
+      name: label.name,
+      colorHex: label.color,
+    })),
+    assignees: issue.assignees.map((assignee) => ({ id: assignee.id, name: assignee.fullName })),
+    description: issue.body ?? "",
+    timeline,
+    attachments: issue.files.map((file) => ({
+      id: file.fileId,
+      name: file.originalName,
+      size: formatFileSize(file.fileSize),
+      type: getAttachmentType(file.originalName, file.contentType),
+      uploadedBy: toIssueAuthor(issue),
+      uploadedAt: file.createdAt,
+    })),
+    relatedParts: issue.parts.map((part) => ({
+      partNumber: part.partNumber,
+      name: part.name ?? "이름 없음",
+    })),
+  };
+}
+
 function CRListView({
   items,
   type,
   createLabel,
+  createBadgeLabel,
+  createDisabled,
+  onCreate,
   emptyIcon: EmptyIcon,
   onSelect,
 }: {
   items: ChangeRequest[];
   type: ChangeRequestType;
   createLabel: string;
+  createBadgeLabel?: string;
+  createDisabled?: boolean;
+  onCreate?: () => void;
   emptyIcon: React.ElementType;
   onSelect: (cr: ChangeRequest) => void;
 }) {
@@ -810,7 +809,7 @@ function CRListView({
         <div className="flex items-center gap-4">
           <button
             onClick={() => setStatusFilter("open")}
-            className={`inline-flex items-center gap-1.5 text-sm font-medium transition-colors ${
+            className={`inline-flex items-center gap-1.5 text-sm font-medium cursor-pointer transition-colors ${
               statusFilter === "open" ? "text-foreground" : "text-muted-foreground hover:text-foreground"
             }`}
           >
@@ -819,7 +818,7 @@ function CRListView({
           </button>
           <button
             onClick={() => setStatusFilter("closed")}
-            className={`inline-flex items-center gap-1.5 text-sm font-medium transition-colors ${
+            className={`inline-flex items-center gap-1.5 text-sm font-medium cursor-pointer transition-colors ${
               statusFilter === "closed" ? "text-foreground" : "text-muted-foreground hover:text-foreground"
             }`}
           >
@@ -828,8 +827,8 @@ function CRListView({
           </button>
         </div>
         <div className="flex items-center gap-2">
-          <Badge variant="secondary" className="text-[10px]">데모</Badge>
-          <Button size="sm" disabled>
+          {createBadgeLabel && <Badge variant="secondary" className="text-[10px]">{createBadgeLabel}</Badge>}
+          <Button size="sm" disabled={createDisabled} onClick={onCreate}>
             <Plus className="h-3.5 w-3.5" />
             {createLabel}
           </Button>
@@ -852,7 +851,7 @@ function CRListView({
                 key={cr.id}
                 type="button"
                 onClick={() => onSelect(cr)}
-                className="flex w-full items-start gap-3 px-5 py-3 text-left transition-colors hover:bg-muted/30"
+                className="flex w-full items-start gap-3 px-5 py-3 text-left cursor-pointer transition-colors hover:bg-muted/30"
               >
                 <div className="mt-0.5 shrink-0">
                   <CRStatusIcon cr={cr} />
@@ -862,12 +861,12 @@ function CRListView({
                   <div className="flex items-center gap-2">
                     <span className="text-sm font-medium text-foreground">{cr.title}</span>
                     {cr.labels.map((label) => (
-                      <span
+                      <LabelBadge
                         key={label.name}
-                        className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-medium ${label.color}`}
-                      >
-                        {label.name}
-                      </span>
+                        label={label.name}
+                        colorHex={label.colorHex}
+                        size="sm"
+                      />
                     ))}
                   </div>
                   <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
@@ -878,9 +877,9 @@ function CRListView({
                       <>
                         <span>·</span>
                         <div className="flex -space-x-1">
-                          {cr.assignees.map((name) => (
-                            <Avatar key={name} className="h-4 w-4 border border-background">
-                              <AvatarFallback className="text-[8px]">{getInitials(name)}</AvatarFallback>
+                          {cr.assignees.map((assignee) => (
+                            <Avatar key={assignee.id ?? assignee.name} className="h-4 w-4 border border-background">
+                              <AvatarFallback className="text-[8px]">{getInitials(assignee.name)}</AvatarFallback>
                             </Avatar>
                           ))}
                         </div>
@@ -904,22 +903,204 @@ function CRListView({
   );
 }
 
-function IssuesView({ projectId, crNumber }: { projectId: string; crNumber?: string }) {
+function NewIssueView({ projectId }: { projectId: string }) {
   const navigate = useNavigate();
+  const [title, setTitle] = useState("");
+  const [descriptionJson, setDescriptionJson] = useState<Record<string, unknown> | null>(null);
+  const [descriptionText, setDescriptionText] = useState("");
+  const createIssueMutation = useCreateProjectIssue(projectId);
 
-  if (crNumber) {
-    const cr = MOCK_ISSUES.find((c) => c.number === Number(crNumber));
-    if (!cr) return <p className="py-8 text-center text-sm text-muted-foreground">이슈를 찾을 수 없습니다</p>;
-    return <ChangeRequestDetail cr={cr} onBack={() => navigate(`/projects/${projectId}/issues`)} />;
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const trimmedTitle = title.trim();
+    const plainBody = descriptionText.trim();
+
+    if (!trimmedTitle) return;
+
+    try {
+      await createIssueMutation.mutateAsync({
+        title: trimmedTitle,
+        body: plainBody.length > 0 ? descriptionJson : null,
+      });
+
+      navigate(`/projects/${projectId}/issues`);
+    } catch {
+      // 에러 토스트는 mutation onError에서 처리
+    }
+  }
+
+  return (
+    <div className="rounded-lg border bg-card">
+      <div className="border-b px-5 py-4">
+        <h2 className="text-sm font-semibold text-foreground">새 이슈</h2>
+        <p className="mt-1 text-xs text-muted-foreground">프로젝트에서 추적할 작업 또는 문제를 등록합니다.</p>
+      </div>
+
+      <form onSubmit={handleSubmit} className="space-y-4 px-5 py-4">
+        <div className="space-y-2">
+          <Label htmlFor="issue-title">제목</Label>
+          <Input
+            id="issue-title"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="이슈 제목을 입력하세요"
+            maxLength={500}
+            required
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label>설명</Label>
+          <TiptapEditor
+            content={descriptionJson ?? ""}
+            onChangeJson={(content) => setDescriptionJson(content as Record<string, unknown>)}
+            onChangeText={setDescriptionText}
+            placeholder="이슈 설명을 입력하세요"
+            minHeight={220}
+          />
+        </div>
+
+        <div className="flex items-center justify-end gap-2 border-t pt-4">
+          <Button type="button" variant="outline" onClick={() => navigate(`/projects/${projectId}/issues`)}>
+            취소
+          </Button>
+          <Button type="submit" disabled={!title.trim() || createIssueMutation.isPending}>
+            {createIssueMutation.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+            이슈 생성
+          </Button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
+function IssuesView({ projectId, issueId }: { projectId: string; issueId?: string }) {
+  const navigate = useNavigate();
+  const isNewIssueRoute = issueId === "new";
+  const isDetailIssueRoute = !!issueId && issueId !== "new";
+  const {
+    data: issuesResponse,
+    isLoading,
+    isError,
+    refetch,
+  } = useProjectIssues(isNewIssueRoute || isDetailIssueRoute ? undefined : projectId);
+  const {
+    data: issueDetail,
+    isLoading: isIssueDetailLoading,
+    isError: isIssueDetailError,
+    refetch: refetchIssueDetail,
+  } = useProjectIssue(projectId, isDetailIssueRoute ? issueId : undefined);
+  const {
+    data: timelineResponse,
+    isLoading: isTimelineLoading,
+    isError: isTimelineError,
+    refetch: refetchTimeline,
+  } = useIssueTimeline(projectId, isDetailIssueRoute ? issueId : undefined);
+  const assignIssueUsersMutation = useAssignIssueUsers(projectId, isDetailIssueRoute ? issueId : undefined);
+  const unassignIssueUsersMutation = useUnassignIssueUsers(projectId, isDetailIssueRoute ? issueId : undefined);
+  const syncIssueLabelsMutation = useSyncIssueLabels(projectId, isDetailIssueRoute ? issueId : undefined);
+  const { data: projectLabels = [] } = useProjectLabels(isDetailIssueRoute ? projectId : undefined);
+  const createCommentMutation = useCreateIssueComment(projectId, isDetailIssueRoute ? issueId : undefined);
+
+  const issues = useMemo(
+    () => issuesResponse?.items.map((issue) => toIssueChangeRequest(issue)) ?? [],
+    [issuesResponse],
+  );
+
+  if (isNewIssueRoute) {
+    return <NewIssueView projectId={projectId} />;
+  }
+
+  if (isDetailIssueRoute) {
+    if (isIssueDetailLoading || isTimelineLoading) {
+      return (
+        <div className="min-h-full flex items-center justify-center py-20">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        </div>
+      );
+    }
+
+    if (isIssueDetailError || isTimelineError) {
+      return (
+        <div className="min-h-full flex items-center justify-center py-20">
+          <div className="flex flex-col items-center gap-3 text-center">
+            <p className="text-sm text-muted-foreground">이슈 타임라인을 불러오지 못했습니다.</p>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                refetchIssueDetail();
+                refetchTimeline();
+              }}
+            >
+              다시 시도
+            </Button>
+          </div>
+        </div>
+      );
+    }
+
+    if (!issueDetail) {
+      return <p className="py-8 text-center text-sm text-muted-foreground">이슈를 찾을 수 없습니다</p>;
+    }
+
+    return (
+      <>
+        <ChangeRequestDetail
+          cr={toIssueChangeRequest(issueDetail, toTimelineEvents(timelineResponse?.items ?? [], issueDetail))}
+          onBack={() => navigate(`/projects/${projectId}/issues`)}
+          onAddAssignee={(assigneeId) => assignIssueUsersMutation.mutate([assigneeId])}
+          onRemoveAssignee={(assigneeId) => unassignIssueUsersMutation.mutate([assigneeId])}
+          onAddLabels={(labelIds) => {
+            syncIssueLabelsMutation.mutate(labelIds);
+          }}
+          onAddComment={(body) => createCommentMutation.mutate(body)}
+          isCommentPending={createCommentMutation.isPending}
+          availableLabels={projectLabels.map((label) => ({
+            id: label.id,
+            name: label.name,
+            colorHex: label.color,
+          }))}
+          selectedLabelIds={issueDetail.labels.map((label) => label.id)}
+          isMetaUpdating={
+            assignIssueUsersMutation.isPending ||
+            unassignIssueUsersMutation.isPending ||
+            syncIssueLabelsMutation.isPending
+          }
+        />
+      </>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="min-h-full flex items-center justify-center py-20">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="min-h-full flex items-center justify-center py-20">
+        <div className="flex flex-col items-center gap-3 text-center">
+          <p className="text-sm text-muted-foreground">이슈 목록을 불러오지 못했습니다.</p>
+          <Button variant="outline" size="sm" onClick={() => refetch()}>
+            다시 시도
+          </Button>
+        </div>
+      </div>
+    );
   }
 
   return (
     <CRListView
-      items={MOCK_ISSUES}
+      items={issues}
       type="issue"
       createLabel="새 이슈"
+      onCreate={() => navigate(`/projects/${projectId}/issues/new`)}
       emptyIcon={AlertCircle}
-      onSelect={(cr) => navigate(`/projects/${projectId}/issues/${cr.number}`)}
+      onSelect={(cr) => navigate(`/projects/${projectId}/issues/${cr.id}`)}
     />
   );
 }
@@ -938,6 +1119,8 @@ function PullRequestsView({ projectId, crNumber }: { projectId: string; crNumber
       items={MOCK_PRS}
       type="pr"
       createLabel="새 변경 반영"
+      createBadgeLabel="데모"
+      createDisabled
       emptyIcon={FilePen}
       onSelect={(cr) => navigate(`/projects/${projectId}/prs/${cr.number}`)}
     />
@@ -1187,13 +1370,14 @@ function ActivityTab() {
 export function ProjectDetailPage() {
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const location = useLocation();
-
-  const project = projectId ? MOCK_PROJECTS[projectId] : undefined;
-
-  const [parts, setParts] = useState<MockProjectPart[]>(
-    projectId ? (MOCK_PROJECT_PARTS[projectId] ?? []) : [],
-  );
+  const {
+    data: project,
+    isLoading: isProjectLoading,
+    isError: isProjectError,
+    refetch: refetchProject,
+  } = useProject(projectId);
   // URL 경로에서 현재 뷰와 상세 번호 파싱
   const basePath = `/projects/${projectId}`;
   const subPath = location.pathname.slice(basePath.length).replace(/^\//, "");
@@ -1202,10 +1386,48 @@ export function ProjectDetailPage() {
   type ViewKey = "overview" | "parts" | "issues" | "prs" | "activity" | "settings";
   const VALID_VIEWS = new Set<string>(["parts", "issues", "prs", "activity", "settings"]);
   const activeView: ViewKey = VALID_VIEWS.has(pathSegments[0]) ? (pathSegments[0] as ViewKey) : "overview";
-  const crNumber = (activeView === "issues" || activeView === "prs") ? pathSegments[1] : undefined;
 
   const [editOpen, setEditOpen] = useState(false);
   const [addPartOpen, setAddPartOpen] = useState(false);
+  const [partsTotal, setPartsTotal] = useState<number | undefined>();
+
+  const {
+    data: projectPartsData,
+    refetch: refetchProjectParts,
+  } = useParts({ project_id: projectId, offset: 0, limit: 100 }, {
+    enabled: activeView === "overview" || addPartOpen,
+  });
+
+  const parts = useMemo<MockProjectPart[]>(() => {
+    return (projectPartsData?.items ?? []).map((part) => ({
+      id: part.id,
+      part_number: part.part_number,
+      name: part.name,
+      category: part.category,
+    }));
+  }, [projectPartsData?.items]);
+  const crNumber = (activeView === "issues" || activeView === "prs") ? pathSegments[1] : undefined;
+
+  if (isProjectLoading) {
+    return (
+      <div className="min-h-full flex items-center justify-center py-20">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (isProjectError) {
+    return (
+      <div className="min-h-full flex items-center justify-center py-20">
+        <div className="flex flex-col items-center gap-3 text-center">
+          <p className="text-sm text-muted-foreground">프로젝트 정보를 불러오지 못했습니다.</p>
+          <Button variant="outline" size="sm" onClick={() => refetchProject()}>
+            다시 시도
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   // 프로젝트 없음
   if (!project) {
@@ -1231,15 +1453,33 @@ export function ProjectDetailPage() {
     );
   }
 
-  function handleRemovePart(partId: string) {
-    setParts((prev) => prev.filter((p) => p.id !== partId));
+  async function handleAddParts(ids: string[]) {
+    if (!projectId || ids.length === 0) return;
+    try {
+      const result = await linkPartsToProject(projectId, ids);
+      await Promise.all([
+        refetchProjectParts(),
+        queryClient.invalidateQueries({ queryKey: ["parts"] }),
+      ]);
+      toast.success(`${result.linked_count}건의 부품을 연결했습니다`);
+    } catch {
+      toast.error("부품 연결에 실패했습니다");
+    }
   }
 
-  function handleAddParts(ids: string[]) {
-    const newParts = ALL_MOCK_PARTS.filter(
-      (p) => ids.includes(p.id) && !parts.some((ep) => ep.id === p.id),
-    );
-    setParts((prev) => [...prev, ...newParts]);
+  async function handleUnlinkSelected(selectedIds: Set<string>, clearSelection: () => void) {
+    if (!projectId || selectedIds.size === 0) return;
+    try {
+      await unlinkPartsFromProject(projectId, [...selectedIds]);
+      await Promise.all([
+        refetchProjectParts(),
+        queryClient.invalidateQueries({ queryKey: ["parts"] }),
+      ]);
+      clearSelection();
+      toast.success("선택한 부품 연결이 해제되었습니다");
+    } catch {
+      toast.error("부품 연결 해제에 실패했습니다");
+    }
   }
 
   return (
@@ -1255,7 +1495,7 @@ export function ProjectDetailPage() {
       <nav className="mt-4 flex items-center gap-1 border-b">
         {([
           { key: "overview", label: "개요", icon: LayoutDashboard },
-          { key: "parts", label: "부품", icon: Package, count: parts.length },
+          { key: "parts", label: "부품", icon: Package, count: partsTotal ?? parts.length },
           { key: "issues", label: "이슈", icon: AlertCircle },
           { key: "prs", label: "변경 반영", icon: FilePen },
           { key: "activity", label: "활동", icon: Activity },
@@ -1302,12 +1542,37 @@ export function ProjectDetailPage() {
       {/* 뷰 콘텐츠 */}
       <div className="mt-4">
         {activeView === "overview" && <OverviewTab parts={parts} activities={MOCK_ACTIVITIES} />}
-        {activeView === "parts" && <PartsTab parts={parts} onRemove={handleRemovePart} onAddClick={() => setAddPartOpen(true)} />}
-        {activeView === "issues" && <IssuesView projectId={projectId!} crNumber={crNumber} />}
+        {activeView === "parts" && (
+          <div>
+            <div className="mb-2 flex justify-end">
+              <Button size="sm" onClick={() => setAddPartOpen(true)}>
+                <Plus className="h-3.5 w-3.5" />
+                부품 연결
+              </Button>
+            </div>
+            <PartsTableContent
+              projectId={projectId}
+              onRowClick={(partId) => navigate(`/parts/${partId}`)}
+              onTotalChange={setPartsTotal}
+              selectedAction={({ selectedIds, clearSelection }) => (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 text-xs text-muted-foreground hover:text-destructive"
+                  onClick={() => handleUnlinkSelected(selectedIds, clearSelection)}
+                >
+                  프로젝트 연결 해제
+                </Button>
+              )}
+            />
+          </div>
+        )}
+        {activeView === "issues" && <IssuesView projectId={projectId!} issueId={crNumber} />}
         {activeView === "prs" && <PullRequestsView projectId={projectId!} crNumber={crNumber} />}
         {activeView === "activity" && <ActivityTab />}
         {activeView === "settings" && (
           <ProjectSettingsView
+            projectId={projectId!}
             projectName={project.name}
             projectDescription={project.description}
           />

@@ -7,6 +7,7 @@ import {
   getMe,
   queryClient,
 } from "@/api";
+import { getSubdomain } from "@/lib/subdomain";
 import type { PlanTier } from "@/features/registration/types/registration.types";
 import type {
   RegisterRequest,
@@ -92,6 +93,16 @@ function isAdminRole(role: string | undefined): boolean {
   return upper === "ADMIN" || upper === "OWNER";
 }
 
+// 현재 서브도메인에 매칭되는 멤버십을 우선 선택, 없으면 첫 번째
+function findCurrentMembership(memberships: Membership[]): Membership | null {
+  const subdomain = getSubdomain();
+  if (subdomain) {
+    const match = memberships.find((m) => m.organization.slug === subdomain);
+    if (match) return match;
+  }
+  return memberships[0] ?? null;
+}
+
 export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
@@ -113,7 +124,7 @@ export const useAuthStore = create<AuthState>()(
 
           const meResponse = await getMe();
           const memberships = meResponse.memberships.map(mapMembership);
-          const current = memberships[0] ?? null;
+          const current = findCurrentMembership(memberships);
           const onboarded = !!current?.organization.onboardedAt;
           const isAdmin = isAdminRole(current?.role);
 
@@ -158,7 +169,7 @@ export const useAuthStore = create<AuthState>()(
           // 3. /me 호출로 멤버십 정보 조회
           const meResponse = await getMe();
           const memberships = meResponse.memberships.map(mapMembership);
-          const current = memberships[0] ?? null;
+          const current = findCurrentMembership(memberships);
           const onboarded = !!current?.organization.onboardedAt;
           const isAdmin = isAdminRole(current?.role);
 
@@ -213,7 +224,7 @@ export const useAuthStore = create<AuthState>()(
         try {
           const meResponse = await getMe();
           const memberships = meResponse.memberships.map(mapMembership);
-          const current = memberships[0] ?? null;
+          const current = findCurrentMembership(memberships);
           const onboarded = !!current?.organization.onboardedAt;
 
           set({

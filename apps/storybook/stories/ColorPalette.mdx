@@ -1,0 +1,297 @@
+import { Meta } from "@storybook/addon-docs/blocks";
+
+<Meta title="Foundations/Colors" />
+
+export const flatFrame = {
+  border: "1px solid #d8dee8",
+  borderRadius: "10px",
+  background: "#ffffff",
+  padding: "20px",
+};
+
+export const tableRow = {
+  display: "grid",
+  gridTemplateColumns: "180px 1fr",
+  gap: "20px",
+  alignItems: "start",
+  marginBottom: "18px",
+};
+
+export const nameTitle = {
+  margin: 0,
+  fontSize: "18px",
+  lineHeight: 1.2,
+  color: "#1f2937",
+  fontWeight: 600,
+};
+
+export const nameSub = {
+  margin: "6px 0 0",
+  fontSize: "14px",
+  color: "#6b7280",
+};
+
+export const stripWrap = {
+  border: "1px solid #d8dee8",
+  borderRadius: "8px",
+  overflow: "hidden",
+  display: "flex",
+  minHeight: "56px",
+};
+
+export const labelGrid = (count) => ({
+  marginTop: "8px",
+  display: "grid",
+  gridTemplateColumns: `repeat(${count}, minmax(0, 1fr))`,
+  gap: "6px",
+});
+
+export const labelBox = {
+  textAlign: "center",
+  fontSize: "12px",
+  lineHeight: 1.35,
+  color: "#6b7280",
+};
+
+export const codeText = {
+  fontFamily: '"JetBrains Mono", Menlo, Monaco, Consolas, monospace',
+  fontSize: "11px",
+  color: "#4b5563",
+};
+
+export const chipGrid = {
+  display: "grid",
+  gridTemplateColumns: "repeat(auto-fill, minmax(140px, 1fr))",
+  gap: "10px",
+};
+
+export const chip = {
+  border: "1px solid #d8dee8",
+  borderRadius: "8px",
+  overflow: "hidden",
+  background: "#ffffff",
+};
+
+export const chipSwatch = {
+  height: "28px",
+};
+
+export const chipLabel = {
+  padding: "6px 8px",
+  fontFamily: '"JetBrains Mono", Menlo, Monaco, Consolas, monospace',
+  fontSize: "11px",
+  color: "#4b5563",
+};
+
+export const PaletteRow = ({ name, subtitle, swatches }) => {
+  return (
+    <div style={tableRow}>
+      <div>
+        <p style={nameTitle}>{name}</p>
+        <p style={nameSub}>{subtitle}</p>
+      </div>
+      <div>
+        <div style={stripWrap}>
+          {swatches.map((swatch) => (
+            <div
+              key={swatch.label}
+              style={{
+                flex: 1,
+                background: swatch.color,
+              }}
+            />
+          ))}
+        </div>
+        <div style={labelGrid(swatches.length)}>
+          {swatches.map((swatch) => (
+            <div key={`${swatch.label}-label`} style={labelBox}>
+              <div style={{ fontWeight: 600 }}>{swatch.label}</div>
+              <div style={codeText}>{swatch.value}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export const ColorChipGrid = ({ colors }) => {
+  return (
+    <div style={chipGrid}>
+      {colors.map((color) => (
+        <div key={color} style={chip}>
+          <div style={{ ...chipSwatch, background: color }} />
+          <div style={chipLabel}>{color}</div>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+export const hardcodedHexColors = [
+  "#000000",
+  "#0052CC",
+  "#03C75A",
+  "#059669",
+  "#06b6d4",
+  "#0f172a",
+  "#10b981",
+  "#16a34a",
+  "#181717",
+  "#1e293b",
+  "#1e40af",
+  "#22c55e",
+  "#2563eb",
+  "#334155",
+  "#34A853",
+  "#3b82f6",
+  "#4285F4",
+  "#475569",
+  "#6366f1",
+  "#64748b",
+  "#8b5cf6",
+  "#92400e",
+  "#94a3b8",
+  "#991b1b",
+  "#b45309",
+  "#bbf7d0",
+  "#bfdbfe",
+  "#cbd5e1",
+  "#d1d5db",
+  "#d97706",
+  "#dc2626",
+  "#dcfce7",
+  "#E01E5A",
+  "#e2e8f0",
+  "#EA4335",
+  "#ec4899",
+  "#ecfdf5",
+  "#ef4444",
+  "#eff6ff",
+  "#f0fdf4",
+  "#f1f5f9",
+  "#f59e0b",
+  "#f5f3ff",
+  "#f8fafc",
+  "#fafafa",
+  "#FBBC05",
+  "#fbbf24",
+  "#FDD835",
+  "#fde68a",
+  "#fecaca",
+  "#fee2e2",
+  "#FEE500",
+  "#fef2f2",
+  "#fef3c7",
+  "#fffbeb",
+];
+
+# Color Palette
+
+web 소스의 실제 색상 사용을 전수 검토해 반영한 flat palette입니다.
+
+## Semantic Tokens (Live)
+
+<div style={flatFrame}>
+  <PaletteRow
+    name="Brand"
+    subtitle="브랜드 핵심 토큰"
+    swatches={[
+      { label: "brand-50", color: "var(--brand-50)", value: "var(--brand-50)" },
+      { label: "brand-500", color: "var(--brand-500)", value: "var(--brand-500)" },
+      { label: "brand-600", color: "var(--brand-600)", value: "var(--brand-600)" },
+      { label: "accent-500", color: "var(--accent-500)", value: "var(--accent-500)" },
+    ]}
+  />
+  <PaletteRow
+    name="AI / Logo"
+    subtitle="그라디언트 및 액센트"
+    swatches={[
+      { label: "ai-from", color: "var(--ai-from)", value: "var(--ai-from)" },
+      { label: "ai-to", color: "var(--ai-to)", value: "var(--ai-to)" },
+      { label: "logo-from", color: "var(--logo-from)", value: "var(--logo-from)" },
+      { label: "logo-to", color: "var(--logo-to)", value: "var(--logo-to)" },
+    ]}
+  />
+  <PaletteRow
+    name="Theme Surface"
+    subtitle="레이아웃/텍스트/보더"
+    swatches={[
+      { label: "background", color: "var(--theme-background)", value: "var(--theme-background)" },
+      { label: "surface", color: "var(--theme-surface)", value: "var(--theme-surface)" },
+      { label: "text-primary", color: "var(--theme-text-primary)", value: "var(--theme-text-primary)" },
+      { label: "text-secondary", color: "var(--theme-text-secondary)", value: "var(--theme-text-secondary)" },
+      { label: "border", color: "var(--theme-border)", value: "var(--theme-border)" },
+    ]}
+  />
+  <PaletteRow
+    name="Navigation"
+    subtitle="topbar/sidebar 토큰"
+    swatches={[
+      { label: "topbar-bg", color: "var(--nav-topbar-bg)", value: "var(--nav-topbar-bg)" },
+      { label: "sidebar-bg", color: "var(--nav-sidebar-bg)", value: "var(--nav-sidebar-bg)" },
+      { label: "active-bg", color: "var(--nav-sidebar-active-bg)", value: "var(--nav-sidebar-active-bg)" },
+      { label: "active-text", color: "var(--nav-sidebar-active-text)", value: "var(--nav-sidebar-active-text)" },
+      { label: "resizer", color: "var(--nav-resizer-handle-active)", value: "var(--nav-resizer-handle-active)" },
+    ]}
+  />
+  <PaletteRow
+    name="Status"
+    subtitle="공통 상태 토큰"
+    swatches={[
+      { label: "success", color: "var(--status-success)", value: "var(--status-success)" },
+      { label: "warning", color: "var(--status-warning)", value: "var(--status-warning)" },
+      { label: "danger", color: "var(--status-danger)", value: "var(--status-danger)" },
+      { label: "info", color: "var(--status-info)", value: "var(--status-info)" },
+    ]}
+  />
+</div>
+
+## Core System Tokens (Live)
+
+<div style={flatFrame}>
+  <PaletteRow
+    name="Foundation"
+    subtitle="shadcn core tokens"
+    swatches={[
+      { label: "background", color: "var(--background)", value: "var(--background)" },
+      { label: "foreground", color: "var(--foreground)", value: "var(--foreground)" },
+      { label: "primary", color: "var(--primary)", value: "var(--primary)" },
+      { label: "secondary", color: "var(--secondary)", value: "var(--secondary)" },
+      { label: "muted", color: "var(--muted)", value: "var(--muted)" },
+      { label: "accent", color: "var(--accent)", value: "var(--accent)" },
+      { label: "destructive", color: "var(--destructive)", value: "var(--destructive)" },
+      { label: "border", color: "var(--border)", value: "var(--border)" },
+    ]}
+  />
+  <PaletteRow
+    name="Chart"
+    subtitle="chart token set"
+    swatches={[
+      { label: "chart-1", color: "var(--chart-1)", value: "var(--chart-1)" },
+      { label: "chart-2", color: "var(--chart-2)", value: "var(--chart-2)" },
+      { label: "chart-3", color: "var(--chart-3)", value: "var(--chart-3)" },
+      { label: "chart-4", color: "var(--chart-4)", value: "var(--chart-4)" },
+      { label: "chart-5", color: "var(--chart-5)", value: "var(--chart-5)" },
+    ]}
+  />
+  <PaletteRow
+    name="Sidebar"
+    subtitle="sidebar base tokens"
+    swatches={[
+      { label: "sidebar", color: "var(--sidebar)", value: "var(--sidebar)" },
+      { label: "sidebar-fg", color: "var(--sidebar-foreground)", value: "var(--sidebar-foreground)" },
+      { label: "sidebar-primary", color: "var(--sidebar-primary)", value: "var(--sidebar-primary)" },
+      { label: "sidebar-accent", color: "var(--sidebar-accent)", value: "var(--sidebar-accent)" },
+      { label: "sidebar-border", color: "var(--sidebar-border)", value: "var(--sidebar-border)" },
+    ]}
+  />
+</div>
+
+## Literal Colors Used In Components (Audit)
+
+`apps/web/src`의 TS/TSX/JSX/MDX에서 실제로 하드코딩된 HEX 색상 55개입니다.
+
+<div style={flatFrame}>
+  <ColorChipGrid colors={hardcodedHexColors} />
+</div>

@@ -1,5 +1,5 @@
-import { useState, type ComponentType } from "react";
-import { Settings, Users, Tag, AlertTriangle, Trash2, Plus } from "lucide-react";
+import { useState, useMemo, useEffect, type ComponentType } from "react";
+import { Settings, Users, Tag, AlertTriangle, Trash2, Plus, Loader2, Search, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,13 +7,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { LabelBadge } from "@fabbit/ui";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,6 +27,14 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  useUpdateProject,
+  useProjectMembers,
+  useAddProjectMembers,
+  useRemoveProjectMembers,
+  useMembers,
+} from "@/api";
 import type { ChangeLabel } from "./changeRequestMock";
 import { COLOR_PRESETS, ORG_DEFAULT_LABELS } from "@/constants/labelConfig";
 
@@ -33,14 +43,6 @@ import { COLOR_PRESETS, ORG_DEFAULT_LABELS } from "@/constants/labelConfig";
 // ============================================================
 
 type SettingsTab = "general" | "members" | "labels" | "danger";
-
-interface MockMember {
-  id: string;
-  name: string;
-  email: string;
-  role: "admin" | "editor" | "viewer";
-  joinedAt: string;
-}
 
 const SETTINGS_TABS: Array<{
   id: SettingsTab;
@@ -53,44 +55,36 @@ const SETTINGS_TABS: Array<{
   { id: "danger", label: "위험 영역", icon: AlertTriangle },
 ];
 
-const INITIAL_MEMBERS: MockMember[] = [
-  { id: "m1", name: "김설계", email: "kim@fabbit.io", role: "admin", joinedAt: "2025-01-15" },
-  { id: "m2", name: "이엔지", email: "lee@fabbit.io", role: "editor", joinedAt: "2025-01-20" },
-  { id: "m3", name: "박관리", email: "park@fabbit.io", role: "editor", joinedAt: "2025-02-01" },
-  { id: "m4", name: "최검수", email: "choi@fabbit.io", role: "viewer", joinedAt: "2025-02-10" },
-];
-
-const ROLE_LABELS: Record<string, string> = {
-  admin: "관리자",
-  editor: "편집자",
-  viewer: "뷰어",
-};
-
 // ============================================================
 // 컴포넌트
 // ============================================================
 
 interface ProjectSettingsViewProps {
+  projectId: string;
   projectName: string;
   projectDescription: string | null;
 }
 
-export function ProjectSettingsView({ projectName, projectDescription }: ProjectSettingsViewProps) {
+export function ProjectSettingsView({ projectId, projectName, projectDescription }: ProjectSettingsViewProps) {
   const [activeTab, setActiveTab] = useState<SettingsTab>("general");
 
   // 일반 탭 상태
   const [name, setName] = useState(projectName);
   const [description, setDescription] = useState(projectDescription ?? "");
+  const updateProject = useUpdateProject(projectId);
+
+  // props 변경 시 로컬 상태 동기화
+  useEffect(() => { setName(projectName); }, [projectName]);
+  useEffect(() => { setDescription(projectDescription ?? ""); }, [projectDescription]);
 
   // 멤버 탭 상태
-  const [members, setMembers] = useState<MockMember[]>(INITIAL_MEMBERS);
-  const [inviteEmail, setInviteEmail] = useState("");
+  const [addMemberOpen, setAddMemberOpen] = useState(false);
 
   // 라벨 탭 상태 — 조직 레이블(읽기 전용) + 프로젝트 레이블(추가/삭제 가능)
   const [orgLabels] = useState<ChangeLabel[]>(ORG_DEFAULT_LABELS);
   const [projectLabels, setProjectLabels] = useState<ChangeLabel[]>([]);
   const [newLabelName, setNewLabelName] = useState("");
-  const [newLabelColor, setNewLabelColor] = useState<ChangeLabel["color"]>(COLOR_PRESETS[0].value);
+  const [newLabelColor, setNewLabelColor] = useState<ChangeLabel["colorHex"]>(COLOR_PRESETS[0].value);
 
   // 위험 영역 상태
   const [archived, setArchived] = useState(false);
@@ -138,8 +132,10 @@ export function ProjectSettingsView({ projectName, projectDescription }: Project
               </div>
               <div className="flex justify-end">
                 <Button
-                  onClick={() => toast.success("프로젝트 설정을 저장했습니다.")}
+                  disabled={updateProject.isPending || (name === projectName && description === (projectDescription ?? ""))}
+                  onClick={() => updateProject.mutate({ name, description: description || null })}
                 >
+                  {updateProject.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
                   저장
                 </Button>
               </div>
@@ -149,105 +145,11 @@ export function ProjectSettingsView({ projectName, projectDescription }: Project
 
         {/* 멤버 */}
         {activeTab === "members" && (
-          <div className="space-y-6">
-            {/* 멤버 초대 */}
-            <div>
-              <h2 className="text-base font-semibold text-foreground">멤버 초대</h2>
-              <div className="mt-3 flex gap-2">
-                <Input
-                  placeholder="이메일 주소"
-                  value={inviteEmail}
-                  onChange={(e) => setInviteEmail(e.target.value)}
-                  className="flex-1"
-                />
-                <Button
-                  className="gap-1"
-                  onClick={() => {
-                    const trimmed = inviteEmail.trim();
-                    if (!trimmed) return;
-                    if (members.some((m) => m.email === trimmed)) {
-                      toast.info("이미 등록된 멤버입니다.");
-                      return;
-                    }
-                    setMembers((prev) => [
-                      ...prev,
-                      {
-                        id: `m-${Date.now()}`,
-                        name: trimmed.split("@")[0],
-                        email: trimmed,
-                        role: "viewer",
-                        joinedAt: new Date().toISOString().slice(0, 10),
-                      },
-                    ]);
-                    setInviteEmail("");
-                    toast.success(`${trimmed}을(를) 초대했습니다.`);
-                  }}
-                >
-                  <Plus className="h-4 w-4" />
-                  초대
-                </Button>
-              </div>
-            </div>
-
-            {/* 멤버 목록 */}
-            <div>
-              <h2 className="text-base font-semibold text-foreground">멤버 목록</h2>
-              <div className="mt-3 space-y-3">
-                {members.map((member) => (
-                  <div
-                    key={member.id}
-                    className="flex items-center gap-3 rounded-md border border-border px-4 py-3"
-                  >
-                    <Avatar className="h-8 w-8">
-                      <AvatarFallback className="text-xs">
-                        {member.name.slice(0, 2)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-foreground">{member.name}</p>
-                      <p className="text-xs text-muted-foreground">{member.email}</p>
-                    </div>
-                    <p className="text-xs text-muted-foreground hidden sm:block">
-                      {member.joinedAt}
-                    </p>
-                    <Select
-                      value={member.role}
-                      onValueChange={(value) => {
-                        setMembers((prev) =>
-                          prev.map((m) =>
-                            m.id === member.id
-                              ? { ...m, role: value as MockMember["role"] }
-                              : m,
-                          ),
-                        );
-                        toast.success(`${member.name}의 역할을 ${ROLE_LABELS[value]}(으)로 변경했습니다.`);
-                      }}
-                    >
-                      <SelectTrigger className="w-28">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="admin">관리자</SelectItem>
-                        <SelectItem value="editor">편집자</SelectItem>
-                        <SelectItem value="viewer">뷰어</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                      onClick={() => {
-                        setMembers((prev) => prev.filter((m) => m.id !== member.id));
-                        toast.success(`${member.name}을(를) 제거했습니다.`);
-                      }}
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
+          <MembersTab
+            projectId={projectId}
+            addMemberOpen={addMemberOpen}
+            onAddMemberOpenChange={setAddMemberOpen}
+          />
         )}
 
         {/* 라벨 */}
@@ -273,7 +175,7 @@ export function ProjectSettingsView({ projectName, projectDescription }: Project
                         toast.info("이미 존재하는 라벨입니다.");
                         return;
                       }
-                      setProjectLabels((prev) => [...prev, { name: trimmed, color: newLabelColor }]);
+                      setProjectLabels((prev) => [...prev, { name: trimmed, colorHex: newLabelColor }]);
                       setNewLabelName("");
                       toast.success(`"${trimmed}" 라벨을 추가했습니다.`);
                     }}
@@ -294,7 +196,7 @@ export function ProjectSettingsView({ projectName, projectDescription }: Project
                           : "border-border hover:bg-muted/50"
                       }`}
                     >
-                      <span className={`inline-block h-3 w-3 rounded-full ${preset.value.split(" ")[0]}`} />
+                      <span className="inline-block h-3 w-3 rounded-full" style={{ backgroundColor: preset.value }} />
                       {preset.label}
                     </button>
                   ))}
@@ -303,9 +205,7 @@ export function ProjectSettingsView({ projectName, projectDescription }: Project
                 {newLabelName.trim() && (
                   <div className="flex items-center gap-2">
                     <p className="text-xs text-muted-foreground">미리보기:</p>
-                    <Badge variant="secondary" className={newLabelColor}>
-                      {newLabelName.trim()}
-                    </Badge>
+                    <LabelBadge label={newLabelName.trim()} colorHex={newLabelColor} />
                   </div>
                 )}
               </div>
@@ -326,9 +226,7 @@ export function ProjectSettingsView({ projectName, projectDescription }: Project
                     key={label.name}
                     className="flex items-center gap-3 rounded-md border border-border bg-muted/20 px-4 py-2.5"
                   >
-                    <Badge variant="secondary" className={label.color}>
-                      {label.name}
-                    </Badge>
+                    <LabelBadge label={label.name} colorHex={label.colorHex} />
                     <Badge variant="outline" className="text-[10px] text-muted-foreground">조직</Badge>
                     <span className="flex-1" />
                   </div>
@@ -345,9 +243,7 @@ export function ProjectSettingsView({ projectName, projectDescription }: Project
                     key={label.name}
                     className="flex items-center gap-3 rounded-md border border-border px-4 py-2.5"
                   >
-                    <Badge variant="secondary" className={label.color}>
-                      {label.name}
-                    </Badge>
+                    <LabelBadge label={label.name} colorHex={label.colorHex} />
                     <span className="flex-1" />
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
@@ -434,5 +330,225 @@ export function ProjectSettingsView({ projectName, projectDescription }: Project
         )}
       </section>
     </div>
+  );
+}
+
+// --- 멤버 탭 ---
+
+function MembersTab({
+  projectId,
+  addMemberOpen,
+  onAddMemberOpenChange,
+}: {
+  projectId: string;
+  addMemberOpen: boolean;
+  onAddMemberOpenChange: (open: boolean) => void;
+}) {
+  const { data: membersData, isLoading } = useProjectMembers(projectId);
+  const removeMembersMutation = useRemoveProjectMembers(projectId);
+  const members = membersData?.items ?? [];
+
+  return (
+    <div className="space-y-6">
+      {/* 멤버 추가 */}
+      <div className="flex items-center justify-between">
+        <h2 className="text-base font-semibold text-foreground">프로젝트 멤버</h2>
+        <Button className="gap-1" onClick={() => onAddMemberOpenChange(true)}>
+          <UserPlus className="h-4 w-4" />
+          멤버 추가
+        </Button>
+      </div>
+
+      {/* 멤버 목록 */}
+      {isLoading ? (
+        <div className="flex items-center justify-center py-8">
+          <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+        </div>
+      ) : members.length === 0 ? (
+        <p className="text-sm text-muted-foreground py-8 text-center">
+          프로젝트에 배치된 멤버가 없습니다.
+        </p>
+      ) : (
+        <div className="space-y-3">
+          {members.map((member) => (
+            <div
+              key={member.userId}
+              className="flex items-center gap-3 rounded-md border border-border px-4 py-3"
+            >
+              <Avatar className="h-8 w-8">
+                <AvatarFallback className="text-xs">
+                  {member.fullName.slice(0, 2)}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-foreground">{member.fullName}</p>
+                <p className="text-xs text-muted-foreground">{member.email}</p>
+              </div>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>멤버 제거</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      {member.fullName}님을 프로젝트에서 제거하시겠습니까?
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>취소</AlertDialogCancel>
+                    <AlertDialogAction
+                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      onClick={() => removeMembersMutation.mutate([member.userId])}
+                    >
+                      제거
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <AddMemberDialog
+        projectId={projectId}
+        open={addMemberOpen}
+        onOpenChange={onAddMemberOpenChange}
+        existingUserIds={new Set(members.map((m) => m.userId))}
+      />
+    </div>
+  );
+}
+
+// --- 멤버 추가 다이얼로그 ---
+
+function AddMemberDialog({
+  projectId,
+  open,
+  onOpenChange,
+  existingUserIds,
+}: {
+  projectId: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  existingUserIds: Set<string>;
+}) {
+  const { data: orgMembersData, isLoading } = useMembers({ enabled: open });
+  const addMembersMutation = useAddProjectMembers(projectId);
+  const [search, setSearch] = useState("");
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
+  // 프로젝트에 아직 없는 조직 멤버만 표시
+  const candidates = useMemo(() => {
+    const all = (orgMembersData?.items ?? []).filter((m) => !existingUserIds.has(m.userId));
+    if (!search.trim()) return all;
+    const q = search.trim().toLowerCase();
+    return all.filter(
+      (m) => m.fullName.toLowerCase().includes(q) || m.email.toLowerCase().includes(q),
+    );
+  }, [orgMembersData?.items, existingUserIds, search]);
+
+  function handleOpenChange(next: boolean) {
+    if (!next) {
+      setSearch("");
+      setSelectedIds(new Set());
+    }
+    onOpenChange(next);
+  }
+
+  function toggleSelect(userId: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(userId)) next.delete(userId);
+      else next.add(userId);
+      return next;
+    });
+  }
+
+  function handleAdd() {
+    if (selectedIds.size === 0) return;
+    addMembersMutation.mutate([...selectedIds], {
+      onSuccess: () => handleOpenChange(false),
+    });
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>멤버 추가</DialogTitle>
+          <DialogDescription>
+            프로젝트에 추가할 조직 멤버를 선택하세요.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-3">
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="이름 또는 이메일로 검색..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+
+          <div className="max-h-60 overflow-y-auto rounded-md border">
+            {isLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+              </div>
+            ) : candidates.length === 0 ? (
+              <p className="py-8 text-center text-sm text-muted-foreground">
+                {search ? "검색 결과가 없습니다" : "추가할 수 있는 멤버가 없습니다"}
+              </p>
+            ) : (
+              candidates.map((member) => (
+                <label
+                  key={member.userId}
+                  className={`flex cursor-pointer items-center gap-3 px-3 py-2.5 transition-colors hover:bg-muted/50 ${
+                    selectedIds.has(member.userId) ? "bg-muted" : ""
+                  }`}
+                >
+                  <Checkbox
+                    checked={selectedIds.has(member.userId)}
+                    onCheckedChange={() => toggleSelect(member.userId)}
+                  />
+                  <Avatar className="h-7 w-7">
+                    <AvatarFallback className="text-[10px]">
+                      {member.fullName.slice(0, 2)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium">{member.fullName}</p>
+                    <p className="truncate text-xs text-muted-foreground">{member.email}</p>
+                  </div>
+                </label>
+              ))
+            )}
+          </div>
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={() => handleOpenChange(false)} disabled={addMembersMutation.isPending}>
+            취소
+          </Button>
+          <Button
+            onClick={handleAdd}
+            disabled={selectedIds.size === 0 || addMembersMutation.isPending}
+          >
+            {addMembersMutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+            추가 ({selectedIds.size}명)
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

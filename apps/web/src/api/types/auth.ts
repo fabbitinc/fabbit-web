@@ -66,6 +66,34 @@ export interface LoginResponse {
   tokens: TokenResponse;
 }
 
+// --- POST /api/v1/auth/login (register 도메인, slug 없이) ---
+
+export interface ScopedLoginResponse {
+  user: UserResponse;
+  scoped_token: string;
+}
+
+// --- POST /api/v1/auth/organizations (scoped_token 인증) ---
+
+export interface CreateOrganizationRequest {
+  org_name: string;
+  slug?: string | null;
+  industry?: string | null;
+  team_size?: string | null;
+  plan_type?: string;
+}
+
+export interface CreateOrganizationResponse {
+  organization: OrganizationResponse;
+  tokens: TokenResponse;
+}
+
+// --- POST /api/v1/auth/switch-org ---
+
+export interface SwitchOrgRequest {
+  slug: string;
+}
+
 // --- GET /api/v1/auth/me ---
 
 export interface MeResponse {
@@ -99,4 +127,30 @@ export interface CheckSlugResponse {
   available: boolean;
   message: string | null;
   suggestion: string | null;
+}
+
+// --- GET /api/v1/auth/invitations/verify ---
+
+export interface VerifyInvitationResponse {
+  email: string;
+  org_name: string;
+  inviter_name: string;
+  role: string;
+  is_existing_user: boolean;
+  expires_at: string;
+}
+
+// --- POST /api/v1/auth/accept-invitation ---
+
+export interface AcceptInvitationRequest {
+  token: string;
+  password?: string;
+  full_name?: string;
+}
+
+export interface AcceptInvitationResponse {
+  user: UserResponse;
+  organization: OrganizationResponse;
+  tokens: TokenResponse;
+  is_new_user: boolean;
 }

@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dialog";
 import { useRegistrationStore } from "@/stores/registrationStore";
 import { useAuthStore } from "@/stores/authStore";
+import { createOrganization } from "@/api";
 import { planOptions } from "@/features/registration/mock-data/registration-mock";
 import { cn } from "@/lib/utils";
 import { setAuthCookies } from "@/lib/auth-cookies";
@@ -45,7 +46,7 @@ function buildSubdomainUrl(slug: string, path: string): string {
 
 export function PlanSelectionPage() {
   const navigate = useNavigate();
-  const { selectedPlan, setSelectedPlan, workspaceData, signupData } =
+  const { selectedPlan, setSelectedPlan, workspaceData, signupData, scopedToken, clearScopedToken } =
     useRegistrationStore();
   const { register, logout } = useAuthStore();
 
@@ -62,9 +63,12 @@ export function PlanSelectionPage() {
   };
 
   const handleContinue = () => {
-    if (!signupData.name || !signupData.email || !signupData.password) {
-      navigate("/signup");
-      return;
+    // scopedToken이 없는 경우에만 signupData 검증 (신규 가입 플로우)
+    if (!scopedToken) {
+      if (!signupData.name || !signupData.email || !signupData.password) {
+        navigate("/signup");
+        return;
+      }
     }
 
     if (!workspaceData.organizationName.trim() || !workspaceData.slug.trim()) {
@@ -85,43 +89,75 @@ export function PlanSelectionPage() {
       // progress 1단계: 워크스페이스 생성 중
       setCompletedSteps(1);
 
-      // 실제 회원가입 API 호출
-      const result = await register({
-        email: signupData.email,
-        password: signupData.password,
-        full_name: signupData.name,
-        org_name: workspaceData.organizationName,
-        slug: workspaceData.slug || null,
-        industry: workspaceData.industry || null,
-        team_size: workspaceData.teamSize || null,
-        job_role: workspaceData.role || null,
-        plan_type: toApiPlanType(selectedPlan),
-        turnstile_token: signupData.turnstileToken || null,
-      });
+      if (scopedToken) {
+        // 기존 회원 로그인 → 조직 생성 플로우
+        const response = await createOrganization(
+          {
+            org_name: workspaceData.organizationName,
+            slug: workspaceData.slug || null,
+            industry: workspaceData.industry || null,
+            team_size: workspaceData.teamSize || null,
+            plan_type: toApiPlanType(selectedPlan),
+          },
+          scopedToken,
+        );
 
-      // progress 나머지 단계 완료
-      for (let i = 1; i < creationSteps.length; i++) {
-        await new Promise((resolve) => setTimeout(resolve, 200));
-        setCompletedSteps(i + 1);
-      }
+        // progress 나머지 단계 완료
+        for (let i = 1; i < creationSteps.length; i++) {
+          await new Promise((resolve) => setTimeout(resolve, 200));
+          setCompletedSteps(i + 1);
+        }
 
-      // 서브도메인으로 토큰 전달 (cross-subdomain 쿠키)
-      setAuthCookies(result.accessToken, result.refreshToken);
+        // scopedToken 정리
+        clearScopedToken();
 
-      // 온보딩 상태 + 권한 체크 → 서브도메인으로 리다이렉트
-      if (result.onboarded) {
-        window.location.href = buildSubdomainUrl(result.slug, "/");
-      } else if (!result.isAdmin) {
-        setDialogPhase("denied");
+        // 서브도메인으로 토큰 전달 (cross-subdomain 쿠키)
+        setAuthCookies(
+          response.tokens.access_token,
+          response.tokens.refresh_token,
+        );
+
+        // 새 서브도메인으로 이동
+        window.location.href = buildSubdomainUrl(response.organization.slug, "/");
       } else {
-        window.location.href = buildSubdomainUrl(result.slug, "/");
+        // 신규 가입 플로우 (기존 로직)
+        const result = await register({
+          email: signupData.email,
+          password: signupData.password,
+          full_name: signupData.name,
+          org_name: workspaceData.organizationName,
+          slug: workspaceData.slug || null,
+          industry: workspaceData.industry || null,
+          team_size: workspaceData.teamSize || null,
+          job_role: workspaceData.role || null,
+          plan_type: toApiPlanType(selectedPlan),
+          turnstile_token: signupData.turnstileToken || null,
+        });
+
+        // progress 나머지 단계 완료
+        for (let i = 1; i < creationSteps.length; i++) {
+          await new Promise((resolve) => setTimeout(resolve, 200));
+          setCompletedSteps(i + 1);
+        }
+
+        // 서브도메인으로 토큰 전달 (cross-subdomain 쿠키)
+        setAuthCookies(result.accessToken, result.refreshToken);
+
+        // 온보딩 상태 + 권한 체크 → 서브도메인으로 리다이렉트
+        if (result.onboarded) {
+          window.location.href = buildSubdomainUrl(result.slug, "/");
+        } else if (!result.isAdmin) {
+          setDialogPhase("denied");
+        } else {
+          window.location.href = buildSubdomainUrl(result.slug, "/");
+        }
       }
     } catch (error) {
       setCompletedSteps(0);
       setDialogPhase("confirming");
       setCreateError(error instanceof Error ? error.message : "가입에 실패했습니다.");
     }
-  }, [register, selectedPlan, signupData, workspaceData]);
+  }, [register, selectedPlan, signupData, workspaceData, scopedToken, clearScopedToken]);
 
   const handleDeniedClose = async () => {
     await logout();
@@ -318,12 +354,14 @@ export function PlanSelectionPage() {
                     {workspaceData.organizationName || "—"}
                   </span>
                 </div>
-                <div className="flex items-center justify-between rounded-lg border border-gray-200 px-4 py-3">
-                  <span className="text-sm text-gray-500">이메일</span>
-                  <span className="text-sm font-medium text-gray-900">
-                    {signupData.email || "—"}
-                  </span>
-                </div>
+                {!scopedToken && (
+                  <div className="flex items-center justify-between rounded-lg border border-gray-200 px-4 py-3">
+                    <span className="text-sm text-gray-500">이메일</span>
+                    <span className="text-sm font-medium text-gray-900">
+                      {signupData.email || "—"}
+                    </span>
+                  </div>
+                )}
                 <div className="flex items-center justify-between rounded-lg border border-gray-200 px-4 py-3">
                   <span className="text-sm text-gray-500">
                     워크스페이스 주소

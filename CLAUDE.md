@@ -35,3 +35,9 @@
 - 설명은 **무엇을**, **왜 미뤘는지**(선행 조건 등)를 구체적으로 작성
 - 예: `// BACKLOG: 이력 탭 — 리비전 이력 및 감사 로그 표시. 백엔드 리비전/감사 API 설계 후 구현.`
 - `TODO`는 당장 고쳐야 하는 항목, `BACKLOG`은 의도적으로 미룬 기능으로 구분
+
+## TurboRepo 관리 방안
+
+- **web을 개발할때 사용자가 요청하지 않는 이상 packages, storybook을 사용하지 않는다.**
+- 새 색상은 반드시 packages/tokens → packages/theme 순서로 추가
+- packages/ui 컴포넌트에서 hex/rgb 직접 사용 금지, var(--\*)만 허용
