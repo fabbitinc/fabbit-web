@@ -90,7 +90,7 @@ export function ProjectSettingsView({ projectName, projectDescription }: Project
   const [orgLabels] = useState<ChangeLabel[]>(ORG_DEFAULT_LABELS);
   const [projectLabels, setProjectLabels] = useState<ChangeLabel[]>([]);
   const [newLabelName, setNewLabelName] = useState("");
-  const [newLabelColor, setNewLabelColor] = useState(COLOR_PRESETS[0].value);
+  const [newLabelColor, setNewLabelColor] = useState<ChangeLabel["color"]>(COLOR_PRESETS[0].value);
 
   // 위험 영역 상태
   const [archived, setArchived] = useState(false);

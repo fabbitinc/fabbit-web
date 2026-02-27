@@ -95,7 +95,7 @@ export function OrganizationSettingsPage() {
   // 라벨 탭 상태
   const [orgLabels, setOrgLabels] = useState<ChangeLabel[]>(ORG_DEFAULT_LABELS);
   const [newLabelName, setNewLabelName] = useState("");
-  const [newLabelColor, setNewLabelColor] = useState(COLOR_PRESETS[0].value);
+  const [newLabelColor, setNewLabelColor] = useState<ChangeLabel["color"]>(COLOR_PRESETS[0].value);
 
   const saveSettings = () => {
     toast.success("조직 설정을 저장했습니다. (목데이터)");
