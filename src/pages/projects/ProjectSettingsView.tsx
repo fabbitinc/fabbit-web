@@ -14,7 +14,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import type { ChangeLabel } from "./changeRequestMock";
+import { COLOR_PRESETS, ORG_DEFAULT_LABELS } from "@/constants/labelConfig";
 
 // ============================================================
 // 타입 & Mock 데이터
@@ -48,26 +60,6 @@ const INITIAL_MEMBERS: MockMember[] = [
   { id: "m4", name: "최검수", email: "choi@fabbit.io", role: "viewer", joinedAt: "2025-02-10" },
 ];
 
-const INITIAL_LABELS: ChangeLabel[] = [
-  { name: "설계변경", color: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300" },
-  { name: "BOM변경", color: "bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300" },
-  { name: "재질변경", color: "bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300" },
-  { name: "긴급", color: "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300" },
-  { name: "리뷰필요", color: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300" },
-  { name: "공정변경", color: "bg-teal-100 text-teal-700 dark:bg-teal-900 dark:text-teal-300" },
-];
-
-const COLOR_PRESETS = [
-  { label: "파랑", value: "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300" },
-  { label: "보라", value: "bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300" },
-  { label: "호박", value: "bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-300" },
-  { label: "빨강", value: "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300" },
-  { label: "노랑", value: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300" },
-  { label: "청록", value: "bg-teal-100 text-teal-700 dark:bg-teal-900 dark:text-teal-300" },
-  { label: "초록", value: "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300" },
-  { label: "분홍", value: "bg-pink-100 text-pink-700 dark:bg-pink-900 dark:text-pink-300" },
-];
-
 const ROLE_LABELS: Record<string, string> = {
   admin: "관리자",
   editor: "편집자",
@@ -94,8 +86,9 @@ export function ProjectSettingsView({ projectName, projectDescription }: Project
   const [members, setMembers] = useState<MockMember[]>(INITIAL_MEMBERS);
   const [inviteEmail, setInviteEmail] = useState("");
 
-  // 라벨 탭 상태
-  const [labels, setLabels] = useState<ChangeLabel[]>(INITIAL_LABELS);
+  // 라벨 탭 상태 — 조직 레이블(읽기 전용) + 프로젝트 레이블(추가/삭제 가능)
+  const [orgLabels] = useState<ChangeLabel[]>(ORG_DEFAULT_LABELS);
+  const [projectLabels, setProjectLabels] = useState<ChangeLabel[]>([]);
   const [newLabelName, setNewLabelName] = useState("");
   const [newLabelColor, setNewLabelColor] = useState(COLOR_PRESETS[0].value);
 
@@ -260,9 +253,9 @@ export function ProjectSettingsView({ projectName, projectDescription }: Project
         {/* 라벨 */}
         {activeTab === "labels" && (
           <div className="space-y-6">
-            {/* 라벨 추가 */}
+            {/* 프로젝트 라벨 추가 */}
             <div>
-              <h2 className="text-base font-semibold text-foreground">새 라벨 추가</h2>
+              <h2 className="text-base font-semibold text-foreground">프로젝트 라벨 추가</h2>
               <div className="mt-3 space-y-4">
                 <div className="flex gap-2">
                   <Input
@@ -276,11 +269,11 @@ export function ProjectSettingsView({ projectName, projectDescription }: Project
                     onClick={() => {
                       const trimmed = newLabelName.trim();
                       if (!trimmed) return;
-                      if (labels.some((l) => l.name === trimmed)) {
+                      if (orgLabels.some((l) => l.name === trimmed) || projectLabels.some((l) => l.name === trimmed)) {
                         toast.info("이미 존재하는 라벨입니다.");
                         return;
                       }
-                      setLabels((prev) => [...prev, { name: trimmed, color: newLabelColor }]);
+                      setProjectLabels((prev) => [...prev, { name: trimmed, color: newLabelColor }]);
                       setNewLabelName("");
                       toast.success(`"${trimmed}" 라벨을 추가했습니다.`);
                     }}
@@ -318,11 +311,36 @@ export function ProjectSettingsView({ projectName, projectDescription }: Project
               </div>
             </div>
 
-            {/* 라벨 목록 */}
+            {/* 조직 레이블 (읽기 전용) */}
             <div>
-              <h2 className="text-base font-semibold text-foreground">라벨 목록</h2>
+              <div className="flex items-center gap-2">
+                <h2 className="text-base font-semibold text-foreground">조직 라벨</h2>
+                <Badge variant="outline" className="text-xs">읽기 전용</Badge>
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">
+                조직 설정에서 관리되는 공통 라벨입니다. 프로젝트에서 수정할 수 없습니다.
+              </p>
               <div className="mt-3 space-y-2">
-                {labels.map((label) => (
+                {orgLabels.map((label) => (
+                  <div
+                    key={label.name}
+                    className="flex items-center gap-3 rounded-md border border-border bg-muted/20 px-4 py-2.5"
+                  >
+                    <Badge variant="secondary" className={label.color}>
+                      {label.name}
+                    </Badge>
+                    <Badge variant="outline" className="text-[10px] text-muted-foreground">조직</Badge>
+                    <span className="flex-1" />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* 프로젝트 레이블 */}
+            <div>
+              <h2 className="text-base font-semibold text-foreground">프로젝트 라벨</h2>
+              <div className="mt-3 space-y-2">
+                {projectLabels.map((label) => (
                   <div
                     key={label.name}
                     className="flex items-center gap-3 rounded-md border border-border px-4 py-2.5"
@@ -331,22 +349,43 @@ export function ProjectSettingsView({ projectName, projectDescription }: Project
                       {label.name}
                     </Badge>
                     <span className="flex-1" />
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                      onClick={() => {
-                        setLabels((prev) => prev.filter((l) => l.name !== label.name));
-                        toast.success(`"${label.name}" 라벨을 삭제했습니다.`);
-                      }}
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                        >
+                          <Trash2 className="h-3.5 w-3.5" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>라벨을 영구 삭제</AlertDialogTitle>
+                          <AlertDialogDescription className="space-y-2">
+                            <p>이 라벨을 삭제하면 다시 복구할 수 없습니다.</p>
+                            <p>삭제 시 모든 이슈 및 변경 요청에서 해당 라벨이 제거됩니다.</p>
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>취소</AlertDialogCancel>
+                          <AlertDialogAction
+                            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                            onClick={() => {
+                              setProjectLabels((prev) => prev.filter((l) => l.name !== label.name));
+                              toast.success(`"${label.name}" 라벨을 삭제했습니다.`);
+                            }}
+                          >
+                            라벨 삭제
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
                   </div>
                 ))}
-                {labels.length === 0 && (
+                {projectLabels.length === 0 && (
                   <p className="text-sm text-muted-foreground py-4 text-center">
-                    등록된 라벨이 없습니다.
+                    프로젝트 전용 라벨이 없습니다.
                   </p>
                 )}
               </div>
