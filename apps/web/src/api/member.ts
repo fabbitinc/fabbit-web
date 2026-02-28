@@ -68,7 +68,7 @@ function mapInvitation(item: ApiInvitationResponse): InvitationDto {
 
 /** 조직 멤버 목록 조회 */
 export async function getMembers(): Promise<MemberListResponse> {
-  const response = await apiClient.get<ApiMemberListResponse>("/api/v1/members");
+  const response = await apiClient.get<ApiMemberListResponse>("/api/v1/organizations/members");
   return {
     items: response.data.items.map(mapMember),
   };
@@ -76,7 +76,7 @@ export async function getMembers(): Promise<MemberListResponse> {
 
 /** 초대 목록 조회 */
 export async function getInvitations(): Promise<InvitationListResponse> {
-  const response = await apiClient.get<ApiInvitationListResponse>("/api/v1/members/invitations");
+  const response = await apiClient.get<ApiInvitationListResponse>("/api/v1/organizations/invitations");
   return {
     invitations: response.data.invitations.map(mapInvitation),
   };
@@ -84,16 +84,16 @@ export async function getInvitations(): Promise<InvitationListResponse> {
 
 /** 초대 생성 */
 export async function createInvitation(request: CreateInvitationRequest): Promise<InvitationDto> {
-  const response = await apiClient.post<ApiInvitationResponse>("/api/v1/members/invitations", request);
+  const response = await apiClient.post<ApiInvitationResponse>("/api/v1/organizations/invitations", request);
   return mapInvitation(response.data);
 }
 
 /** 초대 취소 */
 export async function cancelInvitation(invitationId: string): Promise<void> {
-  await apiClient.delete(`/api/v1/members/invitations/${invitationId}`);
+  await apiClient.delete(`/api/v1/organizations/invitations/${invitationId}`);
 }
 
 /** 조직 멤버 제거 */
 export async function removeMember(userId: string): Promise<void> {
-  await apiClient.delete(`/api/v1/members/${userId}`);
+  await apiClient.delete(`/api/v1/organizations/members/${userId}`);
 }
