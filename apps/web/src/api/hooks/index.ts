@@ -6,3 +6,4 @@ export * from "./useParts";
 export * from "./useDashboard";
 export * from "./useIssues";
 export * from "./useMembers";
+export * from "./useLabels";

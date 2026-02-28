@@ -140,10 +140,8 @@ const STATUS_LABEL = {
 
 function TimelineEventItem({
   event,
-  labelHex,
 }: {
   event: TimelineEvent;
-  labelHex?: string;
 }) {
   // 댓글
   if (event.type === "comment") {
@@ -231,18 +229,25 @@ function TimelineEventItem({
   // 상태 변경
   if (event.type === "status_change") {
     const isMerged = event.content === "merged";
+    const isReopened = event.content === "open";
     return (
       <div className="flex items-center gap-3 py-1.5 pl-1">
         <div className="flex h-8 w-8 items-center justify-center">
           {isMerged ? (
             <FileCheck className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+          ) : isReopened ? (
+            <AlertCircle className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
           ) : (
             <CheckCircle2 className="h-4 w-4 text-red-500 dark:text-red-400" />
           )}
         </div>
         <p className="flex-1 text-sm text-muted-foreground">
           <span className="font-medium text-foreground">{event.author}</span>
-          {isMerged ? " 님이 변경을 반영했습니다" : " 님이 이슈를 닫았습니다"}
+          {isMerged
+            ? " 님이 변경을 반영했습니다"
+            : isReopened
+              ? " 님이 이슈를 다시 열었습니다"
+              : " 님이 이슈를 닫았습니다"}
         </p>
         <span className="text-xs text-muted-foreground/60">
           {timeAgo(event.createdAt)}
@@ -251,29 +256,127 @@ function TimelineEventItem({
     );
   }
 
-  // 라벨
-  if (event.type === "label_added" || event.type === "label_removed") {
+  // 이슈/CR 생성
+  if (event.type === "issue_created") {
+    return (
+      <div className="flex items-center gap-3 py-1.5 pl-1">
+        <div className="flex h-8 w-8 items-center justify-center">
+          <FilePen className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+        </div>
+        <p className="flex-1 text-sm text-muted-foreground">
+          <span className="font-medium text-foreground">{event.author}</span>
+          {" 님이 이슈를 생성했습니다"}
+        </p>
+        <span className="text-xs text-muted-foreground/60">
+          {timeAgo(event.createdAt)}
+        </span>
+      </div>
+    );
+  }
+
+  // CR 머지
+  if (event.type === "cr_merged") {
+    return (
+      <div className="flex items-center gap-3 py-1.5 pl-1">
+        <div className="flex h-8 w-8 items-center justify-center">
+          <FileCheck className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+        </div>
+        <p className="flex-1 text-sm text-muted-foreground">
+          <span className="font-medium text-foreground">{event.author}</span>
+          {" 님이 변경 요청을 반영했습니다"}
+          {event.issueTitle && (
+            <span className="text-muted-foreground/70"> — {event.issueTitle}</span>
+          )}
+        </p>
+        <span className="text-xs text-muted-foreground/60">
+          {timeAgo(event.createdAt)}
+        </span>
+      </div>
+    );
+  }
+
+  // 부품 연결
+  if (event.type === "part_added") {
+    return (
+      <div className="flex items-center gap-3 py-1.5 pl-1">
+        <div className="flex h-8 w-8 items-center justify-center">
+          <Package className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+        </div>
+        <p className="flex-1 text-sm text-muted-foreground">
+          <span className="font-medium text-foreground">{event.author}</span>
+          {" 님이 부품 "}
+          <span className="font-medium text-foreground">{event.partCount ?? 0}건</span>
+          을 연결했습니다
+        </p>
+        <span className="text-xs text-muted-foreground/60">
+          {timeAgo(event.createdAt)}
+        </span>
+      </div>
+    );
+  }
+
+  // 부품 해제
+  if (event.type === "part_removed") {
+    return (
+      <div className="flex items-center gap-3 py-1.5 pl-1">
+        <div className="flex h-8 w-8 items-center justify-center">
+          <Package className="h-3.5 w-3.5 text-orange-500 dark:text-orange-400" />
+        </div>
+        <p className="flex-1 text-sm text-muted-foreground">
+          <span className="font-medium text-foreground">{event.author}</span>
+          {" 님이 부품 "}
+          <span className="font-medium text-foreground">{event.partCount ?? 0}건</span>
+          을 해제했습니다
+        </p>
+        <span className="text-xs text-muted-foreground/60">
+          {timeAgo(event.createdAt)}
+        </span>
+      </div>
+    );
+  }
+
+  // 라벨 변경 (added/removed 배열)
+  if (event.type === "labels_changed") {
+    const added = event.addedLabels ?? [];
+    const removed = event.removedLabels ?? [];
     return (
       <div className="flex items-center gap-3 py-1.5 pl-1">
         <div className="flex h-8 w-8 items-center justify-center">
           <Tag className="h-3.5 w-3.5 text-muted-foreground" />
         </div>
-        <p className="flex-1 text-sm text-muted-foreground">
+        <div className="flex-1 text-sm text-muted-foreground">
           <span className="font-medium text-foreground">{event.author}</span>
-          {" 님이 라벨 "}
-          {event.label ? (
-            <LabelBadge
-              label={event.label}
-              colorHex={labelHex ?? "#64748b"}
-              design="soft-4"
-              className="mx-0.5"
-            />
-          ) : null}
-          {event.type === "label_added"
-            ? "을(를) 추가했습니다"
-            : "을(를) 제거했습니다"}
-        </p>
-        <span className="text-xs text-muted-foreground/60">
+          {" 님이 라벨을 변경했습니다"}
+          {added.length > 0 && (
+            <span className="ml-1.5">
+              {added.map((l) => (
+                <LabelBadge
+                  key={l.name}
+                  label={l.name}
+                  colorHex={l.color}
+                  design="soft-4"
+                  className="mx-0.5"
+                />
+              ))}
+              {" 추가"}
+            </span>
+          )}
+          {removed.length > 0 && (
+            <span className="ml-1.5">
+              {removed.map((l) => (
+                <LabelBadge
+                  key={l.name}
+                  label={l.name}
+                  colorHex={l.color}
+                  design="soft-4"
+                  className="mx-0.5 line-through opacity-60"
+                />
+              ))}
+              {" 제거"}
+            </span>
+          )}
+        </div>
+        <span className="shrink-0 text-xs text-muted-foreground/60">
           {timeAgo(event.createdAt)}
         </span>
       </div>
@@ -446,12 +549,6 @@ export function ChangeRequestDetail({
             <TimelineEventItem
               key={event.id}
               event={event}
-              labelHex={
-                event.label
-                  ? cr.labels.find((label) => label.name === event.label)
-                      ?.colorHex
-                  : undefined
-              }
             />
           ))}
 

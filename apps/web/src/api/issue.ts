@@ -255,8 +255,8 @@ export async function unassignIssueUsers(projectId: string, issueId: string, use
   });
 }
 
-/** 프로젝트 라벨 목록 조회 */
-export async function getProjectLabels(projectId: string): Promise<IssueLabelDto[]> {
+/** 이슈용 프로젝트 라벨 목록 조회 (IssueLabelDto[] 반환) */
+export async function getIssueLabels(projectId: string): Promise<IssueLabelDto[]> {
   const response = await apiClient.get<ApiLabelListResponse>(`/api/v1/projects/${projectId}/labels`);
   return (response.data.items ?? []).map(mapIssueLabel).filter((label): label is IssueLabelDto => label !== null);
 }

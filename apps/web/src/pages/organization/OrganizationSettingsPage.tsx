@@ -24,7 +24,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { useAuthStore } from "@/stores/authStore";
-import { useMembers, useInvitations, useCreateInvitation, useCancelInvitation } from "@/api/hooks/useMembers";
+import { useMembers, useInvitations, useCreateInvitation, useCancelInvitation, useRemoveMember } from "@/api/hooks/useMembers";
 import type { MemberRole } from "@/api/types/member";
 
 type SettingsTab = "general" | "members" | "security" | "logs" | "advanced";
@@ -82,7 +82,9 @@ const mockActivityLogs = [
 ];
 
 export function OrganizationSettingsPage() {
+  const currentUser = useAuthStore((state) => state.user);
   const currentOrg = useAuthStore((state) => state.currentMembership?.organization);
+  const currentRole = useAuthStore((state) => state.currentMembership?.role);
   const [activeTab, setActiveTab] = useState<SettingsTab>("general");
 
   const orgName = currentOrg?.name ?? "Fabbit Design Team";
@@ -104,6 +106,7 @@ export function OrganizationSettingsPage() {
   const { data: invitationsData, isLoading: invitationsLoading } = useInvitations();
   const createInvitationMutation = useCreateInvitation();
   const cancelInvitationMutation = useCancelInvitation();
+  const removeMemberMutation = useRemoveMember();
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState<MemberRole>("MEMBER");
 
@@ -347,6 +350,9 @@ export function OrganizationSettingsPage() {
                           <th className="px-4 py-3 text-left font-medium">이메일</th>
                           <th className="px-4 py-3 text-left font-medium">직무</th>
                           <th className="px-4 py-3 text-left font-medium">역할</th>
+                          {currentRole === "ADMIN" && (
+                            <th className="w-0 px-4 py-3 text-center font-medium">제거</th>
+                          )}
                         </tr>
                       </thead>
                       <tbody>
@@ -367,11 +373,45 @@ export function OrganizationSettingsPage() {
                                 {member.role === "ADMIN" ? "관리자" : "멤버"}
                               </Badge>
                             </td>
+                            {currentRole === "ADMIN" && (
+                              <td className="w-0 px-4 py-3 text-center">
+                                {member.userId !== currentUser?.id && (
+                                  <AlertDialog>
+                                    <AlertDialogTrigger asChild>
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                                      >
+                                        <Trash2 className="h-3.5 w-3.5" />
+                                      </Button>
+                                    </AlertDialogTrigger>
+                                    <AlertDialogContent>
+                                      <AlertDialogHeader>
+                                        <AlertDialogTitle>멤버 제거</AlertDialogTitle>
+                                        <AlertDialogDescription>
+                                          {member.fullName}({member.email})을 조직에서 제거하시겠습니까?
+                                        </AlertDialogDescription>
+                                      </AlertDialogHeader>
+                                      <AlertDialogFooter>
+                                        <AlertDialogCancel>닫기</AlertDialogCancel>
+                                        <AlertDialogAction
+                                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                          onClick={() => removeMemberMutation.mutate(member.userId)}
+                                        >
+                                          제거
+                                        </AlertDialogAction>
+                                      </AlertDialogFooter>
+                                    </AlertDialogContent>
+                                  </AlertDialog>
+                                )}
+                              </td>
+                            )}
                           </tr>
                         ))}
                         {membersData?.items.length === 0 && (
                           <tr>
-                            <td colSpan={4} className="px-4 py-8 text-center text-sm text-muted-foreground">
+                            <td colSpan={currentRole === "ADMIN" ? 5 : 4} className="px-4 py-8 text-center text-sm text-muted-foreground">
                               등록된 멤버가 없습니다.
                             </td>
                           </tr>

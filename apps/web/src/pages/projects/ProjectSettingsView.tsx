@@ -1,11 +1,11 @@
-import { useState, useMemo, useEffect, type ComponentType } from "react";
-import { Settings, Users, Tag, AlertTriangle, Trash2, Plus, Loader2, Search, UserPlus } from "lucide-react";
+import { useState, useMemo, useEffect, useRef, type ComponentType } from "react";
+import { Settings, Users, Tag, AlertTriangle, Trash2, Plus, Loader2, Search, UserPlus, Check, Pipette } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { LabelBadge } from "@fabbit/ui";
 import {
@@ -34,9 +34,12 @@ import {
   useAddProjectMembers,
   useRemoveProjectMembers,
   useMembers,
+  useProjectLabels,
+  useCreateProjectLabel,
+  useDeleteProjectLabel,
 } from "@/api";
-import type { ChangeLabel } from "./changeRequestMock";
-import { COLOR_PRESETS, ORG_DEFAULT_LABELS } from "@/constants/labelConfig";
+import type { CreateLabelRequest } from "@/api";
+import { COLOR_PRESETS } from "@/constants/labelConfig";
 
 // ============================================================
 // 타입 & Mock 데이터
@@ -80,11 +83,11 @@ export function ProjectSettingsView({ projectId, projectName, projectDescription
   // 멤버 탭 상태
   const [addMemberOpen, setAddMemberOpen] = useState(false);
 
-  // 라벨 탭 상태 — 조직 레이블(읽기 전용) + 프로젝트 레이블(추가/삭제 가능)
-  const [orgLabels] = useState<ChangeLabel[]>(ORG_DEFAULT_LABELS);
-  const [projectLabels, setProjectLabels] = useState<ChangeLabel[]>([]);
-  const [newLabelName, setNewLabelName] = useState("");
-  const [newLabelColor, setNewLabelColor] = useState<ChangeLabel["colorHex"]>(COLOR_PRESETS[0].value);
+  // 라벨 탭 상태
+  const { data: labelsData, isLoading: labelsLoading } = useProjectLabels(projectId);
+  const deleteLabelMutation = useDeleteProjectLabel(projectId);
+  const projectLabels = labelsData?.items ?? [];
+  const [createLabelOpen, setCreateLabelOpen] = useState(false);
 
   // 위험 영역 상태
   const [archived, setArchived] = useState(false);
@@ -155,96 +158,35 @@ export function ProjectSettingsView({ projectId, projectName, projectDescription
         {/* 라벨 */}
         {activeTab === "labels" && (
           <div className="space-y-6">
-            {/* 프로젝트 라벨 추가 */}
-            <div>
-              <h2 className="text-base font-semibold text-foreground">프로젝트 라벨 추가</h2>
-              <div className="mt-3 space-y-4">
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="라벨 이름"
-                    value={newLabelName}
-                    onChange={(e) => setNewLabelName(e.target.value)}
-                    className="flex-1"
-                  />
-                  <Button
-                    className="gap-1"
-                    onClick={() => {
-                      const trimmed = newLabelName.trim();
-                      if (!trimmed) return;
-                      if (orgLabels.some((l) => l.name === trimmed) || projectLabels.some((l) => l.name === trimmed)) {
-                        toast.info("이미 존재하는 라벨입니다.");
-                        return;
-                      }
-                      setProjectLabels((prev) => [...prev, { name: trimmed, colorHex: newLabelColor }]);
-                      setNewLabelName("");
-                      toast.success(`"${trimmed}" 라벨을 추가했습니다.`);
-                    }}
-                  >
-                    <Plus className="h-4 w-4" />
-                    추가
-                  </Button>
-                </div>
-                {/* 색상 팔레트 */}
-                <div className="flex flex-wrap gap-2">
-                  {COLOR_PRESETS.map((preset) => (
-                    <button
-                      key={preset.label}
-                      onClick={() => setNewLabelColor(preset.value)}
-                      className={`inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs transition-colors ${
-                        newLabelColor === preset.value
-                          ? "border-foreground/30 bg-muted font-medium"
-                          : "border-border hover:bg-muted/50"
-                      }`}
-                    >
-                      <span className="inline-block h-3 w-3 rounded-full" style={{ backgroundColor: preset.value }} />
-                      {preset.label}
-                    </button>
-                  ))}
-                </div>
-                {/* 미리보기 */}
-                {newLabelName.trim() && (
-                  <div className="flex items-center gap-2">
-                    <p className="text-xs text-muted-foreground">미리보기:</p>
-                    <LabelBadge label={newLabelName.trim()} colorHex={newLabelColor} />
-                  </div>
-                )}
-              </div>
+            {/* 헤더 + 추가 버튼 */}
+            <div className="flex items-center justify-between">
+              <h2 className="text-base font-semibold text-foreground">라벨</h2>
+              <Button className="gap-1" onClick={() => setCreateLabelOpen(true)}>
+                <Plus className="h-4 w-4" />
+                라벨 추가
+              </Button>
             </div>
 
-            {/* 조직 레이블 (읽기 전용) */}
-            <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-base font-semibold text-foreground">조직 라벨</h2>
-                <Badge variant="outline" className="text-xs">읽기 전용</Badge>
-              </div>
-              <p className="mt-1 text-xs text-muted-foreground">
-                조직 설정에서 관리되는 공통 라벨입니다. 프로젝트에서 수정할 수 없습니다.
-              </p>
-              <div className="mt-3 space-y-2">
-                {orgLabels.map((label) => (
+            {/* 프로젝트 라벨 목록 */}
+            <div className="space-y-2">
+              {labelsLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                </div>
+              ) : projectLabels.length === 0 ? (
+                <p className="text-sm text-muted-foreground py-8 text-center">
+                  라벨이 없습니다.
+                </p>
+              ) : (
+                projectLabels.map((label) => (
                   <div
-                    key={label.name}
-                    className="flex items-center gap-3 rounded-md border border-border bg-muted/20 px-4 py-2.5"
-                  >
-                    <LabelBadge label={label.name} colorHex={label.colorHex} />
-                    <Badge variant="outline" className="text-[10px] text-muted-foreground">조직</Badge>
-                    <span className="flex-1" />
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* 프로젝트 레이블 */}
-            <div>
-              <h2 className="text-base font-semibold text-foreground">프로젝트 라벨</h2>
-              <div className="mt-3 space-y-2">
-                {projectLabels.map((label) => (
-                  <div
-                    key={label.name}
+                    key={label.id}
                     className="flex items-center gap-3 rounded-md border border-border px-4 py-2.5"
                   >
-                    <LabelBadge label={label.name} colorHex={label.colorHex} />
-                    <span className="flex-1" />
+                    <LabelBadge label={label.name} colorHex={label.color} />
+                    <span className="min-w-0 flex-1 truncate text-xs text-muted-foreground">
+                      {label.description ?? ""}
+                    </span>
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button
@@ -268,8 +210,9 @@ export function ProjectSettingsView({ projectId, projectName, projectDescription
                           <AlertDialogAction
                             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                             onClick={() => {
-                              setProjectLabels((prev) => prev.filter((l) => l.name !== label.name));
-                              toast.success(`"${label.name}" 라벨을 삭제했습니다.`);
+                              deleteLabelMutation.mutate(label.id, {
+                                onSuccess: () => toast.success(`"${label.name}" 라벨을 삭제했습니다.`),
+                              });
                             }}
                           >
                             라벨 삭제
@@ -278,14 +221,16 @@ export function ProjectSettingsView({ projectId, projectName, projectDescription
                       </AlertDialogContent>
                     </AlertDialog>
                   </div>
-                ))}
-                {projectLabels.length === 0 && (
-                  <p className="text-sm text-muted-foreground py-4 text-center">
-                    프로젝트 전용 라벨이 없습니다.
-                  </p>
-                )}
-              </div>
+                ))
+              )}
             </div>
+
+            <CreateLabelDialog
+              projectId={projectId}
+              open={createLabelOpen}
+              onOpenChange={setCreateLabelOpen}
+              existingNames={new Set(projectLabels.map((l) => l.name))}
+            />
           </div>
         )}
 
@@ -546,6 +491,162 @@ function AddMemberDialog({
           >
             {addMembersMutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
             추가 ({selectedIds.size}명)
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// --- 라벨 생성 다이얼로그 ---
+
+function CreateLabelDialog({
+  projectId,
+  open,
+  onOpenChange,
+  existingNames,
+}: {
+  projectId: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  existingNames: Set<string>;
+}) {
+  const createLabelMutation = useCreateProjectLabel(projectId);
+  const colorInputRef = useRef<HTMLInputElement>(null);
+
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [color, setColor] = useState(COLOR_PRESETS[0].value as string);
+
+  function handleOpenChange(next: boolean) {
+    if (!next) {
+      setName("");
+      setDescription("");
+      setColor(COLOR_PRESETS[0].value);
+    }
+    onOpenChange(next);
+  }
+
+  function handleSubmit() {
+    const trimmedName = name.trim();
+    if (!trimmedName) return;
+    if (existingNames.has(trimmedName)) {
+      toast.info("이미 존재하는 라벨입니다.");
+      return;
+    }
+    const request: CreateLabelRequest = {
+      name: trimmedName,
+      color,
+      description: description.trim() || undefined,
+    };
+    createLabelMutation.mutate(request, {
+      onSuccess: () => {
+        toast.success(`"${trimmedName}" 라벨을 추가했습니다.`);
+        handleOpenChange(false);
+      },
+    });
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={handleOpenChange}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>라벨 추가</DialogTitle>
+          <DialogDescription>
+            프로젝트에서 사용할 새 라벨을 만드세요.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-4">
+          {/* 미리보기 */}
+          <div className="flex items-center justify-center rounded-md border border-dashed border-border bg-muted/30 py-4">
+            {name.trim() ? (
+              <LabelBadge label={name.trim()} colorHex={color} />
+            ) : (
+              <span className="text-xs text-muted-foreground">라벨 미리보기</span>
+            )}
+          </div>
+
+          {/* 이름 */}
+          <div className="space-y-1.5">
+            <Label htmlFor="label-name">이름</Label>
+            <Input
+              id="label-name"
+              placeholder="라벨 이름 (최대 50자)"
+              maxLength={50}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") handleSubmit(); }}
+            />
+          </div>
+
+          {/* 설명 */}
+          <div className="space-y-1.5">
+            <Label htmlFor="label-desc">설명 <span className="text-muted-foreground font-normal">(선택)</span></Label>
+            <Textarea
+              id="label-desc"
+              placeholder="라벨에 대한 간단한 설명 (최대 200자)"
+              maxLength={200}
+              rows={2}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
+          </div>
+
+          {/* 색상 */}
+          <div className="space-y-1.5">
+            <Label>색상</Label>
+            <div className="grid grid-cols-10 gap-1.5">
+              {COLOR_PRESETS.map((preset) => (
+                <button
+                  key={preset.value}
+                  type="button"
+                  title={preset.label}
+                  onClick={() => setColor(preset.value)}
+                  className="group relative flex h-7 w-7 items-center justify-center rounded-md border border-transparent transition-all hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  style={{ backgroundColor: preset.value }}
+                >
+                  {color === preset.value && (
+                    <Check className="h-3.5 w-3.5 text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.4)]" />
+                  )}
+                </button>
+              ))}
+            </div>
+
+            {/* 커스텀 색상 */}
+            <div className="flex items-center gap-2 pt-1">
+              <button
+                type="button"
+                onClick={() => colorInputRef.current?.click()}
+                className="flex h-7 w-7 items-center justify-center rounded-md border border-dashed border-border transition-colors hover:bg-muted"
+              >
+                <Pipette className="h-3.5 w-3.5 text-muted-foreground" />
+              </button>
+              <input
+                ref={colorInputRef}
+                type="color"
+                value={color}
+                onChange={(e) => setColor(e.target.value)}
+                className="sr-only"
+              />
+              <span className="text-xs text-muted-foreground">직접 선택</span>
+              <span className="ml-auto rounded bg-muted px-1.5 py-0.5 font-mono text-xs text-muted-foreground">
+                {color.toUpperCase()}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <DialogFooter>
+          <Button variant="outline" onClick={() => handleOpenChange(false)} disabled={createLabelMutation.isPending}>
+            취소
+          </Button>
+          <Button
+            onClick={handleSubmit}
+            disabled={!name.trim() || createLabelMutation.isPending}
+          >
+            {createLabelMutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+            추가
           </Button>
         </DialogFooter>
       </DialogContent>

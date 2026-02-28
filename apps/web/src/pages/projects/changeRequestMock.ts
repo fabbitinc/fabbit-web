@@ -19,10 +19,13 @@ export type TimelineEventType =
   | "review_approved"
   | "review_changes_requested"
   | "status_change"
-  | "label_added"
-  | "label_removed"
+  | "labels_changed"
   | "assigned"
-  | "referenced";
+  | "referenced"
+  | "issue_created"
+  | "cr_merged"
+  | "part_added"
+  | "part_removed";
 
 export interface TimelineEvent {
   id: string;
@@ -30,9 +33,16 @@ export interface TimelineEvent {
   author: string;
   createdAt: string;
   content?: string | Record<string, unknown> | null;
-  label?: string;
   assignee?: string;
   ref?: string;
+  /** issue_created / cr_merged 등에서 사용 */
+  issueNumber?: number;
+  issueTitle?: string;
+  /** part_added / part_removed 에서 사용 */
+  partCount?: number;
+  /** labels_changed 에서 사용 */
+  addedLabels?: { name: string; color: string }[];
+  removedLabels?: { name: string; color: string }[];
 }
 
 export interface CRAttachment {
@@ -101,8 +111,7 @@ export const MOCK_CHANGE_REQUESTS: ChangeRequest[] = [
       { id: "t1", type: "comment", author: "김설계", createdAt: "2025-02-25T09:30:00", content: "Rev.C 도면 검토 요청드립니다. 체결부 공차 변경 및 방열핀 추가가 핵심입니다." },
       { id: "t2", type: "assigned", author: "김설계", createdAt: "2025-02-25T09:31:00", assignee: "이엔지" },
       { id: "t3", type: "assigned", author: "김설계", createdAt: "2025-02-25T09:31:00", assignee: "박관리" },
-      { id: "t4", type: "label_added", author: "김설계", createdAt: "2025-02-25T09:32:00", label: "설계변경" },
-      { id: "t5", type: "label_added", author: "김설계", createdAt: "2025-02-25T09:32:00", label: "리뷰필요" },
+      { id: "t4", type: "labels_changed", author: "김설계", createdAt: "2025-02-25T09:32:00", addedLabels: [{ name: "설계변경", color: "#3b82f6" }, { name: "리뷰필요", color: "#eab308" }], removedLabels: [] },
       { id: "t6", type: "comment", author: "이엔지", createdAt: "2025-02-25T14:15:00", content: "공차 변경은 확인했습니다. 방열핀 위치가 기존 지그와 간섭이 있을 수 있으니 3D 검증 결과 첨부 부탁드립니다." },
       { id: "t7", type: "review_changes_requested", author: "이엔지", createdAt: "2025-02-25T14:20:00", content: "방열핀 간섭 검증 필요" },
     ],
@@ -127,7 +136,7 @@ export const MOCK_CHANGE_REQUESTS: ChangeRequest[] = [
     ],
     timeline: [
       { id: "t8", type: "comment", author: "이엔지", createdAt: "2025-02-18T10:00:00", content: "IP67 대응을 위해 가스켓 추가가 필요합니다. 기존 조립 공정에 영향 없는 위치입니다." },
-      { id: "t9", type: "label_added", author: "이엔지", createdAt: "2025-02-18T10:01:00", label: "BOM변경" },
+      { id: "t9", type: "labels_changed", author: "이엔지", createdAt: "2025-02-18T10:01:00", addedLabels: [{ name: "BOM변경", color: "#8b5cf6" }], removedLabels: [] },
       { id: "t10", type: "assigned", author: "이엔지", createdAt: "2025-02-18T10:01:00", assignee: "김설계" },
       { id: "t11", type: "review_approved", author: "김설계", createdAt: "2025-02-19T09:30:00", content: "BOM 추가 확인. 조립 순서 변경 없음." },
       { id: "t12", type: "review_approved", author: "박관리", createdAt: "2025-02-20T15:00:00", content: "승인합니다." },
@@ -153,7 +162,7 @@ export const MOCK_CHANGE_REQUESTS: ChangeRequest[] = [
     ],
     timeline: [
       { id: "t14", type: "comment", author: "박관리", createdAt: "2025-02-10T11:00:00", content: "원가 절감을 위해 재질 변경을 검토해주세요. SCM440이 현재 단가가 더 낮습니다." },
-      { id: "t15", type: "label_added", author: "박관리", createdAt: "2025-02-10T11:01:00", label: "재질변경" },
+      { id: "t15", type: "labels_changed", author: "박관리", createdAt: "2025-02-10T11:01:00", addedLabels: [{ name: "재질변경", color: "#f59e0b" }], removedLabels: [] },
       { id: "t16", type: "comment", author: "이엔지", createdAt: "2025-02-12T16:30:00", content: "강도 시뮬레이션 결과, SCM440은 반복 하중 조건에서 안전율이 1.2로 기준(1.5) 미달입니다." },
       { id: "t17", type: "referenced", author: "이엔지", createdAt: "2025-02-12T16:31:00", ref: "SFT-200 강도 해석 보고서" },
       { id: "t18", type: "comment", author: "김설계", createdAt: "2025-02-13T09:00:00", content: "안전율 미달로 재질 변경은 불가합니다. 이슈를 닫겠습니다." },

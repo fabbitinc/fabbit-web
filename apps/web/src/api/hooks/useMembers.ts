@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { getMembers, getInvitations, createInvitation, cancelInvitation } from "../member";
+import { getMembers, getInvitations, createInvitation, cancelInvitation, removeMember } from "../member";
 import type { CreateInvitationRequest } from "../types";
 
 export const MEMBERS_QUERY_KEY = ["members"] as const;
@@ -66,6 +66,29 @@ export function useCancelInvitation() {
     },
     onError: (err) => {
       toast.error(getInvitationErrorMessage(err, "초대 취소에 실패했습니다"));
+    },
+  });
+}
+
+/** 멤버 제거 */
+export function useRemoveMember() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (userId: string) => removeMember(userId),
+    onSuccess: () => {
+      toast.success("멤버를 제거했습니다");
+      queryClient.invalidateQueries({ queryKey: MEMBERS_QUERY_KEY });
+    },
+    onError: (err) => {
+      const axiosErr = err as { response?: { data?: { code?: string; message?: string } } };
+      const code = axiosErr?.response?.data?.code;
+      const messages: Record<string, string> = {
+        FORBIDDEN: "멤버 제거 권한이 없습니다. 관리자만 제거할 수 있습니다.",
+        CANNOT_REMOVE_OWNER: "조직 소유자는 제거할 수 없습니다.",
+        CANNOT_REMOVE_SELF: "자기 자신은 제거할 수 없습니다.",
+      };
+      const message = (code && messages[code]) || axiosErr?.response?.data?.message || "멤버 제거에 실패했습니다";
+      toast.error(message);
     },
   });
 }

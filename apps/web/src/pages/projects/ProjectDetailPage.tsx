@@ -45,7 +45,7 @@ import {
   useIssueTimeline,
   useProjectIssue,
   useProjectIssues,
-  useProjectLabels,
+  useIssueLabels,
   useSyncIssueLabels,
   useUnassignIssueUsers,
 } from "@/api/hooks/useIssues";
@@ -656,33 +656,94 @@ function toTimelineEvents(items: IssueTimelineItemDto[], issue: IssueDto): Timel
 
     const action = item.action.toLowerCase();
     const detail = item.detail ?? {};
-    const detailLabelName =
-      (detail.label_name as string | undefined) ??
-      (detail.label as string | undefined) ??
-      (detail.name as string | undefined);
+    const author = toDisplayActorName(item.actorId, issue);
     const detailAssigneeName =
       (detail.assignee_name as string | undefined) ??
       (detail.user_name as string | undefined) ??
       (detail.full_name as string | undefined) ??
       (detail.assignee_id as string | undefined);
 
-    if ((action.includes("label") && action.includes("link")) || action.includes("label_added")) {
+    // 이슈/CR 생성
+    if (action === "issue_created") {
       return {
         id: item.id,
-        type: "label_added",
-        author: toDisplayActorName(item.actorId, issue),
+        type: "issue_created",
+        author,
         createdAt: item.createdAt,
-        label: detailLabelName,
+        issueNumber: detail.number as number | undefined,
+        issueTitle: detail.title as string | undefined,
       };
     }
 
-    if ((action.includes("label") && action.includes("unlink")) || action.includes("label_removed")) {
+    // 이슈 닫힘
+    if (action === "issue_closed") {
       return {
         id: item.id,
-        type: "label_removed",
-        author: toDisplayActorName(item.actorId, issue),
+        type: "status_change",
+        author,
         createdAt: item.createdAt,
-        label: detailLabelName,
+        content: "closed",
+      };
+    }
+
+    // 이슈 재오픈
+    if (action === "issue_reopened") {
+      return {
+        id: item.id,
+        type: "status_change",
+        author,
+        createdAt: item.createdAt,
+        content: "open",
+      };
+    }
+
+    // CR 머지
+    if (action === "cr_merged") {
+      return {
+        id: item.id,
+        type: "cr_merged",
+        author,
+        createdAt: item.createdAt,
+        issueNumber: detail.number as number | undefined,
+        issueTitle: detail.title as string | undefined,
+      };
+    }
+
+    // 부품 연결
+    if (action === "part_added") {
+      const partIds = detail.part_ids as string[] | undefined;
+      return {
+        id: item.id,
+        type: "part_added",
+        author,
+        createdAt: item.createdAt,
+        partCount: partIds?.length ?? 0,
+      };
+    }
+
+    // 부품 해제
+    if (action === "part_removed") {
+      const partIds = detail.part_ids as string[] | undefined;
+      return {
+        id: item.id,
+        type: "part_removed",
+        author,
+        createdAt: item.createdAt,
+        partCount: partIds?.length ?? 0,
+      };
+    }
+
+    // 라벨 변경 (added/removed 배열)
+    if (action === "labels_changed") {
+      const added = (detail.added as { name: string; color: string }[] | undefined) ?? [];
+      const removed = (detail.removed as { name: string; color: string }[] | undefined) ?? [];
+      return {
+        id: item.id,
+        type: "labels_changed",
+        author,
+        createdAt: item.createdAt,
+        addedLabels: added,
+        removedLabels: removed,
       };
     }
 
@@ -690,7 +751,7 @@ function toTimelineEvents(items: IssueTimelineItemDto[], issue: IssueDto): Timel
       return {
         id: item.id,
         type: "assigned",
-        author: toDisplayActorName(item.actorId, issue),
+        author,
         createdAt: item.createdAt,
         assignee: detailAssigneeName ?? "담당자",
       };
@@ -700,7 +761,7 @@ function toTimelineEvents(items: IssueTimelineItemDto[], issue: IssueDto): Timel
       return {
         id: item.id,
         type: "status_change",
-        author: toDisplayActorName(item.actorId, issue),
+        author,
         createdAt: item.createdAt,
         content: action.includes("reopen") ? "open" : "closed",
       };
@@ -709,7 +770,7 @@ function toTimelineEvents(items: IssueTimelineItemDto[], issue: IssueDto): Timel
     return {
       id: item.id,
       type: "referenced",
-      author: toDisplayActorName(item.actorId, issue),
+      author,
       createdAt: item.createdAt,
       ref: item.action,
     };
@@ -999,7 +1060,7 @@ function IssuesView({ projectId, issueId }: { projectId: string; issueId?: strin
   const assignIssueUsersMutation = useAssignIssueUsers(projectId, isDetailIssueRoute ? issueId : undefined);
   const unassignIssueUsersMutation = useUnassignIssueUsers(projectId, isDetailIssueRoute ? issueId : undefined);
   const syncIssueLabelsMutation = useSyncIssueLabels(projectId, isDetailIssueRoute ? issueId : undefined);
-  const { data: projectLabels = [] } = useProjectLabels(isDetailIssueRoute ? projectId : undefined);
+  const { data: projectLabels = [] } = useIssueLabels(isDetailIssueRoute ? projectId : undefined);
   const createCommentMutation = useCreateIssueComment(projectId, isDetailIssueRoute ? issueId : undefined);
 
   const issues = useMemo(

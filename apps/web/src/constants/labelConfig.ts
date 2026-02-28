@@ -1,23 +1,23 @@
-import type { ChangeLabel } from "@/pages/projects/changeRequestMock";
-
-// 색상 프리셋 — 라벨 생성 시 팔레트로 사용
+// 색상 프리셋 — 라벨 생성 시 팔레트로 사용 (20개)
 export const COLOR_PRESETS = [
-  { label: "파랑", value: "#3b82f6" },
-  { label: "보라", value: "#8b5cf6" },
-  { label: "호박", value: "#f59e0b" },
-  { label: "빨강", value: "#ef4444" },
+  { label: "빨강", value: "#e5484d" },
+  { label: "주황", value: "#f76b15" },
+  { label: "호박", value: "#f5a623" },
   { label: "노랑", value: "#eab308" },
+  { label: "라임", value: "#84cc16" },
+  { label: "초록", value: "#46a758" },
+  { label: "에메랄드", value: "#10b981" },
   { label: "청록", value: "#14b8a6" },
-  { label: "초록", value: "#22c55e" },
+  { label: "시안", value: "#06b6d4" },
+  { label: "하늘", value: "#0ea5e9" },
+  { label: "파랑", value: "#3b82f6" },
+  { label: "인디고", value: "#6366f1" },
+  { label: "보라", value: "#8b5cf6" },
+  { label: "퍼플", value: "#9333ea" },
+  { label: "자홍", value: "#d946ef" },
   { label: "분홍", value: "#ec4899" },
+  { label: "로즈", value: "#f43f5e" },
+  { label: "갈색", value: "#a8763e" },
+  { label: "슬레이트", value: "#64748b" },
+  { label: "그래파이트", value: "#475569" },
 ] as const;
-
-// 조직 기본 레이블 — 프로젝트에 읽기 전용으로 상속
-export const ORG_DEFAULT_LABELS: ChangeLabel[] = [
-  { name: "설계변경", colorHex: "#3b82f6" },
-  { name: "BOM변경", colorHex: "#8b5cf6" },
-  { name: "재질변경", colorHex: "#f59e0b" },
-  { name: "긴급", colorHex: "#ef4444" },
-  { name: "리뷰필요", colorHex: "#eab308" },
-  { name: "공정변경", colorHex: "#14b8a6" },
-];

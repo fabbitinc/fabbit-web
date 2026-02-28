@@ -8,17 +8,17 @@ import {
   getIssueTimeline,
   getProjectIssue,
   getProjectIssues,
-  getProjectLabels,
+  getIssueLabels,
   syncIssueLabels,
   unassignIssueUsers,
   updateIssueComment,
 } from "../issue";
 import type { CreateIssueRequest } from "../types";
+import { PROJECT_LABELS_QUERY_KEY } from "./useLabels";
 
 export const PROJECT_ISSUES_QUERY_KEY = ["projectIssues"] as const;
 export const PROJECT_ISSUE_DETAIL_QUERY_KEY = ["projectIssueDetail"] as const;
 export const PROJECT_ISSUE_TIMELINE_QUERY_KEY = ["projectIssueTimeline"] as const;
-export const PROJECT_LABELS_QUERY_KEY = ["projectLabels"] as const;
 
 /** 프로젝트 이슈 목록 조회 훅 */
 export function useProjectIssues(projectId: string | undefined) {
@@ -47,11 +47,11 @@ export function useIssueTimeline(projectId: string | undefined, issueId: string 
   });
 }
 
-/** 프로젝트 라벨 목록 조회 훅 */
-export function useProjectLabels(projectId: string | undefined) {
+/** 이슈용 프로젝트 라벨 목록 조회 훅 (IssueLabelDto[] 반환) */
+export function useIssueLabels(projectId: string | undefined) {
   return useQuery({
-    queryKey: [...PROJECT_LABELS_QUERY_KEY, projectId],
-    queryFn: () => getProjectLabels(projectId!),
+    queryKey: [...PROJECT_LABELS_QUERY_KEY, projectId, "issue"],
+    queryFn: () => getIssueLabels(projectId!),
     enabled: !!projectId,
   });
 }
