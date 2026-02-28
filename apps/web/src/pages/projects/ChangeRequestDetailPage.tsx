@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useCallback } from "react";
 import type { Content } from "@tiptap/react";
 import {
   CheckCircle2,
@@ -18,6 +18,8 @@ import {
   Plus,
   ArrowLeft,
   AlertCircle,
+  Loader2,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -433,37 +435,81 @@ function TimelineEventItem({
 export interface ChangeRequestDetailProps {
   cr: ChangeRequest;
   onBack: () => void;
-  onAddAssignee?: (assigneeId: string) => void;
-  onRemoveAssignee?: (assigneeId: string) => void;
-  onAddLabels?: (labelIds: string[]) => void;
+  onSyncAssignees?: (userIds: string[]) => void;
+  availableMembers?: { id: string; name: string; email: string }[];
+  selectedAssigneeIds?: string[];
+  onRequestMembers?: () => void;
+  onSyncLabels?: (labelIds: string[]) => void;
   onAddComment?: (body: Record<string, unknown>) => void;
   isCommentPending?: boolean;
   availableLabels?: { id: string; name: string; colorHex: string }[];
   selectedLabelIds?: string[];
+  onRequestLabels?: () => void;
+  onSyncParts?: (partIds: string[]) => void;
+  onRequestParts?: () => void;
+  searchedParts?: { id: string; partNumber: string; name: string | null }[];
+  selectedPartIds?: string[];
+  onPartsSearchChange?: (search: string) => void;
+  isPartsSearching?: boolean;
+  onUploadFiles?: (files: File[]) => void;
+  onDeleteFile?: (fileId: string) => void;
+  isFileUploading?: boolean;
   isMetaUpdating?: boolean;
 }
 
 export function ChangeRequestDetail({
   cr,
   onBack,
-  onAddAssignee,
-  onRemoveAssignee,
-  onAddLabels,
+  onSyncAssignees,
+  availableMembers = [],
+  selectedAssigneeIds = [],
+  onRequestMembers,
+  onSyncLabels,
   onAddComment,
   isCommentPending,
   availableLabels = [],
   selectedLabelIds = [],
+  onRequestLabels,
+  onSyncParts,
+  onRequestParts,
+  searchedParts = [],
+  selectedPartIds = [],
+  onPartsSearchChange,
+  isPartsSearching,
+  onUploadFiles,
+  onDeleteFile,
+  isFileUploading,
   isMetaUpdating,
 }: ChangeRequestDetailProps) {
   const backLabel = cr.type === "pr" ? "변경 반영" : "이슈";
   const commentCount = cr.timeline.filter((e) => e.type === "comment").length;
-  const [assigneeInput, setAssigneeInput] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [memberPopoverOpen, setMemberPopoverOpen] = useState(false);
+  const [memberQuery, setMemberQuery] = useState("");
+  const [draftAssigneeIds, setDraftAssigneeIds] = useState<string[]>([]);
   const [labelPopoverOpen, setLabelPopoverOpen] = useState(false);
   const [labelQuery, setLabelQuery] = useState("");
   const [draftLabelIds, setDraftLabelIds] = useState<string[]>([]);
+  const [partPopoverOpen, setPartPopoverOpen] = useState(false);
+  const [partQuery, setPartQuery] = useState("");
+  const [draftPartIds, setDraftPartIds] = useState<string[]>([]);
+  const partDebounceRef = useRef<ReturnType<typeof setTimeout>>(null);
+  const handlePartQueryChange = useCallback((value: string) => {
+    setPartQuery(value);
+    if (partDebounceRef.current) clearTimeout(partDebounceRef.current);
+    partDebounceRef.current = setTimeout(() => {
+      onPartsSearchChange?.(value);
+    }, 300);
+  }, [onPartsSearchChange]);
   const [commentEditorKey, setCommentEditorKey] = useState(0);
   const commentJsonRef = useRef<Content | null>(null);
   const commentTextRef = useRef("");
+
+  const filteredMembers = availableMembers.filter((m) => {
+    if (!memberQuery.trim()) return true;
+    const q = memberQuery.toLowerCase();
+    return m.name.toLowerCase().includes(q) || m.email.toLowerCase().includes(q);
+  });
 
   const filteredLabels = availableLabels.filter((label) => {
     if (!labelQuery.trim()) return true;
@@ -608,8 +654,19 @@ export function ChangeRequestDetail({
             <div>
               <div className="flex items-center justify-between">
                 <h3 className="text-xs font-medium text-muted-foreground">담당자</h3>
-                {onAddAssignee && (
-                  <Popover>
+                {onSyncAssignees && (
+                  <Popover
+                    open={memberPopoverOpen}
+                    onOpenChange={(open) => {
+                      setMemberPopoverOpen(open);
+                      if (open) {
+                        onRequestMembers?.();
+                        setDraftAssigneeIds(selectedAssigneeIds);
+                      } else {
+                        setMemberQuery("");
+                      }
+                    }}
+                  >
                     <PopoverTrigger asChild>
                       <button
                         type="button"
@@ -622,21 +679,53 @@ export function ChangeRequestDetail({
                       <div className="space-y-2">
                         <p className="text-xs font-medium text-foreground">담당자 추가</p>
                         <Input
-                          value={assigneeInput}
-                          onChange={(e) => setAssigneeInput(e.target.value)}
-                          placeholder="사용자 UUID"
+                          value={memberQuery}
+                          onChange={(e) => setMemberQuery(e.target.value)}
+                          placeholder="멤버 검색"
                         />
+                        <div className="max-h-48 space-y-1 overflow-auto">
+                          {filteredMembers.length === 0 ? (
+                            <p className="px-1 py-2 text-xs text-muted-foreground">추가 가능한 멤버가 없습니다.</p>
+                          ) : (
+                            filteredMembers.map((member) => (
+                              <label
+                                key={member.id}
+                                className="flex w-full cursor-pointer items-center gap-2 rounded-md px-1 py-1.5 hover:bg-muted"
+                              >
+                                <Checkbox
+                                  checked={draftAssigneeIds.includes(member.id)}
+                                  onCheckedChange={(checked) => {
+                                    setDraftAssigneeIds((prev) => {
+                                      if (checked) return [...prev, member.id];
+                                      return prev.filter((id) => id !== member.id);
+                                    });
+                                  }}
+                                />
+                                <Avatar className="h-5 w-5">
+                                  <AvatarFallback className="text-[10px]">
+                                    {getInitials(member.name)}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div className="min-w-0 flex-1">
+                                  <p className="truncate text-sm text-foreground">{member.name}</p>
+                                  <p className="truncate text-xs text-muted-foreground">{member.email}</p>
+                                </div>
+                              </label>
+                            ))
+                          )}
+                        </div>
                         <Button
                           type="button"
                           size="sm"
                           className="w-full"
-                          disabled={!assigneeInput.trim() || isMetaUpdating}
+                          disabled={isMetaUpdating}
                           onClick={() => {
-                            onAddAssignee(assigneeInput.trim());
-                            setAssigneeInput("");
+                            onSyncAssignees(draftAssigneeIds);
+                            setMemberPopoverOpen(false);
+                            setMemberQuery("");
                           }}
                         >
-                          추가
+                          담당자 적용
                         </Button>
                       </div>
                     </PopoverContent>
@@ -645,27 +734,13 @@ export function ChangeRequestDetail({
               </div>
               <div className="mt-2 space-y-2">
                 {cr.assignees.map((assignee) => (
-                  <div key={assignee.id ?? assignee.name} className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2">
+                  <div key={assignee.id ?? assignee.name} className="flex items-center gap-2">
                     <Avatar className="h-6 w-6">
                       <AvatarFallback className="text-[10px]">
                         {getInitials(assignee.name)}
                       </AvatarFallback>
                     </Avatar>
-                      <span className="text-sm text-foreground">{assignee.name}</span>
-                    </div>
-                    {onRemoveAssignee && assignee.id && (
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="ghost"
-                        className="h-6 px-1.5 text-[11px]"
-                        disabled={isMetaUpdating}
-                        onClick={() => onRemoveAssignee(assignee.id!)}
-                      >
-                        제거
-                      </Button>
-                    )}
+                    <span className="text-sm text-foreground">{assignee.name}</span>
                   </div>
                 ))}
               </div>
@@ -675,12 +750,13 @@ export function ChangeRequestDetail({
             <div>
               <div className="flex items-center justify-between">
                 <h3 className="text-xs font-medium text-muted-foreground">라벨</h3>
-                {onAddLabels && (
+                {onSyncLabels && (
                   <Popover
                     open={labelPopoverOpen}
                     onOpenChange={(open) => {
                       setLabelPopoverOpen(open);
                       if (open) {
+                        onRequestLabels?.();
                         setDraftLabelIds(selectedLabelIds);
                       } else {
                         setLabelQuery("");
@@ -732,7 +808,7 @@ export function ChangeRequestDetail({
                           className="w-full"
                           disabled={isMetaUpdating}
                           onClick={() => {
-                            onAddLabels?.(draftLabelIds);
+                            onSyncLabels?.(draftLabelIds);
                             setLabelPopoverOpen(false);
                             setLabelQuery("");
                           }}
@@ -770,16 +846,100 @@ export function ChangeRequestDetail({
                 <h3 className="text-xs font-medium text-muted-foreground">
                   관련 부품
                 </h3>
-                <button className="inline-flex h-5 w-5 items-center justify-center rounded text-muted-foreground/50 hover:bg-muted hover:text-foreground transition-colors">
-                  <Plus className="h-3 w-3" />
-                </button>
+                {onSyncParts && (
+                  <Popover
+                    open={partPopoverOpen}
+                    onOpenChange={(open) => {
+                      setPartPopoverOpen(open);
+                      if (open) {
+                        onRequestParts?.();
+                        setDraftPartIds(selectedPartIds);
+                        setPartQuery("");
+                        onPartsSearchChange?.("");
+                      } else {
+                        setPartQuery("");
+                      }
+                    }}
+                  >
+                    <PopoverTrigger asChild>
+                      <button
+                        type="button"
+                        className="inline-flex h-5 w-5 items-center justify-center rounded text-muted-foreground/50 hover:bg-muted hover:text-foreground transition-colors"
+                      >
+                        <Plus className="h-3 w-3" />
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-80 p-3" align="end">
+                      <div className="space-y-2">
+                        <p className="text-xs font-medium text-foreground">부품 추가</p>
+                        <Input
+                          value={partQuery}
+                          onChange={(e) => handlePartQueryChange(e.target.value)}
+                          placeholder="부품번호 또는 이름으로 검색"
+                        />
+                        <div className="max-h-48 space-y-1 overflow-auto">
+                          {isPartsSearching ? (
+                            <div className="flex items-center justify-center py-3">
+                              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                            </div>
+                          ) : searchedParts.length === 0 ? (
+                            <p className="px-1 py-2 text-xs text-muted-foreground">
+                              {partQuery.trim() ? "검색 결과가 없습니다." : "부품번호 또는 이름으로 검색하세요."}
+                            </p>
+                          ) : (
+                            searchedParts.map((part) => (
+                              <label
+                                key={part.id}
+                                className="flex w-full cursor-pointer items-center gap-2 rounded-md px-1 py-1.5 hover:bg-muted"
+                              >
+                                <Checkbox
+                                  checked={draftPartIds.includes(part.id)}
+                                  onCheckedChange={(checked) => {
+                                    setDraftPartIds((prev) => {
+                                      if (checked) return [...prev, part.id];
+                                      return prev.filter((id) => id !== part.id);
+                                    });
+                                  }}
+                                />
+                                <Package className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                                <div className="min-w-0 flex-1">
+                                  <p className="truncate text-xs font-medium text-foreground">
+                                    {part.partNumber}
+                                  </p>
+                                  {part.name && (
+                                    <p className="truncate text-[11px] text-muted-foreground">
+                                      {part.name}
+                                    </p>
+                                  )}
+                                </div>
+                              </label>
+                            ))
+                          )}
+                        </div>
+                        <Button
+                          type="button"
+                          size="sm"
+                          className="w-full"
+                          disabled={isMetaUpdating}
+                          onClick={() => {
+                            onSyncParts(draftPartIds);
+                            setPartPopoverOpen(false);
+                            setPartQuery("");
+                          }}
+                        >
+                          부품 적용
+                        </Button>
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                )}
               </div>
               {cr.relatedParts.length > 0 ? (
                 <div className="mt-2 space-y-1.5">
                   {cr.relatedParts.map((part) => (
-                    <button
-                      key={part.partNumber}
-                      className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-muted"
+                    <div
+                      key={part.id}
+                      className="flex w-full items-center gap-2 rounded-md px-2 py-1.5"
                     >
                       <Package className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
                       <div className="min-w-0 flex-1">
@@ -798,7 +958,7 @@ export function ChangeRequestDetail({
                           {part.category}
                         </Badge>
                       )}
-                    </button>
+                    </div>
                   ))}
                 </div>
               ) : (
@@ -819,16 +979,40 @@ export function ChangeRequestDetail({
                     </span>
                   )}
                 </h3>
-                <button className="inline-flex h-5 w-5 items-center justify-center rounded text-muted-foreground/50 hover:bg-muted hover:text-foreground transition-colors">
-                  <Plus className="h-3 w-3" />
-                </button>
+                {onUploadFiles && (
+                  <>
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      multiple
+                      className="hidden"
+                      onChange={(e) => {
+                        const files = Array.from(e.target.files ?? []);
+                        if (files.length > 0) onUploadFiles(files);
+                        e.target.value = "";
+                      }}
+                    />
+                    <button
+                      type="button"
+                      className="inline-flex h-5 w-5 items-center justify-center rounded text-muted-foreground/50 hover:bg-muted hover:text-foreground transition-colors"
+                      disabled={isFileUploading}
+                      onClick={() => fileInputRef.current?.click()}
+                    >
+                      {isFileUploading ? (
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                      ) : (
+                        <Plus className="h-3 w-3" />
+                      )}
+                    </button>
+                  </>
+                )}
               </div>
               {cr.attachments.length > 0 ? (
                 <div className="mt-2 space-y-1">
                   {cr.attachments.map((file) => (
-                    <button
+                    <div
                       key={file.id}
-                      className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-muted"
+                      className="group flex w-full items-center gap-2 rounded-md px-2 py-1.5 transition-colors hover:bg-muted"
                     >
                       <AttachmentIcon type={file.type} />
                       <div className="min-w-0 flex-1">
@@ -839,7 +1023,16 @@ export function ChangeRequestDetail({
                           {file.size}
                         </p>
                       </div>
-                    </button>
+                      {onDeleteFile && (
+                        <button
+                          type="button"
+                          className="hidden shrink-0 rounded p-0.5 text-muted-foreground/50 hover:bg-destructive/10 hover:text-destructive group-hover:inline-flex"
+                          onClick={() => onDeleteFile(file.id)}
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      )}
+                    </div>
                   ))}
                 </div>
               ) : (

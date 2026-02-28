@@ -39,17 +39,20 @@ import { LabelBadge } from "@fabbit/ui";
 import { useParts, useProject } from "@/api/hooks";
 import type { IssueDto, ProjectDto } from "@/api/types";
 import {
-  useAssignIssueUsers,
   useCreateIssueComment,
   useCreateProjectIssue,
   useIssueTimeline,
   useProjectIssue,
   useProjectIssues,
   useIssueLabels,
+  useSyncIssueAssignees,
   useSyncIssueLabels,
-  useUnassignIssueUsers,
+  useSyncIssueParts,
+  useUploadIssueFiles,
+  useDeleteIssueFile,
 } from "@/api/hooks/useIssues";
 import { linkPartsToProject, unlinkPartsFromProject } from "@/api/project";
+import { useProjectMembers, useSearchProjectParts } from "@/api/hooks/useProjects";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -822,6 +825,7 @@ function toIssueChangeRequest(issue: IssueDto, timeline: TimelineEvent[] = []): 
       uploadedAt: file.createdAt,
     })),
     relatedParts: issue.parts.map((part) => ({
+      id: part.id,
       partNumber: part.partNumber,
       name: part.name ?? "이름 없음",
     })),
@@ -1057,10 +1061,24 @@ function IssuesView({ projectId, issueId }: { projectId: string; issueId?: strin
     isError: isTimelineError,
     refetch: refetchTimeline,
   } = useIssueTimeline(projectId, isDetailIssueRoute ? issueId : undefined);
-  const assignIssueUsersMutation = useAssignIssueUsers(projectId, isDetailIssueRoute ? issueId : undefined);
-  const unassignIssueUsersMutation = useUnassignIssueUsers(projectId, isDetailIssueRoute ? issueId : undefined);
+  const syncIssueAssigneesMutation = useSyncIssueAssignees(projectId, isDetailIssueRoute ? issueId : undefined);
   const syncIssueLabelsMutation = useSyncIssueLabels(projectId, isDetailIssueRoute ? issueId : undefined);
-  const { data: projectLabels = [] } = useIssueLabels(isDetailIssueRoute ? projectId : undefined);
+  const syncIssuePartsMutation = useSyncIssueParts(projectId, isDetailIssueRoute ? issueId : undefined);
+  const uploadIssueFilesMutation = useUploadIssueFiles(projectId, isDetailIssueRoute ? issueId : undefined);
+  const deleteIssueFileMutation = useDeleteIssueFile(projectId, isDetailIssueRoute ? issueId : undefined);
+  const [labelsEnabled, setLabelsEnabled] = useState(false);
+  const { data: projectLabels = [] } = useIssueLabels(isDetailIssueRoute ? projectId : undefined, labelsEnabled);
+  const [membersEnabled, setMembersEnabled] = useState(false);
+  const { data: projectMembersData } = useProjectMembers(projectId, isDetailIssueRoute && membersEnabled);
+  const projectMembers = projectMembersData?.items ?? [];
+  const [partsSearchEnabled, setPartsSearchEnabled] = useState(false);
+  const [partsSearch, setPartsSearch] = useState("");
+  const { data: searchedPartsData, isLoading: isPartsSearching } = useSearchProjectParts(
+    projectId,
+    partsSearch,
+    isDetailIssueRoute && partsSearchEnabled,
+  );
+  const searchedParts = searchedPartsData?.parts ?? [];
   const createCommentMutation = useCreateIssueComment(projectId, isDetailIssueRoute ? issueId : undefined);
 
   const issues = useMemo(
@@ -1110,11 +1128,16 @@ function IssuesView({ projectId, issueId }: { projectId: string; issueId?: strin
         <ChangeRequestDetail
           cr={toIssueChangeRequest(issueDetail, toTimelineEvents(timelineResponse?.items ?? [], issueDetail))}
           onBack={() => navigate(`/projects/${projectId}/issues`)}
-          onAddAssignee={(assigneeId) => assignIssueUsersMutation.mutate([assigneeId])}
-          onRemoveAssignee={(assigneeId) => unassignIssueUsersMutation.mutate([assigneeId])}
-          onAddLabels={(labelIds) => {
-            syncIssueLabelsMutation.mutate(labelIds);
-          }}
+          onSyncAssignees={(userIds) => syncIssueAssigneesMutation.mutate(userIds)}
+          availableMembers={projectMembers.map((m) => ({
+            id: m.userId,
+            name: m.fullName,
+            email: m.email,
+          }))}
+          selectedAssigneeIds={issueDetail.assignees.map((a) => a.id)}
+          onRequestMembers={() => setMembersEnabled(true)}
+          onSyncLabels={(labelIds) => syncIssueLabelsMutation.mutate(labelIds)}
+          onRequestLabels={() => setLabelsEnabled(true)}
           onAddComment={(body) => createCommentMutation.mutate(body)}
           isCommentPending={createCommentMutation.isPending}
           availableLabels={projectLabels.map((label) => ({
@@ -1123,10 +1146,23 @@ function IssuesView({ projectId, issueId }: { projectId: string; issueId?: strin
             colorHex: label.color,
           }))}
           selectedLabelIds={issueDetail.labels.map((label) => label.id)}
+          onSyncParts={(partIds) => syncIssuePartsMutation.mutate(partIds)}
+          onRequestParts={() => setPartsSearchEnabled(true)}
+          searchedParts={searchedParts.map((p) => ({
+            id: p.id,
+            partNumber: p.part_number,
+            name: p.name,
+          }))}
+          selectedPartIds={issueDetail.parts.map((p) => p.id)}
+          onPartsSearchChange={setPartsSearch}
+          isPartsSearching={isPartsSearching}
+          onUploadFiles={(files) => uploadIssueFilesMutation.mutate(files)}
+          onDeleteFile={(fileId) => deleteIssueFileMutation.mutate(fileId)}
+          isFileUploading={uploadIssueFilesMutation.isPending}
           isMetaUpdating={
-            assignIssueUsersMutation.isPending ||
-            unassignIssueUsersMutation.isPending ||
-            syncIssueLabelsMutation.isPending
+            syncIssueAssigneesMutation.isPending ||
+            syncIssueLabelsMutation.isPending ||
+            syncIssuePartsMutation.isPending
           }
         />
       </>

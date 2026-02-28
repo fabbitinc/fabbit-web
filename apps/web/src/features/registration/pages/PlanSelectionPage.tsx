@@ -22,6 +22,7 @@ import { createOrganization } from "@/api";
 import { planOptions } from "@/features/registration/mock-data/registration-mock";
 import { cn } from "@/lib/utils";
 import { setAuthCookies } from "@/lib/auth-cookies";
+import { extractApiError } from "@/lib/api-error";
 import type { PlanTier } from "@/features/registration/types/registration.types";
 
 type DialogPhase = "idle" | "confirming" | "creating" | "denied";
@@ -65,7 +66,7 @@ export function PlanSelectionPage() {
   const handleContinue = () => {
     // scopedToken이 없는 경우에만 signupData 검증 (신규 가입 플로우)
     if (!scopedToken) {
-      if (!signupData.name || !signupData.email || !signupData.password) {
+      if (!signupData.name || !signupData.verificationToken || !signupData.password) {
         navigate("/signup");
         return;
       }
@@ -120,9 +121,10 @@ export function PlanSelectionPage() {
         // 새 서브도메인으로 이동
         window.location.href = buildSubdomainUrl(response.organization.slug, "/");
       } else {
-        // 신규 가입 플로우 (기존 로직)
+        // 신규 가입 플로우 (이메일 인증코드 기반)
         const result = await register({
-          email: signupData.email,
+          verification_token: signupData.verificationToken,
+          code: signupData.code,
           password: signupData.password,
           full_name: signupData.name,
           org_name: workspaceData.organizationName,
@@ -131,7 +133,7 @@ export function PlanSelectionPage() {
           team_size: workspaceData.teamSize || null,
           job_role: workspaceData.role || null,
           plan_type: toApiPlanType(selectedPlan),
-          turnstile_token: signupData.turnstileToken || null,
+          turnstile_token: null,
         });
 
         // progress 나머지 단계 완료
@@ -155,7 +157,7 @@ export function PlanSelectionPage() {
     } catch (error) {
       setCompletedSteps(0);
       setDialogPhase("confirming");
-      setCreateError(error instanceof Error ? error.message : "가입에 실패했습니다.");
+      setCreateError(extractApiError(error, "가입에 실패했습니다."));
     }
   }, [register, selectedPlan, signupData, workspaceData, scopedToken, clearScopedToken]);
 

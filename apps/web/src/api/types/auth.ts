@@ -33,10 +33,34 @@ export interface MembershipResponse {
   organization: OrganizationResponse;
 }
 
+// --- POST /api/v1/auth/send-verification ---
+
+export interface SendVerificationRequest {
+  email: string;
+  turnstile_token?: string | null;
+}
+
+export interface SendVerificationResponse {
+  message: string;
+}
+
+// --- POST /api/v1/auth/verify-email ---
+
+export interface VerifyEmailRequest {
+  email: string;
+  code: string;
+}
+
+export interface VerifyEmailResponse {
+  verification_token: string;
+  email: string;
+}
+
 // --- POST /api/v1/auth/register ---
 
 export interface RegisterRequest {
-  email: string;
+  verification_token: string;
+  code: string;
   password: string;
   full_name: string;
   org_name: string;

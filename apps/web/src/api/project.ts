@@ -120,8 +120,10 @@ export async function deleteProject(projectId: string): Promise<void> {
  * 프로젝트 부품 목록 조회
  * GET /api/v1/projects/{project_id}/parts
  */
-export async function getProjectParts(projectId: string): Promise<ProjectPartListResponse> {
-  const response = await apiClient.get<ProjectPartListResponse>(`/api/v1/projects/${projectId}/parts`);
+export async function getProjectParts(projectId: string, search?: string): Promise<ProjectPartListResponse> {
+  const params: Record<string, string> = {};
+  if (search) params.search = search;
+  const response = await apiClient.get<ProjectPartListResponse>(`/api/v1/projects/${projectId}/parts`, { params });
   return response.data;
 }
 

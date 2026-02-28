@@ -19,7 +19,29 @@ import type {
   CreateOrganizationRequest,
   CreateOrganizationResponse,
   SwitchOrgRequest,
+  SendVerificationRequest,
+  SendVerificationResponse,
+  VerifyEmailRequest,
+  VerifyEmailResponse,
 } from "./types";
+
+/**
+ * 이메일 인증코드 발송
+ * POST /api/v1/auth/send-verification
+ */
+export async function sendVerification(request: SendVerificationRequest): Promise<SendVerificationResponse> {
+  const response = await apiClient.post<SendVerificationResponse>("/api/v1/auth/send-verification", request);
+  return response.data;
+}
+
+/**
+ * 이메일 인증코드 확인
+ * POST /api/v1/auth/verify-email
+ */
+export async function verifyEmail(request: VerifyEmailRequest): Promise<VerifyEmailResponse> {
+  const response = await apiClient.post<VerifyEmailResponse>("/api/v1/auth/verify-email", request);
+  return response.data;
+}
 
 /**
  * 회원가입

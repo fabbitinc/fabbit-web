@@ -1,9 +1,11 @@
-// 계정 생성 (Step 1)
+// 계정 생성 (Step 1~3: 이메일 인증 → 인증코드 확인 → 이름/비밀번호)
 export interface SignupFormData {
   name: string;
   email: string;
   password: string;
   turnstileToken: string;
+  verificationToken: string;
+  code: string;
 }
 
 // 워크스페이스 설정 (Step 2)

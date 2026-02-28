@@ -105,6 +105,15 @@ export function useProjectParts(projectId: string | undefined) {
   });
 }
 
+/** 프로젝트 부품 검색 훅 (디바운스된 검색어로 호출) */
+export function useSearchProjectParts(projectId: string | undefined, search: string, enabled = true) {
+  return useQuery({
+    queryKey: [...PROJECT_PARTS_QUERY_KEY, projectId, "search", search],
+    queryFn: () => getProjectParts(projectId!, search || undefined),
+    enabled: !!projectId && enabled,
+  });
+}
+
 /**
  * 프로젝트에 부품 연결 뮤테이션
  */
@@ -136,10 +145,11 @@ export function useRemovePartFromProject(projectId: string) {
 }
 
 /** 프로젝트 멤버 목록 조회 훅 */
-export function useProjectMembers(projectId: string) {
+export function useProjectMembers(projectId: string, enabled = true) {
   return useQuery({
     queryKey: [...PROJECT_MEMBERS_QUERY_KEY, projectId],
     queryFn: () => getProjectMembers(projectId),
+    enabled,
   });
 }
 

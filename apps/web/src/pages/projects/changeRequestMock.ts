@@ -55,6 +55,7 @@ export interface CRAttachment {
 }
 
 export interface CRRelatedPart {
+  id: string;
   partNumber: string;
   name: string;
   category?: string;
@@ -103,9 +104,9 @@ export const MOCK_CHANGE_REQUESTS: ChangeRequest[] = [
       { id: "a3", name: "방열핀_간섭검토.xlsx", size: "340 KB", type: "xlsx", uploadedBy: "이엔지", uploadedAt: "2025-02-25T14:15:00" },
     ],
     relatedParts: [
-      { partNumber: "HSG-002", name: "모터 하우징", category: "하우징" },
-      { partNumber: "FIN-010", name: "방열핀", category: "방열" },
-      { partNumber: "MTR-100", name: "BLDC 모터 400W", category: "모터" },
+      { id: "p1", partNumber: "HSG-002", name: "모터 하우징", category: "하우징" },
+      { id: "p2", partNumber: "FIN-010", name: "방열핀", category: "방열" },
+      { id: "p3", partNumber: "MTR-100", name: "BLDC 모터 400W", category: "모터" },
     ],
     timeline: [
       { id: "t1", type: "comment", author: "김설계", createdAt: "2025-02-25T09:30:00", content: "Rev.C 도면 검토 요청드립니다. 체결부 공차 변경 및 방열핀 추가가 핵심입니다." },
@@ -131,8 +132,8 @@ export const MOCK_CHANGE_REQUESTS: ChangeRequest[] = [
       { id: "a4", name: "FRAME-ASM_BOM_변경안.xlsx", size: "128 KB", type: "xlsx", uploadedBy: "이엔지", uploadedAt: "2025-02-18T10:00:00" },
     ],
     relatedParts: [
-      { partNumber: "FRAME-ASM", name: "프레임 조립체", category: "조립체" },
-      { partNumber: "GKT-010", name: "실리콘 가스켓", category: "씰링" },
+      { id: "p4", partNumber: "FRAME-ASM", name: "프레임 조립체", category: "조립체" },
+      { id: "p5", partNumber: "GKT-010", name: "실리콘 가스켓", category: "씰링" },
     ],
     timeline: [
       { id: "t8", type: "comment", author: "이엔지", createdAt: "2025-02-18T10:00:00", content: "IP67 대응을 위해 가스켓 추가가 필요합니다. 기존 조립 공정에 영향 없는 위치입니다." },
@@ -158,7 +159,7 @@ export const MOCK_CHANGE_REQUESTS: ChangeRequest[] = [
       { id: "a5", name: "SFT-200_강도해석_보고서.pdf", size: "5.1 MB", type: "pdf", uploadedBy: "이엔지", uploadedAt: "2025-02-12T16:30:00" },
     ],
     relatedParts: [
-      { partNumber: "SFT-200", name: "드라이브 샤프트", category: "축" },
+      { id: "p6", partNumber: "SFT-200", name: "드라이브 샤프트", category: "축" },
     ],
     timeline: [
       { id: "t14", type: "comment", author: "박관리", createdAt: "2025-02-10T11:00:00", content: "원가 절감을 위해 재질 변경을 검토해주세요. SCM440이 현재 단가가 더 낮습니다." },
@@ -182,9 +183,9 @@ export const MOCK_CHANGE_REQUESTS: ChangeRequest[] = [
     description: "Drive Unit Gen4 초기 설계안 리뷰.\n\n### 주요 결정 사항\n- 모터: BLDC 400W\n- 감속기: 하모닉 50:1\n- 하우징: 알루미늄 다이캐스팅",
     attachments: [],
     relatedParts: [
-      { partNumber: "MTR-100", name: "BLDC 모터 400W", category: "모터" },
-      { partNumber: "GRD-050", name: "하모닉 감속기 50:1", category: "감속기" },
-      { partNumber: "HSG-002", name: "모터 하우징", category: "하우징" },
+      { id: "p7", partNumber: "MTR-100", name: "BLDC 모터 400W", category: "모터" },
+      { id: "p8", partNumber: "GRD-050", name: "하모닉 감속기 50:1", category: "감속기" },
+      { id: "p9", partNumber: "HSG-002", name: "모터 하우징", category: "하우징" },
     ],
     timeline: [
       { id: "t20", type: "comment", author: "김설계", createdAt: "2025-01-20T10:00:00", content: "Gen4 초기 설계안입니다. 주요 부품 선정 및 레이아웃에 대해 리뷰 부탁드립니다." },

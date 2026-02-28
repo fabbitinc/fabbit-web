@@ -255,6 +255,13 @@ export async function unassignIssueUsers(projectId: string, issueId: string, use
   });
 }
 
+/** 이슈 담당자 동기화 (PUT) */
+export async function syncIssueAssignees(projectId: string, issueId: string, userIds: string[]): Promise<void> {
+  await apiClient.put(`/api/v1/projects/${projectId}/issues/${issueId}/assignees`, {
+    user_ids: userIds,
+  });
+}
+
 /** 이슈용 프로젝트 라벨 목록 조회 (IssueLabelDto[] 반환) */
 export async function getIssueLabels(projectId: string): Promise<IssueLabelDto[]> {
   const response = await apiClient.get<ApiLabelListResponse>(`/api/v1/projects/${projectId}/labels`);
@@ -266,6 +273,25 @@ export async function syncIssueLabels(projectId: string, issueId: string, labelI
   await apiClient.put(`/api/v1/projects/${projectId}/issues/${issueId}/labels`, {
     label_ids: labelIds,
   });
+}
+
+/** 이슈 부품 동기화 (PUT) */
+export async function syncIssueParts(projectId: string, issueId: string, partIds: string[]): Promise<void> {
+  await apiClient.put(`/api/v1/projects/${projectId}/issues/${issueId}/parts`, {
+    part_ids: partIds,
+  });
+}
+
+/** 이슈에 파일 첨부 */
+export async function attachIssueFiles(projectId: string, issueId: string, fileIds: string[]): Promise<void> {
+  await apiClient.post(`/api/v1/projects/${projectId}/issues/${issueId}/files`, {
+    file_ids: fileIds,
+  });
+}
+
+/** 이슈에서 파일 삭제 */
+export async function deleteIssueFile(projectId: string, issueId: string, fileId: string): Promise<void> {
+  await apiClient.delete(`/api/v1/projects/${projectId}/issues/${issueId}/files/${fileId}`);
 }
 
 /** 프로젝트 이슈 생성 */
