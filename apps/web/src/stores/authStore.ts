@@ -25,7 +25,6 @@ interface Organization {
   slug: string;
   name: string;
   planType: string;
-  onboardedAt: string | null;
 }
 
 interface Membership {
@@ -35,7 +34,6 @@ interface Membership {
 }
 
 export interface AuthResult {
-  onboarded: boolean;
   isAdmin: boolean;
 }
 
@@ -51,7 +49,6 @@ interface AuthState {
   currentMembership: Membership | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  onboardingCompleted: boolean;
   selectedPlan: PlanTier;
 
   // Actions
@@ -61,7 +58,6 @@ interface AuthState {
   logout: () => Promise<void>;
   fetchMe: () => Promise<void>;
   setUser: (user: User | null) => void;
-  completeOnboarding: () => void;
 }
 
 function mapMembership(m: MembershipResponse): Membership {
@@ -73,7 +69,6 @@ function mapMembership(m: MembershipResponse): Membership {
       slug: m.organization.slug,
       name: m.organization.name,
       planType: m.organization.plan_type,
-      onboardedAt: m.organization.onboarded_at ?? null,
     },
   };
 }
@@ -111,7 +106,6 @@ export const useAuthStore = create<AuthState>()(
       currentMembership: null,
       isAuthenticated: false,
       isLoading: false,
-      onboardingCompleted: true,
       selectedPlan: "starter",
 
       login: async (email: string, password: string) => {
@@ -125,15 +119,7 @@ export const useAuthStore = create<AuthState>()(
           const meResponse = await getMe();
           const memberships = meResponse.memberships.map(mapMembership);
           const current = findCurrentMembership(memberships);
-          const onboarded = !!current?.organization.onboardedAt;
           const isAdmin = isAdminRole(current?.role);
-
-          // 비관리자 + 온보딩 미완료 → 인증 차단
-          if (!onboarded && !isAdmin) {
-            clearTokens();
-            set({ isLoading: false });
-            return { onboarded, isAdmin };
-          }
 
           set({
             user: {
@@ -145,11 +131,10 @@ export const useAuthStore = create<AuthState>()(
             currentMembership: current,
             isAuthenticated: true,
             isLoading: false,
-            onboardingCompleted: onboarded,
             selectedPlan: (current?.organization.planType?.toLowerCase() as PlanTier) ?? "starter",
           });
 
-          return { onboarded, isAdmin };
+          return { isAdmin };
         } catch (error) {
           set({ isLoading: false });
           throw error instanceof Error ? error : new Error("로그인에 실패했습니다.");
@@ -170,7 +155,6 @@ export const useAuthStore = create<AuthState>()(
           const meResponse = await getMe();
           const memberships = meResponse.memberships.map(mapMembership);
           const current = findCurrentMembership(memberships);
-          const onboarded = !!current?.organization.onboardedAt;
           const isAdmin = isAdminRole(current?.role);
 
           // isAuthenticated를 설정하지 않음 — route guard가 동작하지 않도록
@@ -178,7 +162,6 @@ export const useAuthStore = create<AuthState>()(
           set({ isLoading: false });
 
           return {
-            onboarded,
             isAdmin,
             slug: current?.organization.slug ?? "",
             accessToken: regResponse.tokens.access_token,
@@ -215,7 +198,6 @@ export const useAuthStore = create<AuthState>()(
             memberships: [],
             currentMembership: null,
             isAuthenticated: false,
-            onboardingCompleted: true,
           });
         }
       },
@@ -225,7 +207,6 @@ export const useAuthStore = create<AuthState>()(
           const meResponse = await getMe();
           const memberships = meResponse.memberships.map(mapMembership);
           const current = findCurrentMembership(memberships);
-          const onboarded = !!current?.organization.onboardedAt;
 
           set({
             user: {
@@ -236,7 +217,6 @@ export const useAuthStore = create<AuthState>()(
             memberships,
             currentMembership: current,
             isAuthenticated: true,
-            onboardingCompleted: onboarded,
             selectedPlan: (current?.organization.planType?.toLowerCase() as PlanTier) ?? "starter",
           });
         } catch {
@@ -254,10 +234,6 @@ export const useAuthStore = create<AuthState>()(
       setUser: (user) => {
         set({ user, isAuthenticated: !!user });
       },
-
-      completeOnboarding: () => {
-        set({ onboardingCompleted: true });
-      },
     }),
     {
       name: "fabbit-auth",
@@ -266,7 +242,6 @@ export const useAuthStore = create<AuthState>()(
         memberships: state.memberships,
         currentMembership: state.currentMembership,
         isAuthenticated: state.isAuthenticated,
-        onboardingCompleted: state.onboardingCompleted,
         selectedPlan: state.selectedPlan,
       }),
     }

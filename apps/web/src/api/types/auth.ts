@@ -23,7 +23,6 @@ export interface OrganizationResponse {
   industry?: string | null;
   team_size?: string | null;
   plan_type: string;
-  onboarded_at?: string | null;
 }
 
 export interface MembershipResponse {
@@ -97,7 +96,7 @@ export interface ScopedLoginResponse {
   scoped_token: string;
 }
 
-// --- POST /api/v1/auth/organizations (scoped_token 인증) ---
+// --- POST /api/v1/organizations (scoped_token 인증) ---
 
 export interface CreateOrganizationRequest {
   org_name: string;
@@ -112,13 +111,13 @@ export interface CreateOrganizationResponse {
   tokens: TokenResponse;
 }
 
-// --- POST /api/v1/auth/switch-org ---
+// --- POST /api/v1/organizations/switch ---
 
 export interface SwitchOrgRequest {
   slug: string;
 }
 
-// --- GET /api/v1/auth/me ---
+// --- GET /api/v1/users/me ---
 
 export interface MeResponse {
   user: UserResponse;

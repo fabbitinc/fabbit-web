@@ -25,7 +25,7 @@ import { setAuthCookies } from "@/lib/auth-cookies";
 import { extractApiError } from "@/lib/api-error";
 import type { PlanTier } from "@/features/registration/types/registration.types";
 
-type DialogPhase = "idle" | "confirming" | "creating" | "denied";
+type DialogPhase = "idle" | "confirming" | "creating";
 
 const creationSteps = [
   "워크스페이스 생성 중...",
@@ -49,7 +49,7 @@ export function PlanSelectionPage() {
   const navigate = useNavigate();
   const { selectedPlan, setSelectedPlan, workspaceData, signupData, scopedToken, clearScopedToken } =
     useRegistrationStore();
-  const { register, logout } = useAuthStore();
+  const { register } = useAuthStore();
 
   const [dialogPhase, setDialogPhase] = useState<DialogPhase>("idle");
   const [completedSteps, setCompletedSteps] = useState<number>(0);
@@ -145,14 +145,8 @@ export function PlanSelectionPage() {
         // 서브도메인으로 토큰 전달 (cross-subdomain 쿠키)
         setAuthCookies(result.accessToken, result.refreshToken);
 
-        // 온보딩 상태 + 권한 체크 → 서브도메인으로 리다이렉트
-        if (result.onboarded) {
-          window.location.href = buildSubdomainUrl(result.slug, "/");
-        } else if (!result.isAdmin) {
-          setDialogPhase("denied");
-        } else {
-          window.location.href = buildSubdomainUrl(result.slug, "/");
-        }
+        // 서브도메인으로 리다이렉트
+        window.location.href = buildSubdomainUrl(result.slug, "/");
       }
     } catch (error) {
       setCompletedSteps(0);
@@ -161,14 +155,8 @@ export function PlanSelectionPage() {
     }
   }, [register, selectedPlan, signupData, workspaceData, scopedToken, clearScopedToken]);
 
-  const handleDeniedClose = async () => {
-    await logout();
-    setDialogPhase("idle");
-    navigate("/signup");
-  };
-
   const handleDialogClose = () => {
-    if (dialogPhase === "creating" || dialogPhase === "denied") return;
+    if (dialogPhase === "creating") return;
     setDialogPhase("idle");
   };
 
@@ -447,32 +435,6 @@ export function PlanSelectionPage() {
             </>
           )}
 
-          {dialogPhase === "denied" && (
-            <>
-              <DialogHeader>
-                <DialogTitle>온보딩 권한이 없습니다</DialogTitle>
-                <DialogDescription>
-                  워크스페이스 초기 설정은 관리자만 진행할 수 있습니다.
-                </DialogDescription>
-              </DialogHeader>
-
-              <div className="py-4">
-                <div className="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
-                  조직의 관리자에게 온보딩 완료를 요청해 주세요.
-                  관리자가 초기 설정을 완료한 후 서비스를 이용할 수 있습니다.
-                </div>
-              </div>
-
-              <DialogFooter>
-                <Button
-                  className="bg-blue-600 hover:bg-blue-700"
-                  onClick={handleDeniedClose}
-                >
-                  확인
-                </Button>
-              </DialogFooter>
-            </>
-          )}
         </DialogContent>
       </Dialog>
     </div>

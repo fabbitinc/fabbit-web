@@ -8,7 +8,6 @@ import type {
   RefreshRequest,
   TokenResponse,
   MeResponse,
-  OrganizationResponse,
   SiteResponse,
   CheckEmailResponse,
   CheckSlugResponse,
@@ -80,19 +79,10 @@ export async function logout(refreshTokenValue: string): Promise<void> {
 
 /**
  * 내 정보 조회
- * GET /api/v1/auth/me
+ * GET /api/v1/users/me
  */
 export async function getMe(): Promise<MeResponse> {
-  const response = await apiClient.get<MeResponse>("/api/v1/auth/me");
-  return response.data;
-}
-
-/**
- * 온보딩 완료
- * POST /api/v1/auth/onboarding/complete
- */
-export async function completeOnboarding(): Promise<OrganizationResponse> {
-  const response = await apiClient.post<OrganizationResponse>("/api/v1/auth/onboarding/complete");
+  const response = await apiClient.get<MeResponse>("/api/v1/users/me");
   return response.data;
 }
 
@@ -149,10 +139,10 @@ export async function acceptInvitation(request: AcceptInvitationRequest): Promis
 
 /**
  * 조직 전환
- * POST /api/v1/auth/switch-org
+ * POST /api/v1/organizations/switch
  */
 export async function switchOrg(request: SwitchOrgRequest): Promise<LoginResponse> {
-  const response = await apiClient.post<LoginResponse>("/api/v1/auth/switch-org", request);
+  const response = await apiClient.post<LoginResponse>("/api/v1/organizations/switch", request);
   return response.data;
 }
 
@@ -170,7 +160,7 @@ export async function loginScoped(request: LoginRequest): Promise<ScopedLoginRes
 
 /**
  * 조직 생성 (scopedToken 인증)
- * POST /api/v1/auth/organizations
+ * POST /api/v1/organizations
  */
 export async function createOrganization(
   request: CreateOrganizationRequest,
@@ -178,7 +168,7 @@ export async function createOrganization(
 ): Promise<CreateOrganizationResponse> {
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
   const response = await axios.post<CreateOrganizationResponse>(
-    `${API_BASE_URL}/api/v1/auth/organizations`,
+    `${API_BASE_URL}/api/v1/organizations`,
     request,
     {
       headers: {

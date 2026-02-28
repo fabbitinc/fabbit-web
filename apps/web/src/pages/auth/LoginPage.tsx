@@ -40,15 +40,7 @@ export function LoginPage() {
         navigate("/workspace");
       } else {
         // 워크스페이스 도메인: 기존 로그인
-        const result = await login(email, password);
-
-        if (!result.onboarded && !result.isAdmin) {
-          setError(
-            "워크스페이스 초기 설정이 완료되지 않았습니다. 관리자에게 문의해 주세요.",
-          );
-          return;
-        }
-
+        await login(email, password);
         navigate("/");
       }
     } catch (err) {
