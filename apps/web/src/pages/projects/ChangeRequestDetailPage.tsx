@@ -23,13 +23,23 @@ import {
   AlertCircle,
   Loader2,
   X,
+  Pencil,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
 import { TiptapEditor } from "@/components/ui/tiptap-editor";
 import { LabelBadge } from "@fabbit/ui";
 import {
@@ -37,6 +47,8 @@ import {
   type TimelineEvent,
   type TimelineAuthor,
   type CRAttachment,
+  type LinkedChangeBadge,
+  type LinkedIssueBadge,
 } from "./changeRequestMock";
 
 // ============================================================
@@ -45,6 +57,41 @@ import {
 
 function getInitials(name: string): string {
   return name.slice(0, 1);
+}
+
+/** 목록이 여러 개일 때 "첫번째 외 N개" + 툴팁으로 나머지를 보여주는 컴포넌트 */
+export function TruncatedNames({
+  items,
+  suffix,
+}: {
+  items: string[];
+  suffix?: string;
+}) {
+  if (items.length === 0) return null;
+
+  return (
+    <>
+      <span className="font-medium text-foreground">{items[0]}</span>
+      {items.length > 1 && (
+        <>
+          {" "}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="cursor-help border-b border-dashed border-muted-foreground/40 font-medium text-foreground">
+                외 {items.length - 1}개
+              </span>
+            </TooltipTrigger>
+            <TooltipContent side="top" sideOffset={6} hideArrow>
+              {items.slice(1).map((item) => (
+                <div key={item}>{item}</div>
+              ))}
+            </TooltipContent>
+          </Tooltip>
+        </>
+      )}
+      {suffix && <> {suffix}</>}
+    </>
+  );
 }
 
 function ActivityAuthor({ author }: { author: TimelineAuthor }) {
@@ -107,6 +154,11 @@ function CRStatusIcon({
     );
   }
   if (cr.type === "pr") {
+    if (cr.status === "draft") {
+      return (
+        <FilePen className={`${cls} text-gray-500 dark:text-gray-400`} />
+      );
+    }
     return cr.status === "open" ? (
       <FilePen className={`${cls} text-emerald-600 dark:text-emerald-400`} />
     ) : (
@@ -143,6 +195,8 @@ function AttachmentIcon({ type }: { type: CRAttachment["type"] }) {
 }
 
 const STATUS_BADGE_STYLE = {
+  draft:
+    "border-gray-300 bg-gray-50 text-gray-700 dark:border-gray-700 dark:bg-gray-950 dark:text-gray-400",
   open: "border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-700 dark:bg-emerald-950 dark:text-emerald-400",
   merged:
     "border-purple-300 bg-purple-50 text-purple-700 dark:border-purple-700 dark:bg-purple-950 dark:text-purple-400",
@@ -151,6 +205,7 @@ const STATUS_BADGE_STYLE = {
 } as const;
 
 const STATUS_LABEL = {
+  draft: "초안",
   open: "열림",
   merged: "반영됨",
   closed: "닫힘",
@@ -160,55 +215,177 @@ const STATUS_LABEL = {
 // 타임라인 이벤트 아이템
 // ============================================================
 
-function TimelineEventItem({
+/** 댓글 타임라인 아이템 (편집 기능 포함) */
+function TimelineCommentItem({
   event,
+  canEdit,
+  onUpdate,
+  projectId,
+  onIssueMentionClick,
 }: {
   event: TimelineEvent;
+  canEdit: boolean;
+  onUpdate?: (
+    commentId: string,
+    body: Record<string, unknown>,
+  ) => Promise<void>;
+  projectId?: string;
+  onIssueMentionClick?: (
+    issueNumber: number,
+    issueType: "issue" | "change_request",
+  ) => void;
 }) {
-  // 댓글
-  if (event.type === "comment") {
-    const isRichContent = event.content && typeof event.content === "object";
+  const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const editBodyRef = useRef<Record<string, unknown> | null>(null);
+  const [editorKey, setEditorKey] = useState(0);
+  const isRichContent = event.content && typeof event.content === "object";
+
+  if (isEditing) {
     return (
-      <div className="flex gap-3">
-        <div className="flex flex-col items-center">
-          <Avatar className="h-8 w-8 shrink-0">
-            {event.author.profileImageUrl && (
-              <AvatarImage src={event.author.profileImageUrl} alt={event.author.name} />
+      <div>
+        <TiptapEditor
+          key={editorKey}
+          content={isRichContent ? (event.content as Content) : undefined}
+          editable
+          minHeight={80}
+          projectId={projectId}
+          onChangeJson={(json) => {
+            editBodyRef.current = json as Record<string, unknown>;
+          }}
+        />
+        <div className="mt-3 flex justify-end gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsEditing(false)}
+            disabled={isSaving}
+          >
+            취소
+          </Button>
+          <Button
+            size="sm"
+            disabled={isSaving}
+            onClick={async () => {
+              const body = editBodyRef.current;
+              if (!body || !onUpdate) return;
+              setIsSaving(true);
+              try {
+                await onUpdate(event.id, body);
+                setIsEditing(false);
+              } finally {
+                setIsSaving(false);
+              }
+            }}
+          >
+            {isSaving && (
+              <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
             )}
-            <AvatarFallback className="text-xs">
-              {getInitials(event.author.name)}
-            </AvatarFallback>
-          </Avatar>
-        </div>
-        <div className="min-w-0 flex-1 rounded-lg border bg-card">
-          <div className="flex items-center gap-2 border-b bg-muted/30 px-4 py-2">
-            <span className="text-sm font-medium text-foreground">
-              {event.author.name}
-            </span>
-            <span className="text-xs text-muted-foreground">
-              {timeAgo(event.createdAt)}
-            </span>
-          </div>
-          {isRichContent ? (
-            <div className="px-4 py-3">
-              <TiptapEditor
-                content={event.content as Content}
-                editable={false}
-                hideToolbar
-                minHeight={0}
-                className="border-0 bg-transparent"
-              />
-            </div>
-          ) : (
-            <div className="px-4 py-3 text-sm text-foreground/90 whitespace-pre-wrap leading-relaxed">
-              {typeof event.content === "string" ? event.content : null}
-            </div>
-          )}
+            저장
+          </Button>
         </div>
       </div>
     );
   }
 
+  return (
+    <div className="flex gap-3">
+      <div className="flex flex-col items-center">
+        <Avatar className="h-8 w-8 shrink-0">
+          {event.author.profileImageUrl && (
+            <AvatarImage
+              src={event.author.profileImageUrl}
+              alt={event.author.name}
+            />
+          )}
+          <AvatarFallback className="text-xs">
+            {getInitials(event.author.name)}
+          </AvatarFallback>
+        </Avatar>
+      </div>
+      <div className="min-w-0 flex-1 rounded-lg border bg-card">
+        <div className="flex items-center gap-2 border-b bg-muted/30 px-4 py-2">
+          <span className="text-sm font-medium text-foreground">
+            {event.author.name}
+          </span>
+          <span className="text-xs text-muted-foreground">
+            {timeAgo(event.createdAt)}
+          </span>
+          {event.isModified && (
+            <span className="text-xs text-muted-foreground">
+              · 수정됨
+            </span>
+          )}
+          {canEdit && onUpdate && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="ml-auto h-6 w-6 shrink-0"
+              onClick={() => {
+                editBodyRef.current = null;
+                setEditorKey((k) => k + 1);
+                setIsEditing(true);
+              }}
+            >
+              <Pencil className="h-3 w-3" />
+            </Button>
+          )}
+        </div>
+        {isRichContent ? (
+          <div className="px-4 py-3">
+            <TiptapEditor
+              content={event.content as Content}
+              editable={false}
+              hideToolbar
+              minHeight={0}
+              className="border-0 bg-transparent"
+              onIssueMentionClick={onIssueMentionClick}
+            />
+          </div>
+        ) : (
+          <div className="px-4 py-3 text-sm text-foreground/90 whitespace-pre-wrap leading-relaxed">
+            {typeof event.content === "string" ? event.content : null}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/** 타임라인 내 클릭 가능한 이슈/CR 링크 */
+function ClickableIssueLink({
+  item,
+  onNavigate,
+}: {
+  item: { number: number; title: string; type?: "issue" | "change_request" };
+  onNavigate?: (number: number, type: "issue" | "change_request") => void;
+}) {
+  const issueType = item.type ?? "issue";
+  if (!onNavigate) {
+    return (
+      <span className="font-medium text-foreground">
+        #{item.number} {item.title}
+      </span>
+    );
+  }
+  return (
+    <button
+      type="button"
+      className="cursor-pointer font-medium text-primary hover:underline"
+      onClick={() => onNavigate(item.number, issueType)}
+    >
+      #{item.number} {item.title}
+    </button>
+  );
+}
+
+function TimelineEventItem({
+  event,
+  onNavigate,
+}: {
+  event: TimelineEvent;
+  onNavigate?: (number: number, type: "issue" | "change_request") => void;
+}) {
   // 리뷰 승인
   if (event.type === "review_approved") {
     return (
@@ -281,6 +458,33 @@ function TimelineEventItem({
     );
   }
 
+  // CR 상태 변경 (DRAFT→OPEN, OPEN→CLOSED 등)
+  if (event.type === "cr_state_changed") {
+    const CR_STATE_LABEL: Record<string, string> = {
+      DRAFT: "초안",
+      OPEN: "열림",
+      CLOSED: "닫힘",
+      MERGED: "반영됨",
+    };
+    const parts = (typeof event.content === "string" ? event.content : "").split(" → ");
+    const fromLabel = CR_STATE_LABEL[parts[0]] ?? parts[0];
+    const toLabel = CR_STATE_LABEL[parts[1]] ?? parts[1];
+    return (
+      <div className="flex items-center gap-2 py-1.5 ml-11">
+        <div className="flex h-5 w-5 shrink-0 items-center justify-center">
+          <FilePen className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+        </div>
+        <p className="flex-1 text-sm text-muted-foreground">
+          <ActivityAuthor author={event.author} />
+          {` 님이 상태를 ${fromLabel}에서 ${toLabel}(으)로 변경했습니다`}
+        </p>
+        <span className="text-xs text-muted-foreground/60">
+          {timeAgo(event.createdAt)}
+        </span>
+      </div>
+    );
+  }
+
   // 이슈/CR 생성
   if (event.type === "issue_created") {
     return (
@@ -310,7 +514,10 @@ function TimelineEventItem({
           <ActivityAuthor author={event.author} />
           {" 님이 변경 요청을 생성했습니다"}
           {event.issueTitle && (
-            <span className="text-muted-foreground/70"> — #{event.issueNumber} {event.issueTitle}</span>
+            <span className="text-muted-foreground/70">
+              {" "}
+              — #{event.issueNumber} {event.issueTitle}
+            </span>
           )}
         </p>
         <span className="text-xs text-muted-foreground/60">
@@ -331,7 +538,10 @@ function TimelineEventItem({
           <ActivityAuthor author={event.author} />
           {" 님이 변경 요청을 반영했습니다"}
           {event.issueTitle && (
-            <span className="text-muted-foreground/70"> — {event.issueTitle}</span>
+            <span className="text-muted-foreground/70">
+              {" "}
+              — {event.issueTitle}
+            </span>
           )}
         </p>
         <span className="text-xs text-muted-foreground/60">
@@ -353,12 +563,33 @@ function TimelineEventItem({
           {" 님이 부품을 변경했습니다"}
           {(event.addedPartCount ?? 0) > 0 && (
             <span className="ml-1">
-              <span className="font-medium text-foreground">{event.addedPartCount}건</span> 추가
+              {event.addedPartNumbers ? (
+                <TruncatedNames items={event.addedPartNumbers} suffix="추가" />
+              ) : (
+                <>
+                  <span className="font-medium text-foreground">
+                    {event.addedPartCount}건
+                  </span>{" "}
+                  추가
+                </>
+              )}
             </span>
           )}
           {(event.removedPartCount ?? 0) > 0 && (
             <span className="ml-1">
-              <span className="font-medium text-foreground">{event.removedPartCount}건</span> 제거
+              {event.removedPartNumbers ? (
+                <TruncatedNames
+                  items={event.removedPartNumbers}
+                  suffix="제거"
+                />
+              ) : (
+                <>
+                  <span className="font-medium text-foreground">
+                    {event.removedPartCount}건
+                  </span>{" "}
+                  제거
+                </>
+              )}
             </span>
           )}
         </p>
@@ -427,14 +658,20 @@ function TimelineEventItem({
         <p className="flex-1 text-sm text-muted-foreground">
           <ActivityAuthor author={event.author} />
           {" 님이 담당자를 변경했습니다"}
-          {event.addedNames && (
+          {event.addedNames && event.addedNames.length > 0 && (
             <span className="ml-1">
-              <span className="font-medium text-foreground">{event.addedNames}</span> 추가
+              <span className="font-medium text-foreground">
+                {event.addedNames.join(", ")}
+              </span>{" "}
+              추가
             </span>
           )}
-          {event.removedNames && (
+          {event.removedNames && event.removedNames.length > 0 && (
             <span className="ml-1">
-              <span className="font-medium text-foreground">{event.removedNames}</span> 제거
+              <span className="font-medium text-foreground">
+                {event.removedNames.join(", ")}
+              </span>{" "}
+              제거
             </span>
           )}
         </p>
@@ -455,14 +692,20 @@ function TimelineEventItem({
         <p className="flex-1 text-sm text-muted-foreground">
           <ActivityAuthor author={event.author} />
           {" 님이 검토자를 변경했습니다"}
-          {event.addedNames && (
+          {event.addedNames && event.addedNames.length > 0 && (
             <span className="ml-1">
-              <span className="font-medium text-foreground">{event.addedNames}</span> 추가
+              <span className="font-medium text-foreground">
+                {event.addedNames.join(", ")}
+              </span>{" "}
+              추가
             </span>
           )}
-          {event.removedNames && (
+          {event.removedNames && event.removedNames.length > 0 && (
             <span className="ml-1">
-              <span className="font-medium text-foreground">{event.removedNames}</span> 제거
+              <span className="font-medium text-foreground">
+                {event.removedNames.join(", ")}
+              </span>{" "}
+              제거
             </span>
           )}
         </p>
@@ -482,9 +725,14 @@ function TimelineEventItem({
         </div>
         <p className="flex-1 text-sm text-muted-foreground">
           <ActivityAuthor author={event.author} />
-          {" 님이 파일 "}
-          <span className="font-medium text-foreground">{event.fileCount ?? 1}건</span>
-          을 추가했습니다
+          {" 님이 파일을 추가했습니다 "}
+          {event.fileNames && event.fileNames.length > 0 ? (
+            <TruncatedNames items={event.fileNames} />
+          ) : (
+            <span className="font-medium text-foreground">
+              {event.fileCount ?? 1}건
+            </span>
+          )}
         </p>
         <span className="text-xs text-muted-foreground/60">
           {timeAgo(event.createdAt)}
@@ -502,7 +750,10 @@ function TimelineEventItem({
         </div>
         <p className="flex-1 text-sm text-muted-foreground">
           <ActivityAuthor author={event.author} />
-          {" 님이 파일을 제거했습니다"}
+          {" 님이 파일을 제거했습니다 "}
+          {event.fileNames && event.fileNames.length > 0 && (
+            <TruncatedNames items={event.fileNames} />
+          )}
         </p>
         <span className="text-xs text-muted-foreground/60">
           {timeAgo(event.createdAt)}
@@ -520,9 +771,20 @@ function TimelineEventItem({
         </div>
         <p className="flex-1 text-sm text-muted-foreground">
           <ActivityAuthor author={event.author} />
-          {" 님이 이슈 "}
-          <span className="font-medium text-foreground">{event.linkedIssueCount ?? 1}건</span>
-          을 연결했습니다
+          {" 님이 연결했습니다 "}
+          {event.linkedIssues && event.linkedIssues.length > 0 ? (
+            event.linkedIssues.map((i) => (
+              <ClickableIssueLink
+                key={i.number}
+                item={i}
+                onNavigate={onNavigate}
+              />
+            ))
+          ) : (
+            <span className="font-medium text-foreground">
+              {event.linkedIssueCount ?? 1}건
+            </span>
+          )}
         </p>
         <span className="text-xs text-muted-foreground/60">
           {timeAgo(event.createdAt)}
@@ -540,9 +802,43 @@ function TimelineEventItem({
         </div>
         <p className="flex-1 text-sm text-muted-foreground">
           <ActivityAuthor author={event.author} />
-          {" 님이 이슈 "}
-          <span className="font-medium text-foreground">{event.linkedIssueCount ?? 1}건</span>
-          을 해제했습니다
+          {" 님이 해제했습니다 "}
+          {event.linkedIssues && event.linkedIssues.length > 0 ? (
+            event.linkedIssues.map((i) => (
+              <ClickableIssueLink
+                key={i.number}
+                item={i}
+                onNavigate={onNavigate}
+              />
+            ))
+          ) : (
+            <span className="font-medium text-foreground">
+              {event.linkedIssueCount ?? 1}건
+            </span>
+          )}
+        </p>
+        <span className="text-xs text-muted-foreground/60">
+          {timeAgo(event.createdAt)}
+        </span>
+      </div>
+    );
+  }
+
+  // 다른 이슈/CR에서 멘션됨
+  if (event.type === "issue_mentioned") {
+    const source = event.linkedIssues?.[0];
+    return (
+      <div className="flex items-center gap-2 py-1.5 ml-11">
+        <div className="flex h-5 w-5 shrink-0 items-center justify-center">
+          <MessageSquare className="h-3.5 w-3.5 text-muted-foreground" />
+        </div>
+        <p className="flex-1 text-sm text-muted-foreground">
+          {source && (
+            <ClickableIssueLink item={source} onNavigate={onNavigate} />
+          )}
+          {event.isComment
+            ? " 의 댓글에서 언급했습니다"
+            : " 의 본문에서 언급했습니다"}
         </p>
         <span className="text-xs text-muted-foreground/60">
           {timeAgo(event.createdAt)}
@@ -607,6 +903,44 @@ export interface ChangeRequestDetailProps {
   onReopenIssue?: () => void;
   isClosingIssue?: boolean;
   isReopeningIssue?: boolean;
+  onCloseChange?: () => void;
+  onMergeChange?: () => void;
+  onOpenChange?: () => void;
+  isClosingChange?: boolean;
+  isMergingChange?: boolean;
+  isOpeningChange?: boolean;
+  /** 이슈 → CR 생성 네비게이션 */
+  onCreateLinkedChange?: () => void;
+  /** CR → 이슈 연결 동기화 */
+  onSyncLinkedIssues?: (issueIds: string[]) => void;
+  /** CR → 개별 이슈 해제 */
+  onUnlinkIssue?: (issueId: string) => void;
+  /** 이슈 연결 Popover 데이터 */
+  availableIssues?: {
+    id: string;
+    number: number;
+    title: string;
+    state: string;
+  }[];
+  linkedIssueIds?: string[];
+  /** 연결된 변경요청 클릭 시 이동 */
+  onNavigateToChange?: (changeNumber: number) => void;
+  /** 연결된 이슈 클릭 시 이동 */
+  onNavigateToIssue?: (issueNumber: number) => void;
+  /** 프로젝트 ID (멘션 자동완성용) */
+  projectId?: string;
+  /** 제목/본문 수정 콜백 (Promise 반환) */
+  onUpdateTitleAndBody?: (
+    title: string,
+    body: Record<string, unknown> | null,
+  ) => Promise<void>;
+  /** 댓글 수정 콜백 (Promise 반환) */
+  onUpdateComment?: (
+    commentId: string,
+    body: Record<string, unknown>,
+  ) => Promise<void>;
+  /** 현재 로그인 사용자 ID */
+  currentUserId?: string;
 }
 
 export function ChangeRequestDetail({
@@ -638,10 +972,46 @@ export function ChangeRequestDetail({
   onReopenIssue,
   isClosingIssue,
   isReopeningIssue,
+  onCloseChange,
+  onMergeChange,
+  onOpenChange,
+  isClosingChange,
+  isMergingChange,
+  isOpeningChange,
+  onCreateLinkedChange,
+  onSyncLinkedIssues,
+  onUnlinkIssue,
+  availableIssues = [],
+  linkedIssueIds = [],
+  onNavigateToChange,
+  onNavigateToIssue,
+  projectId,
+  onUpdateTitleAndBody,
+  onUpdateComment,
+  currentUserId,
 }: ChangeRequestDetailProps) {
-  const backLabel = cr.type === "pr" ? "변경 반영" : "이슈";
+  const backLabel = cr.type === "pr" ? "변경 요청" : "이슈";
   const commentCount = cr.timeline.filter((e) => e.type === "comment").length;
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // 멘션 클릭 시 type별 네비게이션 분기
+  const handleMentionClick = useCallback(
+    (number: number, issueType: "issue" | "change_request") => {
+      if (issueType === "change_request") {
+        onNavigateToChange?.(number);
+      } else {
+        onNavigateToIssue?.(number);
+      }
+    },
+    [onNavigateToIssue, onNavigateToChange],
+  );
+
+  // 편집 모드 상태
+  const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [editTitle, setEditTitle] = useState(cr.title);
+  const editBodyJsonRef = useRef<Record<string, unknown> | null>(null);
+  const [editBodyEditorKey, setEditBodyEditorKey] = useState(0);
   const [memberPopoverOpen, setMemberPopoverOpen] = useState(false);
   const [memberQuery, setMemberQuery] = useState("");
   const [draftAssigneeIds, setDraftAssigneeIds] = useState<string[]>([]);
@@ -655,13 +1025,19 @@ export function ChangeRequestDetail({
   const [partQuery, setPartQuery] = useState("");
   const [draftPartIds, setDraftPartIds] = useState<string[]>([]);
   const partDebounceRef = useRef<ReturnType<typeof setTimeout>>(null);
-  const handlePartQueryChange = useCallback((value: string) => {
-    setPartQuery(value);
-    if (partDebounceRef.current) clearTimeout(partDebounceRef.current);
-    partDebounceRef.current = setTimeout(() => {
-      onPartsSearchChange?.(value);
-    }, 300);
-  }, [onPartsSearchChange]);
+  const handlePartQueryChange = useCallback(
+    (value: string) => {
+      setPartQuery(value);
+      if (partDebounceRef.current) clearTimeout(partDebounceRef.current);
+      partDebounceRef.current = setTimeout(() => {
+        onPartsSearchChange?.(value);
+      }, 300);
+    },
+    [onPartsSearchChange],
+  );
+  const [issuePopoverOpen, setIssuePopoverOpen] = useState(false);
+  const [issueQuery, setIssueQuery] = useState("");
+  const [draftIssueIds, setDraftIssueIds] = useState<string[]>([]);
   const [commentEditorKey, setCommentEditorKey] = useState(0);
   const commentJsonRef = useRef<Content | null>(null);
   const commentTextRef = useRef("");
@@ -669,18 +1045,30 @@ export function ChangeRequestDetail({
   const filteredMembers = availableMembers.filter((m) => {
     if (!memberQuery.trim()) return true;
     const q = memberQuery.toLowerCase();
-    return m.name.toLowerCase().includes(q) || m.email.toLowerCase().includes(q);
+    return (
+      m.name.toLowerCase().includes(q) || m.email.toLowerCase().includes(q)
+    );
   });
 
   const filteredReviewerMembers = availableMembers.filter((m) => {
     if (!reviewerQuery.trim()) return true;
     const q = reviewerQuery.toLowerCase();
-    return m.name.toLowerCase().includes(q) || m.email.toLowerCase().includes(q);
+    return (
+      m.name.toLowerCase().includes(q) || m.email.toLowerCase().includes(q)
+    );
   });
 
   const filteredLabels = availableLabels.filter((label) => {
     if (!labelQuery.trim()) return true;
     return label.name.toLowerCase().includes(labelQuery.toLowerCase());
+  });
+
+  const filteredIssues = availableIssues.filter((issue) => {
+    if (!issueQuery.trim()) return true;
+    const q = issueQuery.toLowerCase();
+    return (
+      issue.title.toLowerCase().includes(q) || String(issue.number).includes(q)
+    );
   });
 
   return (
@@ -696,12 +1084,22 @@ export function ChangeRequestDetail({
 
       {/* 타이틀 */}
       <div>
-        <h2 className="text-xl font-bold text-foreground">
-          {cr.title}
-          <span className="ml-2 font-normal text-muted-foreground">
-            #{cr.number}
-          </span>
-        </h2>
+        {isEditing ? (
+          <Input
+            value={editTitle}
+            onChange={(e) => setEditTitle(e.target.value)}
+            maxLength={500}
+            className="text-xl font-bold"
+            autoFocus
+          />
+        ) : (
+          <h2 className="text-xl font-bold text-foreground">
+            {cr.title}
+            <span className="ml-2 font-normal text-muted-foreground">
+              #{cr.number}
+            </span>
+          </h2>
+        )}
 
         <div className="mt-2 flex flex-wrap items-center gap-2">
           <Badge variant="outline" className={STATUS_BADGE_STYLE[cr.status]}>
@@ -727,43 +1125,127 @@ export function ChangeRequestDetail({
         {/* 왼쪽: 타임라인 */}
         <div className="min-w-0 flex-1 space-y-4">
           {/* 본문 (첫 번째 댓글) */}
-          <div className="flex gap-3">
-            <Avatar className="h-8 w-8 shrink-0">
-              <AvatarFallback className="text-xs">
-                {getInitials(cr.author)}
-              </AvatarFallback>
-            </Avatar>
-            <div className="min-w-0 flex-1 rounded-lg border bg-card">
-              <div className="flex items-center gap-2 border-b bg-muted/30 px-4 py-2">
-                <span className="text-sm font-medium text-foreground">
-                  {cr.author}
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  {timeAgo(cr.createdAt)}
-                </span>
-                <Badge variant="outline" className="ml-auto text-[10px]">
-                  작성자
-                </Badge>
-              </div>
-              <div className="px-4 py-3">
-                <TiptapEditor
-                  content={cr.description}
-                  editable={false}
-                  hideToolbar
-                  minHeight={0}
-                  className="border-0 bg-transparent"
-                />
+          {isEditing ? (
+            <div>
+              <TiptapEditor
+                key={editBodyEditorKey}
+                content={cr.description}
+                editable
+                minHeight={100}
+                projectId={projectId}
+                onChangeJson={(json) => {
+                  editBodyJsonRef.current = json as Record<string, unknown>;
+                }}
+              />
+              <div className="mt-3 flex justify-end gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsEditing(false)}
+                  disabled={isSaving}
+                >
+                  취소
+                </Button>
+                <Button
+                  size="sm"
+                  disabled={isSaving || !editTitle.trim()}
+                  onClick={async () => {
+                    const bodyToSave =
+                      editBodyJsonRef.current ??
+                      (typeof cr.description === "object"
+                        ? (cr.description as Record<string, unknown>)
+                        : null);
+                    setIsSaving(true);
+                    try {
+                      await onUpdateTitleAndBody?.(
+                        editTitle.trim(),
+                        bodyToSave,
+                      );
+                      setIsEditing(false);
+                    } finally {
+                      setIsSaving(false);
+                    }
+                  }}
+                >
+                  {isSaving && (
+                    <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                  )}
+                  저장
+                </Button>
               </div>
             </div>
-          </div>
+          ) : (
+            <div className="flex gap-3">
+              <Avatar className="h-8 w-8 shrink-0">
+                <AvatarFallback className="text-xs">
+                  {getInitials(cr.author)}
+                </AvatarFallback>
+              </Avatar>
+              <div className="min-w-0 flex-1 rounded-lg border bg-card">
+                <div className="flex items-center gap-2 border-b bg-muted/30 px-4 py-2">
+                  <span className="text-sm font-medium text-foreground">
+                    {cr.author}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    {timeAgo(cr.createdAt)}
+                  </span>
+                  {cr.isModified && (
+                    <span className="text-xs text-muted-foreground">
+                      · 수정됨
+                    </span>
+                  )}
+                  <Badge variant="outline" className="ml-auto text-[10px]">
+                    작성자
+                  </Badge>
+                  {onUpdateTitleAndBody && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6 shrink-0"
+                      onClick={() => {
+                        setEditTitle(cr.title);
+                        editBodyJsonRef.current = null;
+                        setEditBodyEditorKey((k) => k + 1);
+                        setIsEditing(true);
+                      }}
+                    >
+                      <Pencil className="h-3 w-3" />
+                    </Button>
+                  )}
+                </div>
+                <div className="px-4 py-3">
+                  <TiptapEditor
+                    content={cr.description}
+                    editable={false}
+                    hideToolbar
+                    minHeight={0}
+                    className="border-0 bg-transparent"
+                    onIssueMentionClick={handleMentionClick}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* 타임라인 이벤트 */}
-          {cr.timeline.map((event) => (
-            <TimelineEventItem
-              key={event.id}
-              event={event}
-            />
-          ))}
+          {cr.timeline.map((event) =>
+            event.type === "comment" ? (
+              <TimelineCommentItem
+                key={event.id}
+                event={event}
+                canEdit={!!currentUserId && event.authorId === currentUserId}
+                onUpdate={onUpdateComment}
+                projectId={projectId}
+                onIssueMentionClick={handleMentionClick}
+              />
+            ) : (
+              <TimelineEventItem
+                key={event.id}
+                event={event}
+                onNavigate={handleMentionClick}
+              />
+            ),
+          )}
 
           {/* 구분선 */}
           <div className="border-t" />
@@ -778,6 +1260,7 @@ export function ChangeRequestDetail({
                 key={commentEditorKey}
                 placeholder="댓글을 작성하세요..."
                 minHeight={100}
+                projectId={projectId}
                 onChangeJson={(json) => {
                   commentJsonRef.current = json;
                 }}
@@ -788,41 +1271,108 @@ export function ChangeRequestDetail({
               <div className="mt-3 flex items-center justify-between">
                 <div />
                 <div className="flex gap-2">
-                  {cr.type === "issue" && cr.status === "open" && onCloseIssue && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      disabled={isClosingIssue}
-                      onClick={onCloseIssue}
-                    >
-                      {isClosingIssue ? (
-                        <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-                      ) : (
-                        <XCircle className="mr-1.5 h-3.5 w-3.5" />
-                      )}
-                      이슈 닫기
-                    </Button>
-                  )}
-                  {cr.type === "issue" && cr.status === "closed" && onReopenIssue && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      disabled={isReopeningIssue}
-                      onClick={onReopenIssue}
-                    >
-                      {isReopeningIssue ? (
-                        <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-                      ) : (
-                        <AlertCircle className="mr-1.5 h-3.5 w-3.5" />
-                      )}
-                      이슈 다시 열기
-                    </Button>
-                  )}
-                  {cr.type === "pr" && cr.status === "open" && (
-                    <Button size="sm" variant="outline">
-                      승인
-                    </Button>
-                  )}
+                  {cr.type === "issue" &&
+                    cr.status === "open" &&
+                    onCloseIssue && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={isClosingIssue}
+                        onClick={onCloseIssue}
+                      >
+                        {isClosingIssue ? (
+                          <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <XCircle className="mr-1.5 h-3.5 w-3.5" />
+                        )}
+                        이슈 닫기
+                      </Button>
+                    )}
+                  {cr.type === "issue" &&
+                    cr.status === "closed" &&
+                    onReopenIssue && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={isReopeningIssue}
+                        onClick={onReopenIssue}
+                      >
+                        {isReopeningIssue ? (
+                          <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <AlertCircle className="mr-1.5 h-3.5 w-3.5" />
+                        )}
+                        이슈 다시 열기
+                      </Button>
+                    )}
+                  {/* CR(변경 요청) 상태별 버튼 */}
+                  {cr.type === "pr" &&
+                    cr.status === "draft" &&
+                    onCloseChange && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={isClosingChange}
+                        onClick={onCloseChange}
+                      >
+                        {isClosingChange ? (
+                          <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <XCircle className="mr-1.5 h-3.5 w-3.5" />
+                        )}
+                        변경 요청 닫기
+                      </Button>
+                    )}
+                  {cr.type === "pr" &&
+                    cr.status === "draft" &&
+                    onOpenChange && (
+                      <Button
+                        size="sm"
+                        disabled={isOpeningChange}
+                        onClick={onOpenChange}
+                      >
+                        {isOpeningChange ? (
+                          <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <FileCheck className="mr-1.5 h-3.5 w-3.5" />
+                        )}
+                        제출
+                      </Button>
+                    )}
+                  {cr.type === "pr" &&
+                    cr.status === "open" &&
+                    onCloseChange && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={isClosingChange}
+                        onClick={onCloseChange}
+                      >
+                        {isClosingChange ? (
+                          <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <XCircle className="mr-1.5 h-3.5 w-3.5" />
+                        )}
+                        변경 요청 닫기
+                      </Button>
+                    )}
+                  {cr.type === "pr" &&
+                    cr.status === "open" &&
+                    onMergeChange && (
+                      <Button
+                        size="sm"
+                        className="bg-green-600 hover:bg-green-700 text-white"
+                        disabled={isMergingChange}
+                        onClick={onMergeChange}
+                      >
+                        {isMergingChange ? (
+                          <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" />
+                        )}
+                        변경 반영
+                      </Button>
+                    )}
                   <Button
                     size="sm"
                     disabled={isCommentPending}
@@ -847,11 +1397,13 @@ export function ChangeRequestDetail({
         {/* 오른쪽: 사이드바 */}
         <div className="hidden w-70 shrink-0 lg:block">
           <div className="space-y-5">
-            {/* 검토자 — 변경 반영(pr)에서만 표시 */}
+            {/* 검토자 — 변경 요청(pr)에서만 표시 */}
             {cr.type === "pr" && (
               <div>
                 <div className="flex items-center justify-between">
-                  <h3 className="text-xs font-medium text-muted-foreground">검토자</h3>
+                  <h3 className="text-xs font-medium text-muted-foreground">
+                    검토자
+                  </h3>
                   {onSyncReviewers && (
                     <Popover
                       open={reviewerPopoverOpen}
@@ -875,7 +1427,9 @@ export function ChangeRequestDetail({
                       </PopoverTrigger>
                       <PopoverContent className="w-72 p-3" align="end">
                         <div className="space-y-2">
-                          <p className="text-xs font-medium text-foreground">검토자 추가</p>
+                          <p className="text-xs font-medium text-foreground">
+                            검토자 추가
+                          </p>
                           <Input
                             value={reviewerQuery}
                             onChange={(e) => setReviewerQuery(e.target.value)}
@@ -883,7 +1437,9 @@ export function ChangeRequestDetail({
                           />
                           <div className="max-h-48 space-y-1 overflow-auto">
                             {filteredReviewerMembers.length === 0 ? (
-                              <p className="px-1 py-2 text-xs text-muted-foreground">추가 가능한 멤버가 없습니다.</p>
+                              <p className="px-1 py-2 text-xs text-muted-foreground">
+                                추가 가능한 멤버가 없습니다.
+                              </p>
                             ) : (
                               filteredReviewerMembers.map((member) => (
                                 <label
@@ -891,11 +1447,16 @@ export function ChangeRequestDetail({
                                   className="flex w-full cursor-pointer items-center gap-2 rounded-md px-1 py-1.5 hover:bg-muted"
                                 >
                                   <Checkbox
-                                    checked={draftReviewerIds.includes(member.id)}
+                                    checked={draftReviewerIds.includes(
+                                      member.id,
+                                    )}
                                     onCheckedChange={(checked) => {
                                       setDraftReviewerIds((prev) => {
-                                        if (checked) return [...prev, member.id];
-                                        return prev.filter((id) => id !== member.id);
+                                        if (checked)
+                                          return [...prev, member.id];
+                                        return prev.filter(
+                                          (id) => id !== member.id,
+                                        );
                                       });
                                     }}
                                   />
@@ -905,8 +1466,12 @@ export function ChangeRequestDetail({
                                     </AvatarFallback>
                                   </Avatar>
                                   <div className="min-w-0 flex-1">
-                                    <p className="truncate text-sm text-foreground">{member.name}</p>
-                                    <p className="truncate text-xs text-muted-foreground">{member.email}</p>
+                                    <p className="truncate text-sm text-foreground">
+                                      {member.name}
+                                    </p>
+                                    <p className="truncate text-xs text-muted-foreground">
+                                      {member.email}
+                                    </p>
                                   </div>
                                 </label>
                               ))
@@ -932,16 +1497,24 @@ export function ChangeRequestDetail({
                 </div>
                 <div className="mt-2 space-y-2">
                   {cr.reviewers.map((reviewer) => (
-                    <div key={reviewer.id ?? reviewer.name} className="flex items-center gap-2">
+                    <div
+                      key={reviewer.id ?? reviewer.name}
+                      className="flex items-center gap-2"
+                    >
                       <Avatar className="h-6 w-6">
                         {reviewer.profileImageUrl && (
-                          <AvatarImage src={reviewer.profileImageUrl} alt={reviewer.name} />
+                          <AvatarImage
+                            src={reviewer.profileImageUrl}
+                            alt={reviewer.name}
+                          />
                         )}
                         <AvatarFallback className="text-[10px]">
                           {getInitials(reviewer.name)}
                         </AvatarFallback>
                       </Avatar>
-                      <span className="text-sm text-foreground">{reviewer.name}</span>
+                      <span className="text-sm text-foreground">
+                        {reviewer.name}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -951,7 +1524,9 @@ export function ChangeRequestDetail({
             {/* 담당자 */}
             <div>
               <div className="flex items-center justify-between">
-                <h3 className="text-xs font-medium text-muted-foreground">담당자</h3>
+                <h3 className="text-xs font-medium text-muted-foreground">
+                  담당자
+                </h3>
                 {onSyncAssignees && (
                   <Popover
                     open={memberPopoverOpen}
@@ -975,7 +1550,9 @@ export function ChangeRequestDetail({
                     </PopoverTrigger>
                     <PopoverContent className="w-72 p-3" align="end">
                       <div className="space-y-2">
-                        <p className="text-xs font-medium text-foreground">담당자 추가</p>
+                        <p className="text-xs font-medium text-foreground">
+                          담당자 추가
+                        </p>
                         <Input
                           value={memberQuery}
                           onChange={(e) => setMemberQuery(e.target.value)}
@@ -983,7 +1560,9 @@ export function ChangeRequestDetail({
                         />
                         <div className="max-h-48 space-y-1 overflow-auto">
                           {filteredMembers.length === 0 ? (
-                            <p className="px-1 py-2 text-xs text-muted-foreground">추가 가능한 멤버가 없습니다.</p>
+                            <p className="px-1 py-2 text-xs text-muted-foreground">
+                              추가 가능한 멤버가 없습니다.
+                            </p>
                           ) : (
                             filteredMembers.map((member) => (
                               <label
@@ -995,7 +1574,9 @@ export function ChangeRequestDetail({
                                   onCheckedChange={(checked) => {
                                     setDraftAssigneeIds((prev) => {
                                       if (checked) return [...prev, member.id];
-                                      return prev.filter((id) => id !== member.id);
+                                      return prev.filter(
+                                        (id) => id !== member.id,
+                                      );
                                     });
                                   }}
                                 />
@@ -1005,8 +1586,12 @@ export function ChangeRequestDetail({
                                   </AvatarFallback>
                                 </Avatar>
                                 <div className="min-w-0 flex-1">
-                                  <p className="truncate text-sm text-foreground">{member.name}</p>
-                                  <p className="truncate text-xs text-muted-foreground">{member.email}</p>
+                                  <p className="truncate text-sm text-foreground">
+                                    {member.name}
+                                  </p>
+                                  <p className="truncate text-xs text-muted-foreground">
+                                    {member.email}
+                                  </p>
                                 </div>
                               </label>
                             ))
@@ -1032,16 +1617,24 @@ export function ChangeRequestDetail({
               </div>
               <div className="mt-2 space-y-2">
                 {cr.assignees.map((assignee) => (
-                  <div key={assignee.id ?? assignee.name} className="flex items-center gap-2">
+                  <div
+                    key={assignee.id ?? assignee.name}
+                    className="flex items-center gap-2"
+                  >
                     <Avatar className="h-6 w-6">
                       {assignee.profileImageUrl && (
-                        <AvatarImage src={assignee.profileImageUrl} alt={assignee.name} />
+                        <AvatarImage
+                          src={assignee.profileImageUrl}
+                          alt={assignee.name}
+                        />
                       )}
                       <AvatarFallback className="text-[10px]">
                         {getInitials(assignee.name)}
                       </AvatarFallback>
                     </Avatar>
-                    <span className="text-sm text-foreground">{assignee.name}</span>
+                    <span className="text-sm text-foreground">
+                      {assignee.name}
+                    </span>
                   </div>
                 ))}
               </div>
@@ -1050,7 +1643,9 @@ export function ChangeRequestDetail({
             {/* 라벨 */}
             <div>
               <div className="flex items-center justify-between">
-                <h3 className="text-xs font-medium text-muted-foreground">라벨</h3>
+                <h3 className="text-xs font-medium text-muted-foreground">
+                  라벨
+                </h3>
                 {onSyncLabels && (
                   <Popover
                     open={labelPopoverOpen}
@@ -1074,7 +1669,9 @@ export function ChangeRequestDetail({
                     </PopoverTrigger>
                     <PopoverContent className="w-72 p-3" align="end">
                       <div className="space-y-2">
-                        <p className="text-xs font-medium text-foreground">라벨 추가</p>
+                        <p className="text-xs font-medium text-foreground">
+                          라벨 추가
+                        </p>
                         <Input
                           value={labelQuery}
                           onChange={(e) => setLabelQuery(e.target.value)}
@@ -1082,7 +1679,9 @@ export function ChangeRequestDetail({
                         />
                         <div className="max-h-48 space-y-1 overflow-auto">
                           {filteredLabels.length === 0 ? (
-                            <p className="px-1 py-2 text-xs text-muted-foreground">추가 가능한 라벨이 없습니다.</p>
+                            <p className="px-1 py-2 text-xs text-muted-foreground">
+                              추가 가능한 라벨이 없습니다.
+                            </p>
                           ) : (
                             filteredLabels.map((label) => (
                               <label
@@ -1094,11 +1693,17 @@ export function ChangeRequestDetail({
                                   onCheckedChange={(checked) => {
                                     setDraftLabelIds((prev) => {
                                       if (checked) return [...prev, label.id];
-                                      return prev.filter((id) => id !== label.id);
+                                      return prev.filter(
+                                        (id) => id !== label.id,
+                                      );
                                     });
                                   }}
                                 />
-                                <LabelBadge label={label.name} colorHex={label.colorHex} size="sm" />
+                                <LabelBadge
+                                  label={label.name}
+                                  colorHex={label.colorHex}
+                                  size="sm"
+                                />
                               </label>
                             ))
                           )}
@@ -1123,10 +1728,208 @@ export function ChangeRequestDetail({
               </div>
               <div className="mt-2 flex flex-wrap gap-1.5">
                 {cr.labels.map((l) => (
-                  <LabelBadge key={l.id ?? l.name} label={l.name} colorHex={l.colorHex} size="md" />
+                  <LabelBadge
+                    key={l.id ?? l.name}
+                    label={l.name}
+                    colorHex={l.colorHex}
+                    size="md"
+                  />
                 ))}
               </div>
             </div>
+
+            {/* 변경요청 — 이슈에서만 표시 */}
+            {cr.type === "issue" && (
+              <div>
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xs font-medium text-muted-foreground">
+                    변경요청
+                  </h3>
+                  {onCreateLinkedChange && (
+                    <button
+                      type="button"
+                      className="inline-flex h-5 w-5 items-center justify-center rounded text-muted-foreground/50 hover:bg-muted hover:text-foreground transition-colors"
+                      onClick={onCreateLinkedChange}
+                    >
+                      <Plus className="h-3 w-3" />
+                    </button>
+                  )}
+                </div>
+                {cr.linkedChanges.length > 0 ? (
+                  <div className="mt-2 space-y-1.5">
+                    {cr.linkedChanges.map((lc) => {
+                      const s = lc.state.toLowerCase();
+                      return (
+                        <button
+                          key={lc.id}
+                          type="button"
+                          className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-muted cursor-pointer"
+                          onClick={() => onNavigateToChange?.(lc.number)}
+                        >
+                          <FilePen className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-xs font-medium text-foreground">
+                              #{lc.number} {lc.title}
+                            </p>
+                            <p className="text-[11px] text-muted-foreground">
+                              {s === "open"
+                                ? "열림"
+                                : s === "merged"
+                                  ? "반영됨"
+                                  : "닫힘"}
+                            </p>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <p className="mt-2 text-xs text-muted-foreground/50">
+                    연결된 변경요청 없음
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* 연결된 이슈 — CR(pr)에서만 표시 */}
+            {cr.type === "pr" && (
+              <div>
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xs font-medium text-muted-foreground">
+                    연결된 이슈
+                  </h3>
+                  {onSyncLinkedIssues && (
+                    <Popover
+                      open={issuePopoverOpen}
+                      onOpenChange={(open) => {
+                        setIssuePopoverOpen(open);
+                        if (open) {
+                          setDraftIssueIds(linkedIssueIds);
+                        } else {
+                          setIssueQuery("");
+                        }
+                      }}
+                    >
+                      <PopoverTrigger asChild>
+                        <button
+                          type="button"
+                          className="inline-flex h-5 w-5 items-center justify-center rounded text-muted-foreground/50 hover:bg-muted hover:text-foreground transition-colors"
+                        >
+                          <Plus className="h-3 w-3" />
+                        </button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-80 p-3" align="end">
+                        <div className="space-y-2">
+                          <p className="text-xs font-medium text-foreground">
+                            이슈 연결
+                          </p>
+                          <Input
+                            value={issueQuery}
+                            onChange={(e) => setIssueQuery(e.target.value)}
+                            placeholder="번호 또는 제목으로 검색"
+                          />
+                          <div className="max-h-48 space-y-1 overflow-auto">
+                            {filteredIssues.length === 0 ? (
+                              <p className="px-1 py-2 text-xs text-muted-foreground">
+                                {issueQuery.trim()
+                                  ? "검색 결과가 없습니다."
+                                  : "연결 가능한 이슈가 없습니다."}
+                              </p>
+                            ) : (
+                              filteredIssues.map((issue) => (
+                                <label
+                                  key={issue.id}
+                                  className="flex w-full cursor-pointer items-center gap-2 rounded-md px-1 py-1.5 hover:bg-muted"
+                                >
+                                  <Checkbox
+                                    checked={draftIssueIds.includes(issue.id)}
+                                    onCheckedChange={(checked) => {
+                                      setDraftIssueIds((prev) => {
+                                        if (checked) return [...prev, issue.id];
+                                        return prev.filter(
+                                          (id) => id !== issue.id,
+                                        );
+                                      });
+                                    }}
+                                  />
+                                  <AlertCircle className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                                  <div className="min-w-0 flex-1">
+                                    <p className="truncate text-xs font-medium text-foreground">
+                                      #{issue.number} {issue.title}
+                                    </p>
+                                    <p className="text-[11px] text-muted-foreground">
+                                      {issue.state.toLowerCase() === "open"
+                                        ? "열림"
+                                        : "닫힘"}
+                                    </p>
+                                  </div>
+                                </label>
+                              ))
+                            )}
+                          </div>
+                          <Button
+                            type="button"
+                            size="sm"
+                            className="w-full"
+                            disabled={isMetaUpdating}
+                            onClick={() => {
+                              onSyncLinkedIssues(draftIssueIds);
+                              setIssuePopoverOpen(false);
+                              setIssueQuery("");
+                            }}
+                          >
+                            이슈 적용
+                          </Button>
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                  )}
+                </div>
+                {cr.linkedIssues.length > 0 ? (
+                  <div className="mt-2 space-y-1.5">
+                    {cr.linkedIssues.map((li) => {
+                      const s = li.state.toLowerCase();
+                      return (
+                        <div
+                          key={li.id}
+                          className="group flex w-full items-center gap-2 rounded-md px-2 py-1.5 transition-colors hover:bg-muted"
+                        >
+                          <AlertCircle className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                          <button
+                            type="button"
+                            className="min-w-0 flex-1 text-left cursor-pointer"
+                            onClick={() => onNavigateToIssue?.(li.number)}
+                          >
+                            <p className="truncate text-xs font-medium text-foreground">
+                              #{li.number} {li.title}
+                            </p>
+                            <p className="text-[11px] text-muted-foreground">
+                              {s === "open" ? "열림" : "닫힘"}
+                            </p>
+                          </button>
+                          {onUnlinkIssue && (
+                            <button
+                              type="button"
+                              className="hidden shrink-0 rounded p-0.5 text-muted-foreground/50 hover:bg-destructive/10 hover:text-destructive group-hover:inline-flex"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onUnlinkIssue(li.id);
+                              }}
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <p className="mt-2 text-xs text-muted-foreground/50">
+                    연결된 이슈 없음
+                  </p>
+                )}
+              </div>
+            )}
 
             {/* 관련 부품 */}
             <div>
@@ -1159,11 +1962,15 @@ export function ChangeRequestDetail({
                     </PopoverTrigger>
                     <PopoverContent className="w-80 p-3" align="end">
                       <div className="space-y-2">
-                        <p className="text-xs font-medium text-foreground">부품 추가</p>
+                        <p className="text-xs font-medium text-foreground">
+                          부품 추가
+                        </p>
                         <div className="relative">
                           <Input
                             value={partQuery}
-                            onChange={(e) => handlePartQueryChange(e.target.value)}
+                            onChange={(e) =>
+                              handlePartQueryChange(e.target.value)
+                            }
                             placeholder="부품번호 또는 이름으로 검색"
                           />
                           {isPartsSearching && (
@@ -1175,7 +1982,9 @@ export function ChangeRequestDetail({
                         <div className="max-h-48 space-y-1 overflow-auto">
                           {searchedParts.length === 0 ? (
                             <p className="px-1 py-2 text-xs text-muted-foreground">
-                              {partQuery.trim() ? "검색 결과가 없습니다." : "프로젝트에 연결된 부품이 없습니다."}
+                              {partQuery.trim()
+                                ? "검색 결과가 없습니다."
+                                : "프로젝트에 연결된 부품이 없습니다."}
                             </p>
                           ) : (
                             searchedParts.map((part) => (
@@ -1188,7 +1997,9 @@ export function ChangeRequestDetail({
                                   onCheckedChange={(checked) => {
                                     setDraftPartIds((prev) => {
                                       if (checked) return [...prev, part.id];
-                                      return prev.filter((id) => id !== part.id);
+                                      return prev.filter(
+                                        (id) => id !== part.id,
+                                      );
                                     });
                                   }}
                                 />

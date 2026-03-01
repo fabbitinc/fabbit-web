@@ -8,7 +8,7 @@ export const INVITATIONS_QUERY_KEY = ["invitations"] as const;
 
 const INVITATION_ERROR_MESSAGES: Record<string, string> = {
   VALIDATION_ERROR: "유효하지 않은 이메일 주소입니다.",
-  ALREADY_MEMBER: "이미 조직에 속한 멤버입니다.",
+  ALREADY_MEMBER: "이미 조직에 속한 사용자입니다.",
   DUPLICATE_INVITATION: "이미 초대가 발송된 이메일입니다.",
   FORBIDDEN: "초대 권한이 없습니다. 관리자만 초대할 수 있습니다.",
   NOT_FOUND: "초대 정보를 찾을 수 없습니다.",
@@ -76,18 +76,18 @@ export function useRemoveMember() {
   return useMutation({
     mutationFn: (userId: string) => removeMember(userId),
     onSuccess: () => {
-      toast.success("멤버를 제거했습니다");
+      toast.success("사용자를 제거했습니다");
       queryClient.invalidateQueries({ queryKey: MEMBERS_QUERY_KEY });
     },
     onError: (err) => {
       const axiosErr = err as { response?: { data?: { code?: string; message?: string } } };
       const code = axiosErr?.response?.data?.code;
       const messages: Record<string, string> = {
-        FORBIDDEN: "멤버 제거 권한이 없습니다. 관리자만 제거할 수 있습니다.",
+        FORBIDDEN: "사용자 제거 권한이 없습니다. 관리자만 제거할 수 있습니다.",
         CANNOT_REMOVE_OWNER: "조직 소유자는 제거할 수 없습니다.",
         CANNOT_REMOVE_SELF: "자기 자신은 제거할 수 없습니다.",
       };
-      const message = (code && messages[code]) || axiosErr?.response?.data?.message || "멤버 제거에 실패했습니다";
+      const message = (code && messages[code]) || axiosErr?.response?.data?.message || "사용자 제거에 실패했습니다";
       toast.error(message);
     },
   });

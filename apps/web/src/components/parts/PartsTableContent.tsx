@@ -262,7 +262,7 @@ export function PartsTableContent({
     setIsExporting(true);
     try {
       if (mode === "selected") {
-        await exportParts({ part_ids: [...selectedIds] });
+        await exportParts({ part_ids: [...selectedIds], project_id: projectId });
       } else if (mode === "filtered") {
         await exportParts({
           search: applied.search || undefined,
@@ -270,9 +270,10 @@ export function PartsTableContent({
           lifecycle_state: applied.lifecycleStates.size === 1 ? [...applied.lifecycleStates][0] : undefined,
           has_drawing: applied.hasDrawing ?? undefined,
           has_children: applied.hasChildren ?? undefined,
+          project_id: projectId,
         });
       } else {
-        await exportParts({});
+        await exportParts({ project_id: projectId });
       }
     } finally {
       setIsExporting(false);

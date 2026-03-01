@@ -11,6 +11,8 @@ import type {
   ExportBomParams,
   PartFileItem,
   AttachFilesRequest,
+  PartLookupResponse,
+  LookupPartsParams,
 } from "./types/parts";
 
 /** Part 필터 옵션 조회 (카테고리, 수명주기 DISTINCT 값) */
@@ -28,6 +30,18 @@ export async function listParts(
   const response = await apiClient.get<PartListResponse>("/api/v1/parts", {
     params,
   });
+  return response.data;
+}
+
+/** 부품 Lookup 조회 (picker용 경량 목록, exclude_linked로 이미 연결된 부품 제외 가능) */
+export async function lookupParts(
+  params: LookupPartsParams,
+): Promise<PartLookupResponse> {
+  const { project_id, ...queryParams } = params;
+  const response = await apiClient.get<PartLookupResponse>(
+    `/api/v1/projects/${project_id}/parts/lookup`,
+    { params: queryParams },
+  );
   return response.data;
 }
 
@@ -67,6 +81,7 @@ export async function exportParts(params: ExportPartsParams): Promise<void> {
   if (params.has_drawing != null) query.set("has_drawing", String(params.has_drawing));
   if (params.has_children != null) query.set("has_children", String(params.has_children));
   if (params.mapping_id) query.set("mapping_id", params.mapping_id);
+  if (params.project_id) query.set("project_id", params.project_id);
   // FastAPI는 배열을 반복 쿼리 파라미터로 받음 (?part_ids=a&part_ids=b)
   if (params.part_ids?.length) {
     for (const id of params.part_ids) query.append("part_ids", id);

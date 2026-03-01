@@ -60,7 +60,7 @@ function getRoleLabel(role: string): string {
   switch (role) {
     case "owner": return "소유자";
     case "admin": return "관리자";
-    default: return "멤버";
+    default: return "사용자";
   }
 }
 

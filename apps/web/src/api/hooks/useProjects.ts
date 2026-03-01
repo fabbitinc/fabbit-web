@@ -94,17 +94,6 @@ export function useDeleteProject() {
   });
 }
 
-/**
- * 프로젝트 부품 목록 조회 훅
- */
-export function useProjectParts(projectId: string | undefined) {
-  return useQuery({
-    queryKey: [...PROJECT_PARTS_QUERY_KEY, projectId],
-    queryFn: () => getProjectParts(projectId!),
-    enabled: !!projectId,
-  });
-}
-
 /** 프로젝트 부품 검색 훅 (디바운스된 검색어로 호출) */
 export function useSearchProjectParts(projectId: string | undefined, search: string, enabled = true) {
   return useQuery({
@@ -158,13 +147,13 @@ export function useProjectMembers(projectId: string, enabled = true) {
 export function useAddProjectMembers(projectId: string) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (userIds: string[]) => addProjectMembers(projectId, userIds),
+    mutationFn: ({ userIds, role }: { userIds: string[]; role?: import("@/api/types").ProjectRole }) => addProjectMembers(projectId, userIds, role),
     onSuccess: (data) => {
-      toast.success(`${data.count}명의 멤버를 추가했습니다`);
+      toast.success(`${data.count}명의 사용자를 추가했습니다`);
       queryClient.invalidateQueries({ queryKey: [...PROJECT_MEMBERS_QUERY_KEY, projectId] });
     },
     onError: () => {
-      toast.error("멤버 추가에 실패했습니다");
+      toast.error("사용자 추가에 실패했습니다");
     },
   });
 }
@@ -175,11 +164,11 @@ export function useRemoveProjectMembers(projectId: string) {
   return useMutation({
     mutationFn: (userIds: string[]) => removeProjectMembers(projectId, userIds),
     onSuccess: () => {
-      toast.success("멤버를 제거했습니다");
+      toast.success("사용자를 제거했습니다");
       queryClient.invalidateQueries({ queryKey: [...PROJECT_MEMBERS_QUERY_KEY, projectId] });
     },
     onError: () => {
-      toast.error("멤버 제거에 실패했습니다");
+      toast.error("사용자 제거에 실패했습니다");
     },
   });
 }

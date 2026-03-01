@@ -2,6 +2,7 @@ import { apiClient } from "./client";
 import type {
   CommentDto,
   CreateIssueRequest,
+  UpdateIssueRequest,
   IssueDto,
   IssueFileDto,
   IssueLabelDto,
@@ -9,6 +10,7 @@ import type {
   IssuePartDto,
   IssueTimelineItemDto,
   IssueTimelineResponse,
+  LinkedChangeBadgeDto,
   TimelineUserDto,
   UserSummaryDto,
 } from "./types";
@@ -40,6 +42,13 @@ interface ApiIssueFileResponse {
   created_at: string;
 }
 
+interface ApiLinkedChangeBadgeResponse {
+  id: string;
+  number: number;
+  title: string;
+  state: string;
+}
+
 interface ApiIssueResponse {
   id: string;
   project_id: string;
@@ -57,6 +66,8 @@ interface ApiIssueResponse {
   parts?: ApiIssuePartResponse[];
   files?: ApiIssueFileResponse[];
   comments_count?: number;
+  linked_changes?: ApiLinkedChangeBadgeResponse[];
+  is_modified?: boolean;
 }
 
 interface ApiIssueListEnvelope {
@@ -92,6 +103,7 @@ interface ApiTimelineCommentItem {
   body: Record<string, unknown> | null;
   author_id: string | null;
   created_at: string;
+  is_modified?: boolean;
 }
 
 interface ApiTimelineActivityItem {
@@ -151,6 +163,15 @@ function mapIssueFile(file: ApiIssueFileResponse): IssueFileDto {
   };
 }
 
+function mapLinkedChange(item: ApiLinkedChangeBadgeResponse): LinkedChangeBadgeDto {
+  return {
+    id: item.id,
+    number: item.number,
+    title: item.title,
+    state: item.state,
+  };
+}
+
 function mapIssue(item: ApiIssueResponse): IssueDto {
   return {
     id: item.id,
@@ -163,6 +184,7 @@ function mapIssue(item: ApiIssueResponse): IssueDto {
     closedAt: item.closed_at ?? null,
     createdAt: item.created_at,
     updatedAt: item.updated_at,
+    isModified: item.is_modified ?? false,
     createdBy: item.created_by ? mapUserSummary(item.created_by) : null,
     labels: (item.labels ?? []).map(mapIssueLabel).filter((label): label is IssueLabelDto => label !== null),
     assignees: (item.assignees ?? [])
@@ -171,6 +193,7 @@ function mapIssue(item: ApiIssueResponse): IssueDto {
     parts: (item.parts ?? []).map(mapIssuePart),
     files: (item.files ?? []).map(mapIssueFile),
     commentsCount: item.comments_count ?? 0,
+    linkedChanges: (item.linked_changes ?? []).map(mapLinkedChange),
   };
 }
 
@@ -205,6 +228,7 @@ function mapTimelineItem(item: ApiTimelineCommentItem | ApiTimelineActivityItem)
       body: item.body,
       authorId: item.author_id,
       createdAt: item.created_at,
+      isModified: item.is_modified ?? false,
     };
   }
 
@@ -348,6 +372,15 @@ export async function updateIssueComment(
 /** 이슈 댓글 삭제 */
 export async function deleteIssueComment(projectId: string, issueNumber: string, commentId: string): Promise<void> {
   await apiClient.delete(`/api/v1/projects/${projectId}/issues/${issueNumber}/comments/${commentId}`);
+}
+
+/** 이슈 수정 (제목/본문) */
+export async function updateIssue(projectId: string, issueNumber: string, request: UpdateIssueRequest): Promise<IssueDto> {
+  const response = await apiClient.patch<ApiIssueResponse>(
+    `/api/v1/projects/${projectId}/issues/${issueNumber}`,
+    request,
+  );
+  return mapIssue(response.data);
 }
 
 /** 이슈 닫기 */

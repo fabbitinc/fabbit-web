@@ -18,10 +18,12 @@ import {
   deleteIssueFile,
   unassignIssueUsers,
   updateIssueComment,
+  updateIssue,
 } from "../issue";
-import type { CreateIssueRequest } from "../types";
+import type { CreateIssueRequest, UpdateIssueRequest } from "../types";
 import { createFileUpload, uploadFileToPresignedUrl, completeFileUpload } from "../file";
 import { PROJECT_LABELS_QUERY_KEY } from "./useLabels";
+import { PROJECT_QUERY_KEY } from "./useProjects";
 
 export const PROJECT_ISSUES_QUERY_KEY = ["projectIssues"] as const;
 export const PROJECT_ISSUE_DETAIL_QUERY_KEY = ["projectIssueDetail"] as const;
@@ -72,6 +74,7 @@ export function useCreateProjectIssue(projectId: string | undefined) {
     onSuccess: () => {
       toast.success("이슈가 생성되었습니다");
       queryClient.invalidateQueries({ queryKey: [...PROJECT_ISSUES_QUERY_KEY, projectId] });
+      queryClient.invalidateQueries({ queryKey: [...PROJECT_QUERY_KEY, projectId] });
     },
     onError: () => {
       toast.error("이슈 생성에 실패했습니다");
@@ -241,9 +244,9 @@ export function useUpdateIssueComment(projectId: string | undefined, issueNumber
   return useMutation({
     mutationFn: ({ commentId, body }: { commentId: string; body: Record<string, unknown> }) =>
       updateIssueComment(projectId!, issueNumber!, commentId, body),
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success("댓글을 수정했습니다");
-      queryClient.invalidateQueries({ queryKey: [...PROJECT_ISSUE_TIMELINE_QUERY_KEY, projectId, issueNumber] });
+      await queryClient.invalidateQueries({ queryKey: [...PROJECT_ISSUE_TIMELINE_QUERY_KEY, projectId, issueNumber] });
     },
     onError: () => {
       toast.error("댓글 수정에 실패했습니다");
@@ -262,6 +265,7 @@ export function useCloseIssue(projectId: string | undefined, issueNumber: string
       queryClient.invalidateQueries({ queryKey: [...PROJECT_ISSUES_QUERY_KEY, projectId] });
       queryClient.invalidateQueries({ queryKey: [...PROJECT_ISSUE_DETAIL_QUERY_KEY, projectId, issueNumber] });
       queryClient.invalidateQueries({ queryKey: [...PROJECT_ISSUE_TIMELINE_QUERY_KEY, projectId, issueNumber] });
+      queryClient.invalidateQueries({ queryKey: [...PROJECT_QUERY_KEY, projectId] });
     },
     onError: () => {
       toast.error("이슈 닫기에 실패했습니다");
@@ -280,9 +284,29 @@ export function useReopenIssue(projectId: string | undefined, issueNumber: strin
       queryClient.invalidateQueries({ queryKey: [...PROJECT_ISSUES_QUERY_KEY, projectId] });
       queryClient.invalidateQueries({ queryKey: [...PROJECT_ISSUE_DETAIL_QUERY_KEY, projectId, issueNumber] });
       queryClient.invalidateQueries({ queryKey: [...PROJECT_ISSUE_TIMELINE_QUERY_KEY, projectId, issueNumber] });
+      queryClient.invalidateQueries({ queryKey: [...PROJECT_QUERY_KEY, projectId] });
     },
     onError: () => {
       toast.error("이슈 다시 열기에 실패했습니다");
+    },
+  });
+}
+
+/** 이슈 수정 (제목/본문) 훅 */
+export function useUpdateIssue(projectId: string | undefined, issueNumber: string | undefined) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (request: UpdateIssueRequest) => updateIssue(projectId!, issueNumber!, request),
+    onSuccess: async () => {
+      toast.success("이슈를 수정했습니다");
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: [...PROJECT_ISSUES_QUERY_KEY, projectId] }),
+        queryClient.invalidateQueries({ queryKey: [...PROJECT_ISSUE_DETAIL_QUERY_KEY, projectId, issueNumber] }),
+      ]);
+    },
+    onError: () => {
+      toast.error("이슈 수정에 실패했습니다");
     },
   });
 }

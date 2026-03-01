@@ -24,6 +24,13 @@ export interface ChangeFileDto {
   createdAt: string;
 }
 
+export interface LinkedIssueBadgeDto {
+  id: string;
+  number: number;
+  title: string;
+  state: string;
+}
+
 export interface ChangeDto {
   id: string;
   projectId: string;
@@ -32,9 +39,11 @@ export interface ChangeDto {
   title: string;
   body: Record<string, unknown> | string | null;
   state: string;
+  crState: string;
   closedAt: string | null;
   createdAt: string;
   updatedAt?: string;
+  isModified?: boolean;
   createdBy: UserSummaryDto | null;
   labels: ChangeLabelDto[];
   assignees: UserSummaryDto[];
@@ -42,6 +51,7 @@ export interface ChangeDto {
   parts: ChangePartDto[];
   files: ChangeFileDto[];
   commentsCount: number;
+  linkedIssues: LinkedIssueBadgeDto[];
 }
 
 export interface ChangeListResponse {
@@ -55,5 +65,11 @@ export interface ChangeListResponse {
 
 export interface CreateChangeRequest {
   title: string;
+  body?: Record<string, unknown> | null;
+  issueNumber?: number | null;
+}
+
+export interface UpdateChangeRequest {
+  title?: string | null;
   body?: Record<string, unknown> | null;
 }

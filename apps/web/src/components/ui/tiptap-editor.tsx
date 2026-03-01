@@ -1,6 +1,8 @@
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useEditor, EditorContent, type Content, type Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Placeholder from "@tiptap/extension-placeholder";
+import { createMentionExtensions, staticMentionExtensions } from "./tiptap-mention";
 import {
   Bold,
   Italic,
@@ -147,6 +149,10 @@ export interface TiptapEditorProps {
   hideToolbar?: boolean;
   /** 최소 높이 (px) */
   minHeight?: number;
+  /** 프로젝트 ID (멘션 자동완성 활성화용) */
+  projectId?: string;
+  /** 이슈/CR 멘션 클릭 시 콜백 (number + type 전달) */
+  onIssueMentionClick?: (issueNumber: number, issueType: "issue" | "change_request") => void;
 }
 
 export function TiptapEditor({
@@ -159,11 +165,19 @@ export function TiptapEditor({
   className,
   hideToolbar = false,
   minHeight = 120,
+  projectId,
+  onIssueMentionClick,
 }: TiptapEditorProps) {
+  const mentionExtensions = useMemo(
+    () => (projectId ? createMentionExtensions(projectId) : staticMentionExtensions),
+    [projectId],
+  );
+
   const editor = useEditor({
     extensions: [
       StarterKit,
       Placeholder.configure({ placeholder }),
+      ...mentionExtensions,
     ],
     content,
     editable,
@@ -174,16 +188,61 @@ export function TiptapEditor({
     },
   });
 
+  // content prop 변경 시 에디터 내용 동기화 (읽기 전용 에디터용)
+  const isFirstRender = useRef(true);
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false;
+      return;
+    }
+    if (editor && !editable) {
+      editor.commands.setContent(content);
+    }
+  }, [content, editor, editable]);
+
+  const handleEditorClick = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      if (!onIssueMentionClick) return;
+      const target = e.target as HTMLElement;
+      const mentionEl = target.closest("[data-type='issueMention']") as HTMLElement | null;
+      if (!mentionEl) return;
+
+      // data-issue-type 속성에서 유형 추출 (없으면 기본 issue)
+      const rawType = mentionEl.getAttribute("data-issue-type");
+      const issueType: "issue" | "change_request" = rawType === "change_request" ? "change_request" : "issue";
+
+      // data-number 속성에서 번호 추출
+      const num = mentionEl.getAttribute("data-number");
+      if (num) {
+        e.preventDefault();
+        onIssueMentionClick(Number(num), issueType);
+        return;
+      }
+
+      // data-number 없는 기존 데이터: label 첫 토큰에서 번호 추출
+      const label = mentionEl.getAttribute("data-label") ?? mentionEl.textContent ?? "";
+      const match = label.match(/^#?(\d+)/);
+      if (match) {
+        e.preventDefault();
+        onIssueMentionClick(Number(match[1]), issueType);
+      }
+    },
+    [onIssueMentionClick],
+  );
+
   if (!editor) return null;
 
   return (
     <div className={cn("rounded-lg border bg-card", className)}>
       {editable && !hideToolbar && <EditorToolbar editor={editor} />}
-      <EditorContent
-        editor={editor}
-        className="tiptap-content"
-        style={{ minHeight }}
-      />
+      {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
+      <div onClick={handleEditorClick}>
+        <EditorContent
+          editor={editor}
+          className="tiptap-content"
+          style={{ minHeight }}
+        />
+      </div>
     </div>
   );
 }

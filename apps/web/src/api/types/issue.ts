@@ -29,6 +29,13 @@ export interface IssueFileDto {
   createdAt: string;
 }
 
+export interface LinkedChangeBadgeDto {
+  id: string;
+  number: number;
+  title: string;
+  state: string;
+}
+
 export interface IssueDto {
   id: string;
   projectId: string;
@@ -40,12 +47,14 @@ export interface IssueDto {
   closedAt: string | null;
   createdAt: string;
   updatedAt?: string;
+  isModified?: boolean;
   createdBy: UserSummaryDto | null;
   labels: IssueLabelDto[];
   assignees: UserSummaryDto[];
   parts: IssuePartDto[];
   files: IssueFileDto[];
   commentsCount: number;
+  linkedChanges: LinkedChangeBadgeDto[];
 }
 
 export interface IssueListResponse {
@@ -63,6 +72,7 @@ export interface IssueTimelineCommentDto {
   body: Record<string, unknown> | null;
   authorId: string | null;
   createdAt: string;
+  isModified?: boolean;
 }
 
 export interface IssueTimelineActivityDto {
@@ -107,4 +117,9 @@ export interface CreateCommentRequest {
 
 export interface UpdateCommentRequest {
   body: Record<string, unknown>;
+}
+
+export interface UpdateIssueRequest {
+  title?: string | null;
+  body?: Record<string, unknown> | null;
 }

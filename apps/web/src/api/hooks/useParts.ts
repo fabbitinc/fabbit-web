@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import {
   getPartFilterOptions,
   listParts,
+  lookupParts,
   getPartDetail,
   getPartBomTree,
   registerDrawingForPart,
@@ -16,7 +17,7 @@ import {
   uploadFileToPresignedUrl,
   completeFileUpload,
 } from "../file";
-import type { ListPartsParams } from "../types/parts";
+import type { ListPartsParams, LookupPartsParams } from "../types/parts";
 
 export const PART_FILTER_OPTIONS_QUERY_KEY = ["partFilterOptions"] as const;
 export const PARTS_QUERY_KEY = ["parts"] as const;
@@ -36,6 +37,17 @@ export function useParts(params: ListPartsParams, options?: { enabled?: boolean 
   return useQuery({
     queryKey: [...PARTS_QUERY_KEY, params],
     queryFn: () => listParts(params),
+    enabled: options?.enabled,
+  });
+}
+
+export const PART_LOOKUP_QUERY_KEY = ["partLookup"] as const;
+
+/** 부품 Lookup 조회 훅 (picker용, exclude_linked 지원) */
+export function useLookupParts(params: LookupPartsParams, options?: { enabled?: boolean }) {
+  return useQuery({
+    queryKey: [...PART_LOOKUP_QUERY_KEY, params],
+    queryFn: () => lookupParts(params),
     enabled: options?.enabled,
   });
 }

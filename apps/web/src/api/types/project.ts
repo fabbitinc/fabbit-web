@@ -61,18 +61,28 @@ export interface LinkPartsResponse {
   linked_count: number;
 }
 
+// 프로젝트 멤버 역할
+export type ProjectRole = "ADMIN" | "MEMBER" | "VIEWER";
+
 // GET /api/v1/projects/{project_id}/members
 export interface ProjectMemberDto {
   userId: string;
   fullName: string;
   email: string;
+  role: ProjectRole;
 }
 
 export interface ProjectMemberListResponse {
   items: ProjectMemberDto[];
 }
 
-// POST/DELETE /api/v1/projects/{project_id}/members
+// POST /api/v1/projects/{project_id}/members
+export interface AddMembersRequest {
+  user_ids: string[];
+  role?: ProjectRole;
+}
+
+// DELETE /api/v1/projects/{project_id}/members
 export interface ManageMembersRequest {
   user_ids: string[];
 }

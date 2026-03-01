@@ -10,6 +10,8 @@ import type {
   LinkPartsResponse,
   ProjectMemberDto,
   ProjectMemberListResponse,
+  ProjectRole,
+  AddMembersRequest,
   ManageMembersRequest,
   ManageMembersResponse,
 } from "./types";
@@ -174,6 +176,7 @@ interface ApiProjectMemberSummary {
   user_id: string;
   full_name: string;
   email: string;
+  role: ProjectRole;
 }
 
 interface ApiProjectMemberListResponse {
@@ -181,7 +184,7 @@ interface ApiProjectMemberListResponse {
 }
 
 function toProjectMemberDto(m: ApiProjectMemberSummary): ProjectMemberDto {
-  return { userId: m.user_id, fullName: m.full_name, email: m.email };
+  return { userId: m.user_id, fullName: m.full_name, email: m.email, role: m.role };
 }
 
 /** 프로젝트 멤버 목록 조회 */
@@ -191,8 +194,8 @@ export async function getProjectMembers(projectId: string): Promise<ProjectMembe
 }
 
 /** 프로젝트에 멤버 추가 */
-export async function addProjectMembers(projectId: string, userIds: string[]): Promise<ManageMembersResponse> {
-  const payload: ManageMembersRequest = { user_ids: userIds };
+export async function addProjectMembers(projectId: string, userIds: string[], role?: ProjectRole): Promise<ManageMembersResponse> {
+  const payload: AddMembersRequest = { user_ids: userIds, role };
   const response = await apiClient.post<ManageMembersResponse>(`/api/v1/projects/${projectId}/members`, payload);
   return response.data;
 }

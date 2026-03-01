@@ -18,7 +18,7 @@ type PageStatus = "loading" | "ready" | "submitting" | "error";
 const ROLE_LABELS: Record<string, string> = {
   OWNER: "소유자",
   ADMIN: "관리자",
-  MEMBER: "멤버",
+  MEMBER: "사용자",
   VIEWER: "뷰어",
 };
 

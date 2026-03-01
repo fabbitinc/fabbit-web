@@ -1,6 +1,6 @@
 // 변경 요청 (GitHub Issues/PR 스타일) — Mock 데이터 및 타입
 
-export type ChangeRequestStatus = "open" | "closed" | "merged";
+export type ChangeRequestStatus = "draft" | "open" | "closed" | "merged";
 export type ChangeRequestType = "issue" | "pr";
 
 export interface ChangeLabel {
@@ -27,12 +27,14 @@ export type TimelineEventType =
   | "issue_created"
   | "cr_created"
   | "cr_merged"
+  | "cr_state_changed"
   | "part_added"
   | "part_removed"
   | "file_attached"
   | "file_detached"
   | "cr_issue_linked"
-  | "cr_issue_unlinked";
+  | "cr_issue_unlinked"
+  | "issue_mentioned";
 
 export interface TimelineAuthor {
   name: string;
@@ -43,12 +45,16 @@ export interface TimelineEvent {
   id: string;
   type: TimelineEventType;
   author: TimelineAuthor;
+  /** comment 타입에서 작성자 ID (편집 권한 판단용) */
+  authorId?: string | null;
+  /** 수정 여부 (본문/댓글) */
+  isModified?: boolean;
   createdAt: string;
   content?: string | Record<string, unknown> | null;
   assignee?: string;
   /** assigned / reviewer_changed 에서 추가·제거 구분 */
-  addedNames?: string;
-  removedNames?: string;
+  addedNames?: string[];
+  removedNames?: string[];
   ref?: string;
   /** issue_created / cr_merged 등에서 사용 */
   issueNumber?: number;
@@ -57,10 +63,16 @@ export interface TimelineEvent {
   partCount?: number;
   addedPartCount?: number;
   removedPartCount?: number;
+  addedPartNumbers?: string[];
+  removedPartNumbers?: string[];
   /** file_attached / file_detached 에서 사용 */
   fileCount?: number;
-  /** cr_issue_linked / cr_issue_unlinked 에서 사용 */
+  fileNames?: string[];
+  /** cr_issue_linked / cr_issue_unlinked / issue_mentioned 에서 사용 */
   linkedIssueCount?: number;
+  linkedIssues?: { number: number; title: string; type?: "issue" | "change_request" }[];
+  /** issue_mentioned 전용: 본문/댓글 여부 */
+  isComment?: boolean;
   /** labels_changed 에서 사용 */
   addedLabels?: { name: string; color: string }[];
   removedLabels?: { name: string; color: string }[];
@@ -82,6 +94,20 @@ export interface CRRelatedPart {
   category?: string;
 }
 
+export interface LinkedChangeBadge {
+  id: string;
+  number: number;
+  title: string;
+  state: string;
+}
+
+export interface LinkedIssueBadge {
+  id: string;
+  number: number;
+  title: string;
+  state: string;
+}
+
 export interface ChangeRequest {
   id: string;
   number: number;
@@ -94,10 +120,13 @@ export interface ChangeRequest {
   assignees: ChangeAssignee[];
   reviewers: ChangeAssignee[];
   description: Record<string, unknown> | string;
+  isModified?: boolean;
   timeline: TimelineEvent[];
   attachments: CRAttachment[];
   relatedParts: CRRelatedPart[];
   commentsCount: number;
+  linkedChanges: LinkedChangeBadge[];
+  linkedIssues: LinkedIssueBadge[];
 }
 
 const CHANGE_LABELS: Record<string, ChangeLabel> = {
@@ -118,6 +147,8 @@ export const MOCK_CHANGE_REQUESTS: ChangeRequest[] = [
     status: "open",
     author: { name: "김설계" },
     createdAt: "2025-02-25T09:30:00",
+    linkedChanges: [],
+    linkedIssues: [],
     labels: [CHANGE_LABELS["설계변경"], CHANGE_LABELS["리뷰필요"]],
     assignees: [{ name: "이엔지" }, { name: "박관리" }],
     reviewers: [{ name: "이엔지" }],
@@ -150,6 +181,8 @@ export const MOCK_CHANGE_REQUESTS: ChangeRequest[] = [
     status: "merged",
     author: { name: "이엔지" },
     createdAt: "2025-02-18T10:00:00",
+    linkedChanges: [],
+    linkedIssues: [],
     labels: [CHANGE_LABELS["BOM변경"]],
     assignees: [{ name: "김설계" }],
     reviewers: [{ name: "김설계" }, { name: "박관리" }],
@@ -179,6 +212,8 @@ export const MOCK_CHANGE_REQUESTS: ChangeRequest[] = [
     status: "closed",
     author: { name: "박관리" },
     createdAt: "2025-02-10T11:00:00",
+    linkedChanges: [],
+    linkedIssues: [],
     labels: [CHANGE_LABELS["재질변경"]],
     assignees: [{ name: "이엔지" }, { name: "김설계" }],
     reviewers: [],
@@ -207,6 +242,8 @@ export const MOCK_CHANGE_REQUESTS: ChangeRequest[] = [
     status: "closed",
     author: { name: "김설계" },
     createdAt: "2025-01-20T10:00:00",
+    linkedChanges: [],
+    linkedIssues: [],
     labels: [CHANGE_LABELS["설계변경"]],
     assignees: [{ name: "이엔지" }, { name: "박관리" }],
     reviewers: [],

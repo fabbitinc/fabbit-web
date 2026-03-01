@@ -137,11 +137,31 @@ export interface ExportPartsParams {
   has_children?: boolean;
   mapping_id?: string;
   part_ids?: string[]; // 선택 내려받기용
+  project_id?: string;
 }
 
 export interface ExportBomParams {
   direction?: "forward" | "reverse";
   mapping_id?: string;
+}
+
+// --- 부품 Lookup (picker용 경량 응답) ---
+
+export interface PartLookupItem {
+  id: string;
+  part_number: string;
+  name: string | null;
+}
+
+export interface PartLookupResponse {
+  items: PartLookupItem[];
+}
+
+export interface LookupPartsParams {
+  project_id: string;
+  search?: string;
+  exclude_linked?: boolean;
+  limit?: number;
 }
 
 export interface RegisterDrawingRequest {

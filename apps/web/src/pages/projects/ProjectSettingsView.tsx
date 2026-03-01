@@ -1,5 +1,23 @@
-import { useState, useMemo, useEffect, useRef, type ComponentType } from "react";
-import { Settings, Users, Tag, AlertTriangle, Trash2, Plus, Loader2, Search, UserPlus, Check, Pipette } from "lucide-react";
+import {
+  useState,
+  useMemo,
+  useEffect,
+  useRef,
+  type ComponentType,
+} from "react";
+import {
+  Settings,
+  Users,
+  Tag,
+  AlertTriangle,
+  Trash2,
+  Plus,
+  Loader2,
+  Search,
+  UserPlus,
+  Check,
+  Pipette,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,6 +25,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { LabelBadge } from "@fabbit/ui";
 import {
   Dialog,
@@ -29,6 +48,13 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   useUpdateProject,
   useProjectMembers,
   useAddProjectMembers,
@@ -38,12 +64,24 @@ import {
   useCreateProjectLabel,
   useDeleteProjectLabel,
 } from "@/api";
-import type { CreateLabelRequest } from "@/api";
+import type { CreateLabelRequest, ProjectRole } from "@/api";
 import { COLOR_PRESETS } from "@/constants/labelConfig";
 
 // ============================================================
-// 타입 & Mock 데이터
+// 타입 & 상수
 // ============================================================
+
+const PROJECT_ROLE_LABELS: Record<ProjectRole, string> = {
+  ADMIN: "관리자",
+  MEMBER: "사용자",
+  VIEWER: "뷰어",
+};
+
+const PROJECT_ROLE_VARIANT: Record<ProjectRole, "default" | "secondary" | "outline"> = {
+  ADMIN: "default",
+  MEMBER: "secondary",
+  VIEWER: "outline",
+};
 
 type SettingsTab = "general" | "members" | "labels" | "danger";
 
@@ -53,7 +91,7 @@ const SETTINGS_TABS: Array<{
   icon: ComponentType<{ className?: string }>;
 }> = [
   { id: "general", label: "일반", icon: Settings },
-  { id: "members", label: "멤버", icon: Users },
+  { id: "members", label: "사용자", icon: Users },
   { id: "labels", label: "라벨", icon: Tag },
   { id: "danger", label: "위험 영역", icon: AlertTriangle },
 ];
@@ -68,7 +106,11 @@ interface ProjectSettingsViewProps {
   projectDescription: string | null;
 }
 
-export function ProjectSettingsView({ projectId, projectName, projectDescription }: ProjectSettingsViewProps) {
+export function ProjectSettingsView({
+  projectId,
+  projectName,
+  projectDescription,
+}: ProjectSettingsViewProps) {
   const [activeTab, setActiveTab] = useState<SettingsTab>("general");
 
   // 일반 탭 상태
@@ -77,14 +119,19 @@ export function ProjectSettingsView({ projectId, projectName, projectDescription
   const updateProject = useUpdateProject(projectId);
 
   // props 변경 시 로컬 상태 동기화
-  useEffect(() => { setName(projectName); }, [projectName]);
-  useEffect(() => { setDescription(projectDescription ?? ""); }, [projectDescription]);
+  useEffect(() => {
+    setName(projectName);
+  }, [projectName]);
+  useEffect(() => {
+    setDescription(projectDescription ?? "");
+  }, [projectDescription]);
 
-  // 멤버 탭 상태
+  // 사용자 탭 상태
   const [addMemberOpen, setAddMemberOpen] = useState(false);
 
   // 라벨 탭 상태
-  const { data: labelsData, isLoading: labelsLoading } = useProjectLabels(projectId);
+  const { data: labelsData, isLoading: labelsLoading } =
+    useProjectLabels(projectId);
   const deleteLabelMutation = useDeleteProjectLabel(projectId);
   const projectLabels = labelsData?.items ?? [];
   const [createLabelOpen, setCreateLabelOpen] = useState(false);
@@ -119,7 +166,9 @@ export function ProjectSettingsView({ projectId, projectName, projectDescription
         {/* 일반 */}
         {activeTab === "general" && (
           <div className="space-y-4">
-            <h2 className="text-base font-semibold text-foreground">프로젝트 정보</h2>
+            <h2 className="text-base font-semibold text-foreground">
+              프로젝트 정보
+            </h2>
             <div className="space-y-4">
               <div className="space-y-2">
                 <p className="text-sm text-muted-foreground">프로젝트 이름</p>
@@ -135,10 +184,21 @@ export function ProjectSettingsView({ projectId, projectName, projectDescription
               </div>
               <div className="flex justify-end">
                 <Button
-                  disabled={updateProject.isPending || (name === projectName && description === (projectDescription ?? ""))}
-                  onClick={() => updateProject.mutate({ name, description: description || null })}
+                  disabled={
+                    updateProject.isPending ||
+                    (name === projectName &&
+                      description === (projectDescription ?? ""))
+                  }
+                  onClick={() =>
+                    updateProject.mutate({
+                      name,
+                      description: description || null,
+                    })
+                  }
                 >
-                  {updateProject.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+                  {updateProject.isPending && (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  )}
                   저장
                 </Button>
               </div>
@@ -146,7 +206,7 @@ export function ProjectSettingsView({ projectId, projectName, projectDescription
           </div>
         )}
 
-        {/* 멤버 */}
+        {/* 사용자 */}
         {activeTab === "members" && (
           <MembersTab
             projectId={projectId}
@@ -161,7 +221,10 @@ export function ProjectSettingsView({ projectId, projectName, projectDescription
             {/* 헤더 + 추가 버튼 */}
             <div className="flex items-center justify-between">
               <h2 className="text-base font-semibold text-foreground">라벨</h2>
-              <Button className="gap-1" onClick={() => setCreateLabelOpen(true)}>
+              <Button
+                className="gap-1"
+                onClick={() => setCreateLabelOpen(true)}
+              >
                 <Plus className="h-4 w-4" />
                 라벨 추가
               </Button>
@@ -202,7 +265,10 @@ export function ProjectSettingsView({ projectId, projectName, projectDescription
                           <AlertDialogTitle>라벨을 영구 삭제</AlertDialogTitle>
                           <AlertDialogDescription className="space-y-2">
                             <p>이 라벨을 삭제하면 다시 복구할 수 없습니다.</p>
-                            <p>삭제 시 모든 이슈 및 변경 요청에서 해당 라벨이 제거됩니다.</p>
+                            <p>
+                              삭제 시 모든 이슈 및 변경 요청에서 해당 라벨이
+                              제거됩니다.
+                            </p>
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
@@ -211,7 +277,10 @@ export function ProjectSettingsView({ projectId, projectName, projectDescription
                             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                             onClick={() => {
                               deleteLabelMutation.mutate(label.id, {
-                                onSuccess: () => toast.success(`"${label.name}" 라벨을 삭제했습니다.`),
+                                onSuccess: () =>
+                                  toast.success(
+                                    `"${label.name}" 라벨을 삭제했습니다.`,
+                                  ),
                               });
                             }}
                           >
@@ -238,34 +307,49 @@ export function ProjectSettingsView({ projectId, projectName, projectDescription
         {activeTab === "danger" && (
           <div className="space-y-6">
             <div>
-              <h2 className="text-base font-semibold text-foreground">프로젝트 보관</h2>
+              <h2 className="text-base font-semibold text-foreground">
+                프로젝트 보관
+              </h2>
               <div className="mt-3 flex items-center justify-between gap-3">
                 <div>
-                  <p className="text-sm font-medium text-foreground">프로젝트를 보관 처리</p>
+                  <p className="text-sm font-medium text-foreground">
+                    프로젝트를 보관 처리
+                  </p>
                   <p className="text-xs text-muted-foreground">
-                    보관된 프로젝트는 목록에서 숨겨지며 읽기 전용으로 전환됩니다.
+                    보관된 프로젝트는 목록에서 숨겨지며 읽기 전용으로
+                    전환됩니다.
                   </p>
                 </div>
                 <Switch
                   checked={archived}
                   onCheckedChange={(checked) => {
                     setArchived(checked);
-                    toast.success(checked ? "프로젝트를 보관했습니다." : "프로젝트 보관을 해제했습니다.");
+                    toast.success(
+                      checked
+                        ? "프로젝트를 보관했습니다."
+                        : "프로젝트 보관을 해제했습니다.",
+                    );
                   }}
                 />
               </div>
             </div>
 
             <div className="rounded-lg border border-destructive p-5">
-              <h2 className="text-base font-semibold text-destructive">프로젝트 삭제</h2>
+              <h2 className="text-base font-semibold text-destructive">
+                프로젝트 삭제
+              </h2>
               <p className="mt-2 text-sm text-muted-foreground">
-                프로젝트를 삭제하면 모든 데이터(부품 연결, 이슈, 변경 반영)가 영구적으로 제거됩니다.
-                이 작업은 되돌릴 수 없습니다.
+                프로젝트를 삭제하면 모든 데이터(부품 연결, 이슈, 변경 요청)가
+                영구적으로 제거됩니다. 이 작업은 되돌릴 수 없습니다.
               </p>
               <div className="mt-4">
                 <Button
                   variant="destructive"
-                  onClick={() => toast.error("프로젝트 삭제 기능은 아직 구현되지 않았습니다.")}
+                  onClick={() =>
+                    toast.error(
+                      "프로젝트 삭제 기능은 아직 구현되지 않았습니다.",
+                    )
+                  }
                 >
                   프로젝트 삭제
                 </Button>
@@ -278,7 +362,7 @@ export function ProjectSettingsView({ projectId, projectName, projectDescription
   );
 }
 
-// --- 멤버 탭 ---
+// --- 사용자 탭 ---
 
 function MembersTab({
   projectId,
@@ -295,23 +379,25 @@ function MembersTab({
 
   return (
     <div className="space-y-6">
-      {/* 멤버 추가 */}
+      {/* 사용자 추가 */}
       <div className="flex items-center justify-between">
-        <h2 className="text-base font-semibold text-foreground">프로젝트 멤버</h2>
+        <h2 className="text-base font-semibold text-foreground">
+          프로젝트 사용자
+        </h2>
         <Button className="gap-1" onClick={() => onAddMemberOpenChange(true)}>
           <UserPlus className="h-4 w-4" />
-          멤버 추가
+          사용자 추가
         </Button>
       </div>
 
-      {/* 멤버 목록 */}
+      {/* 사용자 목록 */}
       {isLoading ? (
         <div className="flex items-center justify-center py-8">
           <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
         </div>
       ) : members.length === 0 ? (
         <p className="text-sm text-muted-foreground py-8 text-center">
-          프로젝트에 배치된 멤버가 없습니다.
+          프로젝트에 배치된 사용자가 없습니다.
         </p>
       ) : (
         <div className="space-y-3">
@@ -326,9 +412,14 @@ function MembersTab({
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-foreground">{member.fullName}</p>
+                <p className="text-sm font-medium text-foreground">
+                  {member.fullName}
+                </p>
                 <p className="text-xs text-muted-foreground">{member.email}</p>
               </div>
+              <Badge variant={PROJECT_ROLE_VARIANT[member.role]}>
+                {PROJECT_ROLE_LABELS[member.role]}
+              </Badge>
               <AlertDialog>
                 <AlertDialogTrigger asChild>
                   <Button
@@ -341,7 +432,7 @@ function MembersTab({
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>멤버 제거</AlertDialogTitle>
+                    <AlertDialogTitle>사용자 제거</AlertDialogTitle>
                     <AlertDialogDescription>
                       {member.fullName}님을 프로젝트에서 제거하시겠습니까?
                     </AlertDialogDescription>
@@ -350,7 +441,9 @@ function MembersTab({
                     <AlertDialogCancel>취소</AlertDialogCancel>
                     <AlertDialogAction
                       className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                      onClick={() => removeMembersMutation.mutate([member.userId])}
+                      onClick={() =>
+                        removeMembersMutation.mutate([member.userId])
+                      }
                     >
                       제거
                     </AlertDialogAction>
@@ -372,7 +465,7 @@ function MembersTab({
   );
 }
 
-// --- 멤버 추가 다이얼로그 ---
+// --- 사용자 추가 다이얼로그 ---
 
 function AddMemberDialog({
   projectId,
@@ -389,14 +482,19 @@ function AddMemberDialog({
   const addMembersMutation = useAddProjectMembers(projectId);
   const [search, setSearch] = useState("");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [role, setRole] = useState<ProjectRole>("MEMBER");
 
-  // 프로젝트에 아직 없는 조직 멤버만 표시
+  // 프로젝트에 아직 없는 조직 사용자만 표시
   const candidates = useMemo(() => {
-    const all = (orgMembersData?.items ?? []).filter((m) => !existingUserIds.has(m.userId));
+    const all = (orgMembersData?.items ?? []).filter(
+      (m) => !existingUserIds.has(m.userId),
+    );
     if (!search.trim()) return all;
     const q = search.trim().toLowerCase();
     return all.filter(
-      (m) => m.fullName.toLowerCase().includes(q) || m.email.toLowerCase().includes(q),
+      (m) =>
+        m.fullName.toLowerCase().includes(q) ||
+        m.email.toLowerCase().includes(q),
     );
   }, [orgMembersData?.items, existingUserIds, search]);
 
@@ -404,6 +502,7 @@ function AddMemberDialog({
     if (!next) {
       setSearch("");
       setSelectedIds(new Set());
+      setRole("MEMBER");
     }
     onOpenChange(next);
   }
@@ -419,7 +518,7 @@ function AddMemberDialog({
 
   function handleAdd() {
     if (selectedIds.size === 0) return;
-    addMembersMutation.mutate([...selectedIds], {
+    addMembersMutation.mutate({ userIds: [...selectedIds], role }, {
       onSuccess: () => handleOpenChange(false),
     });
   }
@@ -428,13 +527,28 @@ function AddMemberDialog({
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>멤버 추가</DialogTitle>
+          <DialogTitle>사용자 추가</DialogTitle>
           <DialogDescription>
-            프로젝트에 추가할 조직 멤버를 선택하세요.
+            프로젝트에 추가할 조직 사용자를 선택하세요.
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-3">
+          {/* 역할 선택 */}
+          <div className="space-y-1.5">
+            <Label>역할</Label>
+            <Select value={role} onValueChange={(v) => setRole(v as ProjectRole)}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ADMIN">관리자</SelectItem>
+                <SelectItem value="MEMBER">사용자</SelectItem>
+                <SelectItem value="VIEWER">뷰어</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
           <div className="relative">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
@@ -452,7 +566,9 @@ function AddMemberDialog({
               </div>
             ) : candidates.length === 0 ? (
               <p className="py-8 text-center text-sm text-muted-foreground">
-                {search ? "검색 결과가 없습니다" : "추가할 수 있는 멤버가 없습니다"}
+                {search
+                  ? "검색 결과가 없습니다"
+                  : "추가할 수 있는 사용자가 없습니다"}
               </p>
             ) : (
               candidates.map((member) => (
@@ -472,8 +588,12 @@ function AddMemberDialog({
                     </AvatarFallback>
                   </Avatar>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium">{member.fullName}</p>
-                    <p className="truncate text-xs text-muted-foreground">{member.email}</p>
+                    <p className="truncate text-sm font-medium">
+                      {member.fullName}
+                    </p>
+                    <p className="truncate text-xs text-muted-foreground">
+                      {member.email}
+                    </p>
                   </div>
                 </label>
               ))
@@ -482,14 +602,20 @@ function AddMemberDialog({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => handleOpenChange(false)} disabled={addMembersMutation.isPending}>
+          <Button
+            variant="outline"
+            onClick={() => handleOpenChange(false)}
+            disabled={addMembersMutation.isPending}
+          >
             취소
           </Button>
           <Button
             onClick={handleAdd}
             disabled={selectedIds.size === 0 || addMembersMutation.isPending}
           >
-            {addMembersMutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+            {addMembersMutation.isPending && (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            )}
             추가 ({selectedIds.size}명)
           </Button>
         </DialogFooter>
@@ -563,7 +689,9 @@ function CreateLabelDialog({
             {name.trim() ? (
               <LabelBadge label={name.trim()} colorHex={color} />
             ) : (
-              <span className="text-xs text-muted-foreground">라벨 미리보기</span>
+              <span className="text-xs text-muted-foreground">
+                라벨 미리보기
+              </span>
             )}
           </div>
 
@@ -576,13 +704,18 @@ function CreateLabelDialog({
               maxLength={50}
               value={name}
               onChange={(e) => setName(e.target.value)}
-              onKeyDown={(e) => { if (e.key === "Enter") handleSubmit(); }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleSubmit();
+              }}
             />
           </div>
 
           {/* 설명 */}
           <div className="space-y-1.5">
-            <Label htmlFor="label-desc">설명 <span className="text-muted-foreground font-normal">(선택)</span></Label>
+            <Label htmlFor="label-desc">
+              설명{" "}
+              <span className="text-muted-foreground font-normal">(선택)</span>
+            </Label>
             <Textarea
               id="label-desc"
               placeholder="라벨에 대한 간단한 설명 (최대 200자)"
@@ -638,14 +771,20 @@ function CreateLabelDialog({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => handleOpenChange(false)} disabled={createLabelMutation.isPending}>
+          <Button
+            variant="outline"
+            onClick={() => handleOpenChange(false)}
+            disabled={createLabelMutation.isPending}
+          >
             취소
           </Button>
           <Button
             onClick={handleSubmit}
             disabled={!name.trim() || createLabelMutation.isPending}
           >
-            {createLabelMutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+            {createLabelMutation.isPending && (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            )}
             추가
           </Button>
         </DialogFooter>

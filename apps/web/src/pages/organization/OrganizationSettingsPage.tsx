@@ -47,7 +47,7 @@ interface AllowedIpEntry {
 
 const settingsTabs: Array<{ id: SettingsTab; label: string; icon: ComponentType<{ className?: string }> }> = [
   { id: "general", label: "일반", icon: Building2 },
-  { id: "members", label: "멤버", icon: Users },
+  { id: "members", label: "사용자", icon: Users },
   { id: "security", label: "보안", icon: ShieldCheck },
   { id: "logs", label: "로그 기록", icon: History },
   { id: "advanced", label: "기타 설정", icon: ListChecks },
@@ -337,7 +337,7 @@ export function OrganizationSettingsPage() {
                   </div>
                   <div className="flex items-center justify-between gap-3">
                     <div>
-                      <p className="text-sm font-medium text-foreground">멤버 초대 승인 필수</p>
+                      <p className="text-sm font-medium text-foreground">사용자 초대 승인 필수</p>
                       <p className="text-xs text-muted-foreground">관리자 승인 후에만 초대가 확정됩니다.</p>
                     </div>
                     <Switch checked={approvalRequired} onCheckedChange={setApprovalRequired} />
@@ -355,8 +355,8 @@ export function OrganizationSettingsPage() {
             <div className="space-y-6">
               {/* 멤버 초대 */}
               <div>
-                <h2 className="text-base font-semibold text-foreground">멤버 초대</h2>
-                <p className="mt-1 text-xs text-muted-foreground">이메일로 새 멤버를 초대합니다. 관리자만 초대할 수 있습니다.</p>
+                <h2 className="text-base font-semibold text-foreground">사용자 초대</h2>
+                <p className="mt-1 text-xs text-muted-foreground">이메일로 새 사용자를 초대합니다. 관리자만 초대할 수 있습니다.</p>
                 <div className="mt-3 flex gap-2">
                   <Input
                     type="email"
@@ -373,7 +373,7 @@ export function OrganizationSettingsPage() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="MEMBER">멤버</SelectItem>
+                      <SelectItem value="MEMBER">사용자</SelectItem>
                       <SelectItem value="ADMIN">관리자</SelectItem>
                     </SelectContent>
                   </Select>
@@ -412,7 +412,7 @@ export function OrganizationSettingsPage() {
                           <span className="text-foreground">{inv.email}</span>
                         </div>
                         <Badge variant="outline" className="w-fit text-xs">
-                          {inv.role === "ADMIN" ? "관리자" : "멤버"}
+                          {inv.role === "ADMIN" ? "관리자" : "사용자"}
                         </Badge>
                         <div className="flex justify-end">
                           <AlertDialog>
@@ -453,7 +453,7 @@ export function OrganizationSettingsPage() {
               {/* 멤버 목록 */}
               <div>
                 <div className="flex items-center justify-between">
-                  <h2 className="text-base font-semibold text-foreground">멤버 목록</h2>
+                  <h2 className="text-base font-semibold text-foreground">사용자 목록</h2>
                   {membersData && (
                     <p className="text-xs text-muted-foreground">{membersData.items.length}명</p>
                   )}
@@ -497,7 +497,7 @@ export function OrganizationSettingsPage() {
                             <td className="px-4 py-3 text-muted-foreground">{member.jobRole ?? "—"}</td>
                             <td className="px-4 py-3">
                               <Badge variant={member.role === "ADMIN" ? "default" : "secondary"}>
-                                {member.role === "ADMIN" ? "관리자" : "멤버"}
+                                {member.role === "ADMIN" ? "관리자" : "사용자"}
                               </Badge>
                             </td>
                             {currentRole === "ADMIN" && (
@@ -515,7 +515,7 @@ export function OrganizationSettingsPage() {
                                     </AlertDialogTrigger>
                                     <AlertDialogContent>
                                       <AlertDialogHeader>
-                                        <AlertDialogTitle>멤버 제거</AlertDialogTitle>
+                                        <AlertDialogTitle>사용자 제거</AlertDialogTitle>
                                         <AlertDialogDescription>
                                           {member.fullName}({member.email})을 조직에서 제거하시겠습니까?
                                         </AlertDialogDescription>
@@ -539,7 +539,7 @@ export function OrganizationSettingsPage() {
                         {membersData?.items.length === 0 && (
                           <tr>
                             <td colSpan={currentRole === "ADMIN" ? 5 : 4} className="px-4 py-8 text-center text-sm text-muted-foreground">
-                              등록된 멤버가 없습니다.
+                              등록된 사용자가 없습니다.
                             </td>
                           </tr>
                         )}
@@ -566,7 +566,7 @@ export function OrganizationSettingsPage() {
                   <div className="flex items-center justify-between gap-3">
                     <div>
                       <p className="text-sm font-medium text-foreground">2단계 인증 필수</p>
-                      <p className="text-xs text-muted-foreground">모든 멤버에게 MFA 등록을 요구합니다.</p>
+                      <p className="text-xs text-muted-foreground">모든 사용자에게 MFA 등록을 요구합니다.</p>
                     </div>
                     <Switch checked={requireMfa} onCheckedChange={setRequireMfa} />
                   </div>
