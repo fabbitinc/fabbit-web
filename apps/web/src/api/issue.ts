@@ -10,6 +10,7 @@ import type {
   IssuePartDto,
   IssueTimelineItemDto,
   IssueTimelineResponse,
+  TimelineUserDto,
 } from "./types";
 
 interface ApiIssueLabelResponse {
@@ -21,6 +22,7 @@ interface ApiIssueLabelResponse {
 interface ApiIssueAssigneeResponse {
   id: string;
   full_name: string;
+  profile_image_url?: string | null;
 }
 
 interface ApiIssuePartResponse {
@@ -102,8 +104,15 @@ interface ApiTimelineActivityItem {
   created_at: string;
 }
 
+interface ApiTimelineUserResponse {
+  id: string;
+  full_name: string;
+  profile_image_url: string | null;
+}
+
 interface ApiTimelineResponse {
   items: (ApiTimelineCommentItem | ApiTimelineActivityItem)[];
+  users?: Record<string, ApiTimelineUserResponse>;
 }
 
 function mapIssueLabel(label: ApiIssueLabelResponse): IssueLabelDto | null {
@@ -120,6 +129,7 @@ function mapIssueAssignee(assignee: ApiIssueAssigneeResponse): IssueAssigneeDto 
   return {
     id: assignee.id,
     fullName: assignee.full_name,
+    profileImageUrl: assignee.profile_image_url ?? null,
   };
 }
 
@@ -181,7 +191,7 @@ function normalizeIssueListResponse(payload: unknown): ApiIssueListEnvelope {
 function mapComment(item: ApiCommentResponse): CommentDto {
   return {
     id: item.id,
-    issueId: item.issue_id,
+    issueNumber: item.issue_id,
     body: item.body,
     createdAt: item.created_at,
     updatedAt: item.updated_at,
@@ -226,29 +236,39 @@ export async function getProjectIssues(projectId: string): Promise<IssueListResp
 }
 
 /** 프로젝트 이슈 상세 조회 */
-export async function getProjectIssue(projectId: string, issueId: string): Promise<IssueDto> {
-  const response = await apiClient.get<ApiIssueResponse>(`/api/v1/projects/${projectId}/issues/${issueId}`);
+export async function getProjectIssue(projectId: string, issueNumber: string): Promise<IssueDto> {
+  const response = await apiClient.get<ApiIssueResponse>(`/api/v1/projects/${projectId}/issues/${issueNumber}`);
   return mapIssue(response.data);
 }
 
+function mapTimelineUsers(raw?: Record<string, ApiTimelineUserResponse>): Record<string, TimelineUserDto> {
+  if (!raw) return {};
+  const result: Record<string, TimelineUserDto> = {};
+  for (const [key, u] of Object.entries(raw)) {
+    result[key] = { id: u.id, fullName: u.full_name, profileImageUrl: u.profile_image_url };
+  }
+  return result;
+}
+
 /** 이슈 타임라인 조회 */
-export async function getIssueTimeline(projectId: string, issueId: string): Promise<IssueTimelineResponse> {
-  const response = await apiClient.get<ApiTimelineResponse>(`/api/v1/projects/${projectId}/issues/${issueId}/timeline`);
+export async function getIssueTimeline(projectId: string, issueNumber: string): Promise<IssueTimelineResponse> {
+  const response = await apiClient.get<ApiTimelineResponse>(`/api/v1/projects/${projectId}/issues/${issueNumber}/timeline`);
   return {
     items: response.data.items.map(mapTimelineItem),
+    users: mapTimelineUsers(response.data.users),
   };
 }
 
 /** 이슈 담당자 추가 */
-export async function assignIssueUsers(projectId: string, issueId: string, userIds: string[]): Promise<void> {
-  await apiClient.post(`/api/v1/projects/${projectId}/issues/${issueId}/assignees`, {
+export async function assignIssueUsers(projectId: string, issueNumber: string, userIds: string[]): Promise<void> {
+  await apiClient.post(`/api/v1/projects/${projectId}/issues/${issueNumber}/assignees`, {
     user_ids: userIds,
   } satisfies AssignUsersRequest);
 }
 
 /** 이슈 담당자 제거 */
-export async function unassignIssueUsers(projectId: string, issueId: string, userIds: string[]): Promise<void> {
-  await apiClient.delete(`/api/v1/projects/${projectId}/issues/${issueId}/assignees`, {
+export async function unassignIssueUsers(projectId: string, issueNumber: string, userIds: string[]): Promise<void> {
+  await apiClient.delete(`/api/v1/projects/${projectId}/issues/${issueNumber}/assignees`, {
     data: {
       user_ids: userIds,
     } satisfies AssignUsersRequest,
@@ -256,8 +276,8 @@ export async function unassignIssueUsers(projectId: string, issueId: string, use
 }
 
 /** 이슈 담당자 동기화 (PUT) */
-export async function syncIssueAssignees(projectId: string, issueId: string, userIds: string[]): Promise<void> {
-  await apiClient.put(`/api/v1/projects/${projectId}/issues/${issueId}/assignees`, {
+export async function syncIssueAssignees(projectId: string, issueNumber: string, userIds: string[]): Promise<void> {
+  await apiClient.put(`/api/v1/projects/${projectId}/issues/${issueNumber}/assignees`, {
     user_ids: userIds,
   });
 }
@@ -269,29 +289,29 @@ export async function getIssueLabels(projectId: string): Promise<IssueLabelDto[]
 }
 
 /** 이슈 라벨 동기화 (선택된 라벨 ID 목록을 그대로 전달) */
-export async function syncIssueLabels(projectId: string, issueId: string, labelIds: string[]): Promise<void> {
-  await apiClient.put(`/api/v1/projects/${projectId}/issues/${issueId}/labels`, {
+export async function syncIssueLabels(projectId: string, issueNumber: string, labelIds: string[]): Promise<void> {
+  await apiClient.put(`/api/v1/projects/${projectId}/issues/${issueNumber}/labels`, {
     label_ids: labelIds,
   });
 }
 
 /** 이슈 부품 동기화 (PUT) */
-export async function syncIssueParts(projectId: string, issueId: string, partIds: string[]): Promise<void> {
-  await apiClient.put(`/api/v1/projects/${projectId}/issues/${issueId}/parts`, {
+export async function syncIssueParts(projectId: string, issueNumber: string, partIds: string[]): Promise<void> {
+  await apiClient.put(`/api/v1/projects/${projectId}/issues/${issueNumber}/parts`, {
     part_ids: partIds,
   });
 }
 
 /** 이슈에 파일 첨부 */
-export async function attachIssueFiles(projectId: string, issueId: string, fileIds: string[]): Promise<void> {
-  await apiClient.post(`/api/v1/projects/${projectId}/issues/${issueId}/files`, {
+export async function attachIssueFiles(projectId: string, issueNumber: string, fileIds: string[]): Promise<void> {
+  await apiClient.post(`/api/v1/projects/${projectId}/issues/${issueNumber}/files`, {
     file_ids: fileIds,
   });
 }
 
 /** 이슈에서 파일 삭제 */
-export async function deleteIssueFile(projectId: string, issueId: string, fileId: string): Promise<void> {
-  await apiClient.delete(`/api/v1/projects/${projectId}/issues/${issueId}/files/${fileId}`);
+export async function deleteIssueFile(projectId: string, issueNumber: string, fileId: string): Promise<void> {
+  await apiClient.delete(`/api/v1/projects/${projectId}/issues/${issueNumber}/files/${fileId}`);
 }
 
 /** 프로젝트 이슈 생성 */
@@ -303,11 +323,11 @@ export async function createProjectIssue(projectId: string, request: CreateIssue
 /** 이슈 댓글 생성 */
 export async function createIssueComment(
   projectId: string,
-  issueId: string,
+  issueNumber: string,
   body: Record<string, unknown>,
 ): Promise<CommentDto> {
   const response = await apiClient.post<ApiCommentResponse>(
-    `/api/v1/projects/${projectId}/issues/${issueId}/comments`,
+    `/api/v1/projects/${projectId}/issues/${issueNumber}/comments`,
     { body },
   );
   return mapComment(response.data);
@@ -316,18 +336,18 @@ export async function createIssueComment(
 /** 이슈 댓글 수정 */
 export async function updateIssueComment(
   projectId: string,
-  issueId: string,
+  issueNumber: string,
   commentId: string,
   body: Record<string, unknown>,
 ): Promise<CommentDto> {
   const response = await apiClient.patch<ApiCommentResponse>(
-    `/api/v1/projects/${projectId}/issues/${issueId}/comments/${commentId}`,
+    `/api/v1/projects/${projectId}/issues/${issueNumber}/comments/${commentId}`,
     { body },
   );
   return mapComment(response.data);
 }
 
 /** 이슈 댓글 삭제 */
-export async function deleteIssueComment(projectId: string, issueId: string, commentId: string): Promise<void> {
-  await apiClient.delete(`/api/v1/projects/${projectId}/issues/${issueId}/comments/${commentId}`);
+export async function deleteIssueComment(projectId: string, issueNumber: string, commentId: string): Promise<void> {
+  await apiClient.delete(`/api/v1/projects/${projectId}/issues/${issueNumber}/comments/${commentId}`);
 }

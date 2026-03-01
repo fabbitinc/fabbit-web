@@ -7,6 +7,7 @@ export interface IssueLabelDto {
 export interface IssueAssigneeDto {
   id: string;
   fullName: string;
+  profileImageUrl: string | null;
 }
 
 export interface IssuePartDto {
@@ -72,8 +73,15 @@ export interface IssueTimelineActivityDto {
 
 export type IssueTimelineItemDto = IssueTimelineCommentDto | IssueTimelineActivityDto;
 
+export interface TimelineUserDto {
+  id: string;
+  fullName: string;
+  profileImageUrl: string | null;
+}
+
 export interface IssueTimelineResponse {
   items: IssueTimelineItemDto[];
+  users: Record<string, TimelineUserDto>;
 }
 
 export interface CreateIssueRequest {

@@ -7,6 +7,7 @@ export interface MemberDto {
   email: string;
   role: MemberRole;
   jobRole: string | null;
+  profileImageUrl: string | null;
 }
 
 export interface MemberListResponse {

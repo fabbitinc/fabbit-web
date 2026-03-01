@@ -1,8 +1,10 @@
-import { useMemo, useState, type ComponentType } from "react";
-import { ShieldCheck, Building2, ListChecks, History, Users, Plus, Trash2, Mail, X, Loader2 } from "lucide-react";
+import { useMemo, useState, useRef, useCallback, type ComponentType } from "react";
+import { ShieldCheck, Building2, ListChecks, History, Users, Plus, Trash2, Mail, X, Loader2, Camera } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -25,6 +27,15 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useAuthStore } from "@/stores/authStore";
 import { useMembers, useInvitations, useCreateInvitation, useCancelInvitation, useRemoveMember } from "@/api/hooks/useMembers";
+import {
+  setOrgProfileImage,
+  deleteOrgProfileImage,
+} from "@/api/member";
+import {
+  createUpload,
+  uploadFileToUrl,
+  completeUpload,
+} from "@/api/upload";
 import type { MemberRole } from "@/api/types/member";
 
 type SettingsTab = "general" | "members" | "security" | "logs" | "advanced";
@@ -85,10 +96,67 @@ export function OrganizationSettingsPage() {
   const currentUser = useAuthStore((state) => state.user);
   const currentOrg = useAuthStore((state) => state.currentMembership?.organization);
   const currentRole = useAuthStore((state) => state.currentMembership?.role);
+  const fetchMe = useAuthStore((state) => state.fetchMe);
   const [activeTab, setActiveTab] = useState<SettingsTab>("general");
 
   const orgName = currentOrg?.name ?? "Fabbit Design Team";
   const slug = currentOrg?.slug ?? "fabbit-design";
+
+  const [orgImageUrl, setOrgImageUrl] = useState<string | null>(currentOrg?.profileImageUrl ?? null);
+  const orgFileInputRef = useRef<HTMLInputElement>(null);
+  const [isUploadingOrgImage, setIsUploadingOrgImage] = useState(false);
+
+  const handleOrgImageUpload = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+
+      if (!file.type.startsWith("image/")) {
+        toast.error("이미지 파일만 업로드할 수 있습니다.");
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error("파일 크기는 5MB 이하만 가능합니다.");
+        return;
+      }
+
+      setIsUploadingOrgImage(true);
+      try {
+        const upload = await createUpload({
+          original_name: file.name,
+          content_type: file.type,
+          file_size: file.size,
+        });
+        await uploadFileToUrl(upload.upload_url, file);
+        await completeUpload(upload.file_id);
+        const result = await setOrgProfileImage({ file_id: upload.file_id });
+        setOrgImageUrl(result.profile_image_url);
+        await fetchMe();
+        toast.success("조직 프로필 이미지를 변경했습니다.");
+      } catch {
+        toast.error("이미지 업로드에 실패했습니다.");
+      } finally {
+        setIsUploadingOrgImage(false);
+        if (orgFileInputRef.current) orgFileInputRef.current.value = "";
+      }
+    },
+    [fetchMe],
+  );
+
+  const handleOrgImageRemove = useCallback(async () => {
+    setIsUploadingOrgImage(true);
+    try {
+      await deleteOrgProfileImage();
+      setOrgImageUrl(null);
+      await fetchMe();
+      toast.success("조직 프로필 이미지를 제거했습니다.");
+    } catch {
+      toast.error("프로필 이미지 제거에 실패했습니다.");
+    } finally {
+      setIsUploadingOrgImage(false);
+      if (orgFileInputRef.current) orgFileInputRef.current.value = "";
+    }
+  }, [fetchMe]);
   const [enforceSso, setEnforceSso] = useState(false);
   const [requireMfa, setRequireMfa] = useState(true);
   const [allowOutsideInvite, setAllowOutsideInvite] = useState(false);
@@ -191,14 +259,68 @@ export function OrganizationSettingsPage() {
             <div className="space-y-6">
               <div>
                 <h2 className="text-base font-semibold text-foreground">기본 정보</h2>
-                <div className="mt-4 grid gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <p className="text-sm font-medium text-foreground">조직명</p>
-                    <Input value={orgName} disabled />
+                <div className="mt-4 flex gap-8">
+                  {/* 조직 프로필 이미지 */}
+                  <div className="flex flex-col items-center gap-3">
+                    <Avatar key={orgImageUrl ?? "fallback"} className="h-42 w-42 rounded-xl">
+                      {orgImageUrl ? (
+                        <AvatarImage
+                          src={orgImageUrl}
+                          alt="조직 프로필 이미지"
+                          className="rounded-xl"
+                        />
+                      ) : null}
+                      <AvatarFallback className="rounded-xl text-3xl font-medium text-muted-foreground">
+                        {orgName.charAt(0)}
+                      </AvatarFallback>
+                    </Avatar>
+
+                    <input
+                      ref={orgFileInputRef}
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleOrgImageUpload}
+                    />
+
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={isUploadingOrgImage}
+                        onClick={() => orgFileInputRef.current?.click()}
+                      >
+                        {isUploadingOrgImage ? (
+                          <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <Camera className="mr-1.5 h-3.5 w-3.5" />
+                        )}
+                        {orgImageUrl ? "변경" : "업로드"}
+                      </Button>
+                      {orgImageUrl && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          disabled={isUploadingOrgImage}
+                          onClick={handleOrgImageRemove}
+                        >
+                          <Trash2 className="mr-1.5 h-3.5 w-3.5" />
+                          제거
+                        </Button>
+                      )}
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <p className="text-sm font-medium text-foreground">워크스페이스 슬러그</p>
-                    <Input value={slug} disabled />
+
+                  {/* 조직 정보 */}
+                  <div className="flex-1 space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="org-name">조직명</Label>
+                      <Input id="org-name" value={orgName} disabled />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="org-slug">워크스페이스 슬러그</Label>
+                      <Input id="org-slug" value={slug} disabled />
+                    </div>
                   </div>
                 </div>
               </div>
@@ -360,9 +482,14 @@ export function OrganizationSettingsPage() {
                           <tr key={member.userId} className="border-t border-border">
                             <td className="px-4 py-3">
                               <div className="flex items-center gap-2.5">
-                                <div className="flex h-7 w-7 items-center justify-center rounded-full bg-muted text-xs font-medium text-muted-foreground">
-                                  {member.fullName.charAt(0)}
-                                </div>
+                                <Avatar className="h-7 w-7">
+                                  {member.profileImageUrl && (
+                                    <AvatarImage src={member.profileImageUrl} alt={member.fullName} />
+                                  )}
+                                  <AvatarFallback className="text-xs font-medium">
+                                    {member.fullName.charAt(0)}
+                                  </AvatarFallback>
+                                </Avatar>
                                 <span className="font-medium text-foreground">{member.fullName}</span>
                               </div>
                             </td>

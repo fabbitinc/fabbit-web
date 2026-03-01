@@ -39,3 +39,21 @@ export function clearAuthCookies() {
   document.cookie = `${TOKEN_COOKIE_PREFIX}access=; domain=.${domain}; path=/; max-age=0`;
   document.cookie = `${TOKEN_COOKIE_PREFIX}refresh=; domain=.${domain}; path=/; max-age=0`;
 }
+
+// 크로스 서브도메인 로그아웃 쿠키
+const LOGOUT_COOKIE = "fabbit_logged_out";
+const LOGOUT_COOKIE_MAX_AGE = 7 * 24 * 60 * 60; // 7일
+
+export function setLogoutCookie() {
+  const domain = getRootDomain();
+  document.cookie = `${LOGOUT_COOKIE}=1; domain=.${domain}; path=/; max-age=${LOGOUT_COOKIE_MAX_AGE}; SameSite=Lax`;
+}
+
+export function hasLogoutCookie(): boolean {
+  return document.cookie.split("; ").some((c) => c.startsWith(`${LOGOUT_COOKIE}=`));
+}
+
+export function clearLogoutCookie() {
+  const domain = getRootDomain();
+  document.cookie = `${LOGOUT_COOKIE}=; domain=.${domain}; path=/; max-age=0`;
+}

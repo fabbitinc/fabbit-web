@@ -6,6 +6,8 @@ import type {
   MemberDto,
   MemberListResponse,
   MemberRole,
+  SetProfileImageRequest,
+  ProfileImageResponse,
 } from "./types";
 
 // --- 내부 API 응답 타입 (snake_case) ---
@@ -16,6 +18,7 @@ interface ApiMemberSummary {
   email: string;
   role: string;
   job_role?: string | null;
+  profile_image_url?: string | null;
 }
 
 interface ApiMemberListResponse {
@@ -47,6 +50,7 @@ function mapMember(item: ApiMemberSummary): MemberDto {
     email: item.email,
     role: item.role as MemberRole,
     jobRole: item.job_role ?? null,
+    profileImageUrl: item.profile_image_url ?? null,
   };
 }
 
@@ -96,4 +100,20 @@ export async function cancelInvitation(invitationId: string): Promise<void> {
 /** 조직 멤버 제거 */
 export async function removeMember(userId: string): Promise<void> {
   await apiClient.delete(`/api/v1/organizations/members/${userId}`);
+}
+
+/** 조직 프로필 이미지 설정 */
+export async function setOrgProfileImage(
+  request: SetProfileImageRequest,
+): Promise<ProfileImageResponse> {
+  const response = await apiClient.put<ProfileImageResponse>(
+    "/api/v1/organizations/profile-image",
+    request,
+  );
+  return response.data;
+}
+
+/** 조직 프로필 이미지 제거 */
+export async function deleteOrgProfileImage(): Promise<void> {
+  await apiClient.delete("/api/v1/organizations/profile-image");
 }

@@ -35,20 +35,20 @@ export function useProjectIssues(projectId: string | undefined) {
 }
 
 /** 프로젝트 이슈 상세 조회 훅 */
-export function useProjectIssue(projectId: string | undefined, issueId: string | undefined) {
+export function useProjectIssue(projectId: string | undefined, issueNumber: string | undefined) {
   return useQuery({
-    queryKey: [...PROJECT_ISSUE_DETAIL_QUERY_KEY, projectId, issueId],
-    queryFn: () => getProjectIssue(projectId!, issueId!),
-    enabled: !!projectId && !!issueId,
+    queryKey: [...PROJECT_ISSUE_DETAIL_QUERY_KEY, projectId, issueNumber],
+    queryFn: () => getProjectIssue(projectId!, issueNumber!),
+    enabled: !!projectId && !!issueNumber,
   });
 }
 
 /** 이슈 타임라인 조회 훅 */
-export function useIssueTimeline(projectId: string | undefined, issueId: string | undefined) {
+export function useIssueTimeline(projectId: string | undefined, issueNumber: string | undefined) {
   return useQuery({
-    queryKey: [...PROJECT_ISSUE_TIMELINE_QUERY_KEY, projectId, issueId],
-    queryFn: () => getIssueTimeline(projectId!, issueId!),
-    enabled: !!projectId && !!issueId,
+    queryKey: [...PROJECT_ISSUE_TIMELINE_QUERY_KEY, projectId, issueNumber],
+    queryFn: () => getIssueTimeline(projectId!, issueNumber!),
+    enabled: !!projectId && !!issueNumber,
   });
 }
 
@@ -78,16 +78,16 @@ export function useCreateProjectIssue(projectId: string | undefined) {
 }
 
 /** 이슈 담당자 추가 훅 */
-export function useAssignIssueUsers(projectId: string | undefined, issueId: string | undefined) {
+export function useAssignIssueUsers(projectId: string | undefined, issueNumber: string | undefined) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (userIds: string[]) => assignIssueUsers(projectId!, issueId!, userIds),
+    mutationFn: (userIds: string[]) => assignIssueUsers(projectId!, issueNumber!, userIds),
     onSuccess: () => {
       toast.success("담당자를 추가했습니다");
       queryClient.invalidateQueries({ queryKey: [...PROJECT_ISSUES_QUERY_KEY, projectId] });
-      queryClient.invalidateQueries({ queryKey: [...PROJECT_ISSUE_DETAIL_QUERY_KEY, projectId, issueId] });
-      queryClient.invalidateQueries({ queryKey: [...PROJECT_ISSUE_TIMELINE_QUERY_KEY, projectId, issueId] });
+      queryClient.invalidateQueries({ queryKey: [...PROJECT_ISSUE_DETAIL_QUERY_KEY, projectId, issueNumber] });
+      queryClient.invalidateQueries({ queryKey: [...PROJECT_ISSUE_TIMELINE_QUERY_KEY, projectId, issueNumber] });
     },
     onError: () => {
       toast.error("담당자 추가에 실패했습니다");
@@ -96,16 +96,16 @@ export function useAssignIssueUsers(projectId: string | undefined, issueId: stri
 }
 
 /** 이슈 담당자 제거 훅 */
-export function useUnassignIssueUsers(projectId: string | undefined, issueId: string | undefined) {
+export function useUnassignIssueUsers(projectId: string | undefined, issueNumber: string | undefined) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (userIds: string[]) => unassignIssueUsers(projectId!, issueId!, userIds),
+    mutationFn: (userIds: string[]) => unassignIssueUsers(projectId!, issueNumber!, userIds),
     onSuccess: () => {
       toast.success("담당자를 제거했습니다");
       queryClient.invalidateQueries({ queryKey: [...PROJECT_ISSUES_QUERY_KEY, projectId] });
-      queryClient.invalidateQueries({ queryKey: [...PROJECT_ISSUE_DETAIL_QUERY_KEY, projectId, issueId] });
-      queryClient.invalidateQueries({ queryKey: [...PROJECT_ISSUE_TIMELINE_QUERY_KEY, projectId, issueId] });
+      queryClient.invalidateQueries({ queryKey: [...PROJECT_ISSUE_DETAIL_QUERY_KEY, projectId, issueNumber] });
+      queryClient.invalidateQueries({ queryKey: [...PROJECT_ISSUE_TIMELINE_QUERY_KEY, projectId, issueNumber] });
     },
     onError: () => {
       toast.error("담당자 제거에 실패했습니다");
@@ -114,16 +114,16 @@ export function useUnassignIssueUsers(projectId: string | undefined, issueId: st
 }
 
 /** 이슈 담당자 동기화 훅 */
-export function useSyncIssueAssignees(projectId: string | undefined, issueId: string | undefined) {
+export function useSyncIssueAssignees(projectId: string | undefined, issueNumber: string | undefined) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (userIds: string[]) => syncIssueAssignees(projectId!, issueId!, userIds),
+    mutationFn: (userIds: string[]) => syncIssueAssignees(projectId!, issueNumber!, userIds),
     onSuccess: () => {
       toast.success("담당자를 적용했습니다");
       queryClient.invalidateQueries({ queryKey: [...PROJECT_ISSUES_QUERY_KEY, projectId] });
-      queryClient.invalidateQueries({ queryKey: [...PROJECT_ISSUE_DETAIL_QUERY_KEY, projectId, issueId] });
-      queryClient.invalidateQueries({ queryKey: [...PROJECT_ISSUE_TIMELINE_QUERY_KEY, projectId, issueId] });
+      queryClient.invalidateQueries({ queryKey: [...PROJECT_ISSUE_DETAIL_QUERY_KEY, projectId, issueNumber] });
+      queryClient.invalidateQueries({ queryKey: [...PROJECT_ISSUE_TIMELINE_QUERY_KEY, projectId, issueNumber] });
     },
     onError: () => {
       toast.error("담당자 적용에 실패했습니다");
@@ -132,16 +132,16 @@ export function useSyncIssueAssignees(projectId: string | undefined, issueId: st
 }
 
 /** 이슈 라벨 동기화 훅 */
-export function useSyncIssueLabels(projectId: string | undefined, issueId: string | undefined) {
+export function useSyncIssueLabels(projectId: string | undefined, issueNumber: string | undefined) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (labelIds: string[]) => syncIssueLabels(projectId!, issueId!, labelIds),
+    mutationFn: (labelIds: string[]) => syncIssueLabels(projectId!, issueNumber!, labelIds),
     onSuccess: () => {
       toast.success("라벨을 적용했습니다");
       queryClient.invalidateQueries({ queryKey: [...PROJECT_ISSUES_QUERY_KEY, projectId] });
-      queryClient.invalidateQueries({ queryKey: [...PROJECT_ISSUE_DETAIL_QUERY_KEY, projectId, issueId] });
-      queryClient.invalidateQueries({ queryKey: [...PROJECT_ISSUE_TIMELINE_QUERY_KEY, projectId, issueId] });
+      queryClient.invalidateQueries({ queryKey: [...PROJECT_ISSUE_DETAIL_QUERY_KEY, projectId, issueNumber] });
+      queryClient.invalidateQueries({ queryKey: [...PROJECT_ISSUE_TIMELINE_QUERY_KEY, projectId, issueNumber] });
     },
     onError: () => {
       toast.error("라벨 적용에 실패했습니다");
@@ -150,16 +150,16 @@ export function useSyncIssueLabels(projectId: string | undefined, issueId: strin
 }
 
 /** 이슈 부품 동기화 훅 */
-export function useSyncIssueParts(projectId: string | undefined, issueId: string | undefined) {
+export function useSyncIssueParts(projectId: string | undefined, issueNumber: string | undefined) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (partIds: string[]) => syncIssueParts(projectId!, issueId!, partIds),
+    mutationFn: (partIds: string[]) => syncIssueParts(projectId!, issueNumber!, partIds),
     onSuccess: () => {
       toast.success("부품을 적용했습니다");
       queryClient.invalidateQueries({ queryKey: [...PROJECT_ISSUES_QUERY_KEY, projectId] });
-      queryClient.invalidateQueries({ queryKey: [...PROJECT_ISSUE_DETAIL_QUERY_KEY, projectId, issueId] });
-      queryClient.invalidateQueries({ queryKey: [...PROJECT_ISSUE_TIMELINE_QUERY_KEY, projectId, issueId] });
+      queryClient.invalidateQueries({ queryKey: [...PROJECT_ISSUE_DETAIL_QUERY_KEY, projectId, issueNumber] });
+      queryClient.invalidateQueries({ queryKey: [...PROJECT_ISSUE_TIMELINE_QUERY_KEY, projectId, issueNumber] });
     },
     onError: () => {
       toast.error("부품 적용에 실패했습니다");
@@ -168,7 +168,7 @@ export function useSyncIssueParts(projectId: string | undefined, issueId: string
 }
 
 /** 이슈 파일 업로드 및 첨부 훅 */
-export function useUploadIssueFiles(projectId: string | undefined, issueId: string | undefined) {
+export function useUploadIssueFiles(projectId: string | undefined, issueNumber: string | undefined) {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -184,12 +184,12 @@ export function useUploadIssueFiles(projectId: string | undefined, issueId: stri
         await completeFileUpload(file_id);
         fileIds.push(file_id);
       }
-      await attachIssueFiles(projectId!, issueId!, fileIds);
+      await attachIssueFiles(projectId!, issueNumber!, fileIds);
     },
     onSuccess: () => {
       toast.success("파일을 첨부했습니다");
-      queryClient.invalidateQueries({ queryKey: [...PROJECT_ISSUE_DETAIL_QUERY_KEY, projectId, issueId] });
-      queryClient.invalidateQueries({ queryKey: [...PROJECT_ISSUE_TIMELINE_QUERY_KEY, projectId, issueId] });
+      queryClient.invalidateQueries({ queryKey: [...PROJECT_ISSUE_DETAIL_QUERY_KEY, projectId, issueNumber] });
+      queryClient.invalidateQueries({ queryKey: [...PROJECT_ISSUE_TIMELINE_QUERY_KEY, projectId, issueNumber] });
     },
     onError: () => {
       toast.error("파일 첨부에 실패했습니다");
@@ -198,15 +198,15 @@ export function useUploadIssueFiles(projectId: string | undefined, issueId: stri
 }
 
 /** 이슈 파일 삭제 훅 */
-export function useDeleteIssueFile(projectId: string | undefined, issueId: string | undefined) {
+export function useDeleteIssueFile(projectId: string | undefined, issueNumber: string | undefined) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (fileId: string) => deleteIssueFile(projectId!, issueId!, fileId),
+    mutationFn: (fileId: string) => deleteIssueFile(projectId!, issueNumber!, fileId),
     onSuccess: () => {
       toast.success("파일을 삭제했습니다");
-      queryClient.invalidateQueries({ queryKey: [...PROJECT_ISSUE_DETAIL_QUERY_KEY, projectId, issueId] });
-      queryClient.invalidateQueries({ queryKey: [...PROJECT_ISSUE_TIMELINE_QUERY_KEY, projectId, issueId] });
+      queryClient.invalidateQueries({ queryKey: [...PROJECT_ISSUE_DETAIL_QUERY_KEY, projectId, issueNumber] });
+      queryClient.invalidateQueries({ queryKey: [...PROJECT_ISSUE_TIMELINE_QUERY_KEY, projectId, issueNumber] });
     },
     onError: () => {
       toast.error("파일 삭제에 실패했습니다");
@@ -215,15 +215,15 @@ export function useDeleteIssueFile(projectId: string | undefined, issueId: strin
 }
 
 /** 이슈 댓글 생성 훅 */
-export function useCreateIssueComment(projectId: string | undefined, issueId: string | undefined) {
+export function useCreateIssueComment(projectId: string | undefined, issueNumber: string | undefined) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (body: Record<string, unknown>) => createIssueComment(projectId!, issueId!, body),
+    mutationFn: (body: Record<string, unknown>) => createIssueComment(projectId!, issueNumber!, body),
     onSuccess: () => {
       toast.success("댓글을 작성했습니다");
-      queryClient.invalidateQueries({ queryKey: [...PROJECT_ISSUE_TIMELINE_QUERY_KEY, projectId, issueId] });
-      queryClient.invalidateQueries({ queryKey: [...PROJECT_ISSUE_DETAIL_QUERY_KEY, projectId, issueId] });
+      queryClient.invalidateQueries({ queryKey: [...PROJECT_ISSUE_TIMELINE_QUERY_KEY, projectId, issueNumber] });
+      queryClient.invalidateQueries({ queryKey: [...PROJECT_ISSUE_DETAIL_QUERY_KEY, projectId, issueNumber] });
       queryClient.invalidateQueries({ queryKey: [...PROJECT_ISSUES_QUERY_KEY, projectId] });
     },
     onError: () => {
@@ -233,15 +233,15 @@ export function useCreateIssueComment(projectId: string | undefined, issueId: st
 }
 
 /** 이슈 댓글 수정 훅 */
-export function useUpdateIssueComment(projectId: string | undefined, issueId: string | undefined) {
+export function useUpdateIssueComment(projectId: string | undefined, issueNumber: string | undefined) {
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: ({ commentId, body }: { commentId: string; body: Record<string, unknown> }) =>
-      updateIssueComment(projectId!, issueId!, commentId, body),
+      updateIssueComment(projectId!, issueNumber!, commentId, body),
     onSuccess: () => {
       toast.success("댓글을 수정했습니다");
-      queryClient.invalidateQueries({ queryKey: [...PROJECT_ISSUE_TIMELINE_QUERY_KEY, projectId, issueId] });
+      queryClient.invalidateQueries({ queryKey: [...PROJECT_ISSUE_TIMELINE_QUERY_KEY, projectId, issueNumber] });
     },
     onError: () => {
       toast.error("댓글 수정에 실패했습니다");
@@ -250,15 +250,15 @@ export function useUpdateIssueComment(projectId: string | undefined, issueId: st
 }
 
 /** 이슈 댓글 삭제 훅 */
-export function useDeleteIssueComment(projectId: string | undefined, issueId: string | undefined) {
+export function useDeleteIssueComment(projectId: string | undefined, issueNumber: string | undefined) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (commentId: string) => deleteIssueComment(projectId!, issueId!, commentId),
+    mutationFn: (commentId: string) => deleteIssueComment(projectId!, issueNumber!, commentId),
     onSuccess: () => {
       toast.success("댓글을 삭제했습니다");
-      queryClient.invalidateQueries({ queryKey: [...PROJECT_ISSUE_TIMELINE_QUERY_KEY, projectId, issueId] });
-      queryClient.invalidateQueries({ queryKey: [...PROJECT_ISSUE_DETAIL_QUERY_KEY, projectId, issueId] });
+      queryClient.invalidateQueries({ queryKey: [...PROJECT_ISSUE_TIMELINE_QUERY_KEY, projectId, issueNumber] });
+      queryClient.invalidateQueries({ queryKey: [...PROJECT_ISSUE_DETAIL_QUERY_KEY, projectId, issueNumber] });
       queryClient.invalidateQueries({ queryKey: [...PROJECT_ISSUES_QUERY_KEY, projectId] });
     },
     onError: () => {

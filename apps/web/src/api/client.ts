@@ -70,8 +70,12 @@ apiClient.interceptors.response.use(
     }
 
     const originalRequest = error.config;
+    const url = originalRequest?.url ?? "";
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    // 인증 엔드포인트의 401은 토큰 만료가 아닌 자격 증명 오류이므로 리프레시하지 않음
+    const isAuthEndpoint = url.includes("/auth/login") || url.includes("/auth/register");
+
+    if (error.response?.status === 401 && !originalRequest._retry && !isAuthEndpoint) {
       originalRequest._retry = true;
 
       const refreshToken = localStorage.getItem("refreshToken");

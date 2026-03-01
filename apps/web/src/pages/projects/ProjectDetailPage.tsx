@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect, useCallback } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -17,7 +17,6 @@ import {
   Package,
   Activity,
   LayoutDashboard,
-  ArrowUpDown,
   Filter,
   AlertCircle,
   FilePen,
@@ -25,6 +24,8 @@ import {
   MessageSquare,
   Settings,
   Loader2,
+  UserPlus,
+  Tag,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -33,11 +34,12 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { TiptapEditor } from "@/components/ui/tiptap-editor";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { LabelBadge } from "@fabbit/ui";
 import { useParts, useProject } from "@/api/hooks";
-import type { IssueDto, ProjectDto } from "@/api/types";
+import { useProjectActivities } from "@/api/hooks/useActivities";
+import type { IssueDto, ChangeDto, ProjectDto, ActivityDto, ActivityScope, TimelineUserDto } from "@/api/types";
 import {
   useCreateIssueComment,
   useCreateProjectIssue,
@@ -51,6 +53,20 @@ import {
   useUploadIssueFiles,
   useDeleteIssueFile,
 } from "@/api/hooks/useIssues";
+import {
+  useProjectChanges,
+  useProjectChange,
+  useChangeTimeline,
+  useCreateProjectChange,
+  useSyncChangeAssignees,
+  useSyncChangeReviewers,
+  useChangeLabels,
+  useSyncChangeLabels,
+  useSyncChangeParts,
+  useUploadChangeFiles,
+  useDeleteChangeFile,
+  useCreateChangeComment,
+} from "@/api/hooks/useChanges";
 import { linkPartsToProject, unlinkPartsFromProject } from "@/api/project";
 import { useProjectMembers, useSearchProjectParts } from "@/api/hooks/useProjects";
 import { toast } from "sonner";
@@ -79,6 +95,7 @@ import {
   type ChangeRequest,
   type ChangeRequestType,
   type TimelineEvent,
+  type TimelineAuthor,
   MOCK_ISSUES,
   MOCK_PRS,
 } from "./changeRequestMock";
@@ -102,89 +119,85 @@ interface MockProjectPart {
 
 // --- 활동 로그 ---
 
-type ActivityType =
-  | "part_added"
-  | "part_removed"
-  | "approval_requested"
-  | "approved"
-  | "rejected"
-  | "status_changed"
-  | "project_created";
-
-interface MockActivity {
-  id: string;
-  type: ActivityType;
-  summary: string;
-  userName: string;
-  createdAt: string;
-}
-
-const ACTIVITY_CONFIG: Record<ActivityType, { icon: React.ElementType; accent: string; label: string; badgeClass: string }> = {
+const ACTIVITY_CONFIG: Record<string, { icon: React.ElementType; accent: string; label: string; badgeClass: string }> = {
+  issue_created: { icon: FilePen, accent: "bg-emerald-100 text-emerald-600 dark:bg-emerald-900 dark:text-emerald-400", label: "이슈 생성", badgeClass: "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-400" },
+  issue_closed: { icon: XCircle, accent: "bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-400", label: "이슈 닫힘", badgeClass: "border-red-200 bg-red-50 text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-400" },
+  issue_reopened: { icon: AlertCircle, accent: "bg-emerald-100 text-emerald-600 dark:bg-emerald-900 dark:text-emerald-400", label: "이슈 재오픈", badgeClass: "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-400" },
+  issue_state_changed: { icon: PlayCircle, accent: "bg-purple-100 text-purple-600 dark:bg-purple-900 dark:text-purple-400", label: "상태 변경", badgeClass: "border-purple-200 bg-purple-50 text-purple-700 dark:border-purple-800 dark:bg-purple-950 dark:text-purple-400" },
+  cr_merged: { icon: FileCheck, accent: "bg-purple-100 text-purple-600 dark:bg-purple-900 dark:text-purple-400", label: "변경 반영", badgeClass: "border-purple-200 bg-purple-50 text-purple-700 dark:border-purple-800 dark:bg-purple-950 dark:text-purple-400" },
+  cr_state_changed: { icon: PlayCircle, accent: "bg-amber-100 text-amber-600 dark:bg-amber-900 dark:text-amber-400", label: "상태 변경", badgeClass: "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-400" },
+  cr_issue_linked: { icon: LinkIcon, accent: "bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-400", label: "이슈 연결", badgeClass: "border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-400" },
+  cr_issue_unlinked: { icon: Unlink, accent: "bg-muted text-muted-foreground", label: "이슈 해제", badgeClass: "border-border bg-muted/50 text-muted-foreground" },
   part_added: { icon: LinkIcon, accent: "bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-400", label: "부품 추가", badgeClass: "border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-400" },
   part_removed: { icon: Unlink, accent: "bg-muted text-muted-foreground", label: "부품 제거", badgeClass: "border-border bg-muted/50 text-muted-foreground" },
-  approval_requested: { icon: FileCheck, accent: "bg-amber-100 text-amber-600 dark:bg-amber-900 dark:text-amber-400", label: "결재 요청", badgeClass: "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-400" },
-  approved: { icon: CheckCircle2, accent: "bg-emerald-100 text-emerald-600 dark:bg-emerald-900 dark:text-emerald-400", label: "승인", badgeClass: "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-400" },
-  rejected: { icon: XCircle, accent: "bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-400", label: "반려", badgeClass: "border-red-200 bg-red-50 text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-400" },
-  status_changed: { icon: PlayCircle, accent: "bg-purple-100 text-purple-600 dark:bg-purple-900 dark:text-purple-400", label: "상태 변경", badgeClass: "border-purple-200 bg-purple-50 text-purple-700 dark:border-purple-800 dark:bg-purple-950 dark:text-purple-400" },
-  project_created: { icon: CircleDot, accent: "bg-primary/10 text-primary", label: "프로젝트", badgeClass: "border-primary/20 bg-primary/5 text-primary" },
+  part_changed: { icon: LinkIcon, accent: "bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-400", label: "부품 변경", badgeClass: "border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-400" },
+  assignee_changed: { icon: UserPlus, accent: "bg-amber-100 text-amber-600 dark:bg-amber-900 dark:text-amber-400", label: "담당자 변경", badgeClass: "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-400" },
+  reviewer_changed: { icon: UserPlus, accent: "bg-amber-100 text-amber-600 dark:bg-amber-900 dark:text-amber-400", label: "검토자 변경", badgeClass: "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-400" },
+  label_changed: { icon: Tag, accent: "bg-purple-100 text-purple-600 dark:bg-purple-900 dark:text-purple-400", label: "라벨 변경", badgeClass: "border-purple-200 bg-purple-50 text-purple-700 dark:border-purple-800 dark:bg-purple-950 dark:text-purple-400" },
 };
 
-const MOCK_ACTIVITIES: MockActivity[] = [
-  // 2월 25일 (오늘)
-  { id: "act1", type: "part_added", summary: "부품 FAN-80 연결", userName: "이엔지", createdAt: "2025-02-25T16:20:00" },
-  { id: "act2", type: "approval_requested", summary: "결재 요청: 냉각 구조 변경", userName: "이엔지", createdAt: "2025-02-25T15:45:00" },
-  { id: "act3", type: "part_added", summary: "부품 CAP-220 연결", userName: "김설계", createdAt: "2025-02-25T11:30:00" },
-  { id: "act4", type: "approved", summary: "결재 승인: 체결부 공차 수정", userName: "박관리", createdAt: "2025-02-25T10:00:00" },
+const DEFAULT_ACTIVITY_CONFIG = { icon: CircleDot, accent: "bg-muted text-muted-foreground", label: "활동", badgeClass: "border-border bg-muted/50 text-muted-foreground" };
 
-  // 2월 24일 (어제)
-  { id: "act5", type: "part_added", summary: "부품 HSG-002 연결", userName: "김설계", createdAt: "2025-02-24T14:30:00" },
-  { id: "act6", type: "approval_requested", summary: "결재 요청: Rev.C 양산 도면 반영", userName: "김설계", createdAt: "2025-02-24T10:15:00" },
-  { id: "act7", type: "part_removed", summary: "부품 BOLT-M8 연결 해제", userName: "이엔지", createdAt: "2025-02-24T09:40:00" },
+// action + detail → 요약 텍스트
+function getActivitySummary(action: string, detail: Record<string, unknown> | null, users: Record<string, TimelineUserDto>): string {
+  if (!detail) return ACTIVITY_CONFIG[action]?.label ?? action;
 
-  // 2월 21일
-  { id: "act8", type: "approved", summary: "결재 승인: 방열핀 추가 설계", userName: "박관리", createdAt: "2025-02-21T17:00:00" },
-  { id: "act9", type: "part_added", summary: "부품 HS-PLT-01 연결", userName: "김설계", createdAt: "2025-02-21T14:20:00" },
+  const resolveUserNames = (ids: unknown[]): string =>
+    (ids as string[]).map((id) => users[id]?.fullName ?? id.slice(0, 8)).join(", ");
 
-  // 2월 20일
-  { id: "act10", type: "approved", summary: "결재 승인: BOM 구조 변경", userName: "박관리", createdAt: "2025-02-20T16:45:00" },
-  { id: "act11", type: "status_changed", summary: "상태 변경: 설계 검증 → 시작 생산", userName: "박관리", createdAt: "2025-02-20T16:00:00" },
-  { id: "act12", type: "part_added", summary: "부품 GKT-010 연결", userName: "이엔지", createdAt: "2025-02-20T11:30:00" },
+  switch (action) {
+    case "issue_created":
+    case "issue_closed":
+    case "issue_reopened":
+      return detail.title ? `#${detail.number} ${detail.title}` : (ACTIVITY_CONFIG[action]?.label ?? action);
+    case "issue_state_changed":
+    case "cr_state_changed":
+      return detail.from && detail.to ? `${detail.from} → ${detail.to}` : (ACTIVITY_CONFIG[action]?.label ?? action);
+    case "cr_merged":
+      return detail.title ? `#${detail.number} ${detail.title}` : "변경 반영";
+    case "part_added":
+    case "part_removed": {
+      const partIds = detail.part_ids as string[] | undefined;
+      return partIds ? `${partIds.length}건` : "부품";
+    }
+    case "part_changed": {
+      const added = (detail.added as string[] | undefined) ?? [];
+      const removed = (detail.removed as string[] | undefined) ?? [];
+      const parts: string[] = [];
+      if (added.length > 0) parts.push(`${added.length}건 추가`);
+      if (removed.length > 0) parts.push(`${removed.length}건 제거`);
+      return parts.join(", ") || "부품 변경";
+    }
+    case "assignee_changed":
+    case "reviewer_changed": {
+      const addedUsers = (detail.added as string[] | undefined) ?? [];
+      const removedUsers = (detail.removed as string[] | undefined) ?? [];
+      const segments: string[] = [];
+      if (addedUsers.length > 0) segments.push(`${resolveUserNames(addedUsers)} 추가`);
+      if (removedUsers.length > 0) segments.push(`${resolveUserNames(removedUsers)} 제거`);
+      return segments.join(", ") || (ACTIVITY_CONFIG[action]?.label ?? action);
+    }
+    case "label_changed": {
+      const addedLabels = (detail.added as { name: string }[] | undefined) ?? [];
+      const removedLabels = (detail.removed as { name: string }[] | undefined) ?? [];
+      const segs: string[] = [];
+      if (addedLabels.length > 0) segs.push(`${addedLabels.map((l) => l.name).join(", ")} 추가`);
+      if (removedLabels.length > 0) segs.push(`${removedLabels.map((l) => l.name).join(", ")} 제거`);
+      return segs.join(", ") || "라벨 변경";
+    }
+    default:
+      return ACTIVITY_CONFIG[action]?.label ?? action;
+  }
+}
 
-  // 2월 18일
-  { id: "act13", type: "approval_requested", summary: "결재 요청: BOM 구조 변경", userName: "이엔지", createdAt: "2025-02-18T10:00:00" },
-  { id: "act14", type: "part_added", summary: "부품 IGBT-M01 연결", userName: "김설계", createdAt: "2025-02-18T09:15:00" },
-
-  // 2월 15일
-  { id: "act15", type: "rejected", summary: "결재 반려: 재질 변경 검토 (안전율 미달)", userName: "김설계", createdAt: "2025-02-15T11:20:00" },
-  { id: "act16", type: "status_changed", summary: "상태 변경: 준비 → 진행", userName: "박관리", createdAt: "2025-02-15T09:00:00" },
-
-  // 2월 12일
-  { id: "act17", type: "approval_requested", summary: "결재 요청: 재질 변경 검토", userName: "박관리", createdAt: "2025-02-12T14:30:00" },
-  { id: "act18", type: "part_removed", summary: "부품 SRV-200 연결 해제 (사양 변경)", userName: "김설계", createdAt: "2025-02-12T10:00:00" },
-
-  // 2월 10일
-  { id: "act19", type: "part_added", summary: "부품 PCB-INV-02 연결", userName: "이엔지", createdAt: "2025-02-10T15:30:00" },
-  { id: "act20", type: "approved", summary: "결재 승인: 감속기 모듈 사양 확정", userName: "박관리", createdAt: "2025-02-10T11:00:00" },
-
-  // 2월 5일
-  { id: "act21", type: "approval_requested", summary: "결재 요청: 감속기 모듈 사양 확정", userName: "김설계", createdAt: "2025-02-05T16:00:00" },
-  { id: "act22", type: "part_added", summary: "부품 RDC-050 연결", userName: "김설계", createdAt: "2025-02-05T14:00:00" },
-  { id: "act23", type: "part_added", summary: "부품 JNT-601 연결", userName: "김설계", createdAt: "2025-02-05T13:45:00" },
-
-  // 1월 28일
-  { id: "act24", type: "status_changed", summary: "상태 변경: 기획 → 준비", userName: "박관리", createdAt: "2025-01-28T10:00:00" },
-  { id: "act25", type: "part_added", summary: "부품 BRG-105 연결", userName: "이엔지", createdAt: "2025-01-28T09:30:00" },
-
-  // 1월 22일
-  { id: "act26", type: "approved", summary: "결재 승인: 초기 설계 리뷰", userName: "박관리", createdAt: "2025-01-22T14:00:00" },
-  { id: "act27", type: "approval_requested", summary: "결재 요청: 초기 설계 리뷰", userName: "김설계", createdAt: "2025-01-22T10:30:00" },
-
-  // 1월 20일
-  { id: "act28", type: "part_added", summary: "부품 MTR-400, SFT-200 외 4건 일괄 연결", userName: "김설계", createdAt: "2025-01-20T15:30:00" },
-  { id: "act29", type: "part_added", summary: "부품 FRAME-ASM 연결", userName: "김설계", createdAt: "2025-01-20T15:00:00" },
-
-  // 1월 15일
-  { id: "act30", type: "project_created", summary: "프로젝트 생성", userName: "김설계", createdAt: "2025-01-15T09:00:00" },
+const SCOPE_FILTERS: { label: string; value: ActivityScope | "all" }[] = [
+  { label: "전체", value: "all" },
+  { label: "이슈", value: "issue" },
+  { label: "변경 반영", value: "cr" },
+  { label: "부품", value: "part" },
+  { label: "담당자", value: "assignee" },
+  { label: "검토자", value: "reviewer" },
+  { label: "라벨", value: "label" },
 ];
 
 // ============================================================
@@ -343,15 +356,17 @@ function EditProjectDialog({
 
 function OverviewTab({
   parts,
-  activities,
+  projectId,
 }: {
   parts: MockProjectPart[];
-  activities: MockActivity[];
+  projectId: string;
 }) {
   const openIssues = MOCK_ISSUES.filter((c) => c.status === "open").length;
   const openPRs = MOCK_PRS.filter((c) => c.status === "open").length;
   const mergedPRs = MOCK_PRS.filter((c) => c.status === "merged").length;
-  const recentActivities = activities.slice(0, 3);
+  const { data: activitiesData } = useProjectActivities(projectId, { limit: 3 });
+  const recentActivities = activitiesData?.pages[0]?.items ?? [];
+  const activityUsers = activitiesData?.pages[0]?.users ?? {};
 
   return (
     <div className="space-y-4">
@@ -440,23 +455,30 @@ function OverviewTab({
             <h3 className="text-sm font-medium text-foreground">최근 활동</h3>
           </div>
           <div className="px-4 py-2">
-            {recentActivities.map((activity) => {
-              const config = ACTIVITY_CONFIG[activity.type];
-              const Icon = config.icon;
-              return (
-                <div key={activity.id} className="flex gap-3 py-2">
-                  <div className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${config.accent}`}>
-                    <Icon className="h-3 w-3" />
+            {recentActivities.length === 0 ? (
+              <div className="py-4 text-center text-sm text-muted-foreground">최근 활동이 없습니다</div>
+            ) : (
+              recentActivities.map((activity) => {
+                const config = ACTIVITY_CONFIG[activity.action] ?? DEFAULT_ACTIVITY_CONFIG;
+                const Icon = config.icon;
+                const user = activityUsers[activity.actorId];
+                return (
+                  <div key={activity.id} className="flex gap-3 py-2">
+                    <div className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${config.accent}`}>
+                      <Icon className="h-3 w-3" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm text-foreground/80">
+                        {getActivitySummary(activity.action, activity.detail, activityUsers)}
+                      </p>
+                      <p className="text-[11px] text-muted-foreground">
+                        {user?.fullName ?? activity.actorId.slice(0, 8)} · {formatDateTime(activity.createdAt)}
+                      </p>
+                    </div>
                   </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm text-foreground/80">{activity.summary}</p>
-                    <p className="text-[11px] text-muted-foreground">
-                      {activity.userName} · {formatDateTime(activity.createdAt)}
-                    </p>
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })
+            )}
           </div>
         </div>
       </div>
@@ -635,23 +657,41 @@ function toIssueAuthor(issue: IssueDto): string {
   return "알 수 없음";
 }
 
-function toDisplayActorName(id: string | null | undefined, issue: IssueDto): string {
-  if (!id) return "알 수 없음";
-  if (id === issue.createdBy && issue.createdByName) return issue.createdByName;
-
-  const assignee = issue.assignees.find((item) => item.id === id);
-  if (assignee) return assignee.fullName;
-
-  return id.slice(0, 8);
+interface TimelineSource {
+  createdBy: string | null;
+  createdByName?: string | null;
+  assignees: { id: string; fullName: string }[];
 }
 
-function toTimelineEvents(items: IssueTimelineItemDto[], issue: IssueDto): TimelineEvent[] {
+function toDisplayActor(
+  id: string | null | undefined,
+  users: Record<string, TimelineUserDto>,
+  source: TimelineSource,
+): TimelineAuthor {
+  if (!id) return { name: "알 수 없음" };
+
+  const user = users[id];
+  if (user) return { name: user.fullName, profileImageUrl: user.profileImageUrl };
+
+  if (id === source.createdBy && source.createdByName) return { name: source.createdByName };
+
+  const assignee = source.assignees.find((item) => item.id === id);
+  if (assignee) return { name: assignee.fullName };
+
+  return { name: id.slice(0, 8) };
+}
+
+function toTimelineEvents(
+  items: IssueTimelineItemDto[],
+  users: Record<string, TimelineUserDto>,
+  source: TimelineSource,
+): TimelineEvent[] {
   return items.map((item) => {
     if (item.type === "comment") {
       return {
         id: item.id,
         type: "comment",
-        author: toDisplayActorName(item.authorId, issue),
+        author: toDisplayActor(item.authorId, users, source),
         createdAt: item.createdAt,
         content: item.body,
       };
@@ -659,12 +699,16 @@ function toTimelineEvents(items: IssueTimelineItemDto[], issue: IssueDto): Timel
 
     const action = item.action.toLowerCase();
     const detail = item.detail ?? {};
-    const author = toDisplayActorName(item.actorId, issue);
-    const detailAssigneeName =
-      (detail.assignee_name as string | undefined) ??
-      (detail.user_name as string | undefined) ??
-      (detail.full_name as string | undefined) ??
-      (detail.assignee_id as string | undefined);
+    const author = toDisplayActor(item.actorId, users, source);
+
+    // users 맵에서 ID 목록을 이름 목록으로 변환하는 헬퍼
+    const resolveUserNames = (ids: string[]): string[] =>
+      ids.map((id) => {
+        const u = users[id];
+        if (u) return u.fullName;
+        const a = source.assignees.find((s) => s.id === id);
+        return a ? a.fullName : id.slice(0, 8);
+      });
 
     // 이슈/CR 생성
     if (action === "issue_created") {
@@ -700,6 +744,20 @@ function toTimelineEvents(items: IssueTimelineItemDto[], issue: IssueDto): Timel
       };
     }
 
+    // 이슈/CR 상태 변경 (from → to)
+    if (action === "issue_state_changed" || action === "cr_state_changed") {
+      const to = (detail.to as string | undefined)?.toLowerCase();
+      const isMerged = to === "merged";
+      const isOpen = to === "open";
+      return {
+        id: item.id,
+        type: isMerged ? "cr_merged" : "status_change",
+        author,
+        createdAt: item.createdAt,
+        content: isMerged ? undefined : isOpen ? "open" : "closed",
+      };
+    }
+
     // CR 머지
     if (action === "cr_merged") {
       return {
@@ -712,32 +770,31 @@ function toTimelineEvents(items: IssueTimelineItemDto[], issue: IssueDto): Timel
       };
     }
 
-    // 부품 연결
-    if (action === "part_added") {
-      const partIds = detail.part_ids as string[] | undefined;
+    // 부품 변경 (added/removed 배열)
+    if (action === "part_changed" || action === "part_added" || action === "part_removed") {
+      const added = (detail.added as string[] | undefined) ?? [];
+      const removed = (detail.removed as string[] | undefined) ?? [];
+      // part_added/part_removed는 기존 호환
+      if (action === "part_removed" || (added.length === 0 && removed.length > 0)) {
+        return {
+          id: item.id,
+          type: "part_removed",
+          author,
+          createdAt: item.createdAt,
+          partCount: removed.length || (detail.part_ids as string[] | undefined)?.length || 0,
+        };
+      }
       return {
         id: item.id,
         type: "part_added",
         author,
         createdAt: item.createdAt,
-        partCount: partIds?.length ?? 0,
-      };
-    }
-
-    // 부품 해제
-    if (action === "part_removed") {
-      const partIds = detail.part_ids as string[] | undefined;
-      return {
-        id: item.id,
-        type: "part_removed",
-        author,
-        createdAt: item.createdAt,
-        partCount: partIds?.length ?? 0,
+        partCount: added.length || (detail.part_ids as string[] | undefined)?.length || 0,
       };
     }
 
     // 라벨 변경 (added/removed 배열)
-    if (action === "labels_changed") {
+    if (action === "label_changed" || action === "labels_changed") {
       const added = (detail.added as { name: string; color: string }[] | undefined) ?? [];
       const removed = (detail.removed as { name: string; color: string }[] | undefined) ?? [];
       return {
@@ -750,13 +807,31 @@ function toTimelineEvents(items: IssueTimelineItemDto[], issue: IssueDto): Timel
       };
     }
 
-    if (action.includes("assign")) {
+    // 담당자 변경
+    if (action === "assignee_changed") {
+      const added = (detail.added as string[] | undefined) ?? [];
+      const removed = (detail.removed as string[] | undefined) ?? [];
+      const names = resolveUserNames(added.length > 0 ? added : removed);
       return {
         id: item.id,
         type: "assigned",
         author,
         createdAt: item.createdAt,
-        assignee: detailAssigneeName ?? "담당자",
+        assignee: names.join(", ") || "담당자",
+      };
+    }
+
+    // 검토자 변경
+    if (action === "reviewer_changed") {
+      const added = (detail.added as string[] | undefined) ?? [];
+      const removed = (detail.removed as string[] | undefined) ?? [];
+      const names = resolveUserNames(added.length > 0 ? added : removed);
+      return {
+        id: item.id,
+        type: "reviewer_changed",
+        author,
+        createdAt: item.createdAt,
+        assignee: names.join(", ") || "검토자",
       };
     }
 
@@ -813,7 +888,8 @@ function toIssueChangeRequest(issue: IssueDto, timeline: TimelineEvent[] = []): 
       name: label.name,
       colorHex: label.color,
     })),
-    assignees: issue.assignees.map((assignee) => ({ id: assignee.id, name: assignee.fullName })),
+    assignees: issue.assignees.map((assignee) => ({ id: assignee.id, name: assignee.fullName, profileImageUrl: assignee.profileImageUrl })),
+    reviewers: [],
     description: issue.body ?? "",
     timeline,
     attachments: issue.files.map((file) => ({
@@ -829,6 +905,55 @@ function toIssueChangeRequest(issue: IssueDto, timeline: TimelineEvent[] = []): 
       partNumber: part.partNumber,
       name: part.name ?? "이름 없음",
     })),
+    commentsCount: issue.commentsCount,
+  };
+}
+
+function toChangeStatus(state: string): "open" | "closed" | "merged" {
+  const lower = state.toLowerCase();
+  if (lower === "open") return "open";
+  if (lower === "merged") return "merged";
+  return "closed";
+}
+
+function toChangeAuthor(change: ChangeDto): string {
+  if (change.createdByName) return change.createdByName;
+  if (change.createdBy) return change.createdBy.slice(0, 8);
+  return "알 수 없음";
+}
+
+function toChangeChangeRequest(change: ChangeDto, timeline: TimelineEvent[] = []): ChangeRequest {
+  return {
+    id: change.id,
+    number: change.number,
+    type: "pr",
+    title: change.title,
+    status: toChangeStatus(change.state),
+    author: toChangeAuthor(change),
+    createdAt: change.createdAt,
+    labels: change.labels.map((label) => ({
+      id: label.id,
+      name: label.name,
+      colorHex: label.color,
+    })),
+    assignees: change.assignees.map((assignee) => ({ id: assignee.id, name: assignee.fullName, profileImageUrl: assignee.profileImageUrl })),
+    reviewers: change.reviewers.map((reviewer) => ({ id: reviewer.id, name: reviewer.fullName, profileImageUrl: reviewer.profileImageUrl })),
+    description: change.body ?? "",
+    timeline,
+    attachments: change.files.map((file) => ({
+      id: file.fileId,
+      name: file.originalName,
+      size: formatFileSize(file.fileSize),
+      type: getAttachmentType(file.originalName, file.contentType),
+      uploadedBy: toChangeAuthor(change),
+      uploadedAt: file.createdAt,
+    })),
+    relatedParts: change.parts.map((part) => ({
+      id: part.id,
+      partNumber: part.partNumber,
+      name: part.name ?? "이름 없음",
+    })),
+    commentsCount: change.commentsCount,
   };
 }
 
@@ -909,8 +1034,6 @@ function CRListView({
       ) : (
         <div className="divide-y">
           {filtered.map((cr) => {
-            const commentCount = cr.timeline.filter((e) => e.type === "comment").length;
-
             return (
               <button
                 key={cr.id}
@@ -953,10 +1076,10 @@ function CRListView({
                   </div>
                 </div>
 
-                {commentCount > 0 && (
+                {cr.commentsCount > 0 && (
                   <div className="mt-1 flex shrink-0 items-center gap-1 text-xs text-muted-foreground">
                     <MessageSquare className="h-3.5 w-3.5" />
-                    {commentCount}
+                    {cr.commentsCount}
                   </div>
                 )}
               </button>
@@ -968,12 +1091,26 @@ function CRListView({
   );
 }
 
-function NewIssueView({ projectId }: { projectId: string }) {
-  const navigate = useNavigate();
+function NewCRView({
+  projectId,
+  variant,
+  onCancel,
+  onCreated,
+  mutation,
+}: {
+  projectId: string;
+  variant: "issue" | "change";
+  onCancel: () => void;
+  onCreated: () => void;
+  mutation: ReturnType<typeof useCreateProjectIssue> | ReturnType<typeof useCreateProjectChange>;
+}) {
   const [title, setTitle] = useState("");
   const [descriptionJson, setDescriptionJson] = useState<Record<string, unknown> | null>(null);
   const [descriptionText, setDescriptionText] = useState("");
-  const createIssueMutation = useCreateProjectIssue(projectId);
+
+  const labels = variant === "issue"
+    ? { heading: "새 이슈", description: "프로젝트에서 추적할 작업 또는 문제를 등록합니다.", placeholder: "이슈 제목을 입력하세요", descPlaceholder: "이슈 설명을 입력하세요", submit: "이슈 생성" }
+    : { heading: "새 변경 반영", description: "설계 변경사항을 등록하고 리뷰를 요청합니다.", placeholder: "변경 반영 제목을 입력하세요", descPlaceholder: "변경 반영 설명을 입력하세요", submit: "변경 반영 생성" };
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -983,12 +1120,11 @@ function NewIssueView({ projectId }: { projectId: string }) {
     if (!trimmedTitle) return;
 
     try {
-      await createIssueMutation.mutateAsync({
+      await mutation.mutateAsync({
         title: trimmedTitle,
         body: plainBody.length > 0 ? descriptionJson : null,
       });
-
-      navigate(`/projects/${projectId}/issues`);
+      onCreated();
     } catch {
       // 에러 토스트는 mutation onError에서 처리
     }
@@ -997,18 +1133,18 @@ function NewIssueView({ projectId }: { projectId: string }) {
   return (
     <div className="rounded-lg border bg-card">
       <div className="border-b px-5 py-4">
-        <h2 className="text-sm font-semibold text-foreground">새 이슈</h2>
-        <p className="mt-1 text-xs text-muted-foreground">프로젝트에서 추적할 작업 또는 문제를 등록합니다.</p>
+        <h2 className="text-sm font-semibold text-foreground">{labels.heading}</h2>
+        <p className="mt-1 text-xs text-muted-foreground">{labels.description}</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4 px-5 py-4">
         <div className="space-y-2">
-          <Label htmlFor="issue-title">제목</Label>
+          <Label htmlFor="cr-title">제목</Label>
           <Input
-            id="issue-title"
+            id="cr-title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="이슈 제목을 입력하세요"
+            placeholder={labels.placeholder}
             maxLength={500}
             required
           />
@@ -1020,18 +1156,18 @@ function NewIssueView({ projectId }: { projectId: string }) {
             content={descriptionJson ?? ""}
             onChangeJson={(content) => setDescriptionJson(content as Record<string, unknown>)}
             onChangeText={setDescriptionText}
-            placeholder="이슈 설명을 입력하세요"
+            placeholder={labels.descPlaceholder}
             minHeight={220}
           />
         </div>
 
         <div className="flex items-center justify-end gap-2 border-t pt-4">
-          <Button type="button" variant="outline" onClick={() => navigate(`/projects/${projectId}/issues`)}>
+          <Button type="button" variant="outline" onClick={onCancel}>
             취소
           </Button>
-          <Button type="submit" disabled={!title.trim() || createIssueMutation.isPending}>
-            {createIssueMutation.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-            이슈 생성
+          <Button type="submit" disabled={!title.trim() || mutation.isPending}>
+            {mutation.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+            {labels.submit}
           </Button>
         </div>
       </form>
@@ -1073,13 +1209,14 @@ function IssuesView({ projectId, issueId }: { projectId: string; issueId?: strin
   const projectMembers = projectMembersData?.items ?? [];
   const [partsSearchEnabled, setPartsSearchEnabled] = useState(false);
   const [partsSearch, setPartsSearch] = useState("");
-  const { data: searchedPartsData, isLoading: isPartsSearching } = useSearchProjectParts(
+  const { data: searchedPartsData, isFetching: isPartsSearching } = useSearchProjectParts(
     projectId,
     partsSearch,
     isDetailIssueRoute && partsSearchEnabled,
   );
-  const searchedParts = searchedPartsData?.parts ?? [];
+  const searchedParts = searchedPartsData?.items ?? [];
   const createCommentMutation = useCreateIssueComment(projectId, isDetailIssueRoute ? issueId : undefined);
+  const createIssueMutation = useCreateProjectIssue(projectId);
 
   const issues = useMemo(
     () => issuesResponse?.items.map((issue) => toIssueChangeRequest(issue)) ?? [],
@@ -1087,7 +1224,15 @@ function IssuesView({ projectId, issueId }: { projectId: string; issueId?: strin
   );
 
   if (isNewIssueRoute) {
-    return <NewIssueView projectId={projectId} />;
+    return (
+      <NewCRView
+        projectId={projectId}
+        variant="issue"
+        onCancel={() => navigate(`/projects/${projectId}/issues`)}
+        onCreated={() => navigate(`/projects/${projectId}/issues`)}
+        mutation={createIssueMutation}
+      />
+    );
   }
 
   if (isDetailIssueRoute) {
@@ -1126,7 +1271,7 @@ function IssuesView({ projectId, issueId }: { projectId: string; issueId?: strin
     return (
       <>
         <ChangeRequestDetail
-          cr={toIssueChangeRequest(issueDetail, toTimelineEvents(timelineResponse?.items ?? [], issueDetail))}
+          cr={toIssueChangeRequest(issueDetail, toTimelineEvents(timelineResponse?.items ?? [], timelineResponse?.users ?? {}, issueDetail))}
           onBack={() => navigate(`/projects/${projectId}/issues`)}
           onSyncAssignees={(userIds) => syncIssueAssigneesMutation.mutate(userIds)}
           availableMembers={projectMembers.map((m) => ({
@@ -1197,29 +1342,181 @@ function IssuesView({ projectId, issueId }: { projectId: string; issueId?: strin
       createLabel="새 이슈"
       onCreate={() => navigate(`/projects/${projectId}/issues/new`)}
       emptyIcon={AlertCircle}
-      onSelect={(cr) => navigate(`/projects/${projectId}/issues/${cr.id}`)}
+      onSelect={(cr) => navigate(`/projects/${projectId}/issues/${cr.number}`)}
     />
   );
 }
 
-function PullRequestsView({ projectId, crNumber }: { projectId: string; crNumber?: string }) {
+function PullRequestsView({ projectId, changeId }: { projectId: string; changeId?: string }) {
   const navigate = useNavigate();
+  const isNewRoute = changeId === "new";
+  const isDetailRoute = !!changeId && changeId !== "new";
+  const {
+    data: changesResponse,
+    isLoading,
+    isError,
+    refetch,
+  } = useProjectChanges(isNewRoute || isDetailRoute ? undefined : projectId);
+  const {
+    data: changeDetail,
+    isLoading: isChangeDetailLoading,
+    isError: isChangeDetailError,
+    refetch: refetchChangeDetail,
+  } = useProjectChange(projectId, isDetailRoute ? changeId : undefined);
+  const {
+    data: timelineResponse,
+    isLoading: isTimelineLoading,
+    isError: isTimelineError,
+    refetch: refetchTimeline,
+  } = useChangeTimeline(projectId, isDetailRoute ? changeId : undefined);
+  const syncChangeAssigneesMutation = useSyncChangeAssignees(projectId, isDetailRoute ? changeId : undefined);
+  const syncChangeReviewersMutation = useSyncChangeReviewers(projectId, isDetailRoute ? changeId : undefined);
+  const syncChangeLabelsMutation = useSyncChangeLabels(projectId, isDetailRoute ? changeId : undefined);
+  const syncChangePartsMutation = useSyncChangeParts(projectId, isDetailRoute ? changeId : undefined);
+  const uploadChangeFilesMutation = useUploadChangeFiles(projectId, isDetailRoute ? changeId : undefined);
+  const deleteChangeFileMutation = useDeleteChangeFile(projectId, isDetailRoute ? changeId : undefined);
+  const [labelsEnabled, setLabelsEnabled] = useState(false);
+  const { data: projectLabels = [] } = useChangeLabels(isDetailRoute ? projectId : undefined, labelsEnabled);
+  const [membersEnabled, setMembersEnabled] = useState(false);
+  const { data: projectMembersData } = useProjectMembers(projectId, isDetailRoute && membersEnabled);
+  const projectMembers = projectMembersData?.items ?? [];
+  const [partsSearchEnabled, setPartsSearchEnabled] = useState(false);
+  const [partsSearch, setPartsSearch] = useState("");
+  const { data: searchedPartsData, isFetching: isPartsSearching } = useSearchProjectParts(
+    projectId,
+    partsSearch,
+    isDetailRoute && partsSearchEnabled,
+  );
+  const searchedParts = searchedPartsData?.items ?? [];
+  const createCommentMutation = useCreateChangeComment(projectId, isDetailRoute ? changeId : undefined);
+  const createChangeMutation = useCreateProjectChange(projectId);
 
-  if (crNumber) {
-    const cr = MOCK_PRS.find((c) => c.number === Number(crNumber));
-    if (!cr) return <p className="py-8 text-center text-sm text-muted-foreground">변경 반영을 찾을 수 없습니다</p>;
-    return <ChangeRequestDetail cr={cr} onBack={() => navigate(`/projects/${projectId}/prs`)} />;
+  const changes = useMemo(
+    () => changesResponse?.items.map((change) => toChangeChangeRequest(change)) ?? [],
+    [changesResponse],
+  );
+
+  if (isNewRoute) {
+    return (
+      <NewCRView
+        projectId={projectId}
+        variant="change"
+        onCancel={() => navigate(`/projects/${projectId}/change`)}
+        onCreated={() => navigate(`/projects/${projectId}/change`)}
+        mutation={createChangeMutation}
+      />
+    );
+  }
+
+  if (isDetailRoute) {
+    if (isChangeDetailLoading || isTimelineLoading) {
+      return (
+        <div className="min-h-full flex items-center justify-center py-20">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        </div>
+      );
+    }
+
+    if (isChangeDetailError || isTimelineError) {
+      return (
+        <div className="min-h-full flex items-center justify-center py-20">
+          <div className="flex flex-col items-center gap-3 text-center">
+            <p className="text-sm text-muted-foreground">변경 반영 타임라인을 불러오지 못했습니다.</p>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                refetchChangeDetail();
+                refetchTimeline();
+              }}
+            >
+              다시 시도
+            </Button>
+          </div>
+        </div>
+      );
+    }
+
+    if (!changeDetail) {
+      return <p className="py-8 text-center text-sm text-muted-foreground">변경 반영을 찾을 수 없습니다</p>;
+    }
+
+    return (
+      <ChangeRequestDetail
+        cr={toChangeChangeRequest(changeDetail, toTimelineEvents(timelineResponse?.items ?? [], timelineResponse?.users ?? {}, changeDetail))}
+        onBack={() => navigate(`/projects/${projectId}/change`)}
+        onSyncAssignees={(userIds) => syncChangeAssigneesMutation.mutate(userIds)}
+        availableMembers={projectMembers.map((m) => ({
+          id: m.userId,
+          name: m.fullName,
+          email: m.email,
+        }))}
+        selectedAssigneeIds={changeDetail.assignees.map((a) => a.id)}
+        onRequestMembers={() => setMembersEnabled(true)}
+        onSyncReviewers={(userIds) => syncChangeReviewersMutation.mutate(userIds)}
+        selectedReviewerIds={changeDetail.reviewers.map((r) => r.id)}
+        onSyncLabels={(labelIds) => syncChangeLabelsMutation.mutate(labelIds)}
+        onRequestLabels={() => setLabelsEnabled(true)}
+        onAddComment={(body) => createCommentMutation.mutate(body)}
+        isCommentPending={createCommentMutation.isPending}
+        availableLabels={projectLabels.map((label) => ({
+          id: label.id,
+          name: label.name,
+          colorHex: label.color,
+        }))}
+        selectedLabelIds={changeDetail.labels.map((label) => label.id)}
+        onSyncParts={(partIds) => syncChangePartsMutation.mutate(partIds)}
+        onRequestParts={() => setPartsSearchEnabled(true)}
+        searchedParts={searchedParts.map((p) => ({
+          id: p.id,
+          partNumber: p.part_number,
+          name: p.name,
+        }))}
+        selectedPartIds={changeDetail.parts.map((p) => p.id)}
+        onPartsSearchChange={setPartsSearch}
+        isPartsSearching={isPartsSearching}
+        onUploadFiles={(files) => uploadChangeFilesMutation.mutate(files)}
+        onDeleteFile={(fileId) => deleteChangeFileMutation.mutate(fileId)}
+        isFileUploading={uploadChangeFilesMutation.isPending}
+        isMetaUpdating={
+          syncChangeAssigneesMutation.isPending ||
+          syncChangeReviewersMutation.isPending ||
+          syncChangeLabelsMutation.isPending ||
+          syncChangePartsMutation.isPending
+        }
+      />
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="min-h-full flex items-center justify-center py-20">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="min-h-full flex items-center justify-center py-20">
+        <div className="flex flex-col items-center gap-3 text-center">
+          <p className="text-sm text-muted-foreground">변경 반영 목록을 불러오지 못했습니다.</p>
+          <Button variant="outline" size="sm" onClick={() => refetch()}>
+            다시 시도
+          </Button>
+        </div>
+      </div>
+    );
   }
 
   return (
     <CRListView
-      items={MOCK_PRS}
+      items={changes}
       type="pr"
       createLabel="새 변경 반영"
-      createBadgeLabel="데모"
-      createDisabled
+      onCreate={() => navigate(`/projects/${projectId}/change/new`)}
       emptyIcon={FilePen}
-      onSelect={(cr) => navigate(`/projects/${projectId}/prs/${cr.number}`)}
+      onSelect={(cr) => navigate(`/projects/${projectId}/change/${cr.number}`)}
     />
   );
 }
@@ -1227,19 +1524,6 @@ function PullRequestsView({ projectId, crNumber }: { projectId: string; crNumber
 // ============================================================
 // 활동 탭
 // ============================================================
-
-type ActivityFilter = "all" | "part" | "approval" | "status";
-type SortOrder = "newest" | "oldest";
-
-const ACTIVITY_FILTER_TYPES: Record<Exclude<ActivityFilter, "all">, ActivityType[]> = {
-  part: ["part_added", "part_removed"],
-  approval: ["approval_requested", "approved", "rejected"],
-  status: ["status_changed", "project_created"],
-};
-
-const ACTIVITY_USERS = [...new Set(MOCK_ACTIVITIES.map((a) => a.userName))];
-
-const PAGE_SIZE = 10;
 
 // 날짜를 "오늘", "어제", "2월 20일" 등으로 그룹 라벨 생성
 function getDateGroupLabel(dateStr: string): string {
@@ -1258,8 +1542,8 @@ function getDateGroupLabel(dateStr: string): string {
 }
 
 // 활동 목록을 날짜 그룹으로 분할
-function groupActivitiesByDate(activities: MockActivity[]): { label: string; items: MockActivity[] }[] {
-  const groups: { label: string; items: MockActivity[] }[] = [];
+function groupActivitiesByDate(activities: ActivityDto[]): { label: string; items: ActivityDto[] }[] {
+  const groups: { label: string; items: ActivityDto[] }[] = [];
   for (const activity of activities) {
     const label = getDateGroupLabel(activity.createdAt);
     const last = groups[groups.length - 1];
@@ -1272,71 +1556,66 @@ function groupActivitiesByDate(activities: MockActivity[]): { label: string; ite
   return groups;
 }
 
-function ActivityTab() {
-  const [filter, setFilter] = useState<ActivityFilter>("all");
+function ActivityTab({ projectId }: { projectId: string }) {
+  const [scopeFilter, setScopeFilter] = useState<ActivityScope | "all">("all");
   const [userFilter, setUserFilter] = useState<string>("all");
-  const [sortOrder, setSortOrder] = useState<SortOrder>("newest");
-  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const sentinelRef = useRef<HTMLDivElement>(null);
 
+  const scope = scopeFilter === "all" ? undefined : [scopeFilter];
+
+  const {
+    data,
+    isLoading,
+    hasNextPage,
+    fetchNextPage,
+    isFetchingNextPage,
+  } = useProjectActivities(projectId, { scope });
+
+  // 모든 페이지의 활동 합치기
+  const allActivities = useMemo(() => {
+    if (!data) return [];
+    return data.pages.flatMap((page) => page.items);
+  }, [data]);
+
+  // 모든 페이지의 users 합치기
+  const allUsers = useMemo(() => {
+    if (!data) return {} as Record<string, TimelineUserDto>;
+    const merged: Record<string, TimelineUserDto> = {};
+    for (const page of data.pages) {
+      Object.assign(merged, page.users);
+    }
+    return merged;
+  }, [data]);
+
+  // 사용자 필터: users 맵에서 유저 목록 추출
+  const userList = useMemo(() => {
+    return Object.values(allUsers);
+  }, [allUsers]);
+
+  // 사용자 필터 적용
   const filteredActivities = useMemo(() => {
-    let list = [...MOCK_ACTIVITIES];
+    if (userFilter === "all") return allActivities;
+    return allActivities.filter((a) => a.actorId === userFilter);
+  }, [allActivities, userFilter]);
 
-    if (filter !== "all") {
-      const types = ACTIVITY_FILTER_TYPES[filter];
-      list = list.filter((a) => types.includes(a.type));
-    }
+  const groupedActivities = useMemo(() => groupActivitiesByDate(filteredActivities), [filteredActivities]);
 
-    if (userFilter !== "all") {
-      list = list.filter((a) => a.userName === userFilter);
-    }
-
-    list.sort((a, b) => {
-      const diff = new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-      return sortOrder === "newest" ? diff : -diff;
-    });
-
-    return list;
-  }, [filter, userFilter, sortOrder]);
-
-  // 필터 변경 시 표시 개수 초기화
-  function handleFilterChange(v: string) {
-    setFilter(v as ActivityFilter);
-    setVisibleCount(PAGE_SIZE);
-  }
-  function handleUserFilterChange(v: string) {
-    setUserFilter(v);
-    setVisibleCount(PAGE_SIZE);
-  }
-
-  const [loading, setLoading] = useState(false);
-  const visibleActivities = filteredActivities.slice(0, visibleCount);
-  const hasMore = visibleCount < filteredActivities.length;
-  const groupedActivities = useMemo(() => groupActivitiesByDate(visibleActivities), [visibleActivities]);
-
-  // IntersectionObserver로 하단 감지 → 1초 딜레이 후 더 로드
-  const loadMore = useCallback(() => {
-    if (loading) return;
-    setLoading(true);
-    setTimeout(() => {
-      setVisibleCount((prev) => Math.min(prev + PAGE_SIZE, filteredActivities.length));
-      setLoading(false);
-    }, 1000);
-  }, [filteredActivities.length, loading]);
-
+  // IntersectionObserver로 무한 스크롤
   useEffect(() => {
     const sentinel = sentinelRef.current;
     if (!sentinel) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting) loadMore();
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
       },
       { rootMargin: "100px" },
     );
     observer.observe(sentinel);
     return () => observer.disconnect();
-  }, [loadMore]);
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   return (
     <div className="rounded-lg border bg-card">
@@ -1344,49 +1623,42 @@ function ActivityTab() {
       <div className="flex items-center justify-between border-b px-5 py-3.5">
         <div className="flex items-center gap-2">
           <h2 className="text-sm font-medium text-foreground">활동 로그</h2>
-          <Badge variant="secondary" className="text-[10px]">데모</Badge>
           {filteredActivities.length > 0 && (
             <span className="text-[11px] text-muted-foreground">{filteredActivities.length}건</span>
           )}
         </div>
         <div className="flex items-center gap-2">
-          <Select value={filter} onValueChange={handleFilterChange}>
+          <Select value={scopeFilter} onValueChange={(v) => setScopeFilter(v as ActivityScope | "all")}>
             <SelectTrigger className="h-7 w-[110px] text-xs">
               <Filter className="h-3 w-3 text-muted-foreground" />
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">전체</SelectItem>
-              <SelectItem value="part">부품</SelectItem>
-              <SelectItem value="approval">결재</SelectItem>
-              <SelectItem value="status">상태 변경</SelectItem>
+              {SCOPE_FILTERS.map((f) => (
+                <SelectItem key={f.value} value={f.value}>{f.label}</SelectItem>
+              ))}
             </SelectContent>
           </Select>
-          <Select value={userFilter} onValueChange={handleUserFilterChange}>
+          <Select value={userFilter} onValueChange={setUserFilter}>
             <SelectTrigger className="h-7 w-[100px] text-xs">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">전체 사용자</SelectItem>
-              {ACTIVITY_USERS.map((name) => (
-                <SelectItem key={name} value={name}>{name}</SelectItem>
+              {userList.map((u) => (
+                <SelectItem key={u.id} value={u.id}>{u.fullName}</SelectItem>
               ))}
             </SelectContent>
           </Select>
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-7 gap-1 text-xs"
-            onClick={() => setSortOrder((prev) => (prev === "newest" ? "oldest" : "newest"))}
-          >
-            <ArrowUpDown className="h-3 w-3" />
-            {sortOrder === "newest" ? "최신순" : "오래된순"}
-          </Button>
         </div>
       </div>
 
       {/* 활동 목록 */}
-      {filteredActivities.length === 0 ? (
+      {isLoading ? (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        </div>
+      ) : filteredActivities.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12">
           <Activity className="h-8 w-8 text-muted-foreground/30" />
           <p className="mt-3 text-sm text-muted-foreground">해당 활동이 없습니다</p>
@@ -1403,8 +1675,9 @@ function ActivityTab() {
               {/* 그룹 내 활동 행 */}
               <div className="divide-y divide-border/50">
                 {group.items.map((activity) => {
-                  const config = ACTIVITY_CONFIG[activity.type];
+                  const config = ACTIVITY_CONFIG[activity.action] ?? DEFAULT_ACTIVITY_CONFIG;
                   const Icon = config.icon;
+                  const user = allUsers[activity.actorId];
 
                   return (
                     <div
@@ -1424,17 +1697,22 @@ function ActivityTab() {
 
                       {/* 요약 */}
                       <p className="min-w-0 flex-1 truncate text-sm text-foreground/90">
-                        {activity.summary}
+                        {getActivitySummary(activity.action, activity.detail, allUsers)}
                       </p>
 
                       {/* 사용자 */}
                       <div className="flex shrink-0 items-center gap-1.5">
                         <Avatar className="h-5 w-5">
+                          {user?.profileImageUrl && (
+                            <AvatarImage src={user.profileImageUrl} alt={user.fullName} />
+                          )}
                           <AvatarFallback className="text-[9px]">
-                            {getInitials(activity.userName)}
+                            {getInitials(user?.fullName ?? "?")}
                           </AvatarFallback>
                         </Avatar>
-                        <span className="text-xs text-muted-foreground">{activity.userName}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {user?.fullName ?? activity.actorId.slice(0, 8)}
+                        </span>
                       </div>
                     </div>
                   );
@@ -1444,11 +1722,11 @@ function ActivityTab() {
           ))}
 
           {/* 무한스크롤 감지 sentinel + 로딩 스피너 */}
-          {hasMore && (
+          {hasNextPage && (
             <div ref={sentinelRef} className="flex items-center justify-center py-4">
-              {loading && (
+              {isFetchingNextPage && (
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-muted-foreground/30 border-t-muted-foreground" />
+                  <Loader2 className="h-4 w-4 animate-spin" />
                   불러오는 중...
                 </div>
               )}
@@ -1480,13 +1758,12 @@ export function ProjectDetailPage() {
   const subPath = location.pathname.slice(basePath.length).replace(/^\//, "");
   const pathSegments = subPath.split("/").filter(Boolean);
 
-  type ViewKey = "overview" | "parts" | "issues" | "prs" | "activity" | "settings";
-  const VALID_VIEWS = new Set<string>(["parts", "issues", "prs", "activity", "settings"]);
+  type ViewKey = "overview" | "parts" | "issues" | "change" | "activity" | "settings";
+  const VALID_VIEWS = new Set<string>(["parts", "issues", "change", "activity", "settings"]);
   const activeView: ViewKey = VALID_VIEWS.has(pathSegments[0]) ? (pathSegments[0] as ViewKey) : "overview";
 
   const [editOpen, setEditOpen] = useState(false);
   const [addPartOpen, setAddPartOpen] = useState(false);
-  const [partsTotal, setPartsTotal] = useState<number | undefined>();
 
   const {
     data: projectPartsData,
@@ -1503,7 +1780,7 @@ export function ProjectDetailPage() {
       category: part.category,
     }));
   }, [projectPartsData?.items]);
-  const crNumber = (activeView === "issues" || activeView === "prs") ? pathSegments[1] : undefined;
+  const crNumber = (activeView === "issues" || activeView === "change") ? pathSegments[1] : undefined;
 
   if (isProjectLoading) {
     return (
@@ -1592,19 +1869,16 @@ export function ProjectDetailPage() {
       <nav className="mt-4 flex items-center gap-1 border-b">
         {([
           { key: "overview", label: "개요", icon: LayoutDashboard },
-          { key: "parts", label: "부품", icon: Package, count: partsTotal ?? parts.length },
-          { key: "issues", label: "이슈", icon: AlertCircle },
-          { key: "prs", label: "변경 반영", icon: FilePen },
+          { key: "parts", label: "부품", icon: Package, count: project.partCount },
+          { key: "issues", label: "이슈", icon: AlertCircle, count: project.issueCount },
+          { key: "change", label: "변경 반영", icon: FilePen, count: project.changeCount },
           { key: "activity", label: "활동", icon: Activity },
-        ] as const).map((tab) => {
-          const isPartsTab = tab.key === "parts";
-          const count = isPartsTab ? tab.count : undefined;
-          return {
-            ...tab,
-            count,
-            icon: tab.icon,
-          };
-        }).map(({ key, label, icon: Icon, count }) => (
+        ] as const).map(({ key, label, icon: Icon, ...rest }) => ({
+          key,
+          label,
+          icon: Icon,
+          count: "count" in rest ? rest.count : undefined,
+        })).map(({ key, label, icon: Icon, count }) => (
           <button
             key={key}
             onClick={() => navigate(key === "overview" ? basePath : `${basePath}/${key}`)}
@@ -1638,7 +1912,7 @@ export function ProjectDetailPage() {
 
       {/* 뷰 콘텐츠 */}
       <div className="mt-4">
-        {activeView === "overview" && <OverviewTab parts={parts} activities={MOCK_ACTIVITIES} />}
+        {activeView === "overview" && <OverviewTab parts={parts} projectId={projectId!} />}
         {activeView === "parts" && (
           <div>
             <div className="mb-2 flex justify-end">
@@ -1650,7 +1924,6 @@ export function ProjectDetailPage() {
             <PartsTableContent
               projectId={projectId}
               onRowClick={(partId) => navigate(`/parts/${partId}`)}
-              onTotalChange={setPartsTotal}
               selectedAction={({ selectedIds, clearSelection }) => (
                 <Button
                   variant="ghost"
@@ -1665,8 +1938,8 @@ export function ProjectDetailPage() {
           </div>
         )}
         {activeView === "issues" && <IssuesView projectId={projectId!} issueId={crNumber} />}
-        {activeView === "prs" && <PullRequestsView projectId={projectId!} crNumber={crNumber} />}
-        {activeView === "activity" && <ActivityTab />}
+        {activeView === "change" && <PullRequestsView projectId={projectId!} changeId={crNumber} />}
+        {activeView === "activity" && <ActivityTab projectId={projectId!} />}
         {activeView === "settings" && (
           <ProjectSettingsView
             projectId={projectId!}

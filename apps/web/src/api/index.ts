@@ -19,3 +19,6 @@ export * from "./dashboard";
 export * from "./issue";
 export * from "./member";
 export * from "./label";
+export * from "./change";
+export * from "./user";
+export * from "./activity";

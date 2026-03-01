@@ -21,7 +21,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { useAuthStore } from "@/stores/authStore";
 import { switchOrg } from "@/api";
@@ -37,13 +37,15 @@ function getInitials(name: string): string {
     .slice(0, 2);
 }
 
-function InitialsAvatar({ name, className, variant = "rounded" }: {
+function InitialsAvatar({ name, imageUrl, className, variant = "rounded" }: {
   name: string;
+  imageUrl?: string | null;
   className?: string;
   variant?: "rounded" | "circle";
 }) {
   return (
     <Avatar className={cn(variant === "rounded" ? "rounded-md" : "rounded-full", className)}>
+      {imageUrl && <AvatarImage src={imageUrl} alt={name} />}
       <AvatarFallback
         className={cn("text-xs font-medium", variant === "rounded" ? "rounded-md" : "rounded-full")}
         style={{ backgroundColor: "var(--nav-topbar-avatar-bg)", color: "var(--nav-topbar-avatar-text)" }}
@@ -183,7 +185,7 @@ export function Header({ onToggleSideNav }: HeaderProps) {
                 className="h-9 gap-2 rounded-lg px-2"
                 style={{ color: "var(--nav-topbar-icon-hover)" }}
               >
-                <InitialsAvatar name={currentOrg.name} className="size-7" variant="rounded" />
+                <InitialsAvatar name={currentOrg.name} imageUrl={currentOrg.profileImageUrl} className="size-7" variant="rounded" />
                 <div className="text-left">
                   <p className="max-w-[120px] truncate text-sm font-medium leading-none text-foreground">
                     {currentOrg.name}
@@ -206,7 +208,7 @@ export function Header({ onToggleSideNav }: HeaderProps) {
                     disabled={isCurrent || !!switchingSlug}
                     onClick={() => handleSwitchOrg(m.organization.slug)}
                   >
-                    <InitialsAvatar name={m.organization.name} className="size-9" variant="rounded" />
+                    <InitialsAvatar name={m.organization.name} imageUrl={m.organization.profileImageUrl} className="size-9" variant="rounded" />
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium text-foreground">
                         {m.organization.name}
@@ -242,7 +244,7 @@ export function Header({ onToggleSideNav }: HeaderProps) {
                 className="topbar-icon-btn size-8"
                 aria-label="프로필 메뉴"
               >
-                <InitialsAvatar name={user.name} className="size-7" variant="circle" />
+                <InitialsAvatar name={user.name} imageUrl={user.profileImageUrl} className="size-7" variant="circle" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">

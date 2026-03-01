@@ -7,3 +7,5 @@ export * from "./useDashboard";
 export * from "./useIssues";
 export * from "./useMembers";
 export * from "./useLabels";
+export * from "./useChanges";
+export * from "./useActivities";

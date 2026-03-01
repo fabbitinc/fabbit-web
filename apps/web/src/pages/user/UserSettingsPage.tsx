@@ -1,13 +1,20 @@
-import { useState, useRef, type ComponentType } from "react";
-import { User, Shield, Bell, Palette, Camera, Trash2 } from "lucide-react";
+import { useState, useRef, useCallback, type ComponentType } from "react";
+import { User, Shield, Bell, Palette, Camera, Trash2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { useAuthStore } from "@/stores/authStore";
+import {
+  updateProfile,
+  setProfileImage as setProfileImageApi,
+  deleteProfileImage as deleteProfileImageApi,
+  createUpload,
+  uploadFileToUrl,
+  completeUpload,
+} from "@/api";
 
 type UserSettingsTab = "profile" | "security" | "notifications" | "preferences";
 
@@ -24,42 +31,87 @@ const tabs: Array<{
 
 export function UserSettingsPage() {
   const user = useAuthStore((state) => state.user);
+  const fetchMe = useAuthStore((state) => state.fetchMe);
   const [activeTab, setActiveTab] = useState<UserSettingsTab>("profile");
 
-  const [name, setName] = useState(user?.name ?? "홍길동");
-  const email = user?.email ?? "hong@example.com";
-  const [phone, setPhone] = useState("010-1234-5678");
-  const [department, setDepartment] = useState("제품기획팀");
+  const [name, setName] = useState(user?.name ?? "");
+  const email = user?.email ?? "";
+  const [phone, setPhone] = useState(user?.phone ?? "");
 
-  const [profileImage, setProfileImage] = useState<string | null>(null);
+  const [profileImageUrl, setProfileImageUrl] = useState<string | null>(
+    user?.profileImageUrl ?? null,
+  );
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const [isSaving, setIsSaving] = useState(false);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
 
-    if (!file.type.startsWith("image/")) {
-      toast.error("이미지 파일만 업로드할 수 있습니다.");
-      return;
-    }
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("파일 크기는 5MB 이하만 가능합니다.");
-      return;
-    }
+  // 프로필 이미지 업로드 (파일 업로드 → 프로필 이미지 설정 → /me 갱신)
+  const handleImageUpload = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = (event) => {
-      setProfileImage(event.target?.result as string);
-    };
-    reader.readAsDataURL(file);
-  };
+      if (!file.type.startsWith("image/")) {
+        toast.error("이미지 파일만 업로드할 수 있습니다.");
+        return;
+      }
+      if (file.size > 5 * 1024 * 1024) {
+        toast.error("파일 크기는 5MB 이하만 가능합니다.");
+        return;
+      }
 
-  const handleImageRemove = () => {
-    setProfileImage(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
+      setIsUploadingImage(true);
+      try {
+        // 1. presigned URL 발급
+        const upload = await createUpload({
+          original_name: file.name,
+          content_type: file.type,
+          file_size: file.size,
+        });
+
+        // 2. S3 업로드
+        await uploadFileToUrl(upload.upload_url, file);
+
+        // 3. 업로드 완료 처리
+        await completeUpload(upload.file_id);
+
+        // 4. 프로필 이미지 설정
+        const result = await setProfileImageApi({ file_id: upload.file_id });
+        setProfileImageUrl(result.profile_image_url);
+
+        // 5. authStore 갱신
+        await fetchMe();
+        toast.success("프로필 이미지를 변경했습니다.");
+      } catch {
+        toast.error("이미지 업로드에 실패했습니다.");
+      } finally {
+        setIsUploadingImage(false);
+        if (fileInputRef.current) {
+          fileInputRef.current.value = "";
+        }
+      }
+    },
+    [fetchMe],
+  );
+
+  // 프로필 이미지 제거
+  const handleImageRemove = useCallback(async () => {
+    setIsUploadingImage(true);
+    try {
+      await deleteProfileImageApi();
+      setProfileImageUrl(null);
+      await fetchMe();
+      toast.success("프로필 이미지를 제거했습니다.");
+    } catch {
+      toast.error("프로필 이미지 제거에 실패했습니다.");
+    } finally {
+      setIsUploadingImage(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
     }
-  };
+  }, [fetchMe]);
 
   const [mfaEnabled, setMfaEnabled] = useState(true);
   const [loginAlertEnabled, setLoginAlertEnabled] = useState(true);
@@ -72,9 +124,22 @@ export function UserSettingsPage() {
   const [compactMode, setCompactMode] = useState(false);
   const [autoSaveDraft, setAutoSaveDraft] = useState(true);
 
-  const handleSave = () => {
-    toast.success("사용자 설정을 저장했습니다. (목데이터)");
-  };
+  // 프로필 저장 (이름, 연락처)
+  const handleSave = useCallback(async () => {
+    setIsSaving(true);
+    try {
+      await updateProfile({
+        full_name: name || null,
+        phone: phone || null,
+      });
+      await fetchMe();
+      toast.success("프로필을 저장했습니다.");
+    } catch {
+      toast.error("프로필 저장에 실패했습니다.");
+    } finally {
+      setIsSaving(false);
+    }
+  }, [name, phone, fetchMe]);
 
   return (
     <div className="space-y-6">
@@ -115,10 +180,10 @@ export function UserSettingsPage() {
                 <div className="mt-4 flex gap-8">
                   {/* 프로필 이미지 */}
                   <div className="flex flex-col items-center gap-3">
-                    <Avatar className="h-42 w-42 rounded-xl">
-                      {profileImage ? (
+                    <Avatar key={profileImageUrl ?? "fallback"} className="h-42 w-42 rounded-xl">
+                      {profileImageUrl ? (
                         <AvatarImage
-                          src={profileImage}
+                          src={profileImageUrl}
                           alt="프로필 이미지"
                           className="rounded-xl"
                         />
@@ -140,15 +205,21 @@ export function UserSettingsPage() {
                       <Button
                         variant="outline"
                         size="sm"
+                        disabled={isUploadingImage}
                         onClick={() => fileInputRef.current?.click()}
                       >
-                        <Camera className="mr-1.5 h-3.5 w-3.5" />
-                        {profileImage ? "변경" : "업로드"}
+                        {isUploadingImage ? (
+                          <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <Camera className="mr-1.5 h-3.5 w-3.5" />
+                        )}
+                        {profileImageUrl ? "변경" : "업로드"}
                       </Button>
-                      {profileImage && (
+                      {profileImageUrl && (
                         <Button
                           variant="outline"
                           size="sm"
+                          disabled={isUploadingImage}
                           onClick={handleImageRemove}
                         >
                           <Trash2 className="mr-1.5 h-3.5 w-3.5" />
@@ -186,31 +257,17 @@ export function UserSettingsPage() {
                         placeholder="010-0000-0000"
                       />
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="profile-department">부서</Label>
-                      <Input
-                        id="profile-department"
-                        value={department}
-                        onChange={(e) => setDepartment(e.target.value)}
-                        placeholder="부서명 입력"
-                      />
-                    </div>
                   </div>
                 </div>
               </div>
 
-              <div>
-                <h2 className="text-base font-semibold text-foreground">
-                  계정 상태
-                </h2>
-                <div className="mt-3 flex items-center gap-2">
-                  <Badge variant="secondary">활성 상태</Badge>
-                  <Badge variant="outline">최근 로그인 2026-02-18 09:12</Badge>
-                </div>
-              </div>
-
               <div className="flex justify-end">
-                <Button onClick={handleSave}>저장</Button>
+                <Button onClick={handleSave} disabled={isSaving}>
+                  {isSaving && (
+                    <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
+                  )}
+                  저장
+                </Button>
               </div>
             </div>
           )}

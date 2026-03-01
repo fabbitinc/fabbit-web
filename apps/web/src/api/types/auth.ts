@@ -12,8 +12,36 @@ export interface UserResponse {
   id: string;
   email: string;
   full_name: string;
+  phone?: string | null;
+  profile_image_url?: string | null;
   is_active: boolean;
   created_at: string;
+}
+
+// --- PATCH /api/v1/users/me ---
+
+export interface UpdateProfileRequest {
+  full_name?: string | null;
+  phone?: string | null;
+}
+
+export interface UpdateProfileResponse {
+  id: string;
+  email: string;
+  full_name: string;
+  phone?: string | null;
+  profile_image_url?: string | null;
+  updated_at: string;
+}
+
+// --- PUT /api/v1/users/me/profile-image ---
+
+export interface SetProfileImageRequest {
+  file_id: string;
+}
+
+export interface ProfileImageResponse {
+  profile_image_url: string;
 }
 
 export interface OrganizationResponse {
@@ -23,6 +51,7 @@ export interface OrganizationResponse {
   industry?: string | null;
   team_size?: string | null;
   plan_type: string;
+  profile_image_url?: string | null;
 }
 
 export interface MembershipResponse {

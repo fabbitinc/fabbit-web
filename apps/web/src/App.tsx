@@ -18,7 +18,7 @@ import { UploadModal } from "@/features/upload/components/UploadModal";
 import { SimpleBomImportModal } from "@/features/items/components/SimpleBomImportModal";
 import { Toaster } from "@/components/ui/sonner";
 import { useAuthStore } from "@/stores/authStore";
-import { getAuthCookies, clearAuthCookies } from "@/lib/auth-cookies";
+import { getAuthCookies, clearAuthCookies, hasLogoutCookie, clearLogoutCookie } from "@/lib/auth-cookies";
 import { getSubdomain, isRootDomain } from "@/lib/subdomain";
 import { getSite } from "@/api";
 import { useDashboardStats } from "@/api/hooks/useDashboard";
@@ -347,6 +347,19 @@ function App() {
 
   useEffect(() => {
     async function init() {
+      // 0. 다른 서브도메인에서 로그아웃된 경우 로컬 토큰 정리
+      if (hasLogoutCookie()) {
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("refreshToken");
+        useAuthStore.setState({
+          user: null,
+          memberships: [],
+          currentMembership: null,
+          isAuthenticated: false,
+        });
+        clearLogoutCookie();
+      }
+
       // 1. 쿠키 토큰 복원 (서브도메인 전환 시)
       const { accessToken, refreshToken } = getAuthCookies();
       if (accessToken && refreshToken) {

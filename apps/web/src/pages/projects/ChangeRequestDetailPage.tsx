@@ -23,7 +23,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -32,6 +32,7 @@ import { LabelBadge } from "@fabbit/ui";
 import {
   type ChangeRequest,
   type TimelineEvent,
+  type TimelineAuthor,
   type CRAttachment,
 } from "./changeRequestMock";
 
@@ -41,6 +42,22 @@ import {
 
 function getInitials(name: string): string {
   return name.slice(0, 1);
+}
+
+function ActivityAuthor({ author }: { author: TimelineAuthor }) {
+  return (
+    <span className="inline-flex items-center gap-1 align-middle font-medium text-foreground">
+      <Avatar className="h-4 w-4">
+        {author.profileImageUrl && (
+          <AvatarImage src={author.profileImageUrl} alt={author.name} />
+        )}
+        <AvatarFallback className="text-[8px]">
+          {getInitials(author.name)}
+        </AvatarFallback>
+      </Avatar>
+      {author.name}
+    </span>
+  );
 }
 
 function timeAgo(iso: string): string {
@@ -152,15 +169,18 @@ function TimelineEventItem({
       <div className="flex gap-3">
         <div className="flex flex-col items-center">
           <Avatar className="h-8 w-8 shrink-0">
+            {event.author.profileImageUrl && (
+              <AvatarImage src={event.author.profileImageUrl} alt={event.author.name} />
+            )}
             <AvatarFallback className="text-xs">
-              {getInitials(event.author)}
+              {getInitials(event.author.name)}
             </AvatarFallback>
           </Avatar>
         </div>
         <div className="min-w-0 flex-1 rounded-lg border bg-card">
           <div className="flex items-center gap-2 border-b bg-muted/30 px-4 py-2">
             <span className="text-sm font-medium text-foreground">
-              {event.author}
+              {event.author.name}
             </span>
             <span className="text-xs text-muted-foreground">
               {timeAgo(event.createdAt)}
@@ -189,12 +209,12 @@ function TimelineEventItem({
   // 리뷰 승인
   if (event.type === "review_approved") {
     return (
-      <div className="flex items-center gap-3 py-1.5 pl-1">
-        <div className="flex h-8 w-8 items-center justify-center">
+      <div className="flex items-center gap-2 py-1.5 ml-11">
+        <div className="flex h-5 w-5 shrink-0 items-center justify-center">
           <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
         </div>
         <p className="flex-1 text-sm text-muted-foreground">
-          <span className="font-medium text-foreground">{event.author}</span>
+          <ActivityAuthor author={event.author} />
           {" 님이 승인했습니다"}
           {event.content && (
             <span className="text-muted-foreground/70"> — {event.content}</span>
@@ -210,12 +230,12 @@ function TimelineEventItem({
   // 리뷰 변경 요청
   if (event.type === "review_changes_requested") {
     return (
-      <div className="flex items-center gap-3 py-1.5 pl-1">
-        <div className="flex h-8 w-8 items-center justify-center">
+      <div className="flex items-center gap-2 py-1.5 ml-11">
+        <div className="flex h-5 w-5 shrink-0 items-center justify-center">
           <XCircle className="h-4 w-4 text-red-500 dark:text-red-400" />
         </div>
         <p className="flex-1 text-sm text-muted-foreground">
-          <span className="font-medium text-foreground">{event.author}</span>
+          <ActivityAuthor author={event.author} />
           {" 님이 변경을 요청했습니다"}
           {event.content && (
             <span className="text-muted-foreground/70"> — {event.content}</span>
@@ -233,8 +253,8 @@ function TimelineEventItem({
     const isMerged = event.content === "merged";
     const isReopened = event.content === "open";
     return (
-      <div className="flex items-center gap-3 py-1.5 pl-1">
-        <div className="flex h-8 w-8 items-center justify-center">
+      <div className="flex items-center gap-2 py-1.5 ml-11">
+        <div className="flex h-5 w-5 shrink-0 items-center justify-center">
           {isMerged ? (
             <FileCheck className="h-4 w-4 text-purple-600 dark:text-purple-400" />
           ) : isReopened ? (
@@ -244,7 +264,7 @@ function TimelineEventItem({
           )}
         </div>
         <p className="flex-1 text-sm text-muted-foreground">
-          <span className="font-medium text-foreground">{event.author}</span>
+          <ActivityAuthor author={event.author} />
           {isMerged
             ? " 님이 변경을 반영했습니다"
             : isReopened
@@ -261,12 +281,12 @@ function TimelineEventItem({
   // 이슈/CR 생성
   if (event.type === "issue_created") {
     return (
-      <div className="flex items-center gap-3 py-1.5 pl-1">
-        <div className="flex h-8 w-8 items-center justify-center">
+      <div className="flex items-center gap-2 py-1.5 ml-11">
+        <div className="flex h-5 w-5 shrink-0 items-center justify-center">
           <FilePen className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
         </div>
         <p className="flex-1 text-sm text-muted-foreground">
-          <span className="font-medium text-foreground">{event.author}</span>
+          <ActivityAuthor author={event.author} />
           {" 님이 이슈를 생성했습니다"}
         </p>
         <span className="text-xs text-muted-foreground/60">
@@ -279,12 +299,12 @@ function TimelineEventItem({
   // CR 머지
   if (event.type === "cr_merged") {
     return (
-      <div className="flex items-center gap-3 py-1.5 pl-1">
-        <div className="flex h-8 w-8 items-center justify-center">
+      <div className="flex items-center gap-2 py-1.5 ml-11">
+        <div className="flex h-5 w-5 shrink-0 items-center justify-center">
           <FileCheck className="h-4 w-4 text-purple-600 dark:text-purple-400" />
         </div>
         <p className="flex-1 text-sm text-muted-foreground">
-          <span className="font-medium text-foreground">{event.author}</span>
+          <ActivityAuthor author={event.author} />
           {" 님이 변경 요청을 반영했습니다"}
           {event.issueTitle && (
             <span className="text-muted-foreground/70"> — {event.issueTitle}</span>
@@ -300,12 +320,12 @@ function TimelineEventItem({
   // 부품 연결
   if (event.type === "part_added") {
     return (
-      <div className="flex items-center gap-3 py-1.5 pl-1">
-        <div className="flex h-8 w-8 items-center justify-center">
+      <div className="flex items-center gap-2 py-1.5 ml-11">
+        <div className="flex h-5 w-5 shrink-0 items-center justify-center">
           <Package className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
         </div>
         <p className="flex-1 text-sm text-muted-foreground">
-          <span className="font-medium text-foreground">{event.author}</span>
+          <ActivityAuthor author={event.author} />
           {" 님이 부품 "}
           <span className="font-medium text-foreground">{event.partCount ?? 0}건</span>
           을 연결했습니다
@@ -320,12 +340,12 @@ function TimelineEventItem({
   // 부품 해제
   if (event.type === "part_removed") {
     return (
-      <div className="flex items-center gap-3 py-1.5 pl-1">
-        <div className="flex h-8 w-8 items-center justify-center">
+      <div className="flex items-center gap-2 py-1.5 ml-11">
+        <div className="flex h-5 w-5 shrink-0 items-center justify-center">
           <Package className="h-3.5 w-3.5 text-orange-500 dark:text-orange-400" />
         </div>
         <p className="flex-1 text-sm text-muted-foreground">
-          <span className="font-medium text-foreground">{event.author}</span>
+          <ActivityAuthor author={event.author} />
           {" 님이 부품 "}
           <span className="font-medium text-foreground">{event.partCount ?? 0}건</span>
           을 해제했습니다
@@ -342,12 +362,12 @@ function TimelineEventItem({
     const added = event.addedLabels ?? [];
     const removed = event.removedLabels ?? [];
     return (
-      <div className="flex items-center gap-3 py-1.5 pl-1">
-        <div className="flex h-8 w-8 items-center justify-center">
+      <div className="flex items-center gap-2 py-1.5 ml-11">
+        <div className="flex h-5 w-5 shrink-0 items-center justify-center">
           <Tag className="h-3.5 w-3.5 text-muted-foreground" />
         </div>
         <div className="flex-1 text-sm text-muted-foreground">
-          <span className="font-medium text-foreground">{event.author}</span>
+          <ActivityAuthor author={event.author} />
           {" 님이 라벨을 변경했습니다"}
           {added.length > 0 && (
             <span className="ml-1.5">
@@ -388,12 +408,12 @@ function TimelineEventItem({
   // 담당자 배정
   if (event.type === "assigned") {
     return (
-      <div className="flex items-center gap-3 py-1.5 pl-1">
-        <div className="flex h-8 w-8 items-center justify-center">
+      <div className="flex items-center gap-2 py-1.5 ml-11">
+        <div className="flex h-5 w-5 shrink-0 items-center justify-center">
           <UserPlus className="h-3.5 w-3.5 text-muted-foreground" />
         </div>
         <p className="flex-1 text-sm text-muted-foreground">
-          <span className="font-medium text-foreground">{event.author}</span>
+          <ActivityAuthor author={event.author} />
           {" 님이 "}
           <span className="font-medium text-foreground">{event.assignee}</span>
           {" 님을 담당자로 배정했습니다"}
@@ -405,15 +425,35 @@ function TimelineEventItem({
     );
   }
 
+  // 검토자 변경
+  if (event.type === "reviewer_changed") {
+    return (
+      <div className="flex items-center gap-2 py-1.5 ml-11">
+        <div className="flex h-5 w-5 shrink-0 items-center justify-center">
+          <UserPlus className="h-3.5 w-3.5 text-muted-foreground" />
+        </div>
+        <p className="flex-1 text-sm text-muted-foreground">
+          <ActivityAuthor author={event.author} />
+          {" 님이 "}
+          <span className="font-medium text-foreground">{event.assignee}</span>
+          {" 님을 검토자로 변경했습니다"}
+        </p>
+        <span className="text-xs text-muted-foreground/60">
+          {timeAgo(event.createdAt)}
+        </span>
+      </div>
+    );
+  }
+
   // 참조
   if (event.type === "referenced") {
     return (
-      <div className="flex items-center gap-3 py-1.5 pl-1">
-        <div className="flex h-8 w-8 items-center justify-center">
+      <div className="flex items-center gap-2 py-1.5 ml-11">
+        <div className="flex h-5 w-5 shrink-0 items-center justify-center">
           <FileCheck className="h-3.5 w-3.5 text-muted-foreground" />
         </div>
         <p className="flex-1 text-sm text-muted-foreground">
-          <span className="font-medium text-foreground">{event.author}</span>
+          <ActivityAuthor author={event.author} />
           {" 님이 "}
           <span className="font-medium text-primary">{event.ref}</span>
           {" 을(를) 참조했습니다"}
@@ -439,6 +479,8 @@ export interface ChangeRequestDetailProps {
   availableMembers?: { id: string; name: string; email: string }[];
   selectedAssigneeIds?: string[];
   onRequestMembers?: () => void;
+  onSyncReviewers?: (userIds: string[]) => void;
+  selectedReviewerIds?: string[];
   onSyncLabels?: (labelIds: string[]) => void;
   onAddComment?: (body: Record<string, unknown>) => void;
   isCommentPending?: boolean;
@@ -464,6 +506,8 @@ export function ChangeRequestDetail({
   availableMembers = [],
   selectedAssigneeIds = [],
   onRequestMembers,
+  onSyncReviewers,
+  selectedReviewerIds = [],
   onSyncLabels,
   onAddComment,
   isCommentPending,
@@ -487,6 +531,9 @@ export function ChangeRequestDetail({
   const [memberPopoverOpen, setMemberPopoverOpen] = useState(false);
   const [memberQuery, setMemberQuery] = useState("");
   const [draftAssigneeIds, setDraftAssigneeIds] = useState<string[]>([]);
+  const [reviewerPopoverOpen, setReviewerPopoverOpen] = useState(false);
+  const [reviewerQuery, setReviewerQuery] = useState("");
+  const [draftReviewerIds, setDraftReviewerIds] = useState<string[]>([]);
   const [labelPopoverOpen, setLabelPopoverOpen] = useState(false);
   const [labelQuery, setLabelQuery] = useState("");
   const [draftLabelIds, setDraftLabelIds] = useState<string[]>([]);
@@ -508,6 +555,12 @@ export function ChangeRequestDetail({
   const filteredMembers = availableMembers.filter((m) => {
     if (!memberQuery.trim()) return true;
     const q = memberQuery.toLowerCase();
+    return m.name.toLowerCase().includes(q) || m.email.toLowerCase().includes(q);
+  });
+
+  const filteredReviewerMembers = availableMembers.filter((m) => {
+    if (!reviewerQuery.trim()) return true;
+    const q = reviewerQuery.toLowerCase();
     return m.name.toLowerCase().includes(q) || m.email.toLowerCase().includes(q);
   });
 
@@ -623,7 +676,7 @@ export function ChangeRequestDetail({
                 <div className="flex gap-2">
                   {cr.status === "open" && (
                     <Button size="sm" variant="outline">
-                      {cr.type === "pr" ? "승인" : "닫기"}
+                      {cr.type === "pr" ? "승인" : "이슈 닫기"}
                     </Button>
                   )}
                   <Button
@@ -650,6 +703,107 @@ export function ChangeRequestDetail({
         {/* 오른쪽: 사이드바 */}
         <div className="hidden w-70 shrink-0 lg:block">
           <div className="space-y-5">
+            {/* 검토자 — 변경 반영(pr)에서만 표시 */}
+            {cr.type === "pr" && (
+              <div>
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xs font-medium text-muted-foreground">검토자</h3>
+                  {onSyncReviewers && (
+                    <Popover
+                      open={reviewerPopoverOpen}
+                      onOpenChange={(open) => {
+                        setReviewerPopoverOpen(open);
+                        if (open) {
+                          onRequestMembers?.();
+                          setDraftReviewerIds(selectedReviewerIds);
+                        } else {
+                          setReviewerQuery("");
+                        }
+                      }}
+                    >
+                      <PopoverTrigger asChild>
+                        <button
+                          type="button"
+                          className="inline-flex h-5 w-5 items-center justify-center rounded text-muted-foreground/50 hover:bg-muted hover:text-foreground transition-colors"
+                        >
+                          <Plus className="h-3 w-3" />
+                        </button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-72 p-3" align="end">
+                        <div className="space-y-2">
+                          <p className="text-xs font-medium text-foreground">검토자 추가</p>
+                          <Input
+                            value={reviewerQuery}
+                            onChange={(e) => setReviewerQuery(e.target.value)}
+                            placeholder="멤버 검색"
+                          />
+                          <div className="max-h-48 space-y-1 overflow-auto">
+                            {filteredReviewerMembers.length === 0 ? (
+                              <p className="px-1 py-2 text-xs text-muted-foreground">추가 가능한 멤버가 없습니다.</p>
+                            ) : (
+                              filteredReviewerMembers.map((member) => (
+                                <label
+                                  key={member.id}
+                                  className="flex w-full cursor-pointer items-center gap-2 rounded-md px-1 py-1.5 hover:bg-muted"
+                                >
+                                  <Checkbox
+                                    checked={draftReviewerIds.includes(member.id)}
+                                    onCheckedChange={(checked) => {
+                                      setDraftReviewerIds((prev) => {
+                                        if (checked) return [...prev, member.id];
+                                        return prev.filter((id) => id !== member.id);
+                                      });
+                                    }}
+                                  />
+                                  <Avatar className="h-5 w-5">
+                                    <AvatarFallback className="text-[10px]">
+                                      {getInitials(member.name)}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <div className="min-w-0 flex-1">
+                                    <p className="truncate text-sm text-foreground">{member.name}</p>
+                                    <p className="truncate text-xs text-muted-foreground">{member.email}</p>
+                                  </div>
+                                </label>
+                              ))
+                            )}
+                          </div>
+                          <Button
+                            type="button"
+                            size="sm"
+                            className="w-full"
+                            disabled={isMetaUpdating}
+                            onClick={() => {
+                              onSyncReviewers(draftReviewerIds);
+                              setReviewerPopoverOpen(false);
+                              setReviewerQuery("");
+                            }}
+                          >
+                            검토자 적용
+                          </Button>
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                  )}
+                </div>
+                <div className="mt-2 space-y-2">
+                  {cr.reviewers.map((reviewer) => (
+                    <div key={reviewer.id ?? reviewer.name} className="flex items-center gap-2">
+                      <Avatar className="h-6 w-6">
+                        {reviewer.profileImageUrl && (
+                          <AvatarImage src={reviewer.profileImageUrl} alt={reviewer.name} />
+                        )}
+                        <AvatarFallback className="text-[10px]">
+                          {getInitials(reviewer.name)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="text-sm text-foreground">{reviewer.name}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* 담당자 */}
             <div>
               <div className="flex items-center justify-between">
@@ -736,6 +890,9 @@ export function ChangeRequestDetail({
                 {cr.assignees.map((assignee) => (
                   <div key={assignee.id ?? assignee.name} className="flex items-center gap-2">
                     <Avatar className="h-6 w-6">
+                      {assignee.profileImageUrl && (
+                        <AvatarImage src={assignee.profileImageUrl} alt={assignee.name} />
+                      )}
                       <AvatarFallback className="text-[10px]">
                         {getInitials(assignee.name)}
                       </AvatarFallback>
@@ -827,19 +984,6 @@ export function ChangeRequestDetail({
               </div>
             </div>
 
-            {/* 유형 */}
-            <div>
-              <h3 className="text-xs font-medium text-muted-foreground">
-                유형
-              </h3>
-              <div className="mt-2 flex items-center gap-1.5">
-                <CRStatusIcon cr={cr} size="sm" />
-                <span className="text-sm text-foreground">
-                  {cr.type === "pr" ? "변경 반영" : "이슈"}
-                </span>
-              </div>
-            </div>
-
             {/* 관련 부품 */}
             <div>
               <div className="flex items-center justify-between">
@@ -872,19 +1016,22 @@ export function ChangeRequestDetail({
                     <PopoverContent className="w-80 p-3" align="end">
                       <div className="space-y-2">
                         <p className="text-xs font-medium text-foreground">부품 추가</p>
-                        <Input
-                          value={partQuery}
-                          onChange={(e) => handlePartQueryChange(e.target.value)}
-                          placeholder="부품번호 또는 이름으로 검색"
-                        />
-                        <div className="max-h-48 space-y-1 overflow-auto">
-                          {isPartsSearching ? (
-                            <div className="flex items-center justify-center py-3">
-                              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                        <div className="relative">
+                          <Input
+                            value={partQuery}
+                            onChange={(e) => handlePartQueryChange(e.target.value)}
+                            placeholder="부품번호 또는 이름으로 검색"
+                          />
+                          {isPartsSearching && (
+                            <div className="absolute right-2 top-1/2 -translate-y-1/2">
+                              <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
                             </div>
-                          ) : searchedParts.length === 0 ? (
+                          )}
+                        </div>
+                        <div className="max-h-48 space-y-1 overflow-auto">
+                          {searchedParts.length === 0 ? (
                             <p className="px-1 py-2 text-xs text-muted-foreground">
-                              {partQuery.trim() ? "검색 결과가 없습니다." : "부품번호 또는 이름으로 검색하세요."}
+                              {partQuery.trim() ? "검색 결과가 없습니다." : "프로젝트에 연결된 부품이 없습니다."}
                             </p>
                           ) : (
                             searchedParts.map((part) => (

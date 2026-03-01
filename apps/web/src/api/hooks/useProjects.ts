@@ -111,6 +111,7 @@ export function useSearchProjectParts(projectId: string | undefined, search: str
     queryKey: [...PROJECT_PARTS_QUERY_KEY, projectId, "search", search],
     queryFn: () => getProjectParts(projectId!, search || undefined),
     enabled: !!projectId && enabled,
+    placeholderData: (prev) => prev,
   });
 }
 

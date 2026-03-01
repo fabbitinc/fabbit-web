@@ -28,6 +28,8 @@ interface ApiProjectDetailResponse {
   created_at?: string;
   updated_at?: string;
   part_count?: number;
+  open_issue_count?: number;
+  open_change_request_count?: number;
 }
 
 interface ApiProjectListResponse {
@@ -47,6 +49,8 @@ function toProjectDto(project: ApiProjectDetailResponse): ProjectDto {
     createdAt: project.created_at ?? "",
     updatedAt: project.updated_at ?? "",
     partCount: project.part_count ?? 0,
+    issueCount: project.open_issue_count ?? 0,
+    changeCount: project.open_change_request_count ?? 0,
   };
 }
 
@@ -60,6 +64,8 @@ function toProjectListItemDto(project: ApiProjectSummaryResponse): ProjectDto {
     createdAt: "",
     updatedAt: "",
     partCount: project.part_count,
+    issueCount: 0,
+    changeCount: 0,
   };
 }
 

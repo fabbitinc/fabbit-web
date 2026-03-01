@@ -8,6 +8,7 @@ import {
   queryClient,
 } from "@/api";
 import { getSubdomain } from "@/lib/subdomain";
+import { setLogoutCookie } from "@/lib/auth-cookies";
 import type { PlanTier } from "@/features/registration/types/registration.types";
 import type {
   RegisterRequest,
@@ -18,6 +19,8 @@ interface User {
   id: string;
   email: string;
   name: string;
+  phone?: string | null;
+  profileImageUrl?: string | null;
 }
 
 interface Organization {
@@ -25,6 +28,7 @@ interface Organization {
   slug: string;
   name: string;
   planType: string;
+  profileImageUrl: string | null;
 }
 
 interface Membership {
@@ -69,6 +73,7 @@ function mapMembership(m: MembershipResponse): Membership {
       slug: m.organization.slug,
       name: m.organization.name,
       planType: m.organization.plan_type,
+      profileImageUrl: m.organization.profile_image_url ?? null,
     },
   };
 }
@@ -126,6 +131,8 @@ export const useAuthStore = create<AuthState>()(
               id: meResponse.user.id,
               email: meResponse.user.email,
               name: meResponse.user.full_name,
+              phone: meResponse.user.phone,
+              profileImageUrl: meResponse.user.profile_image_url,
             },
             memberships,
             currentMembership: current,
@@ -192,6 +199,7 @@ export const useAuthStore = create<AuthState>()(
         } finally {
           clearTokens();
           queryClient.clear();
+          setLogoutCookie();
 
           set({
             user: null,
@@ -213,6 +221,8 @@ export const useAuthStore = create<AuthState>()(
               id: meResponse.user.id,
               email: meResponse.user.email,
               name: meResponse.user.full_name,
+              phone: meResponse.user.phone,
+              profileImageUrl: meResponse.user.profile_image_url,
             },
             memberships,
             currentMembership: current,

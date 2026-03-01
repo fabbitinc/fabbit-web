@@ -16,6 +16,8 @@ export interface ProjectDto {
   createdAt: string;
   updatedAt: string;
   partCount: number;
+  issueCount: number;
+  changeCount: number;
 }
 
 export interface ProjectListResponse {
@@ -47,7 +49,8 @@ export interface ProjectPartResponse {
 }
 
 export interface ProjectPartListResponse {
-  parts: ProjectPartResponse[];
+  total: number;
+  items: ProjectPartResponse[];
 }
 
 export interface LinkPartsRequest {
