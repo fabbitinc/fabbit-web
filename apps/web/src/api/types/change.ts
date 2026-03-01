@@ -4,11 +4,10 @@ export interface ChangeLabelDto {
   color: string;
 }
 
-export interface ChangeAssigneeDto {
-  id: string;
-  fullName: string;
-  profileImageUrl: string | null;
-}
+import type { UserSummaryDto } from "./issue";
+
+/** @deprecated UserSummaryDto 사용 */
+export type ChangeAssigneeDto = UserSummaryDto;
 
 export interface ChangePartDto {
   id: string;
@@ -36,11 +35,10 @@ export interface ChangeDto {
   closedAt: string | null;
   createdAt: string;
   updatedAt?: string;
-  createdBy: string | null;
-  createdByName?: string | null;
+  createdBy: UserSummaryDto | null;
   labels: ChangeLabelDto[];
-  assignees: ChangeAssigneeDto[];
-  reviewers: ChangeAssigneeDto[];
+  assignees: UserSummaryDto[];
+  reviewers: UserSummaryDto[];
   parts: ChangePartDto[];
   files: ChangeFileDto[];
   commentsCount: number;

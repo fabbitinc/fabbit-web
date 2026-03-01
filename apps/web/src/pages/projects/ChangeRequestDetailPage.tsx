@@ -6,10 +6,13 @@ import {
   FilePen,
   FileCheck,
   FileX,
+  Paperclip,
   MessageSquare,
   Tag,
   UserPlus,
   Package,
+  LinkIcon,
+  Unlink,
   FileText,
   FileSpreadsheet,
   Image,
@@ -296,6 +299,27 @@ function TimelineEventItem({
     );
   }
 
+  // CR 생성
+  if (event.type === "cr_created") {
+    return (
+      <div className="flex items-center gap-2 py-1.5 ml-11">
+        <div className="flex h-5 w-5 shrink-0 items-center justify-center">
+          <FilePen className="h-3.5 w-3.5 text-muted-foreground" />
+        </div>
+        <p className="flex-1 text-sm text-muted-foreground">
+          <ActivityAuthor author={event.author} />
+          {" 님이 변경 요청을 생성했습니다"}
+          {event.issueTitle && (
+            <span className="text-muted-foreground/70"> — #{event.issueNumber} {event.issueTitle}</span>
+          )}
+        </p>
+        <span className="text-xs text-muted-foreground/60">
+          {timeAgo(event.createdAt)}
+        </span>
+      </div>
+    );
+  }
+
   // CR 머지
   if (event.type === "cr_merged") {
     return (
@@ -317,38 +341,26 @@ function TimelineEventItem({
     );
   }
 
-  // 부품 연결
-  if (event.type === "part_added") {
+  // 부품 변경
+  if (event.type === "part_added" || event.type === "part_removed") {
     return (
       <div className="flex items-center gap-2 py-1.5 ml-11">
         <div className="flex h-5 w-5 shrink-0 items-center justify-center">
-          <Package className="h-3.5 w-3.5 text-blue-600 dark:text-blue-400" />
+          <Package className="h-3.5 w-3.5 text-muted-foreground" />
         </div>
         <p className="flex-1 text-sm text-muted-foreground">
           <ActivityAuthor author={event.author} />
-          {" 님이 부품 "}
-          <span className="font-medium text-foreground">{event.partCount ?? 0}건</span>
-          을 연결했습니다
-        </p>
-        <span className="text-xs text-muted-foreground/60">
-          {timeAgo(event.createdAt)}
-        </span>
-      </div>
-    );
-  }
-
-  // 부품 해제
-  if (event.type === "part_removed") {
-    return (
-      <div className="flex items-center gap-2 py-1.5 ml-11">
-        <div className="flex h-5 w-5 shrink-0 items-center justify-center">
-          <Package className="h-3.5 w-3.5 text-orange-500 dark:text-orange-400" />
-        </div>
-        <p className="flex-1 text-sm text-muted-foreground">
-          <ActivityAuthor author={event.author} />
-          {" 님이 부품 "}
-          <span className="font-medium text-foreground">{event.partCount ?? 0}건</span>
-          을 해제했습니다
+          {" 님이 부품을 변경했습니다"}
+          {(event.addedPartCount ?? 0) > 0 && (
+            <span className="ml-1">
+              <span className="font-medium text-foreground">{event.addedPartCount}건</span> 추가
+            </span>
+          )}
+          {(event.removedPartCount ?? 0) > 0 && (
+            <span className="ml-1">
+              <span className="font-medium text-foreground">{event.removedPartCount}건</span> 제거
+            </span>
+          )}
         </p>
         <span className="text-xs text-muted-foreground/60">
           {timeAgo(event.createdAt)}
@@ -405,7 +417,7 @@ function TimelineEventItem({
     );
   }
 
-  // 담당자 배정
+  // 담당자 변경
   if (event.type === "assigned") {
     return (
       <div className="flex items-center gap-2 py-1.5 ml-11">
@@ -414,9 +426,17 @@ function TimelineEventItem({
         </div>
         <p className="flex-1 text-sm text-muted-foreground">
           <ActivityAuthor author={event.author} />
-          {" 님이 "}
-          <span className="font-medium text-foreground">{event.assignee}</span>
-          {" 님을 담당자로 배정했습니다"}
+          {" 님이 담당자를 변경했습니다"}
+          {event.addedNames && (
+            <span className="ml-1">
+              <span className="font-medium text-foreground">{event.addedNames}</span> 추가
+            </span>
+          )}
+          {event.removedNames && (
+            <span className="ml-1">
+              <span className="font-medium text-foreground">{event.removedNames}</span> 제거
+            </span>
+          )}
         </p>
         <span className="text-xs text-muted-foreground/60">
           {timeAgo(event.createdAt)}
@@ -434,9 +454,95 @@ function TimelineEventItem({
         </div>
         <p className="flex-1 text-sm text-muted-foreground">
           <ActivityAuthor author={event.author} />
-          {" 님이 "}
-          <span className="font-medium text-foreground">{event.assignee}</span>
-          {" 님을 검토자로 변경했습니다"}
+          {" 님이 검토자를 변경했습니다"}
+          {event.addedNames && (
+            <span className="ml-1">
+              <span className="font-medium text-foreground">{event.addedNames}</span> 추가
+            </span>
+          )}
+          {event.removedNames && (
+            <span className="ml-1">
+              <span className="font-medium text-foreground">{event.removedNames}</span> 제거
+            </span>
+          )}
+        </p>
+        <span className="text-xs text-muted-foreground/60">
+          {timeAgo(event.createdAt)}
+        </span>
+      </div>
+    );
+  }
+
+  // 파일 추가
+  if (event.type === "file_attached") {
+    return (
+      <div className="flex items-center gap-2 py-1.5 ml-11">
+        <div className="flex h-5 w-5 shrink-0 items-center justify-center">
+          <Paperclip className="h-3.5 w-3.5 text-muted-foreground" />
+        </div>
+        <p className="flex-1 text-sm text-muted-foreground">
+          <ActivityAuthor author={event.author} />
+          {" 님이 파일 "}
+          <span className="font-medium text-foreground">{event.fileCount ?? 1}건</span>
+          을 추가했습니다
+        </p>
+        <span className="text-xs text-muted-foreground/60">
+          {timeAgo(event.createdAt)}
+        </span>
+      </div>
+    );
+  }
+
+  // 파일 제거
+  if (event.type === "file_detached") {
+    return (
+      <div className="flex items-center gap-2 py-1.5 ml-11">
+        <div className="flex h-5 w-5 shrink-0 items-center justify-center">
+          <Paperclip className="h-3.5 w-3.5 text-muted-foreground" />
+        </div>
+        <p className="flex-1 text-sm text-muted-foreground">
+          <ActivityAuthor author={event.author} />
+          {" 님이 파일을 제거했습니다"}
+        </p>
+        <span className="text-xs text-muted-foreground/60">
+          {timeAgo(event.createdAt)}
+        </span>
+      </div>
+    );
+  }
+
+  // CR 이슈 연결
+  if (event.type === "cr_issue_linked") {
+    return (
+      <div className="flex items-center gap-2 py-1.5 ml-11">
+        <div className="flex h-5 w-5 shrink-0 items-center justify-center">
+          <LinkIcon className="h-3.5 w-3.5 text-muted-foreground" />
+        </div>
+        <p className="flex-1 text-sm text-muted-foreground">
+          <ActivityAuthor author={event.author} />
+          {" 님이 이슈 "}
+          <span className="font-medium text-foreground">{event.linkedIssueCount ?? 1}건</span>
+          을 연결했습니다
+        </p>
+        <span className="text-xs text-muted-foreground/60">
+          {timeAgo(event.createdAt)}
+        </span>
+      </div>
+    );
+  }
+
+  // CR 이슈 해제
+  if (event.type === "cr_issue_unlinked") {
+    return (
+      <div className="flex items-center gap-2 py-1.5 ml-11">
+        <div className="flex h-5 w-5 shrink-0 items-center justify-center">
+          <Unlink className="h-3.5 w-3.5 text-muted-foreground" />
+        </div>
+        <p className="flex-1 text-sm text-muted-foreground">
+          <ActivityAuthor author={event.author} />
+          {" 님이 이슈 "}
+          <span className="font-medium text-foreground">{event.linkedIssueCount ?? 1}건</span>
+          을 해제했습니다
         </p>
         <span className="text-xs text-muted-foreground/60">
           {timeAgo(event.createdAt)}
@@ -497,6 +603,10 @@ export interface ChangeRequestDetailProps {
   onDeleteFile?: (fileId: string) => void;
   isFileUploading?: boolean;
   isMetaUpdating?: boolean;
+  onCloseIssue?: () => void;
+  onReopenIssue?: () => void;
+  isClosingIssue?: boolean;
+  isReopeningIssue?: boolean;
 }
 
 export function ChangeRequestDetail({
@@ -524,6 +634,10 @@ export function ChangeRequestDetail({
   onDeleteFile,
   isFileUploading,
   isMetaUpdating,
+  onCloseIssue,
+  onReopenIssue,
+  isClosingIssue,
+  isReopeningIssue,
 }: ChangeRequestDetailProps) {
   const backLabel = cr.type === "pr" ? "변경 반영" : "이슈";
   const commentCount = cr.timeline.filter((e) => e.type === "comment").length;
@@ -674,9 +788,39 @@ export function ChangeRequestDetail({
               <div className="mt-3 flex items-center justify-between">
                 <div />
                 <div className="flex gap-2">
-                  {cr.status === "open" && (
+                  {cr.type === "issue" && cr.status === "open" && onCloseIssue && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={isClosingIssue}
+                      onClick={onCloseIssue}
+                    >
+                      {isClosingIssue ? (
+                        <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <XCircle className="mr-1.5 h-3.5 w-3.5" />
+                      )}
+                      이슈 닫기
+                    </Button>
+                  )}
+                  {cr.type === "issue" && cr.status === "closed" && onReopenIssue && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={isReopeningIssue}
+                      onClick={onReopenIssue}
+                    >
+                      {isReopeningIssue ? (
+                        <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                      ) : (
+                        <AlertCircle className="mr-1.5 h-3.5 w-3.5" />
+                      )}
+                      이슈 다시 열기
+                    </Button>
+                  )}
+                  {cr.type === "pr" && cr.status === "open" && (
                     <Button size="sm" variant="outline">
-                      {cr.type === "pr" ? "승인" : "이슈 닫기"}
+                      승인
                     </Button>
                   )}
                   <Button

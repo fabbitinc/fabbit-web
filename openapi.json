@@ -2644,6 +2644,63 @@
             }
         },
         "/api/v1/projects/{project_id}": {
+            "patch": {
+                "tags": [
+                    "projects"
+                ],
+                "summary": "Update Project",
+                "description": "\ud504\ub85c\uc81d\ud2b8 \uc815\ubcf4 \uc218\uc815.\n\n`name`, `description` \ud544\ub4dc\ub97c \uc120\ud0dd\uc801\uc73c\ub85c \uc218\uc815\ud569\ub2c8\ub2e4.\n\uc804\ub2ec\ub41c \ud544\ub4dc\ub9cc \ubcc0\uacbd\ub418\uba70, \uc0dd\ub7b5\ub41c \ud544\ub4dc\ub294 \uae30\uc874 \uac12\uc744 \uc720\uc9c0\ud569\ub2c8\ub2e4.",
+                "operationId": "update_project_api_v1_projects__project_id__patch",
+                "security": [
+                    {
+                        "HTTPBearer": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "project_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid",
+                            "title": "Project Id"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UpdateProjectRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful Response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ProjectDetailResponse"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation Error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/HTTPValidationError"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
             "get": {
                 "tags": [
                     "projects"
@@ -6001,6 +6058,9 @@
                                 "$ref": "#/components/schemas/IssueCreatedDetail"
                             },
                             {
+                                "$ref": "#/components/schemas/CRCreatedDetail"
+                            },
+                            {
                                 "$ref": "#/components/schemas/IssueClosedDetail"
                             },
                             {
@@ -6014,6 +6074,9 @@
                             },
                             {
                                 "$ref": "#/components/schemas/PartRemovedDetail"
+                            },
+                            {
+                                "$ref": "#/components/schemas/ProjectUpdatedDetail"
                             },
                             {
                                 "additionalProperties": true,
@@ -6049,41 +6112,11 @@
                     "assignee",
                     "reviewer",
                     "label",
+                    "file",
                     "project"
                 ],
                 "title": "ActivityScope",
                 "description": "Activity scope \u2014 API query param \ud0c0\uc785 \uac80\uc99d\uc6a9."
-            },
-            "AssigneeSummary": {
-                "properties": {
-                    "id": {
-                        "type": "string",
-                        "format": "uuid",
-                        "title": "Id"
-                    },
-                    "full_name": {
-                        "type": "string",
-                        "title": "Full Name"
-                    },
-                    "profile_image_url": {
-                        "anyOf": [
-                            {
-                                "type": "string"
-                            },
-                            {
-                                "type": "null"
-                            }
-                        ],
-                        "title": "Profile Image Url"
-                    }
-                },
-                "type": "object",
-                "required": [
-                    "id",
-                    "full_name"
-                ],
-                "title": "AssigneeSummary",
-                "description": "\ub2f4\ub2f9\uc790 \uc694\uc57d (\uc544\ubc14\ud0c0 \ud45c\uc2dc\uc6a9)."
             },
             "AssigneesChangedDetail": {
                 "properties": {
@@ -6436,6 +6469,36 @@
                 "title": "BomTreeResponse",
                 "description": "BOM \ud2b8\ub9ac \uc751\ub2f5"
             },
+            "CRCreatedDetail": {
+                "properties": {
+                    "action": {
+                        "type": "string",
+                        "const": "cr_created",
+                        "title": "Action"
+                    },
+                    "issue_id": {
+                        "type": "string",
+                        "title": "Issue Id"
+                    },
+                    "number": {
+                        "type": "integer",
+                        "title": "Number"
+                    },
+                    "title": {
+                        "type": "string",
+                        "title": "Title"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "action",
+                    "issue_id",
+                    "number",
+                    "title"
+                ],
+                "title": "CRCreatedDetail",
+                "description": "\ubcc0\uacbd \uc694\uccad \uc0dd\uc131."
+            },
             "CRMergedDetail": {
                 "properties": {
                     "action": {
@@ -6619,25 +6682,12 @@
                     "created_by": {
                         "anyOf": [
                             {
-                                "type": "string",
-                                "format": "uuid"
+                                "$ref": "#/components/schemas/UserSummary"
                             },
                             {
                                 "type": "null"
                             }
-                        ],
-                        "title": "Created By"
-                    },
-                    "created_by_name": {
-                        "anyOf": [
-                            {
-                                "type": "string"
-                            },
-                            {
-                                "type": "null"
-                            }
-                        ],
-                        "title": "Created By Name"
+                        ]
                     },
                     "labels": {
                         "items": {
@@ -6649,7 +6699,7 @@
                     },
                     "assignees": {
                         "items": {
-                            "$ref": "#/components/schemas/AssigneeSummary"
+                            "$ref": "#/components/schemas/UserSummary"
                         },
                         "type": "array",
                         "title": "Assignees",
@@ -6706,7 +6756,7 @@
                     },
                     "reviewers": {
                         "items": {
-                            "$ref": "#/components/schemas/AssigneeSummary"
+                            "$ref": "#/components/schemas/UserSummary"
                         },
                         "type": "array",
                         "title": "Reviewers",
@@ -6780,25 +6830,12 @@
                     "created_by": {
                         "anyOf": [
                             {
-                                "type": "string",
-                                "format": "uuid"
+                                "$ref": "#/components/schemas/UserSummary"
                             },
                             {
                                 "type": "null"
                             }
-                        ],
-                        "title": "Created By"
-                    },
-                    "created_by_name": {
-                        "anyOf": [
-                            {
-                                "type": "string"
-                            },
-                            {
-                                "type": "null"
-                            }
-                        ],
-                        "title": "Created By Name"
+                        ]
                     },
                     "labels": {
                         "items": {
@@ -6810,7 +6847,7 @@
                     },
                     "assignees": {
                         "items": {
-                            "$ref": "#/components/schemas/AssigneeSummary"
+                            "$ref": "#/components/schemas/UserSummary"
                         },
                         "type": "array",
                         "title": "Assignees",
@@ -6867,7 +6904,7 @@
                     },
                     "reviewers": {
                         "items": {
-                            "$ref": "#/components/schemas/AssigneeSummary"
+                            "$ref": "#/components/schemas/UserSummary"
                         },
                         "type": "array",
                         "title": "Reviewers",
@@ -7348,6 +7385,29 @@
                 ],
                 "title": "DashboardStatsResponse"
             },
+            "FileAttachedDetail": {
+                "properties": {
+                    "action": {
+                        "type": "string",
+                        "const": "file_attached",
+                        "title": "Action"
+                    },
+                    "file_ids": {
+                        "items": {
+                            "type": "string"
+                        },
+                        "type": "array",
+                        "title": "File Ids"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "action",
+                    "file_ids"
+                ],
+                "title": "FileAttachedDetail",
+                "description": "\ud30c\uc77c \ucca8\ubd80."
+            },
             "FileCompleteResponse": {
                 "properties": {
                     "file_id": {
@@ -7392,6 +7452,26 @@
                     "created_at"
                 ],
                 "title": "FileCompleteResponse"
+            },
+            "FileDetachedDetail": {
+                "properties": {
+                    "action": {
+                        "type": "string",
+                        "const": "file_detached",
+                        "title": "Action"
+                    },
+                    "file_id": {
+                        "type": "string",
+                        "title": "File Id"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "action",
+                    "file_id"
+                ],
+                "title": "FileDetachedDetail",
+                "description": "\ud30c\uc77c \ubd84\ub9ac."
             },
             "FileItem": {
                 "properties": {
@@ -7652,10 +7732,6 @@
                     "title": {
                         "type": "string",
                         "title": "Title"
-                    },
-                    "type": {
-                        "type": "string",
-                        "title": "Type"
                     }
                 },
                 "type": "object",
@@ -7663,11 +7739,10 @@
                     "action",
                     "issue_id",
                     "number",
-                    "title",
-                    "type"
+                    "title"
                 ],
                 "title": "IssueCreatedDetail",
-                "description": "\uc774\uc288/CR \uc0dd\uc131."
+                "description": "\uc774\uc288 \uc0dd\uc131."
             },
             "IssueLinkedDetail": {
                 "properties": {
@@ -7828,25 +7903,12 @@
                     "created_by": {
                         "anyOf": [
                             {
-                                "type": "string",
-                                "format": "uuid"
+                                "$ref": "#/components/schemas/UserSummary"
                             },
                             {
                                 "type": "null"
                             }
-                        ],
-                        "title": "Created By"
-                    },
-                    "created_by_name": {
-                        "anyOf": [
-                            {
-                                "type": "string"
-                            },
-                            {
-                                "type": "null"
-                            }
-                        ],
-                        "title": "Created By Name"
+                        ]
                     },
                     "labels": {
                         "items": {
@@ -7858,7 +7920,7 @@
                     },
                     "assignees": {
                         "items": {
-                            "$ref": "#/components/schemas/AssigneeSummary"
+                            "$ref": "#/components/schemas/UserSummary"
                         },
                         "type": "array",
                         "title": "Assignees",
@@ -7952,25 +8014,12 @@
                     "created_by": {
                         "anyOf": [
                             {
-                                "type": "string",
-                                "format": "uuid"
+                                "$ref": "#/components/schemas/UserSummary"
                             },
                             {
                                 "type": "null"
                             }
-                        ],
-                        "title": "Created By"
-                    },
-                    "created_by_name": {
-                        "anyOf": [
-                            {
-                                "type": "string"
-                            },
-                            {
-                                "type": "null"
-                            }
-                        ],
-                        "title": "Created By Name"
+                        ]
                     },
                     "labels": {
                         "items": {
@@ -7982,7 +8031,7 @@
                     },
                     "assignees": {
                         "items": {
-                            "$ref": "#/components/schemas/AssigneeSummary"
+                            "$ref": "#/components/schemas/UserSummary"
                         },
                         "type": "array",
                         "title": "Assignees",
@@ -9742,6 +9791,27 @@
                 ],
                 "title": "ProjectSummary"
             },
+            "ProjectUpdatedDetail": {
+                "properties": {
+                    "action": {
+                        "type": "string",
+                        "const": "project_updated",
+                        "title": "Action"
+                    },
+                    "changes": {
+                        "additionalProperties": true,
+                        "type": "object",
+                        "title": "Changes"
+                    }
+                },
+                "type": "object",
+                "required": [
+                    "action",
+                    "changes"
+                ],
+                "title": "ProjectUpdatedDetail",
+                "description": "\ud504\ub85c\uc81d\ud2b8 \uc815\ubcf4 \uc218\uc815."
+            },
             "PropertyMapping": {
                 "properties": {
                     "source_column": {
@@ -11211,6 +11281,12 @@
                                 "$ref": "#/components/schemas/PartsChangedDetail"
                             },
                             {
+                                "$ref": "#/components/schemas/FileAttachedDetail"
+                            },
+                            {
+                                "$ref": "#/components/schemas/FileDetachedDetail"
+                            },
+                            {
                                 "$ref": "#/components/schemas/IssueLinkedDetail"
                             },
                             {
@@ -11605,6 +11681,38 @@
                     "updated_at"
                 ],
                 "title": "UpdateProfileResponse"
+            },
+            "UpdateProjectRequest": {
+                "properties": {
+                    "name": {
+                        "anyOf": [
+                            {
+                                "type": "string",
+                                "maxLength": 200,
+                                "minLength": 1
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Name",
+                        "description": "\ud504\ub85c\uc81d\ud2b8 \uc774\ub984"
+                    },
+                    "description": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "null"
+                            }
+                        ],
+                        "title": "Description",
+                        "description": "\ud504\ub85c\uc81d\ud2b8 \uc124\uba85"
+                    }
+                },
+                "type": "object",
+                "title": "UpdateProjectRequest"
             },
             "UserResponse": {
                 "properties": {

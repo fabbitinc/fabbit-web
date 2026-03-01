@@ -21,6 +21,7 @@ import {
   AlertCircle,
   FilePen,
   FileX,
+  Paperclip,
   MessageSquare,
   Settings,
   Loader2,
@@ -39,10 +40,12 @@ import { cn } from "@/lib/utils";
 import { LabelBadge } from "@fabbit/ui";
 import { useParts, useProject } from "@/api/hooks";
 import { useProjectActivities } from "@/api/hooks/useActivities";
-import type { IssueDto, ChangeDto, ProjectDto, ActivityDto, ActivityScope, TimelineUserDto } from "@/api/types";
+import type { IssueDto, ChangeDto, ProjectDto, ActivityDto, ActivityScope, TimelineUserDto, UserSummaryDto } from "@/api/types";
 import {
   useCreateIssueComment,
   useCreateProjectIssue,
+  useCloseIssue,
+  useReopenIssue,
   useIssueTimeline,
   useProjectIssue,
   useProjectIssues,
@@ -119,28 +122,51 @@ interface MockProjectPart {
 
 // --- 활동 로그 ---
 
-const ACTIVITY_CONFIG: Record<string, { icon: React.ElementType; accent: string; label: string; badgeClass: string }> = {
-  issue_created: { icon: FilePen, accent: "bg-emerald-100 text-emerald-600 dark:bg-emerald-900 dark:text-emerald-400", label: "이슈 생성", badgeClass: "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-400" },
-  issue_closed: { icon: XCircle, accent: "bg-red-100 text-red-600 dark:bg-red-900 dark:text-red-400", label: "이슈 닫힘", badgeClass: "border-red-200 bg-red-50 text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-400" },
-  issue_reopened: { icon: AlertCircle, accent: "bg-emerald-100 text-emerald-600 dark:bg-emerald-900 dark:text-emerald-400", label: "이슈 재오픈", badgeClass: "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-400" },
-  issue_state_changed: { icon: PlayCircle, accent: "bg-purple-100 text-purple-600 dark:bg-purple-900 dark:text-purple-400", label: "상태 변경", badgeClass: "border-purple-200 bg-purple-50 text-purple-700 dark:border-purple-800 dark:bg-purple-950 dark:text-purple-400" },
-  cr_merged: { icon: FileCheck, accent: "bg-purple-100 text-purple-600 dark:bg-purple-900 dark:text-purple-400", label: "변경 반영", badgeClass: "border-purple-200 bg-purple-50 text-purple-700 dark:border-purple-800 dark:bg-purple-950 dark:text-purple-400" },
-  cr_state_changed: { icon: PlayCircle, accent: "bg-amber-100 text-amber-600 dark:bg-amber-900 dark:text-amber-400", label: "상태 변경", badgeClass: "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-400" },
-  cr_issue_linked: { icon: LinkIcon, accent: "bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-400", label: "이슈 연결", badgeClass: "border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-400" },
-  cr_issue_unlinked: { icon: Unlink, accent: "bg-muted text-muted-foreground", label: "이슈 해제", badgeClass: "border-border bg-muted/50 text-muted-foreground" },
-  part_added: { icon: LinkIcon, accent: "bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-400", label: "부품 추가", badgeClass: "border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-400" },
-  part_removed: { icon: Unlink, accent: "bg-muted text-muted-foreground", label: "부품 제거", badgeClass: "border-border bg-muted/50 text-muted-foreground" },
-  part_changed: { icon: LinkIcon, accent: "bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-400", label: "부품 변경", badgeClass: "border-blue-200 bg-blue-50 text-blue-700 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-400" },
-  assignee_changed: { icon: UserPlus, accent: "bg-amber-100 text-amber-600 dark:bg-amber-900 dark:text-amber-400", label: "담당자 변경", badgeClass: "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-400" },
-  reviewer_changed: { icon: UserPlus, accent: "bg-amber-100 text-amber-600 dark:bg-amber-900 dark:text-amber-400", label: "검토자 변경", badgeClass: "border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-400" },
-  label_changed: { icon: Tag, accent: "bg-purple-100 text-purple-600 dark:bg-purple-900 dark:text-purple-400", label: "라벨 변경", badgeClass: "border-purple-200 bg-purple-50 text-purple-700 dark:border-purple-800 dark:bg-purple-950 dark:text-purple-400" },
+// scope: 아이콘 + 범위 라벨 (고정)
+const SCOPE_ICON: Record<string, { icon: React.ElementType; label: string }> = {
+  issue: { icon: AlertCircle, label: "이슈" },
+  cr: { icon: FilePen, label: "변경 반영" },
+  part: { icon: Package, label: "부품" },
+  assignee: { icon: UserPlus, label: "담당자" },
+  reviewer: { icon: UserPlus, label: "검토자" },
+  label: { icon: Tag, label: "라벨" },
+  file: { icon: Paperclip, label: "파일" },
+};
+const DEFAULT_SCOPE = { icon: CircleDot, label: "활동" };
+
+// state: 상태 라벨 + 색상
+interface ActivityConfig {
+  scope: string;
+  state: string;
+  stateClass: string; // 상태 텍스트 색상
+  badgeClass: string; // scope 뱃지 배경/테두리
+}
+
+const ACTIVITY_CONFIG: Record<string, ActivityConfig> = {
+  issue_created:      { scope: "issue",    state: "열림",     stateClass: "text-emerald-600 dark:text-emerald-400", badgeClass: "border-border bg-muted/50 text-muted-foreground" },
+  issue_closed:       { scope: "issue",    state: "닫힘",     stateClass: "text-red-600 dark:text-red-400",         badgeClass: "border-border bg-muted/50 text-muted-foreground" },
+  issue_reopened:     { scope: "issue",    state: "다시 열림", stateClass: "text-emerald-600 dark:text-emerald-400", badgeClass: "border-border bg-muted/50 text-muted-foreground" },
+  issue_state_changed:{ scope: "issue",    state: "상태 변경", stateClass: "text-purple-600 dark:text-purple-400", badgeClass: "border-border bg-muted/50 text-muted-foreground" },
+  cr_created:         { scope: "cr",       state: "열림",   stateClass: "text-emerald-600 dark:text-emerald-400", badgeClass: "border-border bg-muted/50 text-muted-foreground" },
+  cr_merged:          { scope: "cr",       state: "반영",   stateClass: "text-purple-600 dark:text-purple-400",   badgeClass: "border-border bg-muted/50 text-muted-foreground" },
+  cr_state_changed:   { scope: "cr",       state: "상태 변경", stateClass: "text-amber-600 dark:text-amber-400",  badgeClass: "border-border bg-muted/50 text-muted-foreground" },
+  cr_issue_linked:    { scope: "cr",       state: "이슈 연결", stateClass: "text-blue-600 dark:text-blue-400",    badgeClass: "border-border bg-muted/50 text-muted-foreground" },
+  cr_issue_unlinked:  { scope: "cr",       state: "이슈 해제", stateClass: "text-muted-foreground",              badgeClass: "border-border bg-muted/50 text-muted-foreground" },
+  part_added:         { scope: "part",     state: "추가",   stateClass: "text-blue-600 dark:text-blue-400",       badgeClass: "border-border bg-muted/50 text-muted-foreground" },
+  part_removed:       { scope: "part",     state: "제거",   stateClass: "text-muted-foreground",                  badgeClass: "border-border bg-muted/50 text-muted-foreground" },
+  part_changed:       { scope: "part",     state: "변경",   stateClass: "text-blue-600 dark:text-blue-400",       badgeClass: "border-border bg-muted/50 text-muted-foreground" },
+  assignee_changed:   { scope: "assignee", state: "변경",   stateClass: "text-amber-600 dark:text-amber-400",     badgeClass: "border-border bg-muted/50 text-muted-foreground" },
+  reviewer_changed:   { scope: "reviewer", state: "변경",   stateClass: "text-amber-600 dark:text-amber-400",     badgeClass: "border-border bg-muted/50 text-muted-foreground" },
+  label_changed:      { scope: "label",    state: "변경",   stateClass: "text-purple-600 dark:text-purple-400",   badgeClass: "border-border bg-muted/50 text-muted-foreground" },
+  file_attached:      { scope: "file",     state: "추가",   stateClass: "text-blue-600 dark:text-blue-400",       badgeClass: "border-border bg-muted/50 text-muted-foreground" },
+  file_detached:      { scope: "file",     state: "제거",   stateClass: "text-muted-foreground",                  badgeClass: "border-border bg-muted/50 text-muted-foreground" },
 };
 
-const DEFAULT_ACTIVITY_CONFIG = { icon: CircleDot, accent: "bg-muted text-muted-foreground", label: "활동", badgeClass: "border-border bg-muted/50 text-muted-foreground" };
+const DEFAULT_ACTIVITY: ActivityConfig = { scope: "", state: "활동", stateClass: "text-muted-foreground", badgeClass: "border-border bg-muted/50 text-muted-foreground" };
 
 // action + detail → 요약 텍스트
 function getActivitySummary(action: string, detail: Record<string, unknown> | null, users: Record<string, TimelineUserDto>): string {
-  if (!detail) return ACTIVITY_CONFIG[action]?.label ?? action;
+  if (!detail) return ACTIVITY_CONFIG[action]?.state ?? action;
 
   const resolveUserNames = (ids: unknown[]): string =>
     (ids as string[]).map((id) => users[id]?.fullName ?? id.slice(0, 8)).join(", ");
@@ -149,10 +175,12 @@ function getActivitySummary(action: string, detail: Record<string, unknown> | nu
     case "issue_created":
     case "issue_closed":
     case "issue_reopened":
-      return detail.title ? `#${detail.number} ${detail.title}` : (ACTIVITY_CONFIG[action]?.label ?? action);
+      return detail.title ? `#${detail.number} ${detail.title}` : (ACTIVITY_CONFIG[action]?.state ?? action);
     case "issue_state_changed":
     case "cr_state_changed":
-      return detail.from && detail.to ? `${detail.from} → ${detail.to}` : (ACTIVITY_CONFIG[action]?.label ?? action);
+      return detail.from && detail.to ? `${detail.from} → ${detail.to}` : (ACTIVITY_CONFIG[action]?.state ?? action);
+    case "cr_created":
+      return detail.title ? `#${detail.number} ${detail.title}` : "";
     case "cr_merged":
       return detail.title ? `#${detail.number} ${detail.title}` : "변경 반영";
     case "part_added":
@@ -175,7 +203,7 @@ function getActivitySummary(action: string, detail: Record<string, unknown> | nu
       const segments: string[] = [];
       if (addedUsers.length > 0) segments.push(`${resolveUserNames(addedUsers)} 추가`);
       if (removedUsers.length > 0) segments.push(`${resolveUserNames(removedUsers)} 제거`);
-      return segments.join(", ") || (ACTIVITY_CONFIG[action]?.label ?? action);
+      return segments.join(", ") || (ACTIVITY_CONFIG[action]?.state ?? action);
     }
     case "label_changed": {
       const addedLabels = (detail.added as { name: string }[] | undefined) ?? [];
@@ -185,8 +213,22 @@ function getActivitySummary(action: string, detail: Record<string, unknown> | nu
       if (removedLabels.length > 0) segs.push(`${removedLabels.map((l) => l.name).join(", ")} 제거`);
       return segs.join(", ") || "라벨 변경";
     }
+    case "file_attached": {
+      const fileIds = (detail.file_ids as string[] | undefined) ?? [];
+      return fileIds.length > 0 ? `${fileIds.length}건 추가` : "파일 추가";
+    }
+    case "file_detached":
+      return "파일 제거";
+    case "cr_issue_linked": {
+      const linkedIds = (detail.linked_issue_ids as string[] | undefined) ?? [];
+      return linkedIds.length > 0 ? `${linkedIds.length}건 연결` : "이슈 연결";
+    }
+    case "cr_issue_unlinked": {
+      const unlinkedIds = (detail.unlinked_issue_ids as string[] | undefined) ?? [];
+      return unlinkedIds.length > 0 ? `${unlinkedIds.length}건 해제` : "이슈 해제";
+    }
     default:
-      return ACTIVITY_CONFIG[action]?.label ?? action;
+      return ACTIVITY_CONFIG[action]?.state ?? action;
   }
 }
 
@@ -459,16 +501,19 @@ function OverviewTab({
               <div className="py-4 text-center text-sm text-muted-foreground">최근 활동이 없습니다</div>
             ) : (
               recentActivities.map((activity) => {
-                const config = ACTIVITY_CONFIG[activity.action] ?? DEFAULT_ACTIVITY_CONFIG;
-                const Icon = config.icon;
+                const config = ACTIVITY_CONFIG[activity.action] ?? DEFAULT_ACTIVITY;
+                const scopeInfo = SCOPE_ICON[config.scope] ?? DEFAULT_SCOPE;
+                const ScopeIcon = scopeInfo.icon;
                 const user = activityUsers[activity.actorId];
                 return (
                   <div key={activity.id} className="flex gap-3 py-2">
-                    <div className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${config.accent}`}>
-                      <Icon className="h-3 w-3" />
+                    <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                      <ScopeIcon className="h-3 w-3" />
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="text-sm text-foreground/80">
+                        <span className={`font-medium ${config.stateClass}`}>{config.state}</span>
+                        {" · "}
                         {getActivitySummary(activity.action, activity.detail, activityUsers)}
                       </p>
                       <p className="text-[11px] text-muted-foreground">
@@ -652,14 +697,12 @@ function toIssueStatus(state: string): "open" | "closed" {
 }
 
 function toIssueAuthor(issue: IssueDto): string {
-  if (issue.createdByName) return issue.createdByName;
-  if (issue.createdBy) return issue.createdBy.slice(0, 8);
-  return "알 수 없음";
+  if (issue.createdBy) return issue.createdBy.fullName;
+  return "삭제된 사용자";
 }
 
 interface TimelineSource {
-  createdBy: string | null;
-  createdByName?: string | null;
+  createdBy: UserSummaryDto | null;
   assignees: { id: string; fullName: string }[];
 }
 
@@ -668,12 +711,14 @@ function toDisplayActor(
   users: Record<string, TimelineUserDto>,
   source: TimelineSource,
 ): TimelineAuthor {
-  if (!id) return { name: "알 수 없음" };
+  if (!id) return { name: "삭제된 사용자" };
 
   const user = users[id];
   if (user) return { name: user.fullName, profileImageUrl: user.profileImageUrl };
 
-  if (id === source.createdBy && source.createdByName) return { name: source.createdByName };
+  if (source.createdBy && id === source.createdBy.id) {
+    return { name: source.createdBy.fullName, profileImageUrl: source.createdBy.profileImageUrl };
+  }
 
   const assignee = source.assignees.find((item) => item.id === id);
   if (assignee) return { name: assignee.fullName };
@@ -758,6 +803,18 @@ function toTimelineEvents(
       };
     }
 
+    // CR 생성
+    if (action === "cr_created") {
+      return {
+        id: item.id,
+        type: "cr_created",
+        author,
+        createdAt: item.createdAt,
+        issueNumber: detail.number as number | undefined,
+        issueTitle: detail.title as string | undefined,
+      };
+    }
+
     // CR 머지
     if (action === "cr_merged") {
       return {
@@ -774,22 +831,15 @@ function toTimelineEvents(
     if (action === "part_changed" || action === "part_added" || action === "part_removed") {
       const added = (detail.added as string[] | undefined) ?? [];
       const removed = (detail.removed as string[] | undefined) ?? [];
-      // part_added/part_removed는 기존 호환
-      if (action === "part_removed" || (added.length === 0 && removed.length > 0)) {
-        return {
-          id: item.id,
-          type: "part_removed",
-          author,
-          createdAt: item.createdAt,
-          partCount: removed.length || (detail.part_ids as string[] | undefined)?.length || 0,
-        };
-      }
+      const addedCount = added.length || (action === "part_added" ? (detail.part_ids as string[] | undefined)?.length ?? 0 : 0);
+      const removedCount = removed.length || (action === "part_removed" ? (detail.part_ids as string[] | undefined)?.length ?? 0 : 0);
       return {
         id: item.id,
         type: "part_added",
         author,
         createdAt: item.createdAt,
-        partCount: added.length || (detail.part_ids as string[] | undefined)?.length || 0,
+        addedPartCount: addedCount || undefined,
+        removedPartCount: removedCount || undefined,
       };
     }
 
@@ -811,13 +861,13 @@ function toTimelineEvents(
     if (action === "assignee_changed") {
       const added = (detail.added as string[] | undefined) ?? [];
       const removed = (detail.removed as string[] | undefined) ?? [];
-      const names = resolveUserNames(added.length > 0 ? added : removed);
       return {
         id: item.id,
         type: "assigned",
         author,
         createdAt: item.createdAt,
-        assignee: names.join(", ") || "담당자",
+        addedNames: added.length > 0 ? resolveUserNames(added).join(", ") : undefined,
+        removedNames: removed.length > 0 ? resolveUserNames(removed).join(", ") : undefined,
       };
     }
 
@@ -825,13 +875,60 @@ function toTimelineEvents(
     if (action === "reviewer_changed") {
       const added = (detail.added as string[] | undefined) ?? [];
       const removed = (detail.removed as string[] | undefined) ?? [];
-      const names = resolveUserNames(added.length > 0 ? added : removed);
       return {
         id: item.id,
         type: "reviewer_changed",
         author,
         createdAt: item.createdAt,
-        assignee: names.join(", ") || "검토자",
+        addedNames: added.length > 0 ? resolveUserNames(added).join(", ") : undefined,
+        removedNames: removed.length > 0 ? resolveUserNames(removed).join(", ") : undefined,
+      };
+    }
+
+    // 파일 첨부
+    if (action === "file_attached") {
+      const fileIds = (detail.file_ids as string[] | undefined) ?? [];
+      return {
+        id: item.id,
+        type: "file_attached",
+        author,
+        createdAt: item.createdAt,
+        fileCount: fileIds.length,
+      };
+    }
+
+    // 파일 제거
+    if (action === "file_detached") {
+      return {
+        id: item.id,
+        type: "file_detached",
+        author,
+        createdAt: item.createdAt,
+        fileCount: 1,
+      };
+    }
+
+    // CR 이슈 연결
+    if (action === "cr_issue_linked") {
+      const issueIds = (detail.linked_issue_ids as string[] | undefined) ?? [];
+      return {
+        id: item.id,
+        type: "cr_issue_linked",
+        author,
+        createdAt: item.createdAt,
+        linkedIssueCount: issueIds.length,
+      };
+    }
+
+    // CR 이슈 해제
+    if (action === "cr_issue_unlinked") {
+      const issueIds = (detail.unlinked_issue_ids as string[] | undefined) ?? [];
+      return {
+        id: item.id,
+        type: "cr_issue_unlinked",
+        author,
+        createdAt: item.createdAt,
+        linkedIssueCount: issueIds.length,
       };
     }
 
@@ -917,9 +1014,8 @@ function toChangeStatus(state: string): "open" | "closed" | "merged" {
 }
 
 function toChangeAuthor(change: ChangeDto): string {
-  if (change.createdByName) return change.createdByName;
-  if (change.createdBy) return change.createdBy.slice(0, 8);
-  return "알 수 없음";
+  if (change.createdBy) return change.createdBy.fullName;
+  return "삭제된 사용자";
 }
 
 function toChangeChangeRequest(change: ChangeDto, timeline: TimelineEvent[] = []): ChangeRequest {
@@ -1202,6 +1298,8 @@ function IssuesView({ projectId, issueId }: { projectId: string; issueId?: strin
   const syncIssuePartsMutation = useSyncIssueParts(projectId, isDetailIssueRoute ? issueId : undefined);
   const uploadIssueFilesMutation = useUploadIssueFiles(projectId, isDetailIssueRoute ? issueId : undefined);
   const deleteIssueFileMutation = useDeleteIssueFile(projectId, isDetailIssueRoute ? issueId : undefined);
+  const closeIssueMutation = useCloseIssue(projectId, isDetailIssueRoute ? issueId : undefined);
+  const reopenIssueMutation = useReopenIssue(projectId, isDetailIssueRoute ? issueId : undefined);
   const [labelsEnabled, setLabelsEnabled] = useState(false);
   const { data: projectLabels = [] } = useIssueLabels(isDetailIssueRoute ? projectId : undefined, labelsEnabled);
   const [membersEnabled, setMembersEnabled] = useState(false);
@@ -1309,6 +1407,10 @@ function IssuesView({ projectId, issueId }: { projectId: string; issueId?: strin
             syncIssueLabelsMutation.isPending ||
             syncIssuePartsMutation.isPending
           }
+          onCloseIssue={() => closeIssueMutation.mutate()}
+          onReopenIssue={() => reopenIssueMutation.mutate()}
+          isClosingIssue={closeIssueMutation.isPending}
+          isReopeningIssue={reopenIssueMutation.isPending}
         />
       </>
     );
@@ -1675,8 +1777,9 @@ function ActivityTab({ projectId }: { projectId: string }) {
               {/* 그룹 내 활동 행 */}
               <div className="divide-y divide-border/50">
                 {group.items.map((activity) => {
-                  const config = ACTIVITY_CONFIG[activity.action] ?? DEFAULT_ACTIVITY_CONFIG;
-                  const Icon = config.icon;
+                  const config = ACTIVITY_CONFIG[activity.action] ?? DEFAULT_ACTIVITY;
+                  const scopeInfo = SCOPE_ICON[config.scope] ?? DEFAULT_SCOPE;
+                  const ScopeIcon = scopeInfo.icon;
                   const user = allUsers[activity.actorId];
 
                   return (
@@ -1689,11 +1792,16 @@ function ActivityTab({ projectId }: { projectId: string }) {
                         {formatTime(activity.createdAt)}
                       </span>
 
-                      {/* 타입 뱃지 (아이콘 + 라벨) */}
+                      {/* scope 뱃지 (아이콘 + 범위) */}
                       <Badge variant="outline" className={`inline-flex w-[88px] shrink-0 items-center justify-center gap-1 text-[10px] ${config.badgeClass}`}>
-                        <Icon className="h-3 w-3" />
-                        {config.label}
+                        <ScopeIcon className="h-3 w-3" />
+                        {scopeInfo.label}
                       </Badge>
+
+                      {/* state 라벨 */}
+                      <span className={`w-[52px] shrink-0 text-[11px] font-medium ${config.stateClass}`}>
+                        {config.state}
+                      </span>
 
                       {/* 요약 */}
                       <p className="min-w-0 flex-1 truncate text-sm text-foreground/90">

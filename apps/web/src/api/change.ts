@@ -1,6 +1,5 @@
 import { apiClient } from "./client";
 import type {
-  ChangeAssigneeDto,
   ChangeDto,
   ChangeFileDto,
   ChangeLabelDto,
@@ -11,6 +10,7 @@ import type {
   IssueTimelineItemDto,
   IssueTimelineResponse,
   TimelineUserDto,
+  UserSummaryDto,
   CommentDto,
 } from "./types";
 
@@ -52,8 +52,7 @@ interface ApiChangeResponse {
   closed_at?: string | null;
   created_at: string;
   updated_at?: string;
-  created_by?: string | null;
-  created_by_name?: string | null;
+  created_by?: ApiChangeAssigneeResponse | null;
   labels?: ApiChangeLabelResponse[];
   assignees?: ApiChangeAssigneeResponse[];
   reviewers?: ApiChangeAssigneeResponse[];
@@ -121,12 +120,12 @@ function mapChangeLabel(label: ApiChangeLabelResponse): ChangeLabelDto | null {
   };
 }
 
-function mapChangeAssignee(assignee: ApiChangeAssigneeResponse): ChangeAssigneeDto | null {
-  if (!assignee.id || !assignee.full_name) return null;
+function mapUserSummary(user: ApiChangeAssigneeResponse): UserSummaryDto | null {
+  if (!user.id || !user.full_name) return null;
   return {
-    id: assignee.id,
-    fullName: assignee.full_name,
-    profileImageUrl: assignee.profile_image_url ?? null,
+    id: user.id,
+    fullName: user.full_name,
+    profileImageUrl: user.profile_image_url ?? null,
   };
 }
 
@@ -161,15 +160,14 @@ function mapChange(item: ApiChangeResponse): ChangeDto {
     closedAt: item.closed_at ?? null,
     createdAt: item.created_at,
     updatedAt: item.updated_at,
-    createdBy: item.created_by ?? null,
-    createdByName: item.created_by_name ?? null,
+    createdBy: item.created_by ? mapUserSummary(item.created_by) : null,
     labels: (item.labels ?? []).map(mapChangeLabel).filter((label): label is ChangeLabelDto => label !== null),
     assignees: (item.assignees ?? [])
-      .map(mapChangeAssignee)
-      .filter((assignee): assignee is ChangeAssigneeDto => assignee !== null),
+      .map(mapUserSummary)
+      .filter((assignee): assignee is UserSummaryDto => assignee !== null),
     reviewers: (item.reviewers ?? [])
-      .map(mapChangeAssignee)
-      .filter((reviewer): reviewer is ChangeAssigneeDto => reviewer !== null),
+      .map(mapUserSummary)
+      .filter((reviewer): reviewer is UserSummaryDto => reviewer !== null),
     parts: (item.parts ?? []).map(mapChangePart),
     files: (item.files ?? []).map(mapChangeFile),
     commentsCount: item.comments_count ?? 0,

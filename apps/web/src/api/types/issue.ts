@@ -4,11 +4,15 @@ export interface IssueLabelDto {
   color: string;
 }
 
-export interface IssueAssigneeDto {
+/** 유저 요약 (통합: assignee, reviewer, createdBy 등) */
+export interface UserSummaryDto {
   id: string;
   fullName: string;
   profileImageUrl: string | null;
 }
+
+/** @deprecated UserSummaryDto 사용 */
+export type IssueAssigneeDto = UserSummaryDto;
 
 export interface IssuePartDto {
   id: string;
@@ -36,10 +40,9 @@ export interface IssueDto {
   closedAt: string | null;
   createdAt: string;
   updatedAt?: string;
-  createdBy: string | null;
-  createdByName?: string | null;
+  createdBy: UserSummaryDto | null;
   labels: IssueLabelDto[];
-  assignees: IssueAssigneeDto[];
+  assignees: UserSummaryDto[];
   parts: IssuePartDto[];
   files: IssueFileDto[];
   commentsCount: number;

@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
   assignIssueUsers,
+  closeIssue,
   createIssueComment,
   createProjectIssue,
   deleteIssueComment,
@@ -9,6 +10,7 @@ import {
   getProjectIssue,
   getProjectIssues,
   getIssueLabels,
+  reopenIssue,
   syncIssueAssignees,
   syncIssueLabels,
   syncIssueParts,
@@ -245,6 +247,42 @@ export function useUpdateIssueComment(projectId: string | undefined, issueNumber
     },
     onError: () => {
       toast.error("댓글 수정에 실패했습니다");
+    },
+  });
+}
+
+/** 이슈 닫기 훅 */
+export function useCloseIssue(projectId: string | undefined, issueNumber: string | undefined) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => closeIssue(projectId!, issueNumber!),
+    onSuccess: () => {
+      toast.success("이슈를 닫았습니다");
+      queryClient.invalidateQueries({ queryKey: [...PROJECT_ISSUES_QUERY_KEY, projectId] });
+      queryClient.invalidateQueries({ queryKey: [...PROJECT_ISSUE_DETAIL_QUERY_KEY, projectId, issueNumber] });
+      queryClient.invalidateQueries({ queryKey: [...PROJECT_ISSUE_TIMELINE_QUERY_KEY, projectId, issueNumber] });
+    },
+    onError: () => {
+      toast.error("이슈 닫기에 실패했습니다");
+    },
+  });
+}
+
+/** 이슈 다시 열기 훅 */
+export function useReopenIssue(projectId: string | undefined, issueNumber: string | undefined) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => reopenIssue(projectId!, issueNumber!),
+    onSuccess: () => {
+      toast.success("이슈를 다시 열었습니다");
+      queryClient.invalidateQueries({ queryKey: [...PROJECT_ISSUES_QUERY_KEY, projectId] });
+      queryClient.invalidateQueries({ queryKey: [...PROJECT_ISSUE_DETAIL_QUERY_KEY, projectId, issueNumber] });
+      queryClient.invalidateQueries({ queryKey: [...PROJECT_ISSUE_TIMELINE_QUERY_KEY, projectId, issueNumber] });
+    },
+    onError: () => {
+      toast.error("이슈 다시 열기에 실패했습니다");
     },
   });
 }

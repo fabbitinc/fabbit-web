@@ -2,7 +2,6 @@ import { apiClient } from "./client";
 import type {
   CommentDto,
   CreateIssueRequest,
-  IssueAssigneeDto,
   IssueDto,
   IssueFileDto,
   IssueLabelDto,
@@ -11,6 +10,7 @@ import type {
   IssueTimelineItemDto,
   IssueTimelineResponse,
   TimelineUserDto,
+  UserSummaryDto,
 } from "./types";
 
 interface ApiIssueLabelResponse {
@@ -51,8 +51,7 @@ interface ApiIssueResponse {
   closed_at?: string | null;
   created_at: string;
   updated_at?: string;
-  created_by?: string | null;
-  created_by_name?: string | null;
+  created_by?: ApiIssueAssigneeResponse | null;
   labels?: ApiIssueLabelResponse[];
   assignees?: ApiIssueAssigneeResponse[];
   parts?: ApiIssuePartResponse[];
@@ -124,12 +123,12 @@ function mapIssueLabel(label: ApiIssueLabelResponse): IssueLabelDto | null {
   };
 }
 
-function mapIssueAssignee(assignee: ApiIssueAssigneeResponse): IssueAssigneeDto | null {
-  if (!assignee.id || !assignee.full_name) return null;
+function mapUserSummary(user: ApiIssueAssigneeResponse): UserSummaryDto | null {
+  if (!user.id || !user.full_name) return null;
   return {
-    id: assignee.id,
-    fullName: assignee.full_name,
-    profileImageUrl: assignee.profile_image_url ?? null,
+    id: user.id,
+    fullName: user.full_name,
+    profileImageUrl: user.profile_image_url ?? null,
   };
 }
 
@@ -164,12 +163,11 @@ function mapIssue(item: ApiIssueResponse): IssueDto {
     closedAt: item.closed_at ?? null,
     createdAt: item.created_at,
     updatedAt: item.updated_at,
-    createdBy: item.created_by ?? null,
-    createdByName: item.created_by_name ?? null,
+    createdBy: item.created_by ? mapUserSummary(item.created_by) : null,
     labels: (item.labels ?? []).map(mapIssueLabel).filter((label): label is IssueLabelDto => label !== null),
     assignees: (item.assignees ?? [])
-      .map(mapIssueAssignee)
-      .filter((assignee): assignee is IssueAssigneeDto => assignee !== null),
+      .map(mapUserSummary)
+      .filter((assignee): assignee is UserSummaryDto => assignee !== null),
     parts: (item.parts ?? []).map(mapIssuePart),
     files: (item.files ?? []).map(mapIssueFile),
     commentsCount: item.comments_count ?? 0,
@@ -350,4 +348,16 @@ export async function updateIssueComment(
 /** 이슈 댓글 삭제 */
 export async function deleteIssueComment(projectId: string, issueNumber: string, commentId: string): Promise<void> {
   await apiClient.delete(`/api/v1/projects/${projectId}/issues/${issueNumber}/comments/${commentId}`);
+}
+
+/** 이슈 닫기 */
+export async function closeIssue(projectId: string, issueNumber: string): Promise<IssueDto> {
+  const response = await apiClient.post<ApiIssueResponse>(`/api/v1/projects/${projectId}/issues/${issueNumber}/close`);
+  return mapIssue(response.data);
+}
+
+/** 이슈 재열기 */
+export async function reopenIssue(projectId: string, issueNumber: string): Promise<IssueDto> {
+  const response = await apiClient.post<ApiIssueResponse>(`/api/v1/projects/${projectId}/issues/${issueNumber}/reopen`);
+  return mapIssue(response.data);
 }

@@ -25,9 +25,14 @@ export type TimelineEventType =
   | "reviewer_changed"
   | "referenced"
   | "issue_created"
+  | "cr_created"
   | "cr_merged"
   | "part_added"
-  | "part_removed";
+  | "part_removed"
+  | "file_attached"
+  | "file_detached"
+  | "cr_issue_linked"
+  | "cr_issue_unlinked";
 
 export interface TimelineAuthor {
   name: string;
@@ -41,12 +46,21 @@ export interface TimelineEvent {
   createdAt: string;
   content?: string | Record<string, unknown> | null;
   assignee?: string;
+  /** assigned / reviewer_changed 에서 추가·제거 구분 */
+  addedNames?: string;
+  removedNames?: string;
   ref?: string;
   /** issue_created / cr_merged 등에서 사용 */
   issueNumber?: number;
   issueTitle?: string;
   /** part_added / part_removed 에서 사용 */
   partCount?: number;
+  addedPartCount?: number;
+  removedPartCount?: number;
+  /** file_attached / file_detached 에서 사용 */
+  fileCount?: number;
+  /** cr_issue_linked / cr_issue_unlinked 에서 사용 */
+  linkedIssueCount?: number;
   /** labels_changed 에서 사용 */
   addedLabels?: { name: string; color: string }[];
   removedLabels?: { name: string; color: string }[];
