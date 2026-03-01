@@ -64,11 +64,12 @@ export interface PartDetailResponse {
   is_phantom: boolean | null;
   lead_time_days: number | null;
   extended_properties: Record<string, unknown>;
-  children: BomChild[];
-  parents: BomParent[];
   drawing: RelatedDrawing | null;
-  suppliers: RelatedSupplier[];
-  files: PartFileItem[];
+  children_count: number;
+  parents_count: number;
+  suppliers_count: number;
+  files_count: number;
+  projects_count: number;
 }
 
 export interface BomChild {
@@ -100,10 +101,28 @@ export interface RelatedDrawing {
 }
 
 export interface RelatedSupplier {
+  id: string;
   company_name: string;
   code: string | null;
   country: string | null;
   unit_cost: number | null;
+}
+
+// --- 탭별 개별 응답 ---
+
+export interface PartBomResponse {
+  children: BomChild[];
+  parents: BomParent[];
+}
+
+export interface PartSuppliersResponse {
+  total: number;
+  items: RelatedSupplier[];
+}
+
+export interface PartFilesResponse {
+  total: number;
+  items: PartFileItem[];
 }
 
 export interface BomTreeNode {
@@ -166,6 +185,19 @@ export interface LookupPartsParams {
 
 export interface RegisterDrawingRequest {
   file_id: string;
+}
+
+// --- 부품 연결 프로젝트 ---
+
+export interface PartProjectSummary {
+  id: string;
+  name: string;
+  description: string | null;
+}
+
+export interface PartProjectsResponse {
+  total: number;
+  items: PartProjectSummary[];
 }
 
 export interface RegisterDrawingResponse {

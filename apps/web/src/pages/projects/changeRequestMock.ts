@@ -266,3 +266,113 @@ export const MOCK_CHANGE_REQUESTS: ChangeRequest[] = [
 
 export const MOCK_ISSUES = MOCK_CHANGE_REQUESTS.filter((c) => c.type === "issue");
 export const MOCK_PRS = MOCK_CHANGE_REQUESTS.filter((c) => c.type === "pr");
+
+// ============================================================
+// 변경 내용 (Diff) — 타입 + Mock 데이터
+// ============================================================
+
+/** Part 편집 가능 속성 스냅샷 */
+export interface PartSnapshot {
+  part_number: string;
+  name: string;
+  revision: string;
+  category: string | null;
+  lifecycle_state: string | null;
+  material: string | null;
+  unit: string | null;
+  description: string | null;
+  is_phantom: boolean;
+  lead_time_days: number | null;
+}
+
+export type ChangeItemType = "modified" | "added" | "removed";
+
+export interface ChangeItem {
+  id: string;
+  partId: string;
+  type: ChangeItemType;
+  before: PartSnapshot | null;
+  after: PartSnapshot | null;
+}
+
+export interface CRChanges {
+  items: ChangeItem[];
+}
+
+export const MOCK_CR_CHANGES: Record<string, CRChanges> = {
+  // cr1: 수정 1건, 추가 1건
+  cr1: {
+    items: [
+      {
+        id: "ci1",
+        partId: "p1",
+        type: "modified",
+        before: {
+          part_number: "HSG-002",
+          name: "모터 하우징",
+          revision: "B",
+          category: "하우징",
+          lifecycle_state: "production",
+          material: "AL6061-T6",
+          unit: "EA",
+          description: "BLDC 400W 모터 하우징 (아노다이징)",
+          is_phantom: false,
+          lead_time_days: 14,
+        },
+        after: {
+          part_number: "HSG-002",
+          name: "모터 하우징",
+          revision: "C",
+          category: "하우징",
+          lifecycle_state: "production",
+          material: "AL6061-T6",
+          unit: "EA",
+          description: "BLDC 400W 모터 하우징 (니켈도금, 방열핀 추가)",
+          is_phantom: false,
+          lead_time_days: 18,
+        },
+      },
+      {
+        id: "ci2",
+        partId: "p2",
+        type: "added",
+        before: null,
+        after: {
+          part_number: "FIN-010",
+          name: "방열핀",
+          revision: "A",
+          category: "방열",
+          lifecycle_state: "prototype",
+          material: "AL1050",
+          unit: "EA",
+          description: "모터 하우징 체결용 방열핀 4ea 세트",
+          is_phantom: false,
+          lead_time_days: 7,
+        },
+      },
+    ],
+  },
+  // cr2: 삭제 1건
+  cr2: {
+    items: [
+      {
+        id: "ci3",
+        partId: "p5",
+        type: "removed",
+        before: {
+          part_number: "GKT-009",
+          name: "고무 패킹 (구형)",
+          revision: "D",
+          category: "씰링",
+          lifecycle_state: "obsolete",
+          material: "NBR",
+          unit: "EA",
+          description: "기존 고무 패킹 — GKT-010 실리콘 가스켓으로 대체",
+          is_phantom: false,
+          lead_time_days: 5,
+        },
+        after: null,
+      },
+    ],
+  },
+};

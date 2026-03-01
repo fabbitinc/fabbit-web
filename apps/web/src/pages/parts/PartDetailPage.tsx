@@ -27,6 +27,7 @@ import {
   FileArchive,
   FileCode,
   FileAxis3d,
+  FolderKanban,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -36,14 +37,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { usePartDetail, useUploadDrawing, useDeleteDrawing, useAttachFiles, useDetachFile } from "@/api/hooks/useParts";
+import { usePartDetail, usePartProjects, useUploadDrawing, useDeleteDrawing, usePartBom, usePartSuppliers, usePartFiles, useAttachFiles, useDetachFile } from "@/api/hooks/useParts";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import type {
   PartDetailResponse,
   PartFileItem,
-  BomChild,
-  BomParent,
-  RelatedSupplier,
 } from "@/api/types/parts";
 import { HistoryTimeline } from "./history/HistoryTimeline";
 import { MOCK_HISTORY } from "./history/mock-data";
@@ -619,16 +617,21 @@ function PropertiesTab({
 }
 
 // BOM 탭
-function BomTab({
-  partId,
-  children,
-  parents,
-}: {
-  partId: string;
-  children: BomChild[];
-  parents: BomParent[];
-}) {
+function BomTab({ partId }: { partId: string }) {
   const navigate = useNavigate();
+  const { data, isLoading } = usePartBom(partId);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center gap-2 py-8 justify-center">
+        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+        <span className="text-sm text-muted-foreground">불러오는 중...</span>
+      </div>
+    );
+  }
+
+  const children = data?.children ?? [];
+  const parents = data?.parents ?? [];
 
   return (
     <div className="space-y-8">
@@ -764,17 +767,13 @@ function BomTab({
 }
 
 // 첨부 파일 탭
-function AttachmentsTab({
-  files,
-  onAttach,
-  isAttaching,
-  onDetach,
-}: {
-  files: PartFileItem[];
-  onAttach: (files: File[]) => void;
-  isAttaching: boolean;
-  onDetach: (fileId: string) => void;
-}) {
+function AttachmentsTab({ partId }: { partId: string }) {
+  const { data, isLoading } = usePartFiles(partId);
+  const attachFiles = useAttachFiles(partId);
+  const detachFile = useDetachFile(partId);
+  const files = data?.items ?? [];
+  const isAttaching = attachFiles.isPending;
+
   const [isDragging, setIsDragging] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<PartFileItem | null>(null);
 
@@ -792,7 +791,7 @@ function AttachmentsTab({
     e.preventDefault();
     setIsDragging(false);
     if (e.dataTransfer.files.length > 0) {
-      onAttach(Array.from(e.dataTransfer.files));
+      attachFiles.mutate(Array.from(e.dataTransfer.files));
     }
   }
 
@@ -803,7 +802,7 @@ function AttachmentsTab({
     input.multiple = true;
     input.onchange = () => {
       if (input.files && input.files.length > 0) {
-        onAttach(Array.from(input.files));
+        attachFiles.mutate(Array.from(input.files));
       }
     };
     input.click();
@@ -815,6 +814,15 @@ function AttachmentsTab({
       month: "2-digit",
       day: "2-digit",
     });
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center gap-2 py-8 justify-center">
+        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+        <span className="text-sm text-muted-foreground">불러오는 중...</span>
+      </div>
+    );
   }
 
   return (
@@ -948,7 +956,7 @@ function AttachmentsTab({
         confirmLabel="삭제"
         variant="destructive"
         onConfirm={() => {
-          if (deleteTarget) onDetach(deleteTarget.file_id);
+          if (deleteTarget) detachFile.mutate(deleteTarget.file_id);
           setDeleteTarget(null);
         }}
       />
@@ -957,7 +965,20 @@ function AttachmentsTab({
 }
 
 // 공급사 탭
-function SuppliersTab({ suppliers }: { suppliers: RelatedSupplier[] }) {
+function SuppliersTab({ partId }: { partId: string }) {
+  const { data, isLoading } = usePartSuppliers(partId);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center gap-2 py-8 justify-center">
+        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+        <span className="text-sm text-muted-foreground">불러오는 중...</span>
+      </div>
+    );
+  }
+
+  const suppliers = data?.items ?? [];
+
   if (suppliers.length === 0)
     return <EmptyBlock message="등록된 공급사가 없습니다" icon={Building2} />;
 
@@ -965,7 +986,7 @@ function SuppliersTab({ suppliers }: { suppliers: RelatedSupplier[] }) {
     <div className="space-y-1.5">
       {suppliers.map((s) => (
         <div
-          key={`${s.company_name}-${s.code}`}
+          key={s.id}
           className="flex items-center justify-between rounded-lg border px-4 py-3 transition-colors hover:bg-muted/30"
         >
           <div className="flex items-center gap-3">
@@ -998,6 +1019,54 @@ function SuppliersTab({ suppliers }: { suppliers: RelatedSupplier[] }) {
   );
 }
 
+// 프로젝트 탭
+function ProjectsTab({ partId }: { partId: string }) {
+  const navigate = useNavigate();
+  const { data, isLoading } = usePartProjects(partId);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center gap-2 py-8 justify-center">
+        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+        <span className="text-sm text-muted-foreground">불러오는 중...</span>
+      </div>
+    );
+  }
+
+  const projects = data?.items ?? [];
+
+  if (projects.length === 0) {
+    return <EmptyBlock message="연결된 프로젝트가 없습니다" icon={FolderKanban} />;
+  }
+
+  return (
+    <div className="space-y-1.5">
+      {projects.map((p) => (
+        <div
+          key={p.id}
+          onClick={() => navigate(`/projects/${p.id}`)}
+          className="flex cursor-pointer items-center justify-between rounded-lg border px-4 py-3 transition-colors hover:bg-muted/30"
+        >
+          <div className="flex items-center gap-3">
+            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-muted">
+              <FolderKanban className="h-4 w-4 text-muted-foreground" />
+            </div>
+            <div>
+              <p className="text-sm font-medium text-foreground">{p.name}</p>
+              {p.description && (
+                <p className="text-xs text-muted-foreground truncate max-w-md">
+                  {p.description}
+                </p>
+              )}
+            </div>
+          </div>
+          <ExternalLink className="h-3.5 w-3.5 text-muted-foreground/40" />
+        </div>
+      ))}
+    </div>
+  );
+}
+
 // 이력 탭
 function HistoryTab() {
   return <HistoryTimeline entries={MOCK_HISTORY} />;
@@ -1005,7 +1074,7 @@ function HistoryTab() {
 
 // --- 메인 컴포넌트 ---
 
-type TabKey = "properties" | "bom" | "attachments" | "suppliers" | "history";
+type TabKey = "properties" | "bom" | "attachments" | "suppliers" | "projects" | "history";
 
 const TABS: {
   key: TabKey;
@@ -1018,19 +1087,25 @@ const TABS: {
     key: "bom",
     label: "BOM",
     icon: Network,
-    count: (i) => i.children.length + i.parents.length,
+    count: (i) => i.children_count + i.parents_count,
   },
   {
     key: "attachments",
     label: "첨부 파일",
     icon: Paperclip,
-    count: (i) => i.files?.length ?? 0,
+    count: (i) => i.files_count,
   },
   {
     key: "suppliers",
     label: "공급사",
     icon: Building2,
-    count: (i) => i.suppliers.length,
+    count: (i) => i.suppliers_count,
+  },
+  {
+    key: "projects",
+    label: "프로젝트",
+    icon: FolderKanban,
+    count: (i) => i.projects_count,
   },
   { key: "history", label: "이력", icon: Clock },
 ];
@@ -1043,8 +1118,6 @@ export function PartDetailPage() {
   const { data: item, isLoading, isError } = usePartDetail(partId);
   const uploadDrawing = useUploadDrawing(partId);
   const deleteDrawing = useDeleteDrawing(partId);
-  const attachFiles = useAttachFiles(partId);
-  const detachFile = useDetachFile(partId);
 
   // 로딩 상태
   if (isLoading) {
@@ -1136,18 +1209,10 @@ export function PartDetailPage() {
           onDeleteDrawing={() => deleteDrawing.mutate()}
         />
       )}
-      {activeTab === "bom" && (
-        <BomTab partId={partId!} children={item.children} parents={item.parents} />
-      )}
-      {activeTab === "attachments" && (
-        <AttachmentsTab
-          files={item.files ?? []}
-          onAttach={(files) => attachFiles.mutate(files)}
-          isAttaching={attachFiles.isPending}
-          onDetach={(fileId) => detachFile.mutate(fileId)}
-        />
-      )}
-      {activeTab === "suppliers" && <SuppliersTab suppliers={item.suppliers} />}
+      {activeTab === "bom" && <BomTab partId={partId!} />}
+      {activeTab === "attachments" && <AttachmentsTab partId={partId!} />}
+      {activeTab === "suppliers" && <SuppliersTab partId={partId!} />}
+      {activeTab === "projects" && <ProjectsTab partId={partId!} />}
       {activeTab === "history" && <HistoryTab />}
     </div>
   );

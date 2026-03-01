@@ -263,30 +263,6 @@
     --tw-ring-color: var(--brand-500);
   }
 
-  .sidebar-resizer-track {
-    background-color: var(--nav-resizer-track);
-  }
-
-  .sidebar-resizer-handle {
-    border-color: var(--nav-resizer-handle-border);
-    background-color: var(--nav-resizer-handle-bg);
-  }
-
-  .sidebar-resizer-handle:hover,
-  .sidebar-resizer-handle--active {
-    border-color: var(--nav-resizer-handle-active);
-    background-color: var(--nav-resizer-handle-active);
-  }
-
-  .sidebar-resizer-icon {
-    color: var(--nav-sidebar-icon);
-  }
-
-  .sidebar-resizer-handle:hover .sidebar-resizer-icon,
-  .sidebar-resizer-handle--active .sidebar-resizer-icon {
-    color: white;
-  }
-
   /* ── Tiptap 에디터 ── */
   .tiptap-content {
     display: flex;

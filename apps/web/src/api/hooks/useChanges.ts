@@ -20,7 +20,8 @@ import {
   unlinkChangeIssues,
   closeChange,
   mergeChange,
-  openChange,
+  submitChange,
+  reopenChange,
 } from "../change";
 import {
   createFileUpload,
@@ -549,15 +550,15 @@ export function useMergeChange(
   });
 }
 
-/** 변경 요청 검토 요청 (DRAFT → OPEN) 훅 */
-export function useOpenChange(
+/** 변경 요청 제출 (DRAFT → SUBMITTED) 훅 */
+export function useSubmitChange(
   projectId: string | undefined,
   changeNumber: string | undefined,
 ) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: () => openChange(projectId!, changeNumber!),
+    mutationFn: () => submitChange(projectId!, changeNumber!),
     onSuccess: () => {
       toast.success("변경 요청을 제출했습니다");
       queryClient.invalidateQueries({
@@ -576,6 +577,37 @@ export function useOpenChange(
     },
     onError: () => {
       toast.error("변경 요청 제출에 실패했습니다");
+    },
+  });
+}
+
+/** 변경 요청 다시 제출 (CLOSED → SUBMITTED) 훅 */
+export function useReopenChange(
+  projectId: string | undefined,
+  changeNumber: string | undefined,
+) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: () => reopenChange(projectId!, changeNumber!),
+    onSuccess: () => {
+      toast.success("변경 요청을 다시 제출했습니다");
+      queryClient.invalidateQueries({
+        queryKey: [...PROJECT_CHANGES_QUERY_KEY, projectId],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [...PROJECT_CHANGE_DETAIL_QUERY_KEY, projectId, changeNumber],
+      });
+      queryClient.invalidateQueries({
+        queryKey: [
+          ...PROJECT_CHANGE_TIMELINE_QUERY_KEY,
+          projectId,
+          changeNumber,
+        ],
+      });
+    },
+    onError: () => {
+      toast.error("변경 요청 다시 제출에 실패했습니다");
     },
   });
 }

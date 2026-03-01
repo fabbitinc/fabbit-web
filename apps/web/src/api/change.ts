@@ -538,13 +538,24 @@ export async function mergeChange(
   return mapChange(response.data);
 }
 
-/** 변경 요청 검토 요청 (DRAFT → OPEN) */
-export async function openChange(
+/** 변경 요청 제출 (DRAFT → SUBMITTED) */
+export async function submitChange(
   projectId: string,
   changeNumber: string,
 ): Promise<ChangeDto> {
   const response = await apiClient.post<ApiChangeResponse>(
-    `/api/v1/projects/${projectId}/changes/${changeNumber}/open`,
+    `/api/v1/projects/${projectId}/changes/${changeNumber}/submit`,
+  );
+  return mapChange(response.data);
+}
+
+/** 변경 요청 다시 제출 (CLOSED → SUBMITTED) */
+export async function reopenChange(
+  projectId: string,
+  changeNumber: string,
+): Promise<ChangeDto> {
+  const response = await apiClient.post<ApiChangeResponse>(
+    `/api/v1/projects/${projectId}/changes/${changeNumber}/reopen`,
   );
   return mapChange(response.data);
 }

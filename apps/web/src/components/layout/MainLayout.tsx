@@ -1,18 +1,16 @@
 import { useState, useCallback, useEffect, type ReactNode } from "react";
 import { useLocation } from "react-router-dom";
-import { GripVertical, X } from "lucide-react";
+import { X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sidebar } from "./Sidebar";
 import { Header } from "./Header";
 import { DetailDrawer } from "./DetailDrawer";
-import { cn } from "@/lib/utils";
 
 interface MainLayoutProps {
   children: ReactNode;
 }
 
-const MIN_SIDENAV_WIDTH = 240;
-const DEFAULT_SIDENAV_WIDTH = 320;
+const SIDENAV_WIDTH = 240;
 
 export function MainLayout({ children }: MainLayoutProps) {
   const location = useLocation();
@@ -29,32 +27,6 @@ export function MainLayout({ children }: MainLayoutProps) {
     return saved === "true";
   });
   const [isSideNavOverlayOpen, setIsSideNavOverlayOpen] = useState(false);
-  const [sideNavWidth, setSideNavWidth] = useState(() => {
-    const saved = localStorage.getItem("fabbit-side-nav-width");
-    return saved ? parseInt(saved, 10) : DEFAULT_SIDENAV_WIDTH;
-  });
-  const [isResizing, setIsResizing] = useState(false);
-
-  const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    if (!isDesktop || isSideNavCollapsed) return;
-    e.preventDefault();
-    setIsResizing(true);
-  }, [isDesktop, isSideNavCollapsed]);
-
-  const handleMouseMove = useCallback((e: MouseEvent) => {
-    if (!isResizing) return;
-
-    const maxWidth = Math.floor(window.innerWidth * 0.5);
-    const clampedWidth = Math.min(Math.max(e.clientX, MIN_SIDENAV_WIDTH), maxWidth);
-    setSideNavWidth(clampedWidth);
-  }, [isResizing]);
-
-  const handleMouseUp = useCallback(() => {
-    if (isResizing) {
-      setIsResizing(false);
-      localStorage.setItem("fabbit-side-nav-width", sideNavWidth.toString());
-    }
-  }, [isResizing, sideNavWidth]);
 
   const handleToggleSideNav = useCallback(() => {
     if (isDesktop) {
@@ -69,35 +41,13 @@ export function MainLayout({ children }: MainLayoutProps) {
     setIsSideNavOverlayOpen((prev) => !prev);
   }, [isDesktop]);
 
-  const handleResizeDoubleClick = useCallback(() => {
-    setIsSideNavCollapsed(true);
-    localStorage.setItem("fabbit-side-nav-collapsed", "true");
-  }, []);
-
   const closeMobileSideNav = useCallback(() => {
     setIsSideNavOverlayOpen(false);
   }, []);
 
   const topNavRow = showBanner ? 2 : 1;
   const contentRow = showBanner ? 3 : 2;
-  const sideNavColumn = isDesktop ? `${isSideNavCollapsed ? 64 : sideNavWidth}px` : "0px";
-  const splitterColumn = isDesktop && !isSideNavCollapsed ? "4px" : "0px";
-
-  useEffect(() => {
-    if (isResizing) {
-      document.addEventListener("mousemove", handleMouseMove);
-      document.addEventListener("mouseup", handleMouseUp);
-      document.body.style.cursor = "col-resize";
-      document.body.style.userSelect = "none";
-    }
-
-    return () => {
-      document.removeEventListener("mousemove", handleMouseMove);
-      document.removeEventListener("mouseup", handleMouseUp);
-      document.body.style.cursor = "";
-      document.body.style.userSelect = "";
-    };
-  }, [isResizing, handleMouseMove, handleMouseUp]);
+  const sideNavColumn = isDesktop ? `${isSideNavCollapsed ? 64 : SIDENAV_WIDTH}px` : "0px";
 
   useEffect(() => {
     const handleResize = () => {
@@ -112,18 +62,12 @@ export function MainLayout({ children }: MainLayoutProps) {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  useEffect(() => {
-    if (isDesktop && !isSideNavCollapsed) {
-      localStorage.setItem("fabbit-side-nav-width", sideNavWidth.toString());
-    }
-  }, [isDesktop, isSideNavCollapsed, sideNavWidth]);
-
   return (
     <div
       className="relative grid h-screen overflow-hidden bg-background"
       style={{
         gridTemplateRows: `${showBanner ? "44px " : ""}48px minmax(0,1fr)`,
-        gridTemplateColumns: `${sideNavColumn} ${splitterColumn} minmax(0,1fr)`,
+        gridTemplateColumns: `${sideNavColumn} minmax(0,1fr)`,
       }}
     >
       {showBanner && (
@@ -160,34 +104,14 @@ export function MainLayout({ children }: MainLayoutProps) {
           isDesktop={isDesktop}
           collapsed={isDesktop ? isSideNavCollapsed : false}
           mobileOpen={isSideNavOverlayOpen}
-          width={sideNavWidth}
+          width={SIDENAV_WIDTH}
           showFolderTree={showFolderTree}
           onCloseMobile={closeMobileSideNav}
         />
       </div>
 
-      {isDesktop && !isSideNavCollapsed && (
-        <div
-          style={{ gridRow: contentRow, gridColumn: 2 }}
-          className="sidebar-resizer-track group relative z-10 flex cursor-col-resize items-center justify-center"
-          onMouseDown={handleMouseDown}
-          onDoubleClick={handleResizeDoubleClick}
-        >
-          <div className={cn(
-            "sidebar-resizer-handle absolute z-10 flex h-16 w-5 cursor-col-resize items-center justify-center rounded-full border shadow-lg transition-all",
-            "hover:w-6",
-            isResizing && "sidebar-resizer-handle--active w-6"
-          )}>
-            <GripVertical className={cn(
-              "sidebar-resizer-icon h-5 w-5 transition-colors",
-              isResizing && "text-white"
-            )} />
-          </div>
-        </div>
-      )}
-
       <main
-        style={{ gridRow: contentRow, gridColumn: 3 }}
+        style={{ gridRow: contentRow, gridColumn: 2 }}
         className="relative z-0 min-h-0 overflow-auto p-6"
       >
         {children}

@@ -6,7 +6,11 @@ import {
   listParts,
   lookupParts,
   getPartDetail,
+  getPartBom,
   getPartBomTree,
+  getPartSuppliers,
+  getPartFiles,
+  getPartProjects,
   registerDrawingForPart,
   deleteDrawingFromPart,
   attachFilesToPart,
@@ -22,7 +26,11 @@ import type { ListPartsParams, LookupPartsParams } from "../types/parts";
 export const PART_FILTER_OPTIONS_QUERY_KEY = ["partFilterOptions"] as const;
 export const PARTS_QUERY_KEY = ["parts"] as const;
 export const PART_DETAIL_QUERY_KEY = ["partDetail"] as const;
+export const PART_BOM_QUERY_KEY = ["partBom"] as const;
 export const PART_BOM_TREE_QUERY_KEY = ["partBomTree"] as const;
+export const PART_SUPPLIERS_QUERY_KEY = ["partSuppliers"] as const;
+export const PART_FILES_QUERY_KEY = ["partFiles"] as const;
+export const PART_PROJECTS_QUERY_KEY = ["partProjects"] as const;
 
 /** Part 필터 옵션 조회 훅 */
 export function usePartFilterOptions() {
@@ -96,6 +104,42 @@ export function usePartDetail(partId: string | undefined) {
   }, [isPending, query]);
 
   return query;
+}
+
+/** 부품이 속한 프로젝트 목록 조회 훅 */
+export function usePartProjects(partId: string | undefined) {
+  return useQuery({
+    queryKey: [...PART_PROJECTS_QUERY_KEY, partId],
+    queryFn: () => getPartProjects(partId!),
+    enabled: !!partId,
+  });
+}
+
+/** Part BOM 조회 훅 (children + parents) */
+export function usePartBom(partId: string | undefined) {
+  return useQuery({
+    queryKey: [...PART_BOM_QUERY_KEY, partId],
+    queryFn: () => getPartBom(partId!),
+    enabled: !!partId,
+  });
+}
+
+/** Part 공급사 조회 훅 */
+export function usePartSuppliers(partId: string | undefined) {
+  return useQuery({
+    queryKey: [...PART_SUPPLIERS_QUERY_KEY, partId],
+    queryFn: () => getPartSuppliers(partId!),
+    enabled: !!partId,
+  });
+}
+
+/** Part 첨부 파일 조회 훅 */
+export function usePartFiles(partId: string | undefined) {
+  return useQuery({
+    queryKey: [...PART_FILES_QUERY_KEY, partId],
+    queryFn: () => getPartFiles(partId!),
+    enabled: !!partId,
+  });
 }
 
 /** Part BOM 트리 조회 훅 */
@@ -202,6 +246,9 @@ export function useAttachFiles(partId: string | undefined) {
     onSuccess: () => {
       toast.success("파일이 첨부되었습니다");
       queryClient.invalidateQueries({
+        queryKey: [...PART_FILES_QUERY_KEY, partId],
+      });
+      queryClient.invalidateQueries({
         queryKey: [...PART_DETAIL_QUERY_KEY, partId],
       });
     },
@@ -222,6 +269,9 @@ export function useDetachFile(partId: string | undefined) {
     mutationFn: (fileId: string) => detachFileFromPart(partId!, fileId),
     onSuccess: () => {
       toast.success("파일이 삭제되었습니다");
+      queryClient.invalidateQueries({
+        queryKey: [...PART_FILES_QUERY_KEY, partId],
+      });
       queryClient.invalidateQueries({
         queryKey: [...PART_DETAIL_QUERY_KEY, partId],
       });

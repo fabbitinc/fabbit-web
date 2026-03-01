@@ -13,6 +13,10 @@ import type {
   AttachFilesRequest,
   PartLookupResponse,
   LookupPartsParams,
+  PartProjectsResponse,
+  PartBomResponse,
+  PartSuppliersResponse,
+  PartFilesResponse,
 } from "./types/parts";
 
 /** Part 필터 옵션 조회 (카테고리, 수명주기 DISTINCT 값) */
@@ -55,13 +59,43 @@ export async function getPartDetail(
   return response.data;
 }
 
+/** Part BOM 조회 (children + parents) */
+export async function getPartBom(
+  partId: string,
+): Promise<PartBomResponse> {
+  const response = await apiClient.get<PartBomResponse>(
+    `/api/v1/parts/${partId}/bom`,
+  );
+  return response.data;
+}
+
+/** Part 공급사 조회 */
+export async function getPartSuppliers(
+  partId: string,
+): Promise<PartSuppliersResponse> {
+  const response = await apiClient.get<PartSuppliersResponse>(
+    `/api/v1/parts/${partId}/suppliers`,
+  );
+  return response.data;
+}
+
+/** Part 첨부 파일 조회 */
+export async function getPartFiles(
+  partId: string,
+): Promise<PartFilesResponse> {
+  const response = await apiClient.get<PartFilesResponse>(
+    `/api/v1/parts/${partId}/files`,
+  );
+  return response.data;
+}
+
 /** Part BOM 트리 조회 */
 export async function getPartBomTree(
   partId: string,
   direction: "forward" | "reverse" = "forward",
 ): Promise<BomTreeResponse> {
   const response = await apiClient.get<BomTreeResponse>(
-    `/api/v1/parts/${partId}/bom`,
+    `/api/v1/parts/${partId}/bom/tree`,
     { params: { direction } },
   );
   return response.data;
@@ -102,7 +136,7 @@ export async function exportBom(
   if (params.mapping_id) query.set("mapping_id", params.mapping_id);
 
   const qs = query.toString();
-  const url = `/api/v1/parts/${partId}/bom/export${qs ? `?${qs}` : ""}`;
+  const url = `/api/v1/parts/${partId}/bom/tree/export${qs ? `?${qs}` : ""}`;
   await downloadExcel(url, "bom.xlsx");
 }
 
@@ -124,6 +158,16 @@ export async function detachFileFromPart(
   fileId: string,
 ): Promise<void> {
   await apiClient.delete(`/api/v1/parts/${partId}/files/${fileId}`);
+}
+
+/** 부품이 속한 프로젝트 목록 조회 */
+export async function getPartProjects(
+  partId: string,
+): Promise<PartProjectsResponse> {
+  const response = await apiClient.get<PartProjectsResponse>(
+    `/api/v1/parts/${partId}/projects`,
+  );
+  return response.data;
 }
 
 /** Part에 도면 등록 */

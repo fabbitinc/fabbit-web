@@ -1,6 +1,6 @@
 import type { TimelineUserDto } from "./issue";
 
-export type ActivityScope = "issue" | "cr" | "part" | "assignee" | "reviewer" | "label" | "project";
+export type ActivityScope = "issue" | "cr" | "part" | "assignee" | "reviewer" | "label" | "file" | "mention" | "project";
 
 export interface ActivityDto {
   id: string;

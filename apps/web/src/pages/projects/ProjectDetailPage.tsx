@@ -34,7 +34,7 @@ import {
   Tag,
   X,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -92,7 +92,8 @@ import {
   useUpdateChangeComment,
   useCloseChange,
   useMergeChange,
-  useOpenChange,
+  useSubmitChange,
+  useReopenChange,
 } from "@/api/hooks/useChanges";
 import { linkPartsToProject, unlinkPartsFromProject } from "@/api/project";
 import {
@@ -109,6 +110,17 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -939,24 +951,62 @@ function AddPartDialog({
 // 변경 요청 탭 (GitHub Issues/PR 스타일)
 // ============================================================
 
+const CR_STATUS_CONFIG: Record<
+  string,
+  { icon: React.ElementType; label: string; className: string }
+> = {
+  draft: {
+    icon: FilePen,
+    label: "초안",
+    className: "text-gray-500 dark:text-gray-400",
+  },
+  open: {
+    icon: FilePen,
+    label: "제출",
+    className: "text-emerald-600 dark:text-emerald-400",
+  },
+  merged: {
+    icon: FileCheck,
+    label: "반영",
+    className: "text-purple-600 dark:text-purple-400",
+  },
+  closed: {
+    icon: FileX,
+    label: "닫힘",
+    className: "text-red-500 dark:text-red-400",
+  },
+};
+
+const ISSUE_STATUS_CONFIG: Record<
+  string,
+  { icon: React.ElementType; label: string; className: string }
+> = {
+  open: {
+    icon: AlertCircle,
+    label: "열림",
+    className: "text-emerald-600 dark:text-emerald-400",
+  },
+  closed: {
+    icon: CheckCircle2,
+    label: "닫힘",
+    className: "text-purple-600 dark:text-purple-400",
+  },
+};
+
 function CRStatusIcon({ cr }: { cr: ChangeRequest }) {
-  if (cr.type === "pr" && cr.status === "merged") {
-    return (
-      <FileCheck className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-    );
-  }
-  if (cr.type === "pr") {
-    return cr.status === "open" ? (
-      <FilePen className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-    ) : (
-      <FileX className="h-4 w-4 text-red-500 dark:text-red-400" />
-    );
-  }
-  // issue
-  return cr.status === "open" ? (
-    <AlertCircle className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-  ) : (
-    <CheckCircle2 className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+  const config =
+    cr.type === "pr"
+      ? CR_STATUS_CONFIG[cr.status]
+      : ISSUE_STATUS_CONFIG[cr.status];
+
+  if (!config) return null;
+
+  const Icon = config.icon;
+  return (
+    <span className={`inline-flex items-center gap-1 ${config.className}`}>
+      <Icon className="h-4 w-4" />
+      <span className="text-xs font-medium">{config.label}</span>
+    </span>
   );
 }
 
@@ -1085,23 +1135,17 @@ function toTimelineEvents(
       };
     }
 
-    // CR 상태 변경 (DRAFT→OPEN, OPEN→CLOSED, OPEN→MERGED 등)
+    // CR 상태 변경 (DRAFT→SUBMITTED, SUBMITTED→CLOSED, SUBMITTED→MERGED 등)
     if (action === "cr_state_changed") {
-      const to = (detail.to as string | undefined)?.toLowerCase();
-      if (to === "merged") {
-        return {
-          id: item.id,
-          type: "cr_merged",
-          author,
-          createdAt: item.createdAt,
-        };
-      }
       return {
         id: item.id,
         type: "cr_state_changed",
         author,
         createdAt: item.createdAt,
-        content: `${(detail.from as string) ?? ""} → ${(detail.to as string) ?? ""}`,
+        content: {
+          from: ((detail.from as string) ?? "").toUpperCase(),
+          to: ((detail.to as string) ?? "").toUpperCase(),
+        },
       };
     }
 
@@ -1461,7 +1505,7 @@ function toChangeStatus(
 ): "draft" | "open" | "closed" | "merged" {
   const lower = state.toLowerCase();
   if (lower === "draft") return "draft";
-  if (lower === "open") return "open";
+  if (lower === "open" || lower === "submitted") return "open";
   if (lower === "merged") return "merged";
   return "closed";
 }
@@ -1624,7 +1668,7 @@ function CRListView({
                 onClick={() => onSelect(cr)}
                 className="flex w-full items-start gap-3 px-5 py-3 text-left cursor-pointer transition-colors hover:bg-muted/30"
               >
-                <div className="mt-0.5 shrink-0">
+                <div className="mt-0.5 shrink-0 w-14">
                   <CRStatusIcon cr={cr} />
                 </div>
 
@@ -1646,7 +1690,7 @@ function CRListView({
                     <span>#{cr.number}</span>
                     <span>·</span>
                     <span>
-                      {cr.author} 님이 {timeAgo(cr.createdAt)} 열었습니다
+                      {cr.author} 님이 {timeAgo(cr.createdAt)} 생성했습니다
                     </span>
                     {cr.assignees.length > 0 && (
                       <>
@@ -2043,9 +2087,13 @@ function IssuesView({
             navigate(`/projects/${projectId}/issues/${issueNumber}`)
           }
           projectId={projectId}
-          onUpdateTitleAndBody={async (title, body) => {
-            await updateIssueMutation.mutateAsync({ title, body });
-          }}
+          onUpdateTitleAndBody={
+            issueDetail.state.toUpperCase() === "OPEN"
+              ? async (title, body) => {
+                  await updateIssueMutation.mutateAsync({ title, body });
+                }
+              : undefined
+          }
           onUpdateComment={async (commentId, body) => {
             await updateIssueCommentMutation.mutateAsync({ commentId, body });
           }}
@@ -2191,7 +2239,11 @@ function PullRequestsView({
     projectId,
     isDetailRoute ? changeId : undefined,
   );
-  const openChangeMutation = useOpenChange(
+  const submitChangeMutation = useSubmitChange(
+    projectId,
+    isDetailRoute ? changeId : undefined,
+  );
+  const reopenChangeMutation = useReopenChange(
     projectId,
     isDetailRoute ? changeId : undefined,
   );
@@ -2337,19 +2389,27 @@ function PullRequestsView({
           navigate(`/projects/${projectId}/issues/${issueNumber}`)
         }
         projectId={projectId}
-        onUpdateTitleAndBody={async (title, body) => {
-          await updateChangeMutation.mutateAsync({ title, body });
-        }}
+        onUpdateTitleAndBody={
+          ["DRAFT", "SUBMITTED"].includes(
+            changeDetail.crState.toUpperCase(),
+          )
+            ? async (title, body) => {
+                await updateChangeMutation.mutateAsync({ title, body });
+              }
+            : undefined
+        }
         onUpdateComment={async (commentId, body) => {
           await updateChangeCommentMutation.mutateAsync({ commentId, body });
         }}
         currentUserId={changeUser?.id}
         onCloseChange={() => closeChangeMutation.mutate()}
         onMergeChange={() => mergeChangeMutation.mutate()}
-        onOpenChange={() => openChangeMutation.mutate()}
+        onSubmitChange={() => submitChangeMutation.mutate()}
+        onReopenChange={() => reopenChangeMutation.mutate()}
         isClosingChange={closeChangeMutation.isPending}
         isMergingChange={mergeChangeMutation.isPending}
-        isOpeningChange={openChangeMutation.isPending}
+        isSubmittingChange={submitChangeMutation.isPending}
+        isReopeningChange={reopenChangeMutation.isPending}
       />
     );
   }
@@ -2433,10 +2493,12 @@ function ActivityTab({ projectId }: { projectId: string }) {
   const [userFilter, setUserFilter] = useState<string>("all");
   const sentinelRef = useRef<HTMLDivElement>(null);
 
-  const scope = scopeFilter === "all" ? undefined : [scopeFilter];
+  const scope = scopeFilter === "all" ? undefined : scopeFilter;
+  const userId = userFilter === "all" ? undefined : userFilter;
 
   const { data, isLoading, hasNextPage, fetchNextPage, isFetchingNextPage } =
-    useProjectActivities(projectId, { scope });
+    useProjectActivities(projectId, { scope, userId });
+  const { data: membersData } = useProjectMembers(projectId);
 
   // 모든 페이지의 활동 합치기
   const allActivities = useMemo(() => {
@@ -2444,7 +2506,7 @@ function ActivityTab({ projectId }: { projectId: string }) {
     return data.pages.flatMap((page) => page.items);
   }, [data]);
 
-  // 모든 페이지의 users 합치기
+  // 모든 페이지의 users 합치기 (활동 렌더링용 — 이름 표시)
   const allUsers = useMemo(() => {
     if (!data) return {} as Record<string, TimelineUserDto>;
     const merged: Record<string, TimelineUserDto> = {};
@@ -2454,20 +2516,17 @@ function ActivityTab({ projectId }: { projectId: string }) {
     return merged;
   }, [data]);
 
-  // 사용자 필터: users 맵에서 유저 목록 추출
+  // 사용자 필터: 프로젝트 멤버 목록
   const userList = useMemo(() => {
-    return Object.values(allUsers);
-  }, [allUsers]);
-
-  // 사용자 필터 적용
-  const filteredActivities = useMemo(() => {
-    if (userFilter === "all") return allActivities;
-    return allActivities.filter((a) => a.actorId === userFilter);
-  }, [allActivities, userFilter]);
+    return (membersData?.items ?? []).map((m) => ({
+      id: m.userId,
+      fullName: m.fullName,
+    }));
+  }, [membersData]);
 
   const groupedActivities = useMemo(
-    () => groupActivitiesByDate(filteredActivities),
-    [filteredActivities],
+    () => groupActivitiesByDate(allActivities),
+    [allActivities],
   );
 
   // IntersectionObserver로 무한 스크롤
@@ -2493,9 +2552,9 @@ function ActivityTab({ projectId }: { projectId: string }) {
       <div className="flex items-center justify-between border-b px-5 py-3.5">
         <div className="flex items-center gap-2">
           <h2 className="text-sm font-medium text-foreground">활동 로그</h2>
-          {filteredActivities.length > 0 && (
+          {allActivities.length > 0 && (
             <span className="text-[11px] text-muted-foreground">
-              {filteredActivities.length}건
+              {allActivities.length}건
             </span>
           )}
         </div>
@@ -2537,7 +2596,7 @@ function ActivityTab({ projectId }: { projectId: string }) {
         <div className="flex items-center justify-center py-12">
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
         </div>
-      ) : filteredActivities.length === 0 ? (
+      ) : allActivities.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12">
           <Activity className="h-8 w-8 text-muted-foreground/30" />
           <p className="mt-3 text-sm text-muted-foreground">
@@ -2879,16 +2938,37 @@ export function ProjectDetailPage() {
               projectId={projectId}
               onRowClick={(partId) => navigate(`/parts/${partId}`)}
               selectedAction={({ selectedIds, clearSelection }) => (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-7 text-xs text-muted-foreground hover:text-destructive"
-                  onClick={() =>
-                    handleUnlinkSelected(selectedIds, clearSelection)
-                  }
-                >
-                  프로젝트 연결 해제
-                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-7 text-xs text-muted-foreground hover:text-destructive"
+                    >
+                      프로젝트 연결 해제
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>프로젝트 연결 해제</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        선택한 {selectedIds.size}개 부품의 프로젝트 연결을
+                        해제하시겠습니까?
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>취소</AlertDialogCancel>
+                      <AlertDialogAction
+                        className={buttonVariants({ variant: "destructive" })}
+                        onClick={() =>
+                          handleUnlinkSelected(selectedIds, clearSelection)
+                        }
+                      >
+                        연결 해제
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
               )}
             />
           </div>

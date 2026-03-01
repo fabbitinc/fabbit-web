@@ -42,6 +42,7 @@ import {
 } from "@/components/ui/tooltip";
 import { TiptapEditor } from "@/components/ui/tiptap-editor";
 import { LabelBadge } from "@fabbit/ui";
+import { cn } from "@/lib/utils";
 import {
   type ChangeRequest,
   type TimelineEvent,
@@ -50,6 +51,8 @@ import {
   type LinkedChangeBadge,
   type LinkedIssueBadge,
 } from "./changeRequestMock";
+import { MOCK_CR_CHANGES } from "./changeRequestMock";
+import { ChangesDiffTab } from "./ChangesDiffTab";
 
 // ============================================================
 // 헬퍼
@@ -428,16 +431,13 @@ function TimelineEventItem({
     );
   }
 
-  // 상태 변경
+  // 이슈 상태 변경
   if (event.type === "status_change") {
-    const isMerged = event.content === "merged";
     const isReopened = event.content === "open";
     return (
       <div className="flex items-center gap-2 py-1.5 ml-11">
         <div className="flex h-5 w-5 shrink-0 items-center justify-center">
-          {isMerged ? (
-            <FileCheck className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-          ) : isReopened ? (
+          {isReopened ? (
             <AlertCircle className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
           ) : (
             <CheckCircle2 className="h-4 w-4 text-red-500 dark:text-red-400" />
@@ -445,11 +445,9 @@ function TimelineEventItem({
         </div>
         <p className="flex-1 text-sm text-muted-foreground">
           <ActivityAuthor author={event.author} />
-          {isMerged
-            ? " 님이 변경을 반영했습니다"
-            : isReopened
-              ? " 님이 이슈를 다시 열었습니다"
-              : " 님이 이슈를 닫았습니다"}
+          {isReopened
+            ? " 님이 이슈를 다시 열었습니다"
+            : " 님이 이슈를 닫았습니다"}
         </p>
         <span className="text-xs text-muted-foreground/60">
           {timeAgo(event.createdAt)}
@@ -458,25 +456,43 @@ function TimelineEventItem({
     );
   }
 
-  // CR 상태 변경 (DRAFT→OPEN, OPEN→CLOSED 등)
+  // CR 상태 변경
   if (event.type === "cr_state_changed") {
-    const CR_STATE_LABEL: Record<string, string> = {
-      DRAFT: "초안",
-      OPEN: "열림",
-      CLOSED: "닫힘",
-      MERGED: "반영됨",
-    };
-    const parts = (typeof event.content === "string" ? event.content : "").split(" → ");
-    const fromLabel = CR_STATE_LABEL[parts[0]] ?? parts[0];
-    const toLabel = CR_STATE_LABEL[parts[1]] ?? parts[1];
+    const detail = event.content as { from?: string; to?: string } | null;
+    const from = detail?.from?.toUpperCase() ?? "";
+    const to = detail?.to?.toUpperCase() ?? "";
+
+    let message: string;
+    let icon: React.ReactNode;
+
+    if (from === "CLOSED" && to === "SUBMITTED") {
+      message = " 님이 변경 요청을 다시 제출했습니다";
+      icon = <AlertCircle className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />;
+    } else if (to === "DRAFT") {
+      message = " 님이 변경 요청을 초안상태로 변경했습니다";
+      icon = <FilePen className="h-4 w-4 text-muted-foreground" />;
+    } else if (to === "SUBMITTED") {
+      message = " 님이 변경 요청을 제출했습니다";
+      icon = <FilePen className="h-4 w-4 text-blue-600 dark:text-blue-400" />;
+    } else if (to === "MERGED") {
+      message = " 님이 변경 요청을 반영했습니다";
+      icon = <FileCheck className="h-4 w-4 text-purple-600 dark:text-purple-400" />;
+    } else if (to === "CLOSED") {
+      message = " 님이 변경 요청을 닫았습니다";
+      icon = <CheckCircle2 className="h-4 w-4 text-red-500 dark:text-red-400" />;
+    } else {
+      message = " 님이 변경 요청 상태를 변경했습니다";
+      icon = <FilePen className="h-4 w-4 text-amber-600 dark:text-amber-400" />;
+    }
+
     return (
       <div className="flex items-center gap-2 py-1.5 ml-11">
         <div className="flex h-5 w-5 shrink-0 items-center justify-center">
-          <FilePen className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+          {icon}
         </div>
         <p className="flex-1 text-sm text-muted-foreground">
           <ActivityAuthor author={event.author} />
-          {` 님이 상태를 ${fromLabel}에서 ${toLabel}(으)로 변경했습니다`}
+          {message}
         </p>
         <span className="text-xs text-muted-foreground/60">
           {timeAgo(event.createdAt)}
@@ -905,10 +921,12 @@ export interface ChangeRequestDetailProps {
   isReopeningIssue?: boolean;
   onCloseChange?: () => void;
   onMergeChange?: () => void;
-  onOpenChange?: () => void;
+  onSubmitChange?: () => void;
+  onReopenChange?: () => void;
   isClosingChange?: boolean;
   isMergingChange?: boolean;
-  isOpeningChange?: boolean;
+  isSubmittingChange?: boolean;
+  isReopeningChange?: boolean;
   /** 이슈 → CR 생성 네비게이션 */
   onCreateLinkedChange?: () => void;
   /** CR → 이슈 연결 동기화 */
@@ -974,10 +992,12 @@ export function ChangeRequestDetail({
   isReopeningIssue,
   onCloseChange,
   onMergeChange,
-  onOpenChange,
+  onSubmitChange,
+  onReopenChange,
   isClosingChange,
   isMergingChange,
-  isOpeningChange,
+  isSubmittingChange,
+  isReopeningChange,
   onCreateLinkedChange,
   onSyncLinkedIssues,
   onUnlinkIssue,
@@ -1005,6 +1025,9 @@ export function ChangeRequestDetail({
     },
     [onNavigateToIssue, onNavigateToChange],
   );
+
+  // 탭 상태 (pr 타입에서만 사용)
+  const [activeTab, setActiveTab] = useState<"conversation" | "changes">("conversation");
 
   // 편집 모드 상태
   const [isEditing, setIsEditing] = useState(false);
@@ -1120,7 +1143,44 @@ export function ChangeRequestDetail({
         </div>
       </div>
 
+      {/* PR 타입 탭 바 */}
+      {cr.type === "pr" && (
+        <div className="mt-5 flex gap-1 border-b">
+          {(
+            [
+              { key: "conversation", label: "대화" },
+              { key: "changes", label: "변경 내용" },
+            ] as const
+          ).map((tab) => (
+            <button
+              key={tab.key}
+              type="button"
+              className={cn(
+                "relative px-3 py-2 text-sm font-medium transition-colors",
+                activeTab === tab.key
+                  ? "text-foreground"
+                  : "text-muted-foreground hover:text-foreground",
+              )}
+              onClick={() => setActiveTab(tab.key)}
+            >
+              {tab.label}
+              {activeTab === tab.key && (
+                <span className="absolute inset-x-0 -bottom-px h-0.5 rounded-full bg-foreground" />
+              )}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* 변경 내용 탭 */}
+      {cr.type === "pr" && activeTab === "changes" && (
+        <div className="mt-6">
+          <ChangesDiffTab changes={MOCK_CR_CHANGES[cr.id] ?? MOCK_CR_CHANGES["cr1"]} />
+        </div>
+      )}
+
       {/* 콘텐츠 영역: 2컬럼 (타임라인 | 사이드바) */}
+      {(cr.type !== "pr" || activeTab === "conversation") && (
       <div className="mt-6 flex gap-6">
         {/* 왼쪽: 타임라인 */}
         <div className="min-w-0 flex-1 space-y-4">
@@ -1325,13 +1385,13 @@ export function ChangeRequestDetail({
                     )}
                   {cr.type === "pr" &&
                     cr.status === "draft" &&
-                    onOpenChange && (
+                    onSubmitChange && (
                       <Button
                         size="sm"
-                        disabled={isOpeningChange}
-                        onClick={onOpenChange}
+                        disabled={isSubmittingChange}
+                        onClick={onSubmitChange}
                       >
-                        {isOpeningChange ? (
+                        {isSubmittingChange ? (
                           <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
                         ) : (
                           <FileCheck className="mr-1.5 h-3.5 w-3.5" />
@@ -1371,6 +1431,23 @@ export function ChangeRequestDetail({
                           <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" />
                         )}
                         변경 반영
+                      </Button>
+                    )}
+                  {cr.type === "pr" &&
+                    cr.status === "closed" &&
+                    onReopenChange && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={isReopeningChange}
+                        onClick={onReopenChange}
+                      >
+                        {isReopeningChange ? (
+                          <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <AlertCircle className="mr-1.5 h-3.5 w-3.5" />
+                        )}
+                        다시 제출
                       </Button>
                     )}
                   <Button
@@ -2146,6 +2223,7 @@ export function ChangeRequestDetail({
           </div>
         </div>
       </div>
+      )}
     </div>
   );
 }

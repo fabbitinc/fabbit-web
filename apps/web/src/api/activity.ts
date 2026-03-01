@@ -44,7 +44,7 @@ function mapUsers(raw: Record<string, ApiTimelineUserResponse>): Record<string, 
 
 export async function getProjectActivities(
   projectId: string,
-  params?: { cursor?: string; limit?: number; scope?: ActivityScope[] },
+  params?: { cursor?: string; limit?: number; scope?: ActivityScope; userId?: string },
 ): Promise<ActivityListResponse> {
   const response = await apiClient.get<ApiActivityListResponse>(
     `/api/v1/projects/${projectId}/activities`,
@@ -53,6 +53,7 @@ export async function getProjectActivities(
         cursor: params?.cursor,
         limit: params?.limit,
         scope: params?.scope,
+        user_id: params?.userId,
       },
     },
   );
