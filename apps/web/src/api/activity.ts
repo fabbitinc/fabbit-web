@@ -12,7 +12,7 @@ interface ApiActivityResponse {
 }
 
 interface ApiTimelineUserResponse {
-  id: string;
+  user_id: string;
   full_name: string;
   profile_image_url: string | null;
 }
@@ -37,7 +37,7 @@ function mapActivity(raw: ApiActivityResponse): ActivityDto {
 function mapUsers(raw: Record<string, ApiTimelineUserResponse>): Record<string, TimelineUserDto> {
   const result: Record<string, TimelineUserDto> = {};
   for (const [key, u] of Object.entries(raw)) {
-    result[key] = { id: u.id, fullName: u.full_name, profileImageUrl: u.profile_image_url };
+    result[key] = { id: u.user_id, fullName: u.full_name, profileImageUrl: u.profile_image_url };
   }
   return result;
 }

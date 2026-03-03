@@ -22,7 +22,7 @@ interface ApiIssueLabelResponse {
 }
 
 interface ApiIssueAssigneeResponse {
-  id: string;
+  user_id: string;
   full_name: string;
   profile_image_url?: string | null;
 }
@@ -103,6 +103,7 @@ interface ApiTimelineCommentItem {
   body: Record<string, unknown> | null;
   author_id: string | null;
   created_at: string;
+  updated_at?: string;
   is_modified?: boolean;
 }
 
@@ -110,13 +111,14 @@ interface ApiTimelineActivityItem {
   type: "activity";
   id: string;
   action: string;
+  scope?: string | null;
   actor_id: string;
   detail: Record<string, unknown> | null;
   created_at: string;
 }
 
 interface ApiTimelineUserResponse {
-  id: string;
+  user_id: string;
   full_name: string;
   profile_image_url: string | null;
 }
@@ -136,9 +138,9 @@ function mapIssueLabel(label: ApiIssueLabelResponse): IssueLabelDto | null {
 }
 
 function mapUserSummary(user: ApiIssueAssigneeResponse): UserSummaryDto | null {
-  if (!user.id || !user.full_name) return null;
+  if (!user.user_id || !user.full_name) return null;
   return {
-    id: user.id,
+    id: user.user_id,
     fullName: user.full_name,
     profileImageUrl: user.profile_image_url ?? null,
   };
@@ -228,6 +230,7 @@ function mapTimelineItem(item: ApiTimelineCommentItem | ApiTimelineActivityItem)
       body: item.body,
       authorId: item.author_id,
       createdAt: item.created_at,
+      updatedAt: item.updated_at,
       isModified: item.is_modified ?? false,
     };
   }
@@ -236,6 +239,7 @@ function mapTimelineItem(item: ApiTimelineCommentItem | ApiTimelineActivityItem)
     type: "activity",
     id: item.id,
     action: item.action,
+    scope: item.scope ?? null,
     actorId: item.actor_id,
     detail: item.detail,
     createdAt: item.created_at,
@@ -267,7 +271,7 @@ function mapTimelineUsers(raw?: Record<string, ApiTimelineUserResponse>): Record
   if (!raw) return {};
   const result: Record<string, TimelineUserDto> = {};
   for (const [key, u] of Object.entries(raw)) {
-    result[key] = { id: u.id, fullName: u.full_name, profileImageUrl: u.profile_image_url };
+    result[key] = { id: u.user_id, fullName: u.full_name, profileImageUrl: u.profile_image_url };
   }
   return result;
 }

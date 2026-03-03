@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback } from "react";
+import { useSearchParams } from "react-router-dom";
 import type { Content } from "@tiptap/react";
 import {
   CheckCircle2,
@@ -24,10 +25,12 @@ import {
   Loader2,
   X,
   Pencil,
+  Settings,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { UserAvatar } from "@/components/UserAvatar";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -44,6 +47,11 @@ import { TiptapEditor } from "@/components/ui/tiptap-editor";
 import { LabelBadge } from "@fabbit/ui";
 import { cn } from "@/lib/utils";
 import {
+  MemberPickerSection,
+  LabelPickerSection,
+  PartPickerSection,
+} from "@/components/sidebar-pickers";
+import {
   type ChangeRequest,
   type TimelineEvent,
   type TimelineAuthor,
@@ -57,10 +65,6 @@ import { ChangesDiffTab } from "./ChangesDiffTab";
 // ============================================================
 // 헬퍼
 // ============================================================
-
-function getInitials(name: string): string {
-  return name.slice(0, 1);
-}
 
 /** 목록이 여러 개일 때 "첫번째 외 N개" + 툴팁으로 나머지를 보여주는 컴포넌트 */
 export function TruncatedNames({
@@ -100,14 +104,11 @@ export function TruncatedNames({
 function ActivityAuthor({ author }: { author: TimelineAuthor }) {
   return (
     <span className="inline-flex items-center gap-1 align-middle font-medium text-foreground">
-      <Avatar className="h-4 w-4">
-        {author.profileImageUrl && (
-          <AvatarImage src={author.profileImageUrl} alt={author.name} />
-        )}
-        <AvatarFallback className="text-[8px]">
-          {getInitials(author.name)}
-        </AvatarFallback>
-      </Avatar>
+      <UserAvatar
+        name={author.name}
+        imageUrl={author.profileImageUrl}
+        className="h-4 w-4 text-[8px]"
+      />
       {author.name}
     </span>
   );
@@ -158,9 +159,7 @@ function CRStatusIcon({
   }
   if (cr.type === "pr") {
     if (cr.status === "draft") {
-      return (
-        <FilePen className={`${cls} text-gray-500 dark:text-gray-400`} />
-      );
+      return <FilePen className={`${cls} text-gray-500 dark:text-gray-400`} />;
     }
     return cr.status === "open" ? (
       <FilePen className={`${cls} text-emerald-600 dark:text-emerald-400`} />
@@ -223,7 +222,6 @@ function TimelineCommentItem({
   event,
   canEdit,
   onUpdate,
-  projectId,
   onIssueMentionClick,
 }: {
   event: TimelineEvent;
@@ -232,7 +230,6 @@ function TimelineCommentItem({
     commentId: string,
     body: Record<string, unknown>,
   ) => Promise<void>;
-  projectId?: string;
   onIssueMentionClick?: (
     issueNumber: number,
     issueType: "issue" | "change_request",
@@ -252,7 +249,6 @@ function TimelineCommentItem({
           content={isRichContent ? (event.content as Content) : undefined}
           editable
           minHeight={80}
-          projectId={projectId}
           onChangeJson={(json) => {
             editBodyRef.current = json as Record<string, unknown>;
           }}
@@ -294,17 +290,11 @@ function TimelineCommentItem({
   return (
     <div className="flex gap-3">
       <div className="flex flex-col items-center">
-        <Avatar className="h-8 w-8 shrink-0">
-          {event.author.profileImageUrl && (
-            <AvatarImage
-              src={event.author.profileImageUrl}
-              alt={event.author.name}
-            />
-          )}
-          <AvatarFallback className="text-xs">
-            {getInitials(event.author.name)}
-          </AvatarFallback>
-        </Avatar>
+        <UserAvatar
+          name={event.author.name}
+          imageUrl={event.author.profileImageUrl}
+          className="h-8 w-8 shrink-0"
+        />
       </div>
       <div className="min-w-0 flex-1 rounded-lg border bg-card">
         <div className="flex items-center gap-2 border-b bg-muted/30 px-4 py-2">
@@ -315,9 +305,7 @@ function TimelineCommentItem({
             {timeAgo(event.createdAt)}
           </span>
           {event.isModified && (
-            <span className="text-xs text-muted-foreground">
-              · 수정됨
-            </span>
+            <span className="text-xs text-muted-foreground">· 수정됨</span>
           )}
           {canEdit && onUpdate && (
             <Button
@@ -359,25 +347,32 @@ function TimelineCommentItem({
 function ClickableIssueLink({
   item,
   onNavigate,
+  block,
 }: {
   item: { number: number; title: string; type?: "issue" | "change_request" };
   onNavigate?: (number: number, type: "issue" | "change_request") => void;
+  /** true이면 block + truncate 스타일 (목록 항목용) */
+  block?: boolean;
 }) {
   const issueType = item.type ?? "issue";
+  const blockCls = block ? "block truncate" : "";
   if (!onNavigate) {
     return (
-      <span className="font-medium text-foreground">
-        #{item.number} {item.title}
+      <span className={cn("font-medium text-foreground", blockCls)}>
+        {item.title}
       </span>
     );
   }
   return (
     <button
       type="button"
-      className="cursor-pointer font-medium text-primary hover:underline"
+      className={cn(
+        "cursor-pointer font-medium text-primary hover:underline",
+        blockCls,
+      )}
       onClick={() => onNavigate(item.number, issueType)}
     >
-      #{item.number} {item.title}
+      {item.title}
     </button>
   );
 }
@@ -467,7 +462,9 @@ function TimelineEventItem({
 
     if (from === "CLOSED" && to === "SUBMITTED") {
       message = " 님이 변경 요청을 다시 제출했습니다";
-      icon = <AlertCircle className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />;
+      icon = (
+        <AlertCircle className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+      );
     } else if (to === "DRAFT") {
       message = " 님이 변경 요청을 초안상태로 변경했습니다";
       icon = <FilePen className="h-4 w-4 text-muted-foreground" />;
@@ -476,10 +473,14 @@ function TimelineEventItem({
       icon = <FilePen className="h-4 w-4 text-blue-600 dark:text-blue-400" />;
     } else if (to === "MERGED") {
       message = " 님이 변경 요청을 반영했습니다";
-      icon = <FileCheck className="h-4 w-4 text-purple-600 dark:text-purple-400" />;
+      icon = (
+        <FileCheck className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+      );
     } else if (to === "CLOSED") {
       message = " 님이 변경 요청을 닫았습니다";
-      icon = <CheckCircle2 className="h-4 w-4 text-red-500 dark:text-red-400" />;
+      icon = (
+        <CheckCircle2 className="h-4 w-4 text-red-500 dark:text-red-400" />
+      );
     } else {
       message = " 님이 변경 요청 상태를 변경했습니다";
       icon = <FilePen className="h-4 w-4 text-amber-600 dark:text-amber-400" />;
@@ -778,33 +779,72 @@ function TimelineEventItem({
     );
   }
 
-  // CR 이슈 연결
-  if (event.type === "cr_issue_linked") {
+  // 변경 요청 연결/해제 (이슈 → CR)
+  if (event.type === "cr_changed") {
+    const isRemoval = (event.linkedIssueCount ?? 0) < 0;
+    const IconComp = isRemoval ? Unlink : LinkIcon;
+    const label = isRemoval
+      ? "변경 요청을 해제했습니다"
+      : "변경 요청을 연결했습니다";
     return (
-      <div className="flex items-center gap-2 py-1.5 ml-11">
-        <div className="flex h-5 w-5 shrink-0 items-center justify-center">
-          <LinkIcon className="h-3.5 w-3.5 text-muted-foreground" />
+      <div className="py-1.5 ml-11">
+        <div className="flex items-center gap-2">
+          <div className="flex h-5 w-5 shrink-0 items-center justify-center">
+            <IconComp className="h-3.5 w-3.5 text-muted-foreground" />
+          </div>
+          <p className="flex-1 text-sm text-muted-foreground">
+            <ActivityAuthor author={event.author} />
+            {" 님이 "}
+            {label}
+          </p>
+          <span className="text-xs text-muted-foreground/60">
+            {timeAgo(event.createdAt)}
+          </span>
         </div>
-        <p className="flex-1 text-sm text-muted-foreground">
-          <ActivityAuthor author={event.author} />
-          {" 님이 연결했습니다 "}
-          {event.linkedIssues && event.linkedIssues.length > 0 ? (
-            event.linkedIssues.map((i) => (
+        {event.linkedIssues && event.linkedIssues.length > 0 && (
+          <div className="mt-1 ml-7 space-y-0.5">
+            {event.linkedIssues.map((i) => (
               <ClickableIssueLink
                 key={i.number}
                 item={i}
                 onNavigate={onNavigate}
+                block
               />
-            ))
-          ) : (
-            <span className="font-medium text-foreground">
-              {event.linkedIssueCount ?? 1}건
-            </span>
-          )}
-        </p>
-        <span className="text-xs text-muted-foreground/60">
-          {timeAgo(event.createdAt)}
-        </span>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // CR 이슈 연결
+  if (event.type === "cr_issue_linked") {
+    return (
+      <div className="py-1.5 ml-11">
+        <div className="flex items-center gap-2">
+          <div className="flex h-5 w-5 shrink-0 items-center justify-center">
+            <LinkIcon className="h-3.5 w-3.5 text-muted-foreground" />
+          </div>
+          <p className="flex-1 text-sm text-muted-foreground">
+            <ActivityAuthor author={event.author} />
+            {" 님이 연결했습니다"}
+          </p>
+          <span className="text-xs text-muted-foreground/60">
+            {timeAgo(event.createdAt)}
+          </span>
+        </div>
+        {event.linkedIssues && event.linkedIssues.length > 0 && (
+          <div className="mt-1 ml-7 space-y-0.5">
+            {event.linkedIssues.map((i) => (
+              <ClickableIssueLink
+                key={i.number}
+                item={i}
+                onNavigate={onNavigate}
+                block
+              />
+            ))}
+          </div>
+        )}
       </div>
     );
   }
@@ -812,30 +852,31 @@ function TimelineEventItem({
   // CR 이슈 해제
   if (event.type === "cr_issue_unlinked") {
     return (
-      <div className="flex items-center gap-2 py-1.5 ml-11">
-        <div className="flex h-5 w-5 shrink-0 items-center justify-center">
-          <Unlink className="h-3.5 w-3.5 text-muted-foreground" />
+      <div className="py-1.5 ml-11">
+        <div className="flex items-center gap-2">
+          <div className="flex h-5 w-5 shrink-0 items-center justify-center">
+            <Unlink className="h-3.5 w-3.5 text-muted-foreground" />
+          </div>
+          <p className="flex-1 text-sm text-muted-foreground">
+            <ActivityAuthor author={event.author} />
+            {" 님이 해제했습니다"}
+          </p>
+          <span className="text-xs text-muted-foreground/60">
+            {timeAgo(event.createdAt)}
+          </span>
         </div>
-        <p className="flex-1 text-sm text-muted-foreground">
-          <ActivityAuthor author={event.author} />
-          {" 님이 해제했습니다 "}
-          {event.linkedIssues && event.linkedIssues.length > 0 ? (
-            event.linkedIssues.map((i) => (
+        {event.linkedIssues && event.linkedIssues.length > 0 && (
+          <div className="mt-1 ml-7 space-y-0.5">
+            {event.linkedIssues.map((i) => (
               <ClickableIssueLink
                 key={i.number}
                 item={i}
                 onNavigate={onNavigate}
+                block
               />
-            ))
-          ) : (
-            <span className="font-medium text-foreground">
-              {event.linkedIssueCount ?? 1}건
-            </span>
-          )}
-        </p>
-        <span className="text-xs text-muted-foreground/60">
-          {timeAgo(event.createdAt)}
-        </span>
+            ))}
+          </div>
+        )}
       </div>
     );
   }
@@ -929,6 +970,19 @@ export interface ChangeRequestDetailProps {
   isReopeningChange?: boolean;
   /** 이슈 → CR 생성 네비게이션 */
   onCreateLinkedChange?: () => void;
+  /** 이슈 → 변경 요청 연결 동기화 */
+  onSyncLinkedChanges?: (crIds: string[]) => void;
+  /** 변경 요청 lookup 결과 */
+  availableChanges?: {
+    id: string;
+    number: number;
+    title: string;
+    crState: string;
+  }[];
+  /** 현재 연결된 CR ID 목록 */
+  linkedChangeIds?: string[];
+  /** 변경 요청 lookup lazy fetch 트리거 */
+  onRequestChanges?: () => void;
   /** CR → 이슈 연결 동기화 */
   onSyncLinkedIssues?: (issueIds: string[]) => void;
   /** CR → 개별 이슈 해제 */
@@ -941,12 +995,11 @@ export interface ChangeRequestDetailProps {
     state: string;
   }[];
   linkedIssueIds?: string[];
-  /** 연결된 변경요청 클릭 시 이동 */
+  onRequestIssues?: () => void;
+  /** 연결된 변경 요청 클릭 시 이동 */
   onNavigateToChange?: (changeNumber: number) => void;
   /** 연결된 이슈 클릭 시 이동 */
   onNavigateToIssue?: (issueNumber: number) => void;
-  /** 프로젝트 ID (멘션 자동완성용) */
-  projectId?: string;
   /** 제목/본문 수정 콜백 (Promise 반환) */
   onUpdateTitleAndBody?: (
     title: string,
@@ -999,13 +1052,17 @@ export function ChangeRequestDetail({
   isSubmittingChange,
   isReopeningChange,
   onCreateLinkedChange,
+  onSyncLinkedChanges,
+  availableChanges = [],
+  linkedChangeIds = [],
+  onRequestChanges,
   onSyncLinkedIssues,
   onUnlinkIssue,
   availableIssues = [],
   linkedIssueIds = [],
+  onRequestIssues,
   onNavigateToChange,
   onNavigateToIssue,
-  projectId,
   onUpdateTitleAndBody,
   onUpdateComment,
   currentUserId,
@@ -1027,7 +1084,26 @@ export function ChangeRequestDetail({
   );
 
   // 탭 상태 (pr 타입에서만 사용)
-  const [activeTab, setActiveTab] = useState<"conversation" | "changes">("conversation");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const activeTab: "conversation" | "changes" =
+    cr.type === "pr" && searchParams.get("tab") === "changes"
+      ? "changes"
+      : "conversation";
+
+  const setActiveTab = useCallback(
+    (tab: "conversation" | "changes") => {
+      setSearchParams((prev) => {
+        const next = new URLSearchParams(prev);
+        if (tab === "conversation") {
+          next.delete("tab");
+        } else {
+          next.set("tab", tab);
+        }
+        return next;
+      });
+    },
+    [setSearchParams],
+  );
 
   // 편집 모드 상태
   const [isEditing, setIsEditing] = useState(false);
@@ -1035,56 +1111,15 @@ export function ChangeRequestDetail({
   const [editTitle, setEditTitle] = useState(cr.title);
   const editBodyJsonRef = useRef<Record<string, unknown> | null>(null);
   const [editBodyEditorKey, setEditBodyEditorKey] = useState(0);
-  const [memberPopoverOpen, setMemberPopoverOpen] = useState(false);
-  const [memberQuery, setMemberQuery] = useState("");
-  const [draftAssigneeIds, setDraftAssigneeIds] = useState<string[]>([]);
-  const [reviewerPopoverOpen, setReviewerPopoverOpen] = useState(false);
-  const [reviewerQuery, setReviewerQuery] = useState("");
-  const [draftReviewerIds, setDraftReviewerIds] = useState<string[]>([]);
-  const [labelPopoverOpen, setLabelPopoverOpen] = useState(false);
-  const [labelQuery, setLabelQuery] = useState("");
-  const [draftLabelIds, setDraftLabelIds] = useState<string[]>([]);
-  const [partPopoverOpen, setPartPopoverOpen] = useState(false);
-  const [partQuery, setPartQuery] = useState("");
-  const [draftPartIds, setDraftPartIds] = useState<string[]>([]);
-  const partDebounceRef = useRef<ReturnType<typeof setTimeout>>(null);
-  const handlePartQueryChange = useCallback(
-    (value: string) => {
-      setPartQuery(value);
-      if (partDebounceRef.current) clearTimeout(partDebounceRef.current);
-      partDebounceRef.current = setTimeout(() => {
-        onPartsSearchChange?.(value);
-      }, 300);
-    },
-    [onPartsSearchChange],
-  );
   const [issuePopoverOpen, setIssuePopoverOpen] = useState(false);
   const [issueQuery, setIssueQuery] = useState("");
   const [draftIssueIds, setDraftIssueIds] = useState<string[]>([]);
+  const [changePopoverOpen, setChangePopoverOpen] = useState(false);
+  const [changeQuery, setChangeQuery] = useState("");
+  const [draftChangeIds, setDraftChangeIds] = useState<string[]>([]);
   const [commentEditorKey, setCommentEditorKey] = useState(0);
   const commentJsonRef = useRef<Content | null>(null);
   const commentTextRef = useRef("");
-
-  const filteredMembers = availableMembers.filter((m) => {
-    if (!memberQuery.trim()) return true;
-    const q = memberQuery.toLowerCase();
-    return (
-      m.name.toLowerCase().includes(q) || m.email.toLowerCase().includes(q)
-    );
-  });
-
-  const filteredReviewerMembers = availableMembers.filter((m) => {
-    if (!reviewerQuery.trim()) return true;
-    const q = reviewerQuery.toLowerCase();
-    return (
-      m.name.toLowerCase().includes(q) || m.email.toLowerCase().includes(q)
-    );
-  });
-
-  const filteredLabels = availableLabels.filter((label) => {
-    if (!labelQuery.trim()) return true;
-    return label.name.toLowerCase().includes(labelQuery.toLowerCase());
-  });
 
   const filteredIssues = availableIssues.filter((issue) => {
     if (!issueQuery.trim()) return true;
@@ -1092,6 +1127,12 @@ export function ChangeRequestDetail({
     return (
       issue.title.toLowerCase().includes(q) || String(issue.number).includes(q)
     );
+  });
+
+  const filteredChanges = availableChanges.filter((c) => {
+    if (!changeQuery.trim()) return true;
+    const q = changeQuery.toLowerCase();
+    return c.title.toLowerCase().includes(q) || String(c.number).includes(q);
   });
 
   return (
@@ -1175,1054 +1216,735 @@ export function ChangeRequestDetail({
       {/* 변경 내용 탭 */}
       {cr.type === "pr" && activeTab === "changes" && (
         <div className="mt-6">
-          <ChangesDiffTab changes={MOCK_CR_CHANGES[cr.id] ?? MOCK_CR_CHANGES["cr1"]} />
+          <ChangesDiffTab
+            changes={MOCK_CR_CHANGES[cr.id] ?? MOCK_CR_CHANGES["cr1"]}
+          />
         </div>
       )}
 
       {/* 콘텐츠 영역: 2컬럼 (타임라인 | 사이드바) */}
       {(cr.type !== "pr" || activeTab === "conversation") && (
-      <div className="mt-6 flex gap-6">
-        {/* 왼쪽: 타임라인 */}
-        <div className="min-w-0 flex-1 space-y-4">
-          {/* 본문 (첫 번째 댓글) */}
-          {isEditing ? (
-            <div>
-              <TiptapEditor
-                key={editBodyEditorKey}
-                content={cr.description}
-                editable
-                minHeight={100}
-                projectId={projectId}
-                onChangeJson={(json) => {
-                  editBodyJsonRef.current = json as Record<string, unknown>;
-                }}
-              />
-              <div className="mt-3 flex justify-end gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setIsEditing(false)}
-                  disabled={isSaving}
-                >
-                  취소
-                </Button>
-                <Button
-                  size="sm"
-                  disabled={isSaving || !editTitle.trim()}
-                  onClick={async () => {
-                    const bodyToSave =
-                      editBodyJsonRef.current ??
-                      (typeof cr.description === "object"
-                        ? (cr.description as Record<string, unknown>)
-                        : null);
-                    setIsSaving(true);
-                    try {
-                      await onUpdateTitleAndBody?.(
-                        editTitle.trim(),
-                        bodyToSave,
-                      );
-                      setIsEditing(false);
-                    } finally {
-                      setIsSaving(false);
-                    }
+        <div className="mt-6 flex gap-6">
+          {/* 왼쪽: 타임라인 */}
+          <div className="min-w-0 flex-1 space-y-4">
+            {/* 본문 (첫 번째 댓글) */}
+            {isEditing ? (
+              <div>
+                <TiptapEditor
+                  key={editBodyEditorKey}
+                  content={cr.description}
+                  editable
+                  minHeight={100}
+                  onChangeJson={(json) => {
+                    editBodyJsonRef.current = json as Record<string, unknown>;
                   }}
-                >
-                  {isSaving && (
-                    <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-                  )}
-                  저장
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <div className="flex gap-3">
-              <Avatar className="h-8 w-8 shrink-0">
-                <AvatarFallback className="text-xs">
-                  {getInitials(cr.author)}
-                </AvatarFallback>
-              </Avatar>
-              <div className="min-w-0 flex-1 rounded-lg border bg-card">
-                <div className="flex items-center gap-2 border-b bg-muted/30 px-4 py-2">
-                  <span className="text-sm font-medium text-foreground">
-                    {cr.author}
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    {timeAgo(cr.createdAt)}
-                  </span>
-                  {cr.isModified && (
-                    <span className="text-xs text-muted-foreground">
-                      · 수정됨
-                    </span>
-                  )}
-                  <Badge variant="outline" className="ml-auto text-[10px]">
-                    작성자
-                  </Badge>
-                  {onUpdateTitleAndBody && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6 shrink-0"
-                      onClick={() => {
-                        setEditTitle(cr.title);
-                        editBodyJsonRef.current = null;
-                        setEditBodyEditorKey((k) => k + 1);
-                        setIsEditing(true);
-                      }}
-                    >
-                      <Pencil className="h-3 w-3" />
-                    </Button>
-                  )}
-                </div>
-                <div className="px-4 py-3">
-                  <TiptapEditor
-                    content={cr.description}
-                    editable={false}
-                    hideToolbar
-                    minHeight={0}
-                    className="border-0 bg-transparent"
-                    onIssueMentionClick={handleMentionClick}
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* 타임라인 이벤트 */}
-          {cr.timeline.map((event) =>
-            event.type === "comment" ? (
-              <TimelineCommentItem
-                key={event.id}
-                event={event}
-                canEdit={!!currentUserId && event.authorId === currentUserId}
-                onUpdate={onUpdateComment}
-                projectId={projectId}
-                onIssueMentionClick={handleMentionClick}
-              />
-            ) : (
-              <TimelineEventItem
-                key={event.id}
-                event={event}
-                onNavigate={handleMentionClick}
-              />
-            ),
-          )}
-
-          {/* 구분선 */}
-          <div className="border-t" />
-
-          {/* 댓글 입력 */}
-          <div className="flex gap-3">
-            <Avatar className="h-8 w-8 shrink-0">
-              <AvatarFallback className="text-xs">나</AvatarFallback>
-            </Avatar>
-            <div className="min-w-0 flex-1">
-              <TiptapEditor
-                key={commentEditorKey}
-                placeholder="댓글을 작성하세요..."
-                minHeight={100}
-                projectId={projectId}
-                onChangeJson={(json) => {
-                  commentJsonRef.current = json;
-                }}
-                onChangeText={(text) => {
-                  commentTextRef.current = text;
-                }}
-              />
-              <div className="mt-3 flex items-center justify-between">
-                <div />
-                <div className="flex gap-2">
-                  {cr.type === "issue" &&
-                    cr.status === "open" &&
-                    onCloseIssue && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        disabled={isClosingIssue}
-                        onClick={onCloseIssue}
-                      >
-                        {isClosingIssue ? (
-                          <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-                        ) : (
-                          <XCircle className="mr-1.5 h-3.5 w-3.5" />
-                        )}
-                        이슈 닫기
-                      </Button>
-                    )}
-                  {cr.type === "issue" &&
-                    cr.status === "closed" &&
-                    onReopenIssue && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        disabled={isReopeningIssue}
-                        onClick={onReopenIssue}
-                      >
-                        {isReopeningIssue ? (
-                          <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-                        ) : (
-                          <AlertCircle className="mr-1.5 h-3.5 w-3.5" />
-                        )}
-                        이슈 다시 열기
-                      </Button>
-                    )}
-                  {/* CR(변경 요청) 상태별 버튼 */}
-                  {cr.type === "pr" &&
-                    cr.status === "draft" &&
-                    onCloseChange && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        disabled={isClosingChange}
-                        onClick={onCloseChange}
-                      >
-                        {isClosingChange ? (
-                          <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-                        ) : (
-                          <XCircle className="mr-1.5 h-3.5 w-3.5" />
-                        )}
-                        변경 요청 닫기
-                      </Button>
-                    )}
-                  {cr.type === "pr" &&
-                    cr.status === "draft" &&
-                    onSubmitChange && (
-                      <Button
-                        size="sm"
-                        disabled={isSubmittingChange}
-                        onClick={onSubmitChange}
-                      >
-                        {isSubmittingChange ? (
-                          <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-                        ) : (
-                          <FileCheck className="mr-1.5 h-3.5 w-3.5" />
-                        )}
-                        제출
-                      </Button>
-                    )}
-                  {cr.type === "pr" &&
-                    cr.status === "open" &&
-                    onCloseChange && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        disabled={isClosingChange}
-                        onClick={onCloseChange}
-                      >
-                        {isClosingChange ? (
-                          <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-                        ) : (
-                          <XCircle className="mr-1.5 h-3.5 w-3.5" />
-                        )}
-                        변경 요청 닫기
-                      </Button>
-                    )}
-                  {cr.type === "pr" &&
-                    cr.status === "open" &&
-                    onMergeChange && (
-                      <Button
-                        size="sm"
-                        className="bg-green-600 hover:bg-green-700 text-white"
-                        disabled={isMergingChange}
-                        onClick={onMergeChange}
-                      >
-                        {isMergingChange ? (
-                          <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-                        ) : (
-                          <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" />
-                        )}
-                        변경 반영
-                      </Button>
-                    )}
-                  {cr.type === "pr" &&
-                    cr.status === "closed" &&
-                    onReopenChange && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        disabled={isReopeningChange}
-                        onClick={onReopenChange}
-                      >
-                        {isReopeningChange ? (
-                          <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-                        ) : (
-                          <AlertCircle className="mr-1.5 h-3.5 w-3.5" />
-                        )}
-                        다시 제출
-                      </Button>
-                    )}
+                />
+                <div className="mt-3 flex justify-end gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsEditing(false)}
+                    disabled={isSaving}
+                  >
+                    취소
+                  </Button>
                   <Button
                     size="sm"
-                    disabled={isCommentPending}
-                    onClick={() => {
-                      const json = commentJsonRef.current;
-                      const text = commentTextRef.current;
-                      if (!text.trim() || !json || !onAddComment) return;
-                      onAddComment(json as Record<string, unknown>);
-                      commentJsonRef.current = null;
-                      commentTextRef.current = "";
-                      setCommentEditorKey((k) => k + 1);
+                    disabled={isSaving || !editTitle.trim()}
+                    onClick={async () => {
+                      const bodyToSave =
+                        editBodyJsonRef.current ??
+                        (typeof cr.description === "object"
+                          ? (cr.description as Record<string, unknown>)
+                          : null);
+                      setIsSaving(true);
+                      try {
+                        await onUpdateTitleAndBody?.(
+                          editTitle.trim(),
+                          bodyToSave,
+                        );
+                        setIsEditing(false);
+                      } finally {
+                        setIsSaving(false);
+                      }
                     }}
                   >
-                    댓글
+                    {isSaving && (
+                      <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                    )}
+                    저장
                   </Button>
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
-
-        {/* 오른쪽: 사이드바 */}
-        <div className="hidden w-70 shrink-0 lg:block">
-          <div className="space-y-5">
-            {/* 검토자 — 변경 요청(pr)에서만 표시 */}
-            {cr.type === "pr" && (
-              <div>
-                <div className="flex items-center justify-between">
-                  <h3 className="text-xs font-medium text-muted-foreground">
-                    검토자
-                  </h3>
-                  {onSyncReviewers && (
-                    <Popover
-                      open={reviewerPopoverOpen}
-                      onOpenChange={(open) => {
-                        setReviewerPopoverOpen(open);
-                        if (open) {
-                          onRequestMembers?.();
-                          setDraftReviewerIds(selectedReviewerIds);
-                        } else {
-                          setReviewerQuery("");
-                        }
-                      }}
-                    >
-                      <PopoverTrigger asChild>
-                        <button
-                          type="button"
-                          className="inline-flex h-5 w-5 items-center justify-center rounded text-muted-foreground/50 hover:bg-muted hover:text-foreground transition-colors"
-                        >
-                          <Plus className="h-3 w-3" />
-                        </button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-72 p-3" align="end">
-                        <div className="space-y-2">
-                          <p className="text-xs font-medium text-foreground">
-                            검토자 추가
-                          </p>
-                          <Input
-                            value={reviewerQuery}
-                            onChange={(e) => setReviewerQuery(e.target.value)}
-                            placeholder="멤버 검색"
-                          />
-                          <div className="max-h-48 space-y-1 overflow-auto">
-                            {filteredReviewerMembers.length === 0 ? (
-                              <p className="px-1 py-2 text-xs text-muted-foreground">
-                                추가 가능한 멤버가 없습니다.
-                              </p>
-                            ) : (
-                              filteredReviewerMembers.map((member) => (
-                                <label
-                                  key={member.id}
-                                  className="flex w-full cursor-pointer items-center gap-2 rounded-md px-1 py-1.5 hover:bg-muted"
-                                >
-                                  <Checkbox
-                                    checked={draftReviewerIds.includes(
-                                      member.id,
-                                    )}
-                                    onCheckedChange={(checked) => {
-                                      setDraftReviewerIds((prev) => {
-                                        if (checked)
-                                          return [...prev, member.id];
-                                        return prev.filter(
-                                          (id) => id !== member.id,
-                                        );
-                                      });
-                                    }}
-                                  />
-                                  <Avatar className="h-5 w-5">
-                                    <AvatarFallback className="text-[10px]">
-                                      {getInitials(member.name)}
-                                    </AvatarFallback>
-                                  </Avatar>
-                                  <div className="min-w-0 flex-1">
-                                    <p className="truncate text-sm text-foreground">
-                                      {member.name}
-                                    </p>
-                                    <p className="truncate text-xs text-muted-foreground">
-                                      {member.email}
-                                    </p>
-                                  </div>
-                                </label>
-                              ))
-                            )}
-                          </div>
-                          <Button
-                            type="button"
-                            size="sm"
-                            className="w-full"
-                            disabled={isMetaUpdating}
-                            onClick={() => {
-                              onSyncReviewers(draftReviewerIds);
-                              setReviewerPopoverOpen(false);
-                              setReviewerQuery("");
-                            }}
-                          >
-                            검토자 적용
-                          </Button>
-                        </div>
-                      </PopoverContent>
-                    </Popover>
-                  )}
-                </div>
-                <div className="mt-2 space-y-2">
-                  {cr.reviewers.map((reviewer) => (
-                    <div
-                      key={reviewer.id ?? reviewer.name}
-                      className="flex items-center gap-2"
-                    >
-                      <Avatar className="h-6 w-6">
-                        {reviewer.profileImageUrl && (
-                          <AvatarImage
-                            src={reviewer.profileImageUrl}
-                            alt={reviewer.name}
-                          />
-                        )}
-                        <AvatarFallback className="text-[10px]">
-                          {getInitials(reviewer.name)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span className="text-sm text-foreground">
-                        {reviewer.name}
+            ) : (
+              <div className="flex gap-3">
+                <UserAvatar name={cr.author} className="h-8 w-8 shrink-0" />
+                <div className="min-w-0 flex-1 rounded-lg border bg-card">
+                  <div className="flex items-center gap-2 border-b bg-muted/30 px-4 py-2">
+                    <span className="text-sm font-medium text-foreground">
+                      {cr.author}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {timeAgo(cr.createdAt)}
+                    </span>
+                    {cr.isModified && (
+                      <span className="text-xs text-muted-foreground">
+                        · 수정됨
                       </span>
-                    </div>
-                  ))}
+                    )}
+                    <Badge variant="outline" className="ml-auto text-[10px]">
+                      작성자
+                    </Badge>
+                    {onUpdateTitleAndBody && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6 shrink-0"
+                        onClick={() => {
+                          setEditTitle(cr.title);
+                          editBodyJsonRef.current = null;
+                          setEditBodyEditorKey((k) => k + 1);
+                          setIsEditing(true);
+                        }}
+                      >
+                        <Pencil className="h-3 w-3" />
+                      </Button>
+                    )}
+                  </div>
+                  <div className="px-4 py-3">
+                    <TiptapEditor
+                      content={cr.description}
+                      editable={false}
+                      hideToolbar
+                      minHeight={0}
+                      className="border-0 bg-transparent"
+                      onIssueMentionClick={handleMentionClick}
+                    />
+                  </div>
                 </div>
               </div>
             )}
 
-            {/* 담당자 */}
-            <div>
-              <div className="flex items-center justify-between">
-                <h3 className="text-xs font-medium text-muted-foreground">
-                  담당자
-                </h3>
-                {onSyncAssignees && (
-                  <Popover
-                    open={memberPopoverOpen}
-                    onOpenChange={(open) => {
-                      setMemberPopoverOpen(open);
-                      if (open) {
-                        onRequestMembers?.();
-                        setDraftAssigneeIds(selectedAssigneeIds);
-                      } else {
-                        setMemberQuery("");
-                      }
-                    }}
-                  >
-                    <PopoverTrigger asChild>
-                      <button
-                        type="button"
-                        className="inline-flex h-5 w-5 items-center justify-center rounded text-muted-foreground/50 hover:bg-muted hover:text-foreground transition-colors"
-                      >
-                        <Plus className="h-3 w-3" />
-                      </button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-72 p-3" align="end">
-                      <div className="space-y-2">
-                        <p className="text-xs font-medium text-foreground">
-                          담당자 추가
-                        </p>
-                        <Input
-                          value={memberQuery}
-                          onChange={(e) => setMemberQuery(e.target.value)}
-                          placeholder="멤버 검색"
-                        />
-                        <div className="max-h-48 space-y-1 overflow-auto">
-                          {filteredMembers.length === 0 ? (
-                            <p className="px-1 py-2 text-xs text-muted-foreground">
-                              추가 가능한 멤버가 없습니다.
-                            </p>
-                          ) : (
-                            filteredMembers.map((member) => (
-                              <label
-                                key={member.id}
-                                className="flex w-full cursor-pointer items-center gap-2 rounded-md px-1 py-1.5 hover:bg-muted"
-                              >
-                                <Checkbox
-                                  checked={draftAssigneeIds.includes(member.id)}
-                                  onCheckedChange={(checked) => {
-                                    setDraftAssigneeIds((prev) => {
-                                      if (checked) return [...prev, member.id];
-                                      return prev.filter(
-                                        (id) => id !== member.id,
-                                      );
-                                    });
-                                  }}
-                                />
-                                <Avatar className="h-5 w-5">
-                                  <AvatarFallback className="text-[10px]">
-                                    {getInitials(member.name)}
-                                  </AvatarFallback>
-                                </Avatar>
-                                <div className="min-w-0 flex-1">
-                                  <p className="truncate text-sm text-foreground">
-                                    {member.name}
-                                  </p>
-                                  <p className="truncate text-xs text-muted-foreground">
-                                    {member.email}
-                                  </p>
-                                </div>
-                              </label>
-                            ))
-                          )}
-                        </div>
+            {/* 타임라인 이벤트 */}
+            {cr.timeline.map((event) =>
+              event.type === "comment" ? (
+                <TimelineCommentItem
+                  key={event.id}
+                  event={event}
+                  canEdit={!!currentUserId && event.authorId === currentUserId}
+                  onUpdate={onUpdateComment}
+                  onIssueMentionClick={handleMentionClick}
+                />
+              ) : (
+                <TimelineEventItem
+                  key={event.id}
+                  event={event}
+                  onNavigate={handleMentionClick}
+                />
+              ),
+            )}
+
+            {/* 구분선 */}
+            <div className="border-t" />
+
+            {/* 댓글 입력 */}
+            <div className="flex gap-3">
+              <Avatar className="h-8 w-8 shrink-0">
+                <AvatarFallback className="text-xs">나</AvatarFallback>
+              </Avatar>
+              <div className="min-w-0 flex-1">
+                <TiptapEditor
+                  key={commentEditorKey}
+                  placeholder="댓글을 작성하세요..."
+                  minHeight={100}
+                  onChangeJson={(json) => {
+                    commentJsonRef.current = json;
+                  }}
+                  onChangeText={(text) => {
+                    commentTextRef.current = text;
+                  }}
+                />
+                <div className="mt-3 flex items-center justify-between">
+                  <div />
+                  <div className="flex gap-2">
+                    {cr.type === "issue" &&
+                      cr.status === "open" &&
+                      onCloseIssue && (
                         <Button
-                          type="button"
                           size="sm"
-                          className="w-full"
-                          disabled={isMetaUpdating}
-                          onClick={() => {
-                            onSyncAssignees(draftAssigneeIds);
-                            setMemberPopoverOpen(false);
-                            setMemberQuery("");
-                          }}
+                          variant="outline"
+                          disabled={isClosingIssue}
+                          onClick={onCloseIssue}
                         >
-                          담당자 적용
+                          {isClosingIssue ? (
+                            <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <XCircle className="mr-1.5 h-3.5 w-3.5" />
+                          )}
+                          이슈 닫기
                         </Button>
-                      </div>
-                    </PopoverContent>
-                  </Popover>
-                )}
-              </div>
-              <div className="mt-2 space-y-2">
-                {cr.assignees.map((assignee) => (
-                  <div
-                    key={assignee.id ?? assignee.name}
-                    className="flex items-center gap-2"
-                  >
-                    <Avatar className="h-6 w-6">
-                      {assignee.profileImageUrl && (
-                        <AvatarImage
-                          src={assignee.profileImageUrl}
-                          alt={assignee.name}
-                        />
                       )}
-                      <AvatarFallback className="text-[10px]">
-                        {getInitials(assignee.name)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span className="text-sm text-foreground">
-                      {assignee.name}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* 라벨 */}
-            <div>
-              <div className="flex items-center justify-between">
-                <h3 className="text-xs font-medium text-muted-foreground">
-                  라벨
-                </h3>
-                {onSyncLabels && (
-                  <Popover
-                    open={labelPopoverOpen}
-                    onOpenChange={(open) => {
-                      setLabelPopoverOpen(open);
-                      if (open) {
-                        onRequestLabels?.();
-                        setDraftLabelIds(selectedLabelIds);
-                      } else {
-                        setLabelQuery("");
-                      }
-                    }}
-                  >
-                    <PopoverTrigger asChild>
-                      <button
-                        type="button"
-                        className="inline-flex h-5 w-5 items-center justify-center rounded text-muted-foreground/50 hover:bg-muted hover:text-foreground transition-colors"
-                      >
-                        <Plus className="h-3 w-3" />
-                      </button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-72 p-3" align="end">
-                      <div className="space-y-2">
-                        <p className="text-xs font-medium text-foreground">
-                          라벨 추가
-                        </p>
-                        <Input
-                          value={labelQuery}
-                          onChange={(e) => setLabelQuery(e.target.value)}
-                          placeholder="라벨 검색"
-                        />
-                        <div className="max-h-48 space-y-1 overflow-auto">
-                          {filteredLabels.length === 0 ? (
-                            <p className="px-1 py-2 text-xs text-muted-foreground">
-                              추가 가능한 라벨이 없습니다.
-                            </p>
-                          ) : (
-                            filteredLabels.map((label) => (
-                              <label
-                                key={label.id}
-                                className="flex w-full cursor-pointer items-center gap-2 rounded-md px-1 py-1.5 hover:bg-muted"
-                              >
-                                <Checkbox
-                                  checked={draftLabelIds.includes(label.id)}
-                                  onCheckedChange={(checked) => {
-                                    setDraftLabelIds((prev) => {
-                                      if (checked) return [...prev, label.id];
-                                      return prev.filter(
-                                        (id) => id !== label.id,
-                                      );
-                                    });
-                                  }}
-                                />
-                                <LabelBadge
-                                  label={label.name}
-                                  colorHex={label.colorHex}
-                                  size="sm"
-                                />
-                              </label>
-                            ))
-                          )}
-                        </div>
+                    {cr.type === "issue" &&
+                      cr.status === "closed" &&
+                      onReopenIssue && (
                         <Button
-                          type="button"
                           size="sm"
-                          className="w-full"
-                          disabled={isMetaUpdating}
-                          onClick={() => {
-                            onSyncLabels?.(draftLabelIds);
-                            setLabelPopoverOpen(false);
-                            setLabelQuery("");
-                          }}
+                          variant="outline"
+                          disabled={isReopeningIssue}
+                          onClick={onReopenIssue}
                         >
-                          라벨 적용
+                          {isReopeningIssue ? (
+                            <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <AlertCircle className="mr-1.5 h-3.5 w-3.5" />
+                          )}
+                          이슈 다시 열기
                         </Button>
-                      </div>
-                    </PopoverContent>
-                  </Popover>
-                )}
-              </div>
-              <div className="mt-2 flex flex-wrap gap-1.5">
-                {cr.labels.map((l) => (
-                  <LabelBadge
-                    key={l.id ?? l.name}
-                    label={l.name}
-                    colorHex={l.colorHex}
-                    size="md"
-                  />
-                ))}
+                      )}
+                    {/* CR(변경 요청) 상태별 버튼 */}
+                    {cr.type === "pr" &&
+                      cr.status === "draft" &&
+                      onCloseChange && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={isClosingChange}
+                          onClick={onCloseChange}
+                        >
+                          {isClosingChange ? (
+                            <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <XCircle className="mr-1.5 h-3.5 w-3.5" />
+                          )}
+                          변경 요청 닫기
+                        </Button>
+                      )}
+                    {cr.type === "pr" &&
+                      cr.status === "draft" &&
+                      onSubmitChange && (
+                        <Button
+                          size="sm"
+                          disabled={isSubmittingChange}
+                          onClick={onSubmitChange}
+                        >
+                          {isSubmittingChange ? (
+                            <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <FileCheck className="mr-1.5 h-3.5 w-3.5" />
+                          )}
+                          제출
+                        </Button>
+                      )}
+                    {cr.type === "pr" &&
+                      cr.status === "open" &&
+                      onCloseChange && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={isClosingChange}
+                          onClick={onCloseChange}
+                        >
+                          {isClosingChange ? (
+                            <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <XCircle className="mr-1.5 h-3.5 w-3.5" />
+                          )}
+                          변경 요청 닫기
+                        </Button>
+                      )}
+                    {cr.type === "pr" &&
+                      cr.status === "open" &&
+                      onMergeChange && (
+                        <Button
+                          size="sm"
+                          className="bg-green-600 hover:bg-green-700 text-white"
+                          disabled={isMergingChange}
+                          onClick={onMergeChange}
+                        >
+                          {isMergingChange ? (
+                            <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" />
+                          )}
+                          변경 반영
+                        </Button>
+                      )}
+                    {cr.type === "pr" &&
+                      cr.status === "closed" &&
+                      onReopenChange && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={isReopeningChange}
+                          onClick={onReopenChange}
+                        >
+                          {isReopeningChange ? (
+                            <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <AlertCircle className="mr-1.5 h-3.5 w-3.5" />
+                          )}
+                          다시 제출
+                        </Button>
+                      )}
+                    <Button
+                      size="sm"
+                      disabled={isCommentPending}
+                      onClick={() => {
+                        const json = commentJsonRef.current;
+                        const text = commentTextRef.current;
+                        if (!text.trim() || !json || !onAddComment) return;
+                        onAddComment(json as Record<string, unknown>);
+                        commentJsonRef.current = null;
+                        commentTextRef.current = "";
+                        setCommentEditorKey((k) => k + 1);
+                      }}
+                    >
+                      댓글
+                    </Button>
+                  </div>
+                </div>
               </div>
             </div>
+          </div>
 
-            {/* 변경요청 — 이슈에서만 표시 */}
-            {cr.type === "issue" && (
-              <div>
-                <div className="flex items-center justify-between">
-                  <h3 className="text-xs font-medium text-muted-foreground">
-                    변경요청
-                  </h3>
+          {/* 오른쪽: 사이드바 */}
+          <div className="hidden w-70 shrink-0 lg:block">
+            <div className="space-y-5">
+              {/* 검토자 — 변경 요청(pr)에서만 표시 */}
+              {cr.type === "pr" && (
+                <MemberPickerSection
+                  label="검토자"
+                  applyLabel="검토자 적용"
+                  availableMembers={availableMembers}
+                  selectedIds={selectedReviewerIds}
+                  displayItems={cr.reviewers}
+                  onSync={onSyncReviewers}
+                  onRequestMembers={onRequestMembers}
+                  isUpdating={isMetaUpdating}
+                />
+              )}
+
+              {/* 담당자 */}
+              <MemberPickerSection
+                label="담당자"
+                applyLabel="담당자 적용"
+                availableMembers={availableMembers}
+                selectedIds={selectedAssigneeIds}
+                displayItems={cr.assignees}
+                onSync={onSyncAssignees}
+                onRequestMembers={onRequestMembers}
+                isUpdating={isMetaUpdating}
+              />
+
+              {/* 라벨 */}
+              <LabelPickerSection
+                availableLabels={availableLabels}
+                selectedIds={selectedLabelIds}
+                displayLabels={cr.labels}
+                onSync={onSyncLabels}
+                onRequestLabels={onRequestLabels}
+                isUpdating={isMetaUpdating}
+              />
+
+              {/* 변경 요청 — 이슈에서만 표시 */}
+              {cr.type === "issue" && (
+                <div>
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xs font-medium text-muted-foreground">
+                      연결된 변경 요청
+                    </h3>
+                    {onSyncLinkedChanges && (
+                      <Popover
+                        open={changePopoverOpen}
+                        onOpenChange={(open) => {
+                          setChangePopoverOpen(open);
+                          if (open) {
+                            onRequestChanges?.();
+                            setDraftChangeIds(linkedChangeIds);
+                          } else {
+                            setChangeQuery("");
+                          }
+                        }}
+                      >
+                        <PopoverTrigger asChild>
+                          <button
+                            type="button"
+                            className="inline-flex h-5 w-5 items-center justify-center rounded text-muted-foreground/50 hover:bg-muted hover:text-foreground transition-colors"
+                          >
+                            <Settings className="h-3 w-3" />
+                          </button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-80 p-3" align="end">
+                          <div className="space-y-2">
+                            <p className="text-xs font-medium text-foreground">
+                              변경 요청 연결
+                            </p>
+                            <Input
+                              value={changeQuery}
+                              onChange={(e) => setChangeQuery(e.target.value)}
+                              placeholder="번호 또는 제목으로 검색"
+                            />
+                            <div className="max-h-48 space-y-1 overflow-auto">
+                              {filteredChanges.length === 0 ? (
+                                <p className="px-1 py-2 text-xs text-muted-foreground">
+                                  {changeQuery.trim()
+                                    ? "검색 결과가 없습니다."
+                                    : "연결 가능한 변경 요청이 없습니다."}
+                                </p>
+                              ) : (
+                                filteredChanges.map((c) => {
+                                  const cs = c.crState.toLowerCase();
+                                  return (
+                                    <label
+                                      key={c.id}
+                                      className="flex w-full cursor-pointer items-center gap-2 rounded-md px-1 py-1.5 hover:bg-muted"
+                                    >
+                                      <Checkbox
+                                        checked={draftChangeIds.includes(c.id)}
+                                        onCheckedChange={(checked) => {
+                                          setDraftChangeIds((prev) => {
+                                            if (checked) return [...prev, c.id];
+                                            return prev.filter(
+                                              (id) => id !== c.id,
+                                            );
+                                          });
+                                        }}
+                                      />
+                                      {cs === "merged" ? (
+                                        <FileCheck className="h-3.5 w-3.5 shrink-0 text-purple-600 dark:text-purple-400" />
+                                      ) : cs === "closed" ? (
+                                        <FileX className="h-3.5 w-3.5 shrink-0 text-red-500 dark:text-red-400" />
+                                      ) : (
+                                        <FilePen className={`h-3.5 w-3.5 shrink-0 ${cs === "draft" ? "text-gray-500 dark:text-gray-400" : "text-emerald-600 dark:text-emerald-400"}`} />
+                                      )}
+                                      <div className="min-w-0 flex-1">
+                                        <p className="truncate text-xs font-medium text-foreground">
+                                          #{c.number} {c.title}
+                                        </p>
+                                        <p className="text-[11px] text-muted-foreground">
+                                          {cs === "draft"
+                                            ? "초안"
+                                            : cs === "submitted" || cs === "open"
+                                              ? "제출"
+                                              : cs === "merged"
+                                                ? "반영"
+                                                : "닫힘"}
+                                        </p>
+                                      </div>
+                                    </label>
+                                  );
+                                })
+                              )}
+                            </div>
+                            <Button
+                              type="button"
+                              size="sm"
+                              className="w-full"
+                              disabled={isMetaUpdating}
+                              onClick={() => {
+                                onSyncLinkedChanges(draftChangeIds);
+                                setChangePopoverOpen(false);
+                                setChangeQuery("");
+                              }}
+                            >
+                              변경 요청 적용
+                            </Button>
+                          </div>
+                        </PopoverContent>
+                      </Popover>
+                    )}
+                  </div>
+                  {cr.linkedChanges.length > 0 ? (
+                    <div className="mt-2 space-y-1.5">
+                      {cr.linkedChanges.map((lc) => {
+                        const s = lc.state.toLowerCase();
+                        return (
+                          <button
+                            key={lc.id}
+                            type="button"
+                            className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-muted cursor-pointer"
+                            onClick={() => onNavigateToChange?.(lc.number)}
+                          >
+                            {s === "merged" ? (
+                              <FileCheck className="h-3.5 w-3.5 shrink-0 text-purple-600 dark:text-purple-400" />
+                            ) : s === "closed" ? (
+                              <FileX className="h-3.5 w-3.5 shrink-0 text-red-500 dark:text-red-400" />
+                            ) : (
+                              <FilePen className={`h-3.5 w-3.5 shrink-0 ${s === "draft" ? "text-gray-500 dark:text-gray-400" : "text-emerald-600 dark:text-emerald-400"}`} />
+                            )}
+                            <div className="min-w-0 flex-1">
+                              <p className="truncate text-xs font-medium text-foreground">
+                                #{lc.number} {lc.title}
+                              </p>
+                              <p className="text-[11px] text-muted-foreground">
+                                {s === "draft"
+                                  ? "초안"
+                                  : s === "submitted" || s === "open"
+                                    ? "제출"
+                                    : s === "merged"
+                                      ? "반영"
+                                      : "닫힘"}
+                              </p>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <p className="mt-2 text-xs text-muted-foreground/50">
+                      연결된 변경 요청 없음
+                    </p>
+                  )}
                   {onCreateLinkedChange && (
                     <button
                       type="button"
-                      className="inline-flex h-5 w-5 items-center justify-center rounded text-muted-foreground/50 hover:bg-muted hover:text-foreground transition-colors"
+                      className="mt-2 text-xs text-primary hover:underline cursor-pointer"
                       onClick={onCreateLinkedChange}
                     >
-                      <Plus className="h-3 w-3" />
+                      변경 요청 생성
                     </button>
                   )}
                 </div>
-                {cr.linkedChanges.length > 0 ? (
-                  <div className="mt-2 space-y-1.5">
-                    {cr.linkedChanges.map((lc) => {
-                      const s = lc.state.toLowerCase();
-                      return (
-                        <button
-                          key={lc.id}
-                          type="button"
-                          className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-muted cursor-pointer"
-                          onClick={() => onNavigateToChange?.(lc.number)}
-                        >
-                          <FilePen className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                          <div className="min-w-0 flex-1">
-                            <p className="truncate text-xs font-medium text-foreground">
-                              #{lc.number} {lc.title}
-                            </p>
-                            <p className="text-[11px] text-muted-foreground">
-                              {s === "open"
-                                ? "열림"
-                                : s === "merged"
-                                  ? "반영됨"
-                                  : "닫힘"}
-                            </p>
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <p className="mt-2 text-xs text-muted-foreground/50">
-                    연결된 변경요청 없음
-                  </p>
-                )}
-              </div>
-            )}
+              )}
 
-            {/* 연결된 이슈 — CR(pr)에서만 표시 */}
-            {cr.type === "pr" && (
+              {/* 연결된 이슈 — CR(pr)에서만 표시 */}
+              {cr.type === "pr" && (
+                <div>
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xs font-medium text-muted-foreground">
+                      연결된 이슈
+                    </h3>
+                    {onSyncLinkedIssues && (
+                      <Popover
+                        open={issuePopoverOpen}
+                        onOpenChange={(open) => {
+                          setIssuePopoverOpen(open);
+                          if (open) {
+                            onRequestIssues?.();
+                            setDraftIssueIds(linkedIssueIds);
+                          } else {
+                            setIssueQuery("");
+                          }
+                        }}
+                      >
+                        <PopoverTrigger asChild>
+                          <button
+                            type="button"
+                            className="inline-flex h-5 w-5 items-center justify-center rounded text-muted-foreground/50 hover:bg-muted hover:text-foreground transition-colors"
+                          >
+                            <Settings className="h-3 w-3" />
+                          </button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-80 p-3" align="end">
+                          <div className="space-y-2">
+                            <p className="text-xs font-medium text-foreground">
+                              이슈 연결
+                            </p>
+                            <Input
+                              value={issueQuery}
+                              onChange={(e) => setIssueQuery(e.target.value)}
+                              placeholder="번호 또는 제목으로 검색"
+                            />
+                            <div className="max-h-48 space-y-1 overflow-auto">
+                              {filteredIssues.length === 0 ? (
+                                <p className="px-1 py-2 text-xs text-muted-foreground">
+                                  {issueQuery.trim()
+                                    ? "검색 결과가 없습니다."
+                                    : "연결 가능한 이슈가 없습니다."}
+                                </p>
+                              ) : (
+                                filteredIssues.map((issue) => (
+                                  <label
+                                    key={issue.id}
+                                    className="flex w-full cursor-pointer items-center gap-2 rounded-md px-1 py-1.5 hover:bg-muted"
+                                  >
+                                    <Checkbox
+                                      checked={draftIssueIds.includes(issue.id)}
+                                      onCheckedChange={(checked) => {
+                                        setDraftIssueIds((prev) => {
+                                          if (checked)
+                                            return [...prev, issue.id];
+                                          return prev.filter(
+                                            (id) => id !== issue.id,
+                                          );
+                                        });
+                                      }}
+                                    />
+                                    {issue.state.toLowerCase() === "open" ? (
+                                      <AlertCircle className="h-3.5 w-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                                    ) : (
+                                      <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-purple-600 dark:text-purple-400" />
+                                    )}
+                                    <div className="min-w-0 flex-1">
+                                      <p className="truncate text-xs font-medium text-foreground">
+                                        #{issue.number} {issue.title}
+                                      </p>
+                                      <p className="text-[11px] text-muted-foreground">
+                                        {issue.state.toLowerCase() === "open"
+                                          ? "열림"
+                                          : "닫힘"}
+                                      </p>
+                                    </div>
+                                  </label>
+                                ))
+                              )}
+                            </div>
+                            <Button
+                              type="button"
+                              size="sm"
+                              className="w-full"
+                              disabled={isMetaUpdating}
+                              onClick={() => {
+                                onSyncLinkedIssues(draftIssueIds);
+                                setIssuePopoverOpen(false);
+                                setIssueQuery("");
+                              }}
+                            >
+                              이슈 적용
+                            </Button>
+                          </div>
+                        </PopoverContent>
+                      </Popover>
+                    )}
+                  </div>
+                  {cr.linkedIssues.length > 0 ? (
+                    <div className="mt-2 space-y-1.5">
+                      {cr.linkedIssues.map((li) => {
+                        const s = li.state.toLowerCase();
+                        return (
+                          <div
+                            key={li.id}
+                            className="group flex w-full items-center gap-2 rounded-md px-2 py-1.5 transition-colors hover:bg-muted"
+                          >
+                            {s === "open" ? (
+                              <AlertCircle className="h-3.5 w-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                            ) : (
+                              <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-purple-600 dark:text-purple-400" />
+                            )}
+                            <button
+                              type="button"
+                              className="min-w-0 flex-1 text-left cursor-pointer"
+                              onClick={() => onNavigateToIssue?.(li.number)}
+                            >
+                              <p className="truncate text-xs font-medium text-foreground">
+                                #{li.number} {li.title}
+                              </p>
+                              <p className="text-[11px] text-muted-foreground">
+                                {s === "open" ? "열림" : "닫힘"}
+                              </p>
+                            </button>
+                            {onUnlinkIssue && (
+                              <button
+                                type="button"
+                                className="hidden shrink-0 rounded p-0.5 text-muted-foreground/50 hover:bg-destructive/10 hover:text-destructive group-hover:inline-flex"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  onUnlinkIssue(li.id);
+                                }}
+                              >
+                                <X className="h-3 w-3" />
+                              </button>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ) : (
+                    <p className="mt-2 text-xs text-muted-foreground/50">
+                      연결된 이슈 없음
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* 관련 부품 */}
+              <PartPickerSection
+                searchedParts={searchedParts}
+                selectedIds={selectedPartIds}
+                displayParts={cr.relatedParts}
+                onSync={onSyncParts}
+                onRequestParts={onRequestParts}
+                onSearchChange={onPartsSearchChange}
+                isSearching={isPartsSearching}
+                isUpdating={isMetaUpdating}
+              />
+
+              {/* 첨부파일 */}
               <div>
                 <div className="flex items-center justify-between">
                   <h3 className="text-xs font-medium text-muted-foreground">
-                    연결된 이슈
+                    첨부파일
+                    {cr.attachments.length > 0 && (
+                      <span className="ml-1 text-muted-foreground/50">
+                        ({cr.attachments.length})
+                      </span>
+                    )}
                   </h3>
-                  {onSyncLinkedIssues && (
-                    <Popover
-                      open={issuePopoverOpen}
-                      onOpenChange={(open) => {
-                        setIssuePopoverOpen(open);
-                        if (open) {
-                          setDraftIssueIds(linkedIssueIds);
-                        } else {
-                          setIssueQuery("");
-                        }
-                      }}
-                    >
-                      <PopoverTrigger asChild>
-                        <button
-                          type="button"
-                          className="inline-flex h-5 w-5 items-center justify-center rounded text-muted-foreground/50 hover:bg-muted hover:text-foreground transition-colors"
-                        >
-                          <Plus className="h-3 w-3" />
-                        </button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-80 p-3" align="end">
-                        <div className="space-y-2">
-                          <p className="text-xs font-medium text-foreground">
-                            이슈 연결
-                          </p>
-                          <Input
-                            value={issueQuery}
-                            onChange={(e) => setIssueQuery(e.target.value)}
-                            placeholder="번호 또는 제목으로 검색"
-                          />
-                          <div className="max-h-48 space-y-1 overflow-auto">
-                            {filteredIssues.length === 0 ? (
-                              <p className="px-1 py-2 text-xs text-muted-foreground">
-                                {issueQuery.trim()
-                                  ? "검색 결과가 없습니다."
-                                  : "연결 가능한 이슈가 없습니다."}
-                              </p>
-                            ) : (
-                              filteredIssues.map((issue) => (
-                                <label
-                                  key={issue.id}
-                                  className="flex w-full cursor-pointer items-center gap-2 rounded-md px-1 py-1.5 hover:bg-muted"
-                                >
-                                  <Checkbox
-                                    checked={draftIssueIds.includes(issue.id)}
-                                    onCheckedChange={(checked) => {
-                                      setDraftIssueIds((prev) => {
-                                        if (checked) return [...prev, issue.id];
-                                        return prev.filter(
-                                          (id) => id !== issue.id,
-                                        );
-                                      });
-                                    }}
-                                  />
-                                  <AlertCircle className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                                  <div className="min-w-0 flex-1">
-                                    <p className="truncate text-xs font-medium text-foreground">
-                                      #{issue.number} {issue.title}
-                                    </p>
-                                    <p className="text-[11px] text-muted-foreground">
-                                      {issue.state.toLowerCase() === "open"
-                                        ? "열림"
-                                        : "닫힘"}
-                                    </p>
-                                  </div>
-                                </label>
-                              ))
-                            )}
-                          </div>
-                          <Button
-                            type="button"
-                            size="sm"
-                            className="w-full"
-                            disabled={isMetaUpdating}
-                            onClick={() => {
-                              onSyncLinkedIssues(draftIssueIds);
-                              setIssuePopoverOpen(false);
-                              setIssueQuery("");
-                            }}
-                          >
-                            이슈 적용
-                          </Button>
-                        </div>
-                      </PopoverContent>
-                    </Popover>
-                  )}
-                </div>
-                {cr.linkedIssues.length > 0 ? (
-                  <div className="mt-2 space-y-1.5">
-                    {cr.linkedIssues.map((li) => {
-                      const s = li.state.toLowerCase();
-                      return (
-                        <div
-                          key={li.id}
-                          className="group flex w-full items-center gap-2 rounded-md px-2 py-1.5 transition-colors hover:bg-muted"
-                        >
-                          <AlertCircle className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                          <button
-                            type="button"
-                            className="min-w-0 flex-1 text-left cursor-pointer"
-                            onClick={() => onNavigateToIssue?.(li.number)}
-                          >
-                            <p className="truncate text-xs font-medium text-foreground">
-                              #{li.number} {li.title}
-                            </p>
-                            <p className="text-[11px] text-muted-foreground">
-                              {s === "open" ? "열림" : "닫힘"}
-                            </p>
-                          </button>
-                          {onUnlinkIssue && (
-                            <button
-                              type="button"
-                              className="hidden shrink-0 rounded p-0.5 text-muted-foreground/50 hover:bg-destructive/10 hover:text-destructive group-hover:inline-flex"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                onUnlinkIssue(li.id);
-                              }}
-                            >
-                              <X className="h-3 w-3" />
-                            </button>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <p className="mt-2 text-xs text-muted-foreground/50">
-                    연결된 이슈 없음
-                  </p>
-                )}
-              </div>
-            )}
-
-            {/* 관련 부품 */}
-            <div>
-              <div className="flex items-center justify-between">
-                <h3 className="text-xs font-medium text-muted-foreground">
-                  관련 부품
-                </h3>
-                {onSyncParts && (
-                  <Popover
-                    open={partPopoverOpen}
-                    onOpenChange={(open) => {
-                      setPartPopoverOpen(open);
-                      if (open) {
-                        onRequestParts?.();
-                        setDraftPartIds(selectedPartIds);
-                        setPartQuery("");
-                        onPartsSearchChange?.("");
-                      } else {
-                        setPartQuery("");
-                      }
-                    }}
-                  >
-                    <PopoverTrigger asChild>
+                  {onUploadFiles && (
+                    <>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        multiple
+                        className="hidden"
+                        onChange={(e) => {
+                          const files = Array.from(e.target.files ?? []);
+                          if (files.length > 0) onUploadFiles(files);
+                          e.target.value = "";
+                        }}
+                      />
                       <button
                         type="button"
                         className="inline-flex h-5 w-5 items-center justify-center rounded text-muted-foreground/50 hover:bg-muted hover:text-foreground transition-colors"
+                        disabled={isFileUploading}
+                        onClick={() => fileInputRef.current?.click()}
                       >
-                        <Plus className="h-3 w-3" />
+                        {isFileUploading ? (
+                          <Loader2 className="h-3 w-3 animate-spin" />
+                        ) : (
+                          <Plus className="h-3 w-3" />
+                        )}
                       </button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-80 p-3" align="end">
-                      <div className="space-y-2">
-                        <p className="text-xs font-medium text-foreground">
-                          부품 추가
-                        </p>
-                        <div className="relative">
-                          <Input
-                            value={partQuery}
-                            onChange={(e) =>
-                              handlePartQueryChange(e.target.value)
-                            }
-                            placeholder="부품번호 또는 이름으로 검색"
-                          />
-                          {isPartsSearching && (
-                            <div className="absolute right-2 top-1/2 -translate-y-1/2">
-                              <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
-                            </div>
-                          )}
-                        </div>
-                        <div className="max-h-48 space-y-1 overflow-auto">
-                          {searchedParts.length === 0 ? (
-                            <p className="px-1 py-2 text-xs text-muted-foreground">
-                              {partQuery.trim()
-                                ? "검색 결과가 없습니다."
-                                : "프로젝트에 연결된 부품이 없습니다."}
-                            </p>
-                          ) : (
-                            searchedParts.map((part) => (
-                              <label
-                                key={part.id}
-                                className="flex w-full cursor-pointer items-center gap-2 rounded-md px-1 py-1.5 hover:bg-muted"
-                              >
-                                <Checkbox
-                                  checked={draftPartIds.includes(part.id)}
-                                  onCheckedChange={(checked) => {
-                                    setDraftPartIds((prev) => {
-                                      if (checked) return [...prev, part.id];
-                                      return prev.filter(
-                                        (id) => id !== part.id,
-                                      );
-                                    });
-                                  }}
-                                />
-                                <Package className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                                <div className="min-w-0 flex-1">
-                                  <p className="truncate text-xs font-medium text-foreground">
-                                    {part.partNumber}
-                                  </p>
-                                  {part.name && (
-                                    <p className="truncate text-[11px] text-muted-foreground">
-                                      {part.name}
-                                    </p>
-                                  )}
-                                </div>
-                              </label>
-                            ))
-                          )}
-                        </div>
-                        <Button
-                          type="button"
-                          size="sm"
-                          className="w-full"
-                          disabled={isMetaUpdating}
-                          onClick={() => {
-                            onSyncParts(draftPartIds);
-                            setPartPopoverOpen(false);
-                            setPartQuery("");
-                          }}
-                        >
-                          부품 적용
-                        </Button>
-                      </div>
-                    </PopoverContent>
-                  </Popover>
-                )}
-              </div>
-              {cr.relatedParts.length > 0 ? (
-                <div className="mt-2 space-y-1.5">
-                  {cr.relatedParts.map((part) => (
-                    <div
-                      key={part.id}
-                      className="flex w-full items-center gap-2 rounded-md px-2 py-1.5"
-                    >
-                      <Package className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-xs font-medium text-foreground">
-                          {part.partNumber}
-                        </p>
-                        <p className="truncate text-[11px] text-muted-foreground">
-                          {part.name}
-                        </p>
-                      </div>
-                      {part.category && (
-                        <Badge
-                          variant="secondary"
-                          className="shrink-0 text-[10px] py-0 px-1.5"
-                        >
-                          {part.category}
-                        </Badge>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="mt-2 text-xs text-muted-foreground/50">
-                  연결된 부품 없음
-                </p>
-              )}
-            </div>
-
-            {/* 첨부파일 */}
-            <div>
-              <div className="flex items-center justify-between">
-                <h3 className="text-xs font-medium text-muted-foreground">
-                  첨부파일
-                  {cr.attachments.length > 0 && (
-                    <span className="ml-1 text-muted-foreground/50">
-                      ({cr.attachments.length})
-                    </span>
+                    </>
                   )}
-                </h3>
-                {onUploadFiles && (
-                  <>
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      multiple
-                      className="hidden"
-                      onChange={(e) => {
-                        const files = Array.from(e.target.files ?? []);
-                        if (files.length > 0) onUploadFiles(files);
-                        e.target.value = "";
-                      }}
-                    />
-                    <button
-                      type="button"
-                      className="inline-flex h-5 w-5 items-center justify-center rounded text-muted-foreground/50 hover:bg-muted hover:text-foreground transition-colors"
-                      disabled={isFileUploading}
-                      onClick={() => fileInputRef.current?.click()}
-                    >
-                      {isFileUploading ? (
-                        <Loader2 className="h-3 w-3 animate-spin" />
-                      ) : (
-                        <Plus className="h-3 w-3" />
-                      )}
-                    </button>
-                  </>
+                </div>
+                {cr.attachments.length > 0 ? (
+                  <div className="mt-2 space-y-1">
+                    {cr.attachments.map((file) => (
+                      <div
+                        key={file.id}
+                        className="group flex w-full items-center gap-2 rounded-md px-2 py-1.5 transition-colors hover:bg-muted"
+                      >
+                        <AttachmentIcon type={file.type} />
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-xs text-foreground">
+                            {file.name}
+                          </p>
+                          <p className="text-[11px] text-muted-foreground">
+                            {file.size}
+                          </p>
+                        </div>
+                        {onDeleteFile && (
+                          <button
+                            type="button"
+                            className="hidden shrink-0 rounded p-0.5 text-muted-foreground/50 hover:bg-destructive/10 hover:text-destructive group-hover:inline-flex"
+                            onClick={() => onDeleteFile(file.id)}
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="mt-2 text-xs text-muted-foreground/50">
+                    첨부된 파일 없음
+                  </p>
                 )}
               </div>
-              {cr.attachments.length > 0 ? (
-                <div className="mt-2 space-y-1">
-                  {cr.attachments.map((file) => (
-                    <div
-                      key={file.id}
-                      className="group flex w-full items-center gap-2 rounded-md px-2 py-1.5 transition-colors hover:bg-muted"
-                    >
-                      <AttachmentIcon type={file.type} />
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-xs text-foreground">
-                          {file.name}
-                        </p>
-                        <p className="text-[11px] text-muted-foreground">
-                          {file.size}
-                        </p>
-                      </div>
-                      {onDeleteFile && (
-                        <button
-                          type="button"
-                          className="hidden shrink-0 rounded p-0.5 text-muted-foreground/50 hover:bg-destructive/10 hover:text-destructive group-hover:inline-flex"
-                          onClick={() => onDeleteFile(file.id)}
-                        >
-                          <X className="h-3 w-3" />
-                        </button>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="mt-2 text-xs text-muted-foreground/50">
-                  첨부된 파일 없음
-                </p>
-              )}
             </div>
           </div>
         </div>
-      </div>
       )}
     </div>
   );

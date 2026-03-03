@@ -41,7 +41,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { TiptapEditor } from "@/components/ui/tiptap-editor";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserAvatar } from "@/components/UserAvatar";
 import { cn } from "@/lib/utils";
 import { LabelBadge } from "@fabbit/ui";
 import { TruncatedNames } from "./ChangeRequestDetailPage";
@@ -86,8 +86,7 @@ import {
   useUploadChangeFiles,
   useDeleteChangeFile,
   useCreateChangeComment,
-  useLinkChangeIssues,
-  useUnlinkChangeIssues,
+  useSyncChangeIssues,
   useUpdateChange,
   useUpdateChangeComment,
   useCloseChange,
@@ -183,103 +182,85 @@ interface ActivityConfig {
 }
 
 const ACTIVITY_CONFIG: Record<string, ActivityConfig> = {
-  issue_created: {
+  "issue:created": {
     scope: "issue",
     state: "열림",
     stateClass: "text-emerald-600 dark:text-emerald-400",
     badgeClass: "border-border bg-muted/50 text-muted-foreground",
   },
-  issue_closed: {
+  "issue:closed": {
     scope: "issue",
     state: "닫힘",
     stateClass: "text-red-600 dark:text-red-400",
     badgeClass: "border-border bg-muted/50 text-muted-foreground",
   },
-  issue_reopened: {
+  "issue:reopened": {
     scope: "issue",
     state: "다시 열림",
     stateClass: "text-emerald-600 dark:text-emerald-400",
     badgeClass: "border-border bg-muted/50 text-muted-foreground",
   },
-  issue_state_changed: {
+  "issue:state_changed": {
     scope: "issue",
     state: "상태 변경",
     stateClass: "text-purple-600 dark:text-purple-400",
     badgeClass: "border-border bg-muted/50 text-muted-foreground",
   },
-  cr_created: {
+  "cr:created": {
     scope: "cr",
     state: "열림",
     stateClass: "text-emerald-600 dark:text-emerald-400",
     badgeClass: "border-border bg-muted/50 text-muted-foreground",
   },
-  cr_merged: {
+  "cr:merged": {
     scope: "cr",
     state: "반영",
     stateClass: "text-purple-600 dark:text-purple-400",
     badgeClass: "border-border bg-muted/50 text-muted-foreground",
   },
-  cr_state_changed: {
+  "cr:state_changed": {
     scope: "cr",
     state: "상태 변경",
     stateClass: "text-amber-600 dark:text-amber-400",
     badgeClass: "border-border bg-muted/50 text-muted-foreground",
   },
-  cr_issue_linked: {
+  "cr:issue_changed": {
     scope: "cr",
-    state: "이슈 연결",
+    state: "이슈 변경",
     stateClass: "text-blue-600 dark:text-blue-400",
     badgeClass: "border-border bg-muted/50 text-muted-foreground",
   },
-  cr_issue_unlinked: {
-    scope: "cr",
-    state: "이슈 해제",
-    stateClass: "text-muted-foreground",
-    badgeClass: "border-border bg-muted/50 text-muted-foreground",
-  },
-  part_added: {
-    scope: "part",
-    state: "추가",
-    stateClass: "text-blue-600 dark:text-blue-400",
-    badgeClass: "border-border bg-muted/50 text-muted-foreground",
-  },
-  part_removed: {
-    scope: "part",
-    state: "제거",
-    stateClass: "text-muted-foreground",
-    badgeClass: "border-border bg-muted/50 text-muted-foreground",
-  },
-  part_changed: {
+  "issue:part_changed": {
     scope: "part",
     state: "변경",
     stateClass: "text-blue-600 dark:text-blue-400",
     badgeClass: "border-border bg-muted/50 text-muted-foreground",
   },
-  assignee_changed: {
+  "issue:assignee_changed": {
     scope: "assignee",
     state: "변경",
     stateClass: "text-amber-600 dark:text-amber-400",
     badgeClass: "border-border bg-muted/50 text-muted-foreground",
   },
-  reviewer_changed: {
+  "issue:reviewer_changed": {
     scope: "reviewer",
     state: "변경",
     stateClass: "text-amber-600 dark:text-amber-400",
     badgeClass: "border-border bg-muted/50 text-muted-foreground",
   },
-  label_changed: {
+  "issue:label_changed": {
     scope: "label",
     state: "변경",
     stateClass: "text-purple-600 dark:text-purple-400",
     badgeClass: "border-border bg-muted/50 text-muted-foreground",
   },
-  file_attached: {
+  "issue:file_attached": {
     scope: "file",
     state: "추가",
     stateClass: "text-blue-600 dark:text-blue-400",
     badgeClass: "border-border bg-muted/50 text-muted-foreground",
   },
-  file_detached: {
+  "issue:file_detached": {
     scope: "file",
     state: "제거",
     stateClass: "text-muted-foreground",
@@ -302,31 +283,22 @@ function getActivitySummary(
   if (!detail) return ACTIVITY_CONFIG[action]?.state ?? action;
 
   switch (action) {
-    case "issue_created":
-    case "issue_closed":
-    case "issue_reopened":
+    case "issue:created":
+    case "issue:closed":
+    case "issue:reopened":
       return detail.title
         ? `#${detail.number} ${detail.title}`
         : (ACTIVITY_CONFIG[action]?.state ?? action);
-    case "issue_state_changed":
-    case "cr_state_changed":
+    case "issue:state_changed":
+    case "cr:state_changed":
       return detail.from && detail.to
         ? `${detail.from} → ${detail.to}`
         : (ACTIVITY_CONFIG[action]?.state ?? action);
-    case "cr_created":
+    case "cr:created":
       return detail.title ? `#${detail.number} ${detail.title}` : "";
-    case "cr_merged":
+    case "cr:merged":
       return detail.title ? `#${detail.number} ${detail.title}` : "변경 요청";
-    case "part_added":
-    case "part_removed": {
-      const parts =
-        (detail.parts as
-          | { part_id: string; part_number: string }[]
-          | undefined) ?? [];
-      if (parts.length === 0) return "부품";
-      return <TruncatedNames items={parts.map((p) => p.part_number)} />;
-    }
-    case "part_changed": {
+    case "issue:part_changed": {
       const added =
         (detail.added as
           | { part_id: string; part_number: string }[]
@@ -354,8 +326,8 @@ function getActivitySummary(
         </>
       );
     }
-    case "assignee_changed":
-    case "reviewer_changed": {
+    case "issue:assignee_changed":
+    case "issue:reviewer_changed": {
       const addedUsers =
         (detail.added as { user_id: string; name: string }[] | undefined) ?? [];
       const removedUsers =
@@ -368,7 +340,7 @@ function getActivitySummary(
         segments.push(`${removedUsers.map((u) => u.name).join(", ")} 제거`);
       return segments.join(", ") || (ACTIVITY_CONFIG[action]?.state ?? action);
     }
-    case "label_changed": {
+    case "issue:label_changed": {
       const addedLabels =
         (detail.added as { name: string }[] | undefined) ?? [];
       const removedLabels =
@@ -393,7 +365,7 @@ function getActivitySummary(
         </>
       );
     }
-    case "file_attached": {
+    case "issue:file_attached": {
       const files =
         (detail.files as
           | { file_id: string; original_name: string }[]
@@ -401,41 +373,26 @@ function getActivitySummary(
       if (files.length === 0) return "파일 추가";
       return <TruncatedNames items={files.map((f) => f.original_name)} />;
     }
-    case "file_detached": {
+    case "issue:file_detached": {
       const fileName = detail.file_name as string | undefined;
       return fileName ?? "파일 제거";
     }
-    case "cr_issue_linked": {
-      const issues =
-        (detail.linked_issues as
+    case "cr:issue_changed": {
+      const addedIssues =
+        (detail.added as
           | { issue_id: string; number: number; title: string }[]
           | undefined) ?? [];
-      const crNumber = detail.cr_number as number | undefined;
-      const crTitle = detail.cr_title as string | undefined;
-      const linkedItems =
-        issues.length > 0
-          ? issues.map((i) => `#${i.number} ${i.title}`)
-          : crNumber != null
-            ? [`#${crNumber} ${crTitle ?? ""}`]
-            : [];
-      if (linkedItems.length === 0) return "이슈 연결";
-      return <TruncatedNames items={linkedItems} />;
-    }
-    case "cr_issue_unlinked": {
-      const issues =
-        (detail.unlinked_issues as
+      const removedIssues =
+        (detail.removed as
           | { issue_id: string; number: number; title: string }[]
           | undefined) ?? [];
-      const crNumber = detail.cr_number as number | undefined;
-      const crTitle = detail.cr_title as string | undefined;
-      const unlinkedItems =
-        issues.length > 0
-          ? issues.map((i) => `#${i.number} ${i.title}`)
-          : crNumber != null
-            ? [`#${crNumber} ${crTitle ?? ""}`]
-            : [];
-      if (unlinkedItems.length === 0) return "이슈 해제";
-      return <TruncatedNames items={unlinkedItems} />;
+      if (addedIssues.length > 0) {
+        return <TruncatedNames items={addedIssues.map((i) => `#${i.number} ${i.title}`)} suffix="연결" />;
+      }
+      if (removedIssues.length > 0) {
+        return <TruncatedNames items={removedIssues.map((i) => `#${i.number} ${i.title}`)} suffix="해제" />;
+      }
+      return "이슈 변경";
     }
     default:
       return ACTIVITY_CONFIG[action]?.state ?? action;
@@ -483,9 +440,6 @@ function formatShortDate(dateString: string): string {
   return `${d.getMonth() + 1}/${d.getDate()}`;
 }
 
-function getInitials(name: string): string {
-  return name.slice(0, 1);
-}
 
 // ============================================================
 // 헤더 (GitHub 스타일 — 컴팩트)
@@ -1089,7 +1043,7 @@ function toTimelineEvents(
     const author = toDisplayActor(item.actorId, users, source);
 
     // 이슈/CR 생성
-    if (action === "issue_created") {
+    if (action === "issue:created") {
       return {
         id: item.id,
         type: "issue_created",
@@ -1101,7 +1055,7 @@ function toTimelineEvents(
     }
 
     // 이슈 닫힘
-    if (action === "issue_closed") {
+    if (action === "issue:closed") {
       return {
         id: item.id,
         type: "status_change",
@@ -1112,7 +1066,7 @@ function toTimelineEvents(
     }
 
     // 이슈 재오픈
-    if (action === "issue_reopened") {
+    if (action === "issue:reopened") {
       return {
         id: item.id,
         type: "status_change",
@@ -1123,7 +1077,7 @@ function toTimelineEvents(
     }
 
     // 이슈 상태 변경
-    if (action === "issue_state_changed") {
+    if (action === "issue:state_changed") {
       const to = (detail.to as string | undefined)?.toLowerCase();
       const isOpen = to === "open";
       return {
@@ -1136,7 +1090,7 @@ function toTimelineEvents(
     }
 
     // CR 상태 변경 (DRAFT→SUBMITTED, SUBMITTED→CLOSED, SUBMITTED→MERGED 등)
-    if (action === "cr_state_changed") {
+    if (action === "cr:state_changed") {
       return {
         id: item.id,
         type: "cr_state_changed",
@@ -1150,7 +1104,7 @@ function toTimelineEvents(
     }
 
     // CR 생성
-    if (action === "cr_created") {
+    if (action === "cr:created") {
       return {
         id: item.id,
         type: "cr_created",
@@ -1162,7 +1116,7 @@ function toTimelineEvents(
     }
 
     // CR 머지
-    if (action === "cr_merged") {
+    if (action === "cr:merged") {
       return {
         id: item.id,
         type: "cr_merged",
@@ -1174,11 +1128,7 @@ function toTimelineEvents(
     }
 
     // 부품 변경 (added/removed 배열 — 객체 { part_id, part_number })
-    if (
-      action === "part_changed" ||
-      action === "part_added" ||
-      action === "part_removed"
-    ) {
+    if (action === "issue:part_changed") {
       const added =
         (detail.added as
           | { part_id: string; part_number: string }[]
@@ -1187,40 +1137,22 @@ function toTimelineEvents(
         (detail.removed as
           | { part_id: string; part_number: string }[]
           | undefined) ?? [];
-      const parts =
-        (detail.parts as
-          | { part_id: string; part_number: string }[]
-          | undefined) ?? [];
-      const addedCount =
-        added.length || (action === "part_added" ? parts.length : 0);
-      const removedCount =
-        removed.length || (action === "part_removed" ? parts.length : 0);
-      const addedPartNumbers =
-        added.length > 0
-          ? added.map((p) => p.part_number)
-          : action === "part_added" && parts.length > 0
-            ? parts.map((p) => p.part_number)
-            : undefined;
-      const removedPartNumbers =
-        removed.length > 0
-          ? removed.map((p) => p.part_number)
-          : action === "part_removed" && parts.length > 0
-            ? parts.map((p) => p.part_number)
-            : undefined;
       return {
         id: item.id,
         type: "part_added",
         author,
         createdAt: item.createdAt,
-        addedPartCount: addedCount || undefined,
-        removedPartCount: removedCount || undefined,
-        addedPartNumbers,
-        removedPartNumbers,
+        addedPartCount: added.length || undefined,
+        removedPartCount: removed.length || undefined,
+        addedPartNumbers:
+          added.length > 0 ? added.map((p) => p.part_number) : undefined,
+        removedPartNumbers:
+          removed.length > 0 ? removed.map((p) => p.part_number) : undefined,
       };
     }
 
     // 라벨 변경 (added/removed 배열)
-    if (action === "label_changed" || action === "labels_changed") {
+    if (action === "issue:label_changed") {
       const added =
         (detail.added as { name: string; color: string }[] | undefined) ?? [];
       const removed =
@@ -1236,7 +1168,7 @@ function toTimelineEvents(
     }
 
     // 담당자 변경 (객체 { user_id, name })
-    if (action === "assignee_changed") {
+    if (action === "issue:assignee_changed") {
       const added =
         (detail.added as { user_id: string; name: string }[] | undefined) ?? [];
       const removed =
@@ -1254,7 +1186,7 @@ function toTimelineEvents(
     }
 
     // 검토자 변경 (객체 { user_id, name })
-    if (action === "reviewer_changed") {
+    if (action === "issue:reviewer_changed") {
       const added =
         (detail.added as { user_id: string; name: string }[] | undefined) ?? [];
       const removed =
@@ -1272,7 +1204,7 @@ function toTimelineEvents(
     }
 
     // 파일 첨부 (객체 { file_id, original_name })
-    if (action === "file_attached") {
+    if (action === "issue:file_attached") {
       const files =
         (detail.files as
           | { file_id: string; original_name: string }[]
@@ -1289,7 +1221,7 @@ function toTimelineEvents(
     }
 
     // 파일 제거
-    if (action === "file_detached") {
+    if (action === "issue:file_detached") {
       const fileName = detail.file_name as string | undefined;
       return {
         id: item.id,
@@ -1301,80 +1233,103 @@ function toTimelineEvents(
       };
     }
 
-    // CR 이슈 연결
-    // CR 타임라인: { linked_issues: [{issue_id, number, title, type}] }
-    // 이슈 타임라인: { cr_id, cr_number, cr_title }
-    if (action === "cr_issue_linked") {
-      const issues =
+    // CR 이슈 변경 (연결/해제를 detail의 added/removed로 판별)
+    if (action === "cr:issue_changed") {
+      const addedIssues =
+        (detail.added as
+          | { issue_id: string; number: number; title: string; type?: string }[]
+          | undefined) ?? [];
+      const removedIssues =
+        (detail.removed as
+          | { issue_id: string; number: number; title: string; type?: string }[]
+          | undefined) ?? [];
+
+      if (addedIssues.length > 0) {
+        const linkedItems = addedIssues.map((i) => ({
+          number: i.number,
+          title: i.title,
+          type: toIssueType(i.type),
+        }));
+        return {
+          id: item.id,
+          type: "cr_issue_linked",
+          author,
+          createdAt: item.createdAt,
+          linkedIssueCount: linkedItems.length,
+          linkedIssues: linkedItems,
+        };
+      }
+
+      if (removedIssues.length > 0) {
+        const unlinkedItems = removedIssues.map((i) => ({
+          number: i.number,
+          title: i.title,
+          type: toIssueType(i.type),
+        }));
+        return {
+          id: item.id,
+          type: "cr_issue_unlinked",
+          author,
+          createdAt: item.createdAt,
+          linkedIssueCount: unlinkedItems.length,
+          linkedIssues: unlinkedItems,
+        };
+      }
+
+      // 기존 포맷 fallback
+      const linkedIssues =
         (detail.linked_issues as
           | { issue_id: string; number: number; title: string; type?: string }[]
           | undefined) ?? [];
-      const crNumber = detail.cr_number as number | undefined;
-      const crTitle = detail.cr_title as string | undefined;
-      const crType = detail.cr_type as string | undefined;
-      const linkedItems =
-        issues.length > 0
-          ? issues.map((i) => ({
-              number: i.number,
-              title: i.title,
-              type: toIssueType(i.type),
-            }))
-          : crNumber != null
-            ? [
-                {
-                  number: crNumber,
-                  title: crTitle ?? "",
-                  type: toIssueType(crType),
-                },
-              ]
-            : undefined;
-      return {
-        id: item.id,
-        type: "cr_issue_linked",
-        author,
-        createdAt: item.createdAt,
-        linkedIssueCount: linkedItems?.length ?? 0,
-        linkedIssues: linkedItems,
-      };
-    }
-
-    // CR 이슈 해제
-    if (action === "cr_issue_unlinked") {
-      const issues =
+      const unlinkedIssues =
         (detail.unlinked_issues as
           | { issue_id: string; number: number; title: string; type?: string }[]
           | undefined) ?? [];
       const crNumber = detail.cr_number as number | undefined;
       const crTitle = detail.cr_title as string | undefined;
       const crType = detail.cr_type as string | undefined;
-      const unlinkedItems =
-        issues.length > 0
-          ? issues.map((i) => ({
-              number: i.number,
-              title: i.title,
-              type: toIssueType(i.type),
-            }))
+
+      if (linkedIssues.length > 0 || (unlinkedIssues.length === 0 && crNumber != null)) {
+        const linkedItems = linkedIssues.length > 0
+          ? linkedIssues.map((i) => ({ number: i.number, title: i.title, type: toIssueType(i.type) }))
           : crNumber != null
-            ? [
-                {
-                  number: crNumber,
-                  title: crTitle ?? "",
-                  type: toIssueType(crType),
-                },
-              ]
+            ? [{ number: crNumber, title: crTitle ?? "", type: toIssueType(crType) }]
             : undefined;
+        return {
+          id: item.id,
+          type: "cr_issue_linked",
+          author,
+          createdAt: item.createdAt,
+          linkedIssueCount: linkedItems?.length ?? 0,
+          linkedIssues: linkedItems,
+        };
+      }
+
+      if (unlinkedIssues.length > 0) {
+        const unlinkedItems = unlinkedIssues.map((i) => ({
+          number: i.number, title: i.title, type: toIssueType(i.type),
+        }));
+        return {
+          id: item.id,
+          type: "cr_issue_unlinked",
+          author,
+          createdAt: item.createdAt,
+          linkedIssueCount: unlinkedItems.length,
+          linkedIssues: unlinkedItems,
+        };
+      }
+
       return {
         id: item.id,
-        type: "cr_issue_unlinked",
+        type: "cr_issue_linked",
         author,
         createdAt: item.createdAt,
-        linkedIssueCount: unlinkedItems?.length ?? 0,
-        linkedIssues: unlinkedItems,
+        linkedIssueCount: 0,
       };
     }
 
     // 다른 이슈/CR에서 멘션됨
-    if (action === "issue_mentioned") {
+    if (action === "issue:mentioned") {
       const sourceNumber = detail.source_number as number;
       const sourceTitle = detail.source_title as string;
       const sourceType = toIssueType(
@@ -1389,16 +1344,6 @@ function toTimelineEvents(
           { number: sourceNumber, title: sourceTitle, type: sourceType },
         ],
         isComment: (detail.is_comment as boolean | undefined) ?? false,
-      };
-    }
-
-    if (action.includes("close") || action.includes("reopen")) {
-      return {
-        id: item.id,
-        type: "status_change",
-        author,
-        createdAt: item.createdAt,
-        content: action.includes("reopen") ? "open" : "closed",
       };
     }
 
@@ -1697,14 +1642,12 @@ function CRListView({
                         <span>·</span>
                         <div className="flex -space-x-1">
                           {cr.assignees.map((assignee) => (
-                            <Avatar
+                            <UserAvatar
                               key={assignee.id ?? assignee.name}
-                              className="h-4 w-4 border border-background"
-                            >
-                              <AvatarFallback className="text-[8px]">
-                                {getInitials(assignee.name)}
-                              </AvatarFallback>
-                            </Avatar>
+                              name={assignee.name}
+                              imageUrl={assignee.profileImageUrl}
+                              className="h-4 w-4 border border-background text-[8px]"
+                            />
                           ))}
                         </div>
                       </>
@@ -2223,11 +2166,7 @@ function PullRequestsView({
     projectId,
     isDetailRoute ? changeId : undefined,
   );
-  const linkChangeIssuesMutation = useLinkChangeIssues(
-    projectId,
-    isDetailRoute ? changeId : undefined,
-  );
-  const unlinkChangeIssuesMutation = useUnlinkChangeIssues(
+  const syncChangeIssuesMutation = useSyncChangeIssues(
     projectId,
     isDetailRoute ? changeId : undefined,
   );
@@ -2247,8 +2186,10 @@ function PullRequestsView({
     projectId,
     isDetailRoute ? changeId : undefined,
   );
+  const [issuesForLinkingEnabled, setIssuesForLinkingEnabled] = useState(false);
   const { data: issuesForLinking } = useProjectIssues(
     isDetailRoute ? projectId : undefined,
+    { enabled: issuesForLinkingEnabled },
   );
   const { user: changeUser } = useAuthStore();
 
@@ -2365,16 +2306,7 @@ function PullRequestsView({
           syncChangeLabelsMutation.isPending ||
           syncChangePartsMutation.isPending
         }
-        onSyncLinkedIssues={(issueIds) => {
-          const currentIds = changeDetail.linkedIssues.map((li) => li.id);
-          const toLink = issueIds.filter((id) => !currentIds.includes(id));
-          const toUnlink = currentIds.filter((id) => !issueIds.includes(id));
-          if (toLink.length > 0) linkChangeIssuesMutation.mutate(toLink);
-          if (toUnlink.length > 0) unlinkChangeIssuesMutation.mutate(toUnlink);
-        }}
-        onUnlinkIssue={(issueId) =>
-          unlinkChangeIssuesMutation.mutate([issueId])
-        }
+        onSyncLinkedIssues={(issueIds) => syncChangeIssuesMutation.mutate(issueIds)}
         availableIssues={(issuesForLinking?.items ?? []).map((issue) => ({
           id: issue.id,
           number: issue.number,
@@ -2382,6 +2314,7 @@ function PullRequestsView({
           state: issue.state,
         }))}
         linkedIssueIds={changeDetail.linkedIssues.map((li) => li.id)}
+        onRequestIssues={() => setIssuesForLinkingEnabled(true)}
         onNavigateToChange={(changeNumber) =>
           navigate(`/projects/${projectId}/change/${changeNumber}`)
         }
@@ -2656,17 +2589,7 @@ function ActivityTab({ projectId }: { projectId: string }) {
 
                       {/* 사용자 */}
                       <div className="flex shrink-0 items-center gap-1.5">
-                        <Avatar className="h-5 w-5">
-                          {user?.profileImageUrl && (
-                            <AvatarImage
-                              src={user.profileImageUrl}
-                              alt={user.fullName}
-                            />
-                          )}
-                          <AvatarFallback className="text-[9px]">
-                            {getInitials(user?.fullName ?? "?")}
-                          </AvatarFallback>
-                        </Avatar>
+                        <UserAvatar name={user?.fullName ?? "?"} imageUrl={user?.profileImageUrl} className="h-5 w-5 text-[9px]" />
                         <span className="text-xs text-muted-foreground">
                           {user?.fullName ?? activity.actorId.slice(0, 8)}
                         </span>

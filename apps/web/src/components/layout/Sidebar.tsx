@@ -2,9 +2,8 @@ import { NavLink, useLocation } from "react-router-dom";
 import {
   LayoutDashboard,
   FolderKanban,
+  GitPullRequestArrow,
   Package,
-  ClipboardCheck,
-  AlertTriangle,
   Loader2,
   X,
 } from "lucide-react";
@@ -23,9 +22,8 @@ import { useUploadStore } from "@/stores/uploadStore";
 const menuItems = [
   { id: "dashboard", label: "대시보드", icon: LayoutDashboard, path: "/" },
   { id: "projects", label: "프로젝트", icon: FolderKanban, path: "/projects" },
+  { id: "changes", label: "변경 관리", icon: GitPullRequestArrow, path: "/changes" },
   { id: "parts", label: "부품관리", icon: Package, path: "/parts" },
-  { id: "approval", label: "결재", icon: ClipboardCheck, path: "/approval" },
-  { id: "conflicts", label: "충돌관리", icon: AlertTriangle, path: "/conflicts" },
 ];
 
 interface SidebarProps {

@@ -5,6 +5,11 @@
       "source": "dalestudy/skills",
       "sourceType": "github",
       "computedHash": "cd915223b409a385fd9a41965b2835c2244d256801fe3d401764fd21f75c8e31"
+    },
+    "ui-ux-pro-max": {
+      "source": "nextlevelbuilder/ui-ux-pro-max-skill",
+      "sourceType": "github",
+      "computedHash": "e688fcd4c5693e14ebd00d48e982dbd2be060fbea89f5f60531e79c704a1bc28"
     }
   }
 }

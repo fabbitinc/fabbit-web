@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
-import { Routes, Route, Navigate, useParams, useNavigate } from "react-router-dom";
+import { Routes, Route, Navigate, useParams } from "react-router-dom";
 import { MainLayout } from "@/components/layout/MainLayout";
-import { Button } from "@/components/ui/button";
 import { LoginPage } from "@/pages/auth/LoginPage";
 import { ProjectListPage } from "@/pages/projects/ProjectListPage";
 import { ProjectDetailPage } from "@/pages/projects/ProjectDetailPage";
@@ -14,6 +13,11 @@ import { PartsTemplateAnalysisPage } from "@/pages/parts/PartsTemplateAnalysisPa
 import { PartsTemplateMappingPage } from "@/pages/parts/PartsTemplateMappingPage";
 import { PartsTemplateProcessingPage } from "@/pages/parts/PartsTemplateProcessingPage";
 import { PartsUploadDialog } from "@/pages/parts/PartsUploadDialog";
+import { ChangeManagementPage } from "@/pages/changes/ChangeManagementPage";
+import { IssueDetailPage } from "@/pages/changes/IssueDetailPage";
+import { ChangeDetailPage } from "@/pages/changes/ChangeDetailPage";
+import { IssueCreatePage } from "@/pages/changes/IssueCreatePage";
+import { ChangeRequestCreatePage } from "@/pages/changes/ChangeRequestCreatePage";
 import { UploadModal } from "@/features/upload/components/UploadModal";
 import { SimpleBomImportModal } from "@/features/items/components/SimpleBomImportModal";
 import { Toaster } from "@/components/ui/sonner";
@@ -21,7 +25,7 @@ import { useAuthStore } from "@/stores/authStore";
 import { getAuthCookies, clearAuthCookies, hasLogoutCookie, clearLogoutCookie } from "@/lib/auth-cookies";
 import { getSubdomain, isRootDomain } from "@/lib/subdomain";
 import { getSite } from "@/api";
-import { useDashboardStats } from "@/api/hooks/useDashboard";
+import { DashboardPage } from "@/pages/dashboard/DashboardPage";
 import type { SiteResponse } from "@/api/types/auth";
 
 // Registration 관련 임포트
@@ -34,191 +38,6 @@ import { PlanSelectionPage } from "@/features/registration/pages/PlanSelectionPa
 import { AcceptInvitePage } from "@/pages/invite/AcceptInvitePage";
 
 
-function AnimatedCount({ value, durationMs = 420 }: { value: number; durationMs?: number }) {
-  const [display, setDisplay] = useState(0);
-
-  useEffect(() => {
-    const safeTarget = Math.max(0, Math.floor(value));
-    const start = performance.now();
-    let frame = 0;
-
-    const tick = (now: number) => {
-      const progress = Math.min((now - start) / durationMs, 1);
-      const eased = 1 - (1 - progress) * (1 - progress);
-      setDisplay(Math.round(safeTarget * eased));
-      if (progress < 1) frame = requestAnimationFrame(tick);
-    };
-
-    frame = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(frame);
-  }, [value, durationMs]);
-
-  return <>{display.toLocaleString()}</>;
-}
-
-function DeltaBadge({ value, label }: { value: number; label: string }) {
-  const isPositive = value > 0;
-  const isNegative = value < 0;
-  const prefix = isPositive ? "+" : "";
-  const style = isPositive
-    ? {
-        color: "var(--status-success)",
-        borderColor: "var(--status-success-border)",
-        backgroundColor: "var(--status-success-bg)",
-      }
-    : isNegative
-      ? {
-          color: "var(--status-danger)",
-          borderColor: "var(--status-danger-border)",
-          backgroundColor: "var(--status-danger-bg)",
-        }
-      : {
-          color: "var(--status-info)",
-          borderColor: "var(--status-info-border)",
-          backgroundColor: "var(--status-info-bg)",
-        };
-
-  return (
-    <span className="inline-flex items-center rounded-md border px-2 py-1 text-xs font-medium" style={style}>
-      {label} {prefix}
-      {Math.abs(value).toLocaleString()}
-    </span>
-  );
-}
-
-function DashboardPage() {
-  const navigate = useNavigate();
-  const { data: stats, isLoading } = useDashboardStats();
-
-  if (isLoading || !stats) {
-    return (
-      <div className="space-y-4">
-        <div className="grid gap-4 md:grid-cols-3">
-          <div className="h-36 animate-pulse rounded-lg bg-muted md:col-span-2" />
-          <div className="h-36 animate-pulse rounded-lg bg-muted" />
-          <div className="h-20 animate-pulse rounded-lg bg-muted md:col-span-3" />
-        </div>
-      </div>
-    );
-  }
-
-  const totalManagedParts = stats.parts.total;
-  const lastSynthesis = stats.last_synthesis;
-  const lastSynthesisAt = lastSynthesis?.completed_at
-    ? new Date(lastSynthesis.completed_at).toLocaleString("ko-KR", {
-        month: "2-digit",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false,
-      })
-    : null;
-
-  return (
-    <div className="space-y-4">
-      <div className="grid gap-4 md:grid-cols-3">
-        {totalManagedParts > 0 ? (
-          <section className="rounded-lg border border-border bg-card p-5 md:col-span-2">
-            <p className="text-xs text-muted-foreground">부품 현황</p>
-            <p className="mt-2 text-3xl font-bold text-foreground">
-              <AnimatedCount value={stats.parts.total} />개
-            </p>
-            <p className="mt-1 text-xs text-muted-foreground">현재 시스템에서 관리 중인 부품 수</p>
-            <div className="mt-3 flex flex-wrap items-center gap-2">
-              <DeltaBadge label="이번 주" value={stats.parts.added_this_week} />
-            </div>
-          </section>
-        ) : (
-          <section
-            className="rounded-lg border border-dashed p-5 md:col-span-2"
-            style={{
-              borderColor: "var(--status-info-border)",
-              backgroundColor: "var(--status-info-bg)",
-            }}
-          >
-            <p className="text-xs text-muted-foreground">부품 현황</p>
-            <p className="mt-2 text-lg font-semibold" style={{ color: "var(--status-info)" }}>
-              아직 등록된 부품이 없습니다.
-            </p>
-            <p className="mt-1 text-sm text-muted-foreground">부품 등록을 하러 가볼까요?</p>
-            <div className="mt-3">
-              <Button
-                variant="outline"
-                style={{ borderColor: "var(--brand-500)", color: "var(--brand-600)" }}
-                onClick={() => navigate("/parts")}
-              >
-                부품 등록 페이지로 이동
-              </Button>
-            </div>
-          </section>
-        )}
-
-        <section className="rounded-lg border border-border bg-card p-5">
-          <p className="text-xs text-muted-foreground">BOM 연결</p>
-          <p className="mt-2 text-3xl font-bold text-foreground">
-            <AnimatedCount value={stats.bom_links.total} />개
-          </p>
-          <p className="mt-1 text-xs text-muted-foreground">부품 간 구성 관계 수</p>
-        </section>
-
-        {lastSynthesis ? (
-          <section className="rounded-lg border border-border bg-card p-5 md:col-span-3">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <div>
-                <p className="text-xs text-muted-foreground">마지막 부품 업로드</p>
-                <p className="mt-1 text-sm font-medium text-foreground">
-                  {lastSynthesisAt ? `완료 시각: ${lastSynthesisAt}` : `상태: ${lastSynthesis.status}`}
-                </p>
-              </div>
-              <div className="flex gap-6">
-                <div className="text-right">
-                  <p className="text-xs text-muted-foreground">등록 항목</p>
-                  <p className="text-2xl font-bold text-foreground">
-                    <AnimatedCount value={lastSynthesis.nodes_created} />
-                  </p>
-                </div>
-                <div className="text-right">
-                  <p className="text-xs text-muted-foreground">등록 관계</p>
-                  <p className="text-2xl font-bold text-foreground">
-                    <AnimatedCount value={lastSynthesis.relationships_created} />
-                  </p>
-                </div>
-              </div>
-            </div>
-          </section>
-        ) : (
-          <section
-            className="rounded-lg border border-dashed p-5 md:col-span-3"
-            style={{
-              borderColor: "var(--status-info-border)",
-              backgroundColor: "var(--status-info-bg)",
-            }}
-          >
-            <p className="text-xs text-muted-foreground">부품 업로드</p>
-            <p className="mt-1 text-sm text-muted-foreground">아직 부품 업로드 이력이 없습니다.</p>
-          </section>
-        )}
-      </div>
-
-    </div>
-  );
-}
-
-function ApprovalPage() {
-  return (
-    <div className="flex h-64 items-center justify-center rounded-lg border border-border bg-background">
-      <p className="text-muted-foreground">결재 - Coming Soon</p>
-    </div>
-  );
-}
-
-function ConflictsPage() {
-  return (
-    <div className="flex h-64 items-center justify-center rounded-lg border border-border bg-background">
-      <p className="text-muted-foreground">충돌관리 - Coming Soon</p>
-    </div>
-  );
-}
 
 function LegacyItemDetailRedirect() {
   const { id } = useParams<{ id: string }>();
@@ -456,12 +275,15 @@ function App() {
                   <Route path="/items" element={<Navigate to="/parts" replace />} />
                   <Route path="/items/:id" element={<LegacyItemDetailRedirect />} />
                   <Route path="/items/:id/bom" element={<LegacyItemDetailRedirect />} />
+                  <Route path="/changes/issues/new" element={<IssueCreatePage />} />
+                  <Route path="/changes/issues/:issueNumber" element={<IssueDetailPage />} />
+                  <Route path="/changes/requests/new" element={<ChangeRequestCreatePage />} />
+                  <Route path="/changes/requests/:changeNumber" element={<ChangeDetailPage />} />
+                  <Route path="/changes/*" element={<ChangeManagementPage />} />
                   <Route path="/projects" element={<ProjectListPage />} />
                   <Route path="/projects/:projectId/*" element={<ProjectDetailPage />} />
                   <Route path="/organization/settings" element={<OrganizationSettingsPage />} />
                   <Route path="/user/settings" element={<UserSettingsPage />} />
-                  <Route path="/approval" element={<ApprovalPage />} />
-                  <Route path="/conflicts" element={<ConflictsPage />} />
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Routes>
               </MainLayout>

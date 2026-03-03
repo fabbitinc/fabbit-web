@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useState, useCallback } from "react";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import {
   Pencil,
@@ -28,8 +28,15 @@ import {
   FileCode,
   FileAxis3d,
   FolderKanban,
+  UsersRound,
+  User,
+  ChevronDown,
+  Check,
+  X,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { UserAvatar } from "@/components/UserAvatar";
 import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
@@ -37,8 +44,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { usePartDetail, usePartProjects, useUploadDrawing, useDeleteDrawing, usePartBom, usePartSuppliers, usePartFiles, useAttachFiles, useDetachFile } from "@/api/hooks/useParts";
+import { usePartDetail, usePartProjects, useUploadDrawing, useDeleteDrawing, usePartBom, usePartSuppliers, usePartFiles, useAttachFiles, useDetachFile, usePartOwner, useUpdatePartOwner } from "@/api/hooks/useParts";
+import { useTeams } from "@/api/hooks/useTeams";
+import { useMembers } from "@/api/hooks/useMembers";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import { Input } from "@/components/ui/input";
 import type {
   PartDetailResponse,
   PartFileItem,
@@ -1067,6 +1078,251 @@ function ProjectsTab({ partId }: { partId: string }) {
   );
 }
 
+// 담당 탭 - Picker 컴포넌트
+
+function OwnerMemberPicker({
+  selectedId,
+  selectedName,
+  selectedImageUrl,
+  onSelect,
+}: {
+  selectedId: string | null;
+  selectedName: string | null;
+  selectedImageUrl?: string | null;
+  onSelect: (memberId: string | null) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const { data: membersData, isLoading } = useMembers({ enabled: open });
+
+  const members = membersData?.items ?? [];
+  const filtered = members.filter((m) => {
+    if (!query.trim()) return true;
+    const q = query.toLowerCase();
+    return m.fullName.toLowerCase().includes(q) || m.email.toLowerCase().includes(q);
+  });
+
+  return (
+    <Popover open={open} onOpenChange={(o) => { setOpen(o); if (!o) setQuery(""); }}>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          className="inline-flex h-8 w-full items-center gap-2 rounded-md border border-input bg-background px-3 text-sm cursor-pointer hover:bg-muted transition-colors"
+        >
+          {selectedId ? (
+            <>
+              <UserAvatar name={selectedName ?? ""} imageUrl={selectedImageUrl} className="h-5 w-5 text-[10px] shrink-0" />
+              <span className="truncate">{selectedName}</span>
+            </>
+          ) : (
+            <span className="text-muted-foreground truncate">미지정</span>
+          )}
+          <ChevronDown className="ml-auto h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent className="w-64 p-2" align="start">
+        <Input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="이름 또는 이메일 검색"
+          className="mb-2 h-8"
+        />
+        <div className="max-h-48 overflow-auto space-y-0.5">
+          {isLoading && (
+            <div className="flex justify-center py-3">
+              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+            </div>
+          )}
+          {!isLoading && selectedId && (
+            <button
+              type="button"
+              className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm text-muted-foreground hover:bg-muted cursor-pointer"
+              onClick={() => { onSelect(null); setOpen(false); }}
+            >
+              <X className="h-3.5 w-3.5" />
+              선택 해제
+            </button>
+          )}
+          {!isLoading && filtered.map((member) => (
+            <button
+              key={member.userId}
+              type="button"
+              className={cn(
+                "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-muted cursor-pointer",
+                member.userId === selectedId && "bg-muted font-medium",
+              )}
+              onClick={() => { onSelect(member.userId); setOpen(false); }}
+            >
+              <Check className={cn("h-3.5 w-3.5 shrink-0", member.userId === selectedId ? "opacity-100" : "opacity-0")} />
+              <UserAvatar name={member.fullName} imageUrl={member.profileImageUrl} className="h-5 w-5 text-[10px] shrink-0" />
+              <div className="min-w-0 flex-1 text-left">
+                <p className="truncate">{member.fullName}</p>
+                <p className="truncate text-xs text-muted-foreground">{member.email}</p>
+              </div>
+            </button>
+          ))}
+          {!isLoading && filtered.length === 0 && (
+            <p className="px-2 py-2 text-xs text-muted-foreground">검색 결과가 없습니다.</p>
+          )}
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+function OwnerTeamPicker({
+  selectedId,
+  selectedName,
+  onSelect,
+}: {
+  selectedId: string | null;
+  selectedName: string | null;
+  onSelect: (teamId: string | null) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const { data: teamsData, isLoading } = useTeams({ enabled: open });
+
+  const teams = teamsData?.items ?? [];
+  const filtered = teams.filter((t) => {
+    if (!query.trim()) return true;
+    return t.name.toLowerCase().includes(query.toLowerCase());
+  });
+
+  return (
+    <Popover open={open} onOpenChange={(o) => { setOpen(o); if (!o) setQuery(""); }}>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          className="inline-flex h-8 w-full items-center gap-2 rounded-md border border-input bg-background px-3 text-sm cursor-pointer hover:bg-muted transition-colors"
+        >
+          {selectedId ? (
+            <>
+              <div className="flex h-5 w-5 items-center justify-center rounded-full bg-muted shrink-0">
+                <UsersRound className="h-3 w-3 text-muted-foreground" />
+              </div>
+              <span className="truncate">{selectedName}</span>
+            </>
+          ) : (
+            <span className="text-muted-foreground truncate">미지정</span>
+          )}
+          <ChevronDown className="ml-auto h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent className="w-56 p-2" align="start">
+        <Input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="팀 검색"
+          className="mb-2 h-8"
+        />
+        <div className="max-h-48 overflow-auto space-y-0.5">
+          {isLoading && (
+            <div className="flex justify-center py-3">
+              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+            </div>
+          )}
+          {!isLoading && selectedId && (
+            <button
+              type="button"
+              className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm text-muted-foreground hover:bg-muted cursor-pointer"
+              onClick={() => { onSelect(null); setOpen(false); }}
+            >
+              <X className="h-3.5 w-3.5" />
+              선택 해제
+            </button>
+          )}
+          {!isLoading && filtered.map((team) => (
+            <button
+              key={team.id}
+              type="button"
+              className={cn(
+                "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-muted cursor-pointer",
+                team.id === selectedId && "bg-muted font-medium",
+              )}
+              onClick={() => { onSelect(team.id); setOpen(false); }}
+            >
+              <Check className={cn("h-3.5 w-3.5", team.id === selectedId ? "opacity-100" : "opacity-0")} />
+              {team.name}
+            </button>
+          ))}
+          {!isLoading && filtered.length === 0 && (
+            <p className="px-2 py-2 text-xs text-muted-foreground">검색 결과가 없습니다.</p>
+          )}
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+function OwnerTab({ partId }: { partId: string }) {
+  const { data: ownerData, isLoading } = usePartOwner(partId);
+  const updateOwner = useUpdatePartOwner(partId);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center gap-2 py-8 justify-center">
+        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+        <span className="text-sm text-muted-foreground">불러오는 중...</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="rounded-lg border">
+        <table className="w-full">
+          <thead>
+            <tr className="border-b bg-muted/30">
+              <th className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground w-1/3">항목</th>
+              <th className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground">설정</th>
+            </tr>
+          </thead>
+          <tbody>
+            {/* 담당자 */}
+            <tr className="border-b last:border-b-0">
+              <td className="px-4 py-3">
+                <div className="flex items-center gap-2">
+                  <User className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm font-medium text-foreground">담당자</span>
+                </div>
+              </td>
+              <td className="px-4 py-3">
+                <div className="max-w-[280px]">
+                  <OwnerMemberPicker
+                    selectedId={ownerData?.owner_id ?? null}
+                    selectedName={ownerData?.owner?.full_name ?? null}
+                    selectedImageUrl={ownerData?.owner?.profile_image_url}
+                    onSelect={(memberId) => updateOwner.mutate({ owner_id: memberId })}
+                  />
+                </div>
+              </td>
+            </tr>
+            {/* 담당팀 */}
+            <tr>
+              <td className="px-4 py-3">
+                <div className="flex items-center gap-2">
+                  <UsersRound className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-sm font-medium text-foreground">담당팀</span>
+                </div>
+              </td>
+              <td className="px-4 py-3">
+                <div className="max-w-[280px]">
+                  <OwnerTeamPicker
+                    selectedId={ownerData?.owner_team_id ?? null}
+                    selectedName={ownerData?.owner_team_name ?? null}
+                    onSelect={(teamId) => updateOwner.mutate({ owner_team_id: teamId })}
+                  />
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
 // 이력 탭
 function HistoryTab() {
   return <HistoryTimeline entries={MOCK_HISTORY} />;
@@ -1074,7 +1330,7 @@ function HistoryTab() {
 
 // --- 메인 컴포넌트 ---
 
-type TabKey = "properties" | "bom" | "attachments" | "suppliers" | "projects" | "history";
+type TabKey = "properties" | "bom" | "attachments" | "suppliers" | "projects" | "owner" | "history";
 
 const TABS: {
   key: TabKey;
@@ -1096,6 +1352,11 @@ const TABS: {
     count: (i) => i.files_count,
   },
   {
+    key: "owner",
+    label: "담당",
+    icon: User,
+  },
+  {
     key: "suppliers",
     label: "공급사",
     icon: Building2,
@@ -1110,10 +1371,27 @@ const TABS: {
   { key: "history", label: "이력", icon: Clock },
 ];
 
+const VALID_TABS = new Set<string>(["properties", "bom", "attachments", "suppliers", "projects", "owner", "history"]);
+
 export function PartDetailPage() {
   const { partId } = useParams<{ partId: string }>();
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<TabKey>("properties");
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const tabParam = searchParams.get("tab");
+  const activeTab: TabKey = tabParam && VALID_TABS.has(tabParam) ? (tabParam as TabKey) : "properties";
+
+  const setActiveTab = useCallback((tab: TabKey) => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (tab === "properties") {
+        next.delete("tab");
+      } else {
+        next.set("tab", tab);
+      }
+      return next;
+    });
+  }, [setSearchParams]);
 
   const { data: item, isLoading, isError } = usePartDetail(partId);
   const uploadDrawing = useUploadDrawing(partId);
@@ -1213,6 +1491,7 @@ export function PartDetailPage() {
       {activeTab === "attachments" && <AttachmentsTab partId={partId!} />}
       {activeTab === "suppliers" && <SuppliersTab partId={partId!} />}
       {activeTab === "projects" && <ProjectsTab partId={partId!} />}
+      {activeTab === "owner" && <OwnerTab partId={partId!} />}
       {activeTab === "history" && <HistoryTab />}
     </div>
   );

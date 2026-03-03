@@ -149,8 +149,6 @@ export interface TiptapEditorProps {
   hideToolbar?: boolean;
   /** 최소 높이 (px) */
   minHeight?: number;
-  /** 프로젝트 ID (멘션 자동완성 활성화용) */
-  projectId?: string;
   /** 이슈/CR 멘션 클릭 시 콜백 (number + type 전달) */
   onIssueMentionClick?: (issueNumber: number, issueType: "issue" | "change_request") => void;
 }
@@ -165,12 +163,11 @@ export function TiptapEditor({
   className,
   hideToolbar = false,
   minHeight = 120,
-  projectId,
   onIssueMentionClick,
 }: TiptapEditorProps) {
   const mentionExtensions = useMemo(
-    () => (projectId ? createMentionExtensions(projectId) : staticMentionExtensions),
-    [projectId],
+    () => (editable ? createMentionExtensions() : staticMentionExtensions),
+    [editable],
   );
 
   const editor = useEditor({

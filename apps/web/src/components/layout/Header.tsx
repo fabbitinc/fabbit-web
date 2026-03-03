@@ -21,45 +21,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { UserAvatar } from "@/components/UserAvatar";
 import { useAuthStore } from "@/stores/authStore";
 import { switchOrg } from "@/api";
 import { setAuthCookies } from "@/lib/auth-cookies";
 import { cn } from "@/lib/utils";
 
-function getInitials(name: string): string {
-  return name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
-}
-
-function InitialsAvatar({ name, imageUrl, className, variant = "rounded" }: {
-  name: string;
-  imageUrl?: string | null;
-  className?: string;
-  variant?: "rounded" | "circle";
-}) {
-  return (
-    <Avatar className={cn(variant === "rounded" ? "rounded-md" : "rounded-full", className)}>
-      {imageUrl && <AvatarImage src={imageUrl} alt={name} />}
-      <AvatarFallback
-        className={cn("text-xs font-medium", variant === "rounded" ? "rounded-md" : "rounded-full")}
-        style={{ backgroundColor: "var(--nav-topbar-avatar-bg)", color: "var(--nav-topbar-avatar-text)" }}
-      >
-        {getInitials(name)}
-      </AvatarFallback>
-    </Avatar>
-  );
-}
-
 function getRoleLabel(role: string): string {
-  switch (role) {
-    case "owner": return "소유자";
-    case "admin": return "관리자";
+  switch (role.toUpperCase()) {
+    case "OWNER": return "소유자";
+    case "ADMIN": return "관리자";
     default: return "사용자";
   }
 }
@@ -185,7 +157,7 @@ export function Header({ onToggleSideNav }: HeaderProps) {
                 className="h-9 gap-2 rounded-lg px-2"
                 style={{ color: "var(--nav-topbar-icon-hover)" }}
               >
-                <InitialsAvatar name={currentOrg.name} imageUrl={currentOrg.profileImageUrl} className="size-7" variant="rounded" />
+                <UserAvatar name={currentOrg.name} imageUrl={currentOrg.profileImageUrl} className="size-7" variant="rounded" />
                 <div className="text-left">
                   <p className="max-w-[120px] truncate text-sm font-medium leading-none text-foreground">
                     {currentOrg.name}
@@ -208,7 +180,7 @@ export function Header({ onToggleSideNav }: HeaderProps) {
                     disabled={isCurrent || !!switchingSlug}
                     onClick={() => handleSwitchOrg(m.organization.slug)}
                   >
-                    <InitialsAvatar name={m.organization.name} imageUrl={m.organization.profileImageUrl} className="size-9" variant="rounded" />
+                    <UserAvatar name={m.organization.name} imageUrl={m.organization.profileImageUrl} className="size-9" variant="rounded" />
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium text-foreground">
                         {m.organization.name}
@@ -244,7 +216,7 @@ export function Header({ onToggleSideNav }: HeaderProps) {
                 className="topbar-icon-btn size-8"
                 aria-label="프로필 메뉴"
               >
-                <InitialsAvatar name={user.name} imageUrl={user.profileImageUrl} className="size-7" variant="circle" />
+                <UserAvatar name={user.name} imageUrl={user.profileImageUrl} className="size-7" variant="circle" />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">

@@ -22,3 +22,4 @@ export * from "./label";
 export * from "./change";
 export * from "./user";
 export * from "./activity";
+export * from "./team";

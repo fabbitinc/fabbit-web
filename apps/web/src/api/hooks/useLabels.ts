@@ -5,6 +5,10 @@ import {
   createProjectLabel,
   updateProjectLabel,
   deleteProjectLabel,
+  getTenantLabels,
+  createTenantLabel,
+  updateTenantLabel,
+  deleteTenantLabel,
 } from "../label";
 import type { CreateLabelRequest, UpdateLabelRequest } from "../types";
 
@@ -54,6 +58,62 @@ export function useDeleteProjectLabel(projectId: string) {
     mutationFn: (labelId: string) => deleteProjectLabel(projectId, labelId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [...PROJECT_LABELS_QUERY_KEY, projectId] });
+    },
+    onError: () => {
+      toast.error("라벨 삭제에 실패했습니다");
+    },
+  });
+}
+
+// --- 테넌트 레벨 라벨 훅 ---
+
+export const TENANT_LABELS_QUERY_KEY = ["tenantLabels"] as const;
+
+/** 테넌트 라벨 목록 조회 훅 */
+export function useTenantLabels(options?: { enabled?: boolean }) {
+  return useQuery({
+    queryKey: [...TENANT_LABELS_QUERY_KEY],
+    queryFn: getTenantLabels,
+    enabled: options?.enabled,
+  });
+}
+
+/** 테넌트 라벨 생성 뮤테이션 */
+export function useCreateTenantLabel() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (request: CreateLabelRequest) => createTenantLabel(request),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [...TENANT_LABELS_QUERY_KEY] });
+    },
+    onError: () => {
+      toast.error("라벨 생성에 실패했습니다");
+    },
+  });
+}
+
+/** 테넌트 라벨 수정 뮤테이션 */
+export function useUpdateTenantLabel() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ labelId, request }: { labelId: string; request: UpdateLabelRequest }) =>
+      updateTenantLabel(labelId, request),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [...TENANT_LABELS_QUERY_KEY] });
+    },
+    onError: () => {
+      toast.error("라벨 수정에 실패했습니다");
+    },
+  });
+}
+
+/** 테넌트 라벨 삭제 뮤테이션 */
+export function useDeleteTenantLabel() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (labelId: string) => deleteTenantLabel(labelId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [...TENANT_LABELS_QUERY_KEY] });
     },
     onError: () => {
       toast.error("라벨 삭제에 실패했습니다");

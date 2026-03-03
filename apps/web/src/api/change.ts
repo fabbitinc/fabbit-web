@@ -23,7 +23,7 @@ interface ApiChangeLabelResponse {
 }
 
 interface ApiChangeAssigneeResponse {
-  id: string;
+  user_id: string;
   full_name: string;
   profile_image_url?: string | null;
 }
@@ -103,6 +103,7 @@ interface ApiTimelineCommentItem {
   body: Record<string, unknown> | null;
   author_id: string | null;
   created_at: string;
+  updated_at?: string;
   is_modified?: boolean;
 }
 
@@ -110,13 +111,14 @@ interface ApiTimelineActivityItem {
   type: "activity";
   id: string;
   action: string;
+  scope?: string | null;
   actor_id: string;
   detail: Record<string, unknown> | null;
   created_at: string;
 }
 
 interface ApiTimelineUserResponse {
-  id: string;
+  user_id: string;
   full_name: string;
   profile_image_url: string | null;
 }
@@ -138,9 +140,9 @@ function mapChangeLabel(label: ApiChangeLabelResponse): ChangeLabelDto | null {
 function mapUserSummary(
   user: ApiChangeAssigneeResponse,
 ): UserSummaryDto | null {
-  if (!user.id || !user.full_name) return null;
+  if (!user.user_id || !user.full_name) return null;
   return {
-    id: user.id,
+    id: user.user_id,
     fullName: user.full_name,
     profileImageUrl: user.profile_image_url ?? null,
   };
@@ -244,6 +246,7 @@ function mapTimelineItem(
       body: item.body,
       authorId: item.author_id,
       createdAt: item.created_at,
+      updatedAt: item.updated_at,
       isModified: item.is_modified ?? false,
     };
   }
@@ -252,6 +255,7 @@ function mapTimelineItem(
     type: "activity",
     id: item.id,
     action: item.action,
+    scope: item.scope ?? null,
     actorId: item.actor_id,
     detail: item.detail,
     createdAt: item.created_at,
@@ -331,7 +335,7 @@ function mapTimelineUsers(
   const result: Record<string, TimelineUserDto> = {};
   for (const [key, u] of Object.entries(raw)) {
     result[key] = {
-      id: u.id,
+      id: u.user_id,
       fullName: u.full_name,
       profileImageUrl: u.profile_image_url,
     };
@@ -486,32 +490,16 @@ export async function deleteChangeComment(
   );
 }
 
-/** 변경 요청에 이슈 연결 */
-export async function linkChangeIssues(
+/** 변경 요청 이슈 동기화 */
+export async function syncChangeIssues(
   projectId: string,
   changeNumber: string,
   issueIds: string[],
 ): Promise<void> {
-  await apiClient.post(
+  await apiClient.put(
     `/api/v1/projects/${projectId}/changes/${changeNumber}/issues`,
     {
       issue_ids: issueIds,
-    },
-  );
-}
-
-/** 변경 요청에서 이슈 연결 해제 */
-export async function unlinkChangeIssues(
-  projectId: string,
-  changeNumber: string,
-  issueIds: string[],
-): Promise<void> {
-  await apiClient.delete(
-    `/api/v1/projects/${projectId}/changes/${changeNumber}/issues`,
-    {
-      data: {
-        issue_ids: issueIds,
-      },
     },
   );
 }

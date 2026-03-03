@@ -72,7 +72,7 @@ function mapInvitation(item: ApiInvitationResponse): InvitationDto {
 
 /** 조직 멤버 목록 조회 */
 export async function getMembers(): Promise<MemberListResponse> {
-  const response = await apiClient.get<ApiMemberListResponse>("/api/v1/organizations/members");
+  const response = await apiClient.get<ApiMemberListResponse>("/api/v1/members");
   return {
     items: response.data.items.map(mapMember),
   };
@@ -99,7 +99,12 @@ export async function cancelInvitation(invitationId: string): Promise<void> {
 
 /** 조직 멤버 제거 */
 export async function removeMember(userId: string): Promise<void> {
-  await apiClient.delete(`/api/v1/organizations/members/${userId}`);
+  await apiClient.delete(`/api/v1/members/${userId}`);
+}
+
+/** 멤버 역할 변경 */
+export async function changeMemberRole(userId: string, role: MemberRole): Promise<void> {
+  await apiClient.patch(`/api/v1/members/${userId}/role`, { role });
 }
 
 /** 조직 프로필 이미지 설정 */

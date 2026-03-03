@@ -10,7 +10,7 @@ import {
 import { ReactRenderer } from "@tiptap/react";
 import Mention from "@tiptap/extension-mention";
 import type { SuggestionOptions, SuggestionProps } from "@tiptap/suggestion";
-import { lookupMembers, lookupIssues } from "@/api/lookup";
+import { lookupOrgMembers, lookupIssues } from "@/api/lookup";
 
 // ── 타입 ────────────────────────────────────────────────────
 
@@ -146,7 +146,6 @@ MentionDropdown.displayName = "MentionDropdown";
 // ── Suggestion 팩토리 ─────────────────────────────────────
 
 function createSuggestion(
-  projectId: string,
   variant: "user" | "issue",
 ): Omit<SuggestionOptions<MentionItem>, "editor"> {
   return {
@@ -155,14 +154,14 @@ function createSuggestion(
     items: async ({ query }) => {
       try {
         if (variant === "user") {
-          const members = await lookupMembers(projectId, query, 5);
+          const members = await lookupOrgMembers(query, 5);
           return members.map((m) => ({
             id: m.id,
             label: m.fullName,
             profileImageUrl: m.profileImageUrl,
           }));
         }
-        const items = await lookupIssues(projectId, query, 5);
+        const items = await lookupIssues(query, 5);
         return items.map((i) => ({
           id: i.id,
           label: i.title,
@@ -255,16 +254,16 @@ const IssueMentionExtension = Mention.extend({
 // ── 확장 생성 함수 ───────────────────────────────────────
 
 /** 편집 모드용: suggestion 포함 mention 확장 2개 */
-export function createMentionExtensions(projectId: string) {
+export function createMentionExtensions() {
   return [
     Mention.extend({ name: "userMention" }).configure({
       HTMLAttributes: { class: "mention-user" },
-      suggestion: createSuggestion(projectId, "user"),
+      suggestion: createSuggestion("user"),
     }),
     IssueMentionExtension.configure({
       HTMLAttributes: { class: "mention-issue" },
       suggestion: {
-        ...createSuggestion(projectId, "issue"),
+        ...createSuggestion("issue"),
         command: ({ editor, range, props: item }) => {
           const mentionItem = item as unknown as MentionItem;
           const nodeAfter = editor.view.state.selection.$to.nodeAfter;

@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { getMembers, getInvitations, createInvitation, cancelInvitation, removeMember } from "../member";
-import type { CreateInvitationRequest } from "../types";
+import { getMembers, getInvitations, createInvitation, cancelInvitation, removeMember, changeMemberRole } from "../member";
+import type { CreateInvitationRequest, MemberRole } from "../types";
 
 export const MEMBERS_QUERY_KEY = ["members"] as const;
 export const INVITATIONS_QUERY_KEY = ["invitations"] as const;
@@ -10,7 +10,7 @@ const INVITATION_ERROR_MESSAGES: Record<string, string> = {
   VALIDATION_ERROR: "유효하지 않은 이메일 주소입니다.",
   ALREADY_MEMBER: "이미 조직에 속한 사용자입니다.",
   DUPLICATE_INVITATION: "이미 초대가 발송된 이메일입니다.",
-  FORBIDDEN: "초대 권한이 없습니다. 관리자만 초대할 수 있습니다.",
+  FORBIDDEN: "초대 권한이 없습니다.",
   NOT_FOUND: "초대 정보를 찾을 수 없습니다.",
 };
 
@@ -70,6 +70,30 @@ export function useCancelInvitation() {
   });
 }
 
+/** 멤버 역할 변경 */
+export function useChangeMemberRole() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ userId, role }: { userId: string; role: MemberRole }) =>
+      changeMemberRole(userId, role),
+    onSuccess: () => {
+      toast.success("역할을 변경했습니다");
+      queryClient.invalidateQueries({ queryKey: MEMBERS_QUERY_KEY });
+    },
+    onError: (err) => {
+      const axiosErr = err as { response?: { data?: { code?: string; message?: string } } };
+      const code = axiosErr?.response?.data?.code;
+      const messages: Record<string, string> = {
+        FORBIDDEN: "역할 변경 권한이 없습니다.",
+        CANNOT_CHANGE_OWN_ROLE: "자기 자신의 역할은 변경할 수 없습니다.",
+        LAST_OWNER: "마지막 소유자의 역할을 변경할 수 없습니다.",
+      };
+      const message = (code && messages[code]) || axiosErr?.response?.data?.message || "역할 변경에 실패했습니다";
+      toast.error(message);
+    },
+  });
+}
+
 /** 멤버 제거 */
 export function useRemoveMember() {
   const queryClient = useQueryClient();
@@ -83,7 +107,7 @@ export function useRemoveMember() {
       const axiosErr = err as { response?: { data?: { code?: string; message?: string } } };
       const code = axiosErr?.response?.data?.code;
       const messages: Record<string, string> = {
-        FORBIDDEN: "사용자 제거 권한이 없습니다. 관리자만 제거할 수 있습니다.",
+        FORBIDDEN: "사용자 제거 권한이 없습니다.",
         CANNOT_REMOVE_OWNER: "조직 소유자는 제거할 수 없습니다.",
         CANNOT_REMOVE_SELF: "자기 자신은 제거할 수 없습니다.",
       };

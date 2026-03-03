@@ -1,6 +1,11 @@
 import { apiClient } from "./client";
 import { downloadExcel } from "@/utils/downloadExcel";
 import type {
+  CategoryStatsResponse,
+  RenameCategoryRequest,
+  PartDefaultOwnerListResponse,
+  PartDefaultOwnerItem,
+  PartDefaultOwnerRequest,
   PartListResponse,
   PartFilterOptions,
   ListPartsParams,
@@ -17,7 +22,56 @@ import type {
   PartBomResponse,
   PartSuppliersResponse,
   PartFilesResponse,
+  PartOwnerResponse,
+  UpdatePartOwnerRequest,
 } from "./types/parts";
+
+/** 카테고리 목록 조회 (부품 개수 포함) */
+export async function listCategories(): Promise<CategoryStatsResponse> {
+  const response = await apiClient.get<CategoryStatsResponse>(
+    "/api/v1/parts/categories",
+  );
+  return response.data;
+}
+
+/** 카테고리 이름 변경 */
+export async function renameCategory(
+  category: string,
+  request: RenameCategoryRequest,
+): Promise<void> {
+  await apiClient.patch(
+    `/api/v1/parts/categories/${encodeURIComponent(category)}`,
+    request,
+  );
+}
+
+/** 기본 담당 설정 목록 조회 */
+export async function listDefaultOwners(): Promise<PartDefaultOwnerListResponse> {
+  const response = await apiClient.get<PartDefaultOwnerListResponse>(
+    "/api/v1/parts/owner/defaults",
+  );
+  return response.data;
+}
+
+/** 기본 담당 설정 upsert */
+export async function upsertDefaultOwner(
+  request: PartDefaultOwnerRequest,
+): Promise<PartDefaultOwnerItem> {
+  const response = await apiClient.put<PartDefaultOwnerItem>(
+    "/api/v1/parts/owner/defaults",
+    request,
+  );
+  return response.data;
+}
+
+/** 기본 담당 설정 삭제 */
+export async function deleteDefaultOwner(
+  category?: string | null,
+): Promise<void> {
+  await apiClient.delete("/api/v1/parts/owner/defaults", {
+    params: category != null ? { category } : undefined,
+  });
+}
 
 /** Part 필터 옵션 조회 (카테고리, 수명주기 DISTINCT 값) */
 export async function getPartFilterOptions(): Promise<PartFilterOptions> {
@@ -166,6 +220,28 @@ export async function getPartProjects(
 ): Promise<PartProjectsResponse> {
   const response = await apiClient.get<PartProjectsResponse>(
     `/api/v1/parts/${partId}/projects`,
+  );
+  return response.data;
+}
+
+/** Part 담당자/팀 조회 */
+export async function getPartOwner(
+  partId: string,
+): Promise<PartOwnerResponse> {
+  const response = await apiClient.get<PartOwnerResponse>(
+    `/api/v1/parts/${partId}/owner`,
+  );
+  return response.data;
+}
+
+/** Part 담당자/팀 수정 (PATCH) */
+export async function updatePartOwner(
+  partId: string,
+  request: UpdatePartOwnerRequest,
+): Promise<PartOwnerResponse> {
+  const response = await apiClient.patch<PartOwnerResponse>(
+    `/api/v1/parts/${partId}/owner`,
+    request,
   );
   return response.data;
 }

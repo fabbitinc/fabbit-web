@@ -24,7 +24,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { UserAvatar } from "@/components/UserAvatar";
 import { Badge } from "@/components/ui/badge";
 import { LabelBadge } from "@fabbit/ui";
 import {
@@ -406,11 +406,7 @@ function MembersTab({
               key={member.userId}
               className="flex items-center gap-3 rounded-md border border-border px-4 py-3"
             >
-              <Avatar className="h-8 w-8">
-                <AvatarFallback className="text-xs">
-                  {member.fullName.slice(0, 2)}
-                </AvatarFallback>
-              </Avatar>
+              <UserAvatar name={member.fullName} className="h-8 w-8" />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-foreground">
                   {member.fullName}
@@ -582,11 +578,7 @@ function AddMemberDialog({
                     checked={selectedIds.has(member.userId)}
                     onCheckedChange={() => toggleSelect(member.userId)}
                   />
-                  <Avatar className="h-7 w-7">
-                    <AvatarFallback className="text-[10px]">
-                      {member.fullName.slice(0, 2)}
-                    </AvatarFallback>
-                  </Avatar>
+                  <UserAvatar name={member.fullName} className="h-7 w-7 text-[10px]" />
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium">
                       {member.fullName}

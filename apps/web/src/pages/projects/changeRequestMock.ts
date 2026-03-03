@@ -34,6 +34,7 @@ export type TimelineEventType =
   | "file_detached"
   | "cr_issue_linked"
   | "cr_issue_unlinked"
+  | "cr_changed"
   | "issue_mentioned";
 
 export interface TimelineAuthor {

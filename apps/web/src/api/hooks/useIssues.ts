@@ -30,11 +30,11 @@ export const PROJECT_ISSUE_DETAIL_QUERY_KEY = ["projectIssueDetail"] as const;
 export const PROJECT_ISSUE_TIMELINE_QUERY_KEY = ["projectIssueTimeline"] as const;
 
 /** 프로젝트 이슈 목록 조회 훅 */
-export function useProjectIssues(projectId: string | undefined) {
+export function useProjectIssues(projectId: string | undefined, options?: { enabled?: boolean }) {
   return useQuery({
     queryKey: [...PROJECT_ISSUES_QUERY_KEY, projectId],
     queryFn: () => getProjectIssues(projectId!),
-    enabled: !!projectId,
+    enabled: !!projectId && (options?.enabled ?? true),
   });
 }
 

@@ -34,11 +34,12 @@ export interface LinkedChangeBadgeDto {
   number: number;
   title: string;
   state: string;
+  crState?: string;
 }
 
 export interface IssueDto {
   id: string;
-  projectId: string;
+  projectId: string | null;
   number: number;
   type: string;
   title: string;
@@ -72,13 +73,15 @@ export interface IssueTimelineCommentDto {
   body: Record<string, unknown> | null;
   authorId: string | null;
   createdAt: string;
-  isModified?: boolean;
+  updatedAt?: string;
+  isModified: boolean;
 }
 
 export interface IssueTimelineActivityDto {
   type: "activity";
   id: string;
-  action: string;
+  action: import("./activity").Action;
+  scope?: string | null;
   actorId: string;
   detail: Record<string, unknown> | null;
   createdAt: string;
@@ -100,6 +103,10 @@ export interface IssueTimelineResponse {
 export interface CreateIssueRequest {
   title: string;
   body?: Record<string, unknown> | null;
+  assignee_user_ids?: string[];
+  label_ids?: string[];
+  part_ids?: string[];
+  file_ids?: string[];
 }
 
 export interface CommentDto {

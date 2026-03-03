@@ -1,5 +1,5 @@
 // 조직 멤버
-export type MemberRole = "ADMIN" | "MEMBER";
+export type MemberRole = "OWNER" | "ADMIN" | "MEMBER";
 
 export interface MemberDto {
   userId: string;

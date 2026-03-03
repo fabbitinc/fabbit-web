@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback, type ComponentType } from "react";
+import { useSearchParams } from "react-router-dom";
 import { User, Shield, Bell, Palette, Camera, Trash2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -6,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { getInitials } from "@/components/UserAvatar";
 import { useAuthStore } from "@/stores/authStore";
 import {
   updateProfile,
@@ -17,6 +19,8 @@ import {
 } from "@/api";
 
 type UserSettingsTab = "profile" | "security" | "notifications" | "preferences";
+
+const VALID_MENUS = new Set<string>(["profile", "security", "notifications", "preferences"]);
 
 const tabs: Array<{
   id: UserSettingsTab;
@@ -32,7 +36,22 @@ const tabs: Array<{
 export function UserSettingsPage() {
   const user = useAuthStore((state) => state.user);
   const fetchMe = useAuthStore((state) => state.fetchMe);
-  const [activeTab, setActiveTab] = useState<UserSettingsTab>("profile");
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const menuParam = searchParams.get("menu");
+  const activeTab: UserSettingsTab = menuParam && VALID_MENUS.has(menuParam) ? (menuParam as UserSettingsTab) : "profile";
+
+  const setActiveTab = useCallback((tab: UserSettingsTab) => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (tab === "profile") {
+        next.delete("menu");
+      } else {
+        next.set("menu", tab);
+      }
+      return next;
+    });
+  }, [setSearchParams]);
 
   const [name, setName] = useState(user?.name ?? "");
   const email = user?.email ?? "";
@@ -189,7 +208,7 @@ export function UserSettingsPage() {
                         />
                       ) : null}
                       <AvatarFallback className="rounded-xl text-3xl font-medium text-muted-foreground">
-                        {name.charAt(0)}
+                        {getInitials(name)}
                       </AvatarFallback>
                     </Avatar>
 

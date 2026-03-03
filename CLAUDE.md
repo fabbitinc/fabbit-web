@@ -21,6 +21,7 @@
 
 ## 스타일
 
+- 모든 클릭 가능한 형태는 마우스 Pointer 형싱
 - Attlasian Design System 을 참고 해서 제작
 - UI 컴포넌트는 기본적으로 shadcn/ui 프리미티브(`src/components/ui`)를 기반으로 조합/확장해서 사용
 - 새 UI가 필요하면 기존 shadcn 컴포넌트(Button, Input, Select, Badge 등) 재사용을 우선하고, 중복 커스텀 구현은 지양

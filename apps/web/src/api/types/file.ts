@@ -14,6 +14,16 @@ export interface CreateFileResponse {
   file_key: string;
 }
 
+// POST /api/v1/files/upload/batch
+
+export interface BatchCreateFilesRequest {
+  items: CreateFileRequest[];
+}
+
+export interface BatchCreateFilesResponse {
+  items: CreateFileResponse[];
+}
+
 // POST /api/v1/files/upload/{file_id}/complete
 
 export interface FileCompleteResponse {
@@ -24,4 +34,11 @@ export interface FileCompleteResponse {
   file_size: number;
   content_type: string;
   created_at: string;
+}
+
+// POST /api/v1/files/upload/batch/complete
+
+export interface BatchCompleteFilesResponse {
+  items: FileCompleteResponse[];
+  failed: { file_id: string; reason: string }[];
 }

@@ -1,3 +1,47 @@
+// --- 카테고리 ---
+
+export interface CategoryStatsItem {
+  category: string;
+  part_count: number;
+}
+
+export interface CategoryStatsResponse {
+  items: CategoryStatsItem[];
+}
+
+export interface RenameCategoryRequest {
+  new_name: string;
+}
+
+// --- 기본 담당 설정 ---
+
+export interface PartOwnerUserSummary {
+  user_id: string;
+  full_name: string;
+  email: string;
+  phone: string | null;
+  profile_image_url: string | null;
+}
+
+export interface PartDefaultOwnerItem {
+  id: string;
+  category: string | null;
+  default_owner_id: string | null;
+  default_owner: PartOwnerUserSummary | null;
+  default_owner_team_id: string | null;
+  default_owner_team_name: string | null;
+}
+
+export interface PartDefaultOwnerListResponse {
+  items: PartDefaultOwnerItem[];
+}
+
+export interface PartDefaultOwnerRequest {
+  category?: string | null;
+  default_owner_id?: string | null;
+  default_owner_team_id?: string | null;
+}
+
 // --- Parts API 타입 ---
 
 export interface PartSummary {
@@ -205,4 +249,18 @@ export interface RegisterDrawingResponse {
   drawing_number: string;
   name: string;
   conversion_status: string | null;
+}
+
+// --- 담당자 (owner) ---
+
+export interface PartOwnerResponse {
+  owner_id: string | null;
+  owner: PartOwnerUserSummary | null;
+  owner_team_id: string | null;
+  owner_team_name: string | null;
+}
+
+export interface UpdatePartOwnerRequest {
+  owner_id?: string | null;
+  owner_team_id?: string | null;
 }

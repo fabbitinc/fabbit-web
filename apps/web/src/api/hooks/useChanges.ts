@@ -16,8 +16,7 @@ import {
   createChangeComment,
   updateChangeComment,
   deleteChangeComment,
-  linkChangeIssues,
-  unlinkChangeIssues,
+  syncChangeIssues,
   closeChange,
   mergeChange,
   submitChange,
@@ -430,8 +429,8 @@ export function useDeleteChangeComment(
   });
 }
 
-/** 변경 요청에 이슈 연결 훅 */
-export function useLinkChangeIssues(
+/** 변경 요청 이슈 동기화 훅 */
+export function useSyncChangeIssues(
   projectId: string | undefined,
   changeNumber: string | undefined,
 ) {
@@ -439,9 +438,9 @@ export function useLinkChangeIssues(
 
   return useMutation({
     mutationFn: (issueIds: string[]) =>
-      linkChangeIssues(projectId!, changeNumber!, issueIds),
+      syncChangeIssues(projectId!, changeNumber!, issueIds),
     onSuccess: () => {
-      toast.success("이슈를 연결했습니다");
+      toast.success("이슈를 적용했습니다");
       queryClient.invalidateQueries({
         queryKey: [...PROJECT_CHANGE_DETAIL_QUERY_KEY, projectId, changeNumber],
       });
@@ -454,36 +453,7 @@ export function useLinkChangeIssues(
       });
     },
     onError: () => {
-      toast.error("이슈 연결에 실패했습니다");
-    },
-  });
-}
-
-/** 변경 요청에서 이슈 연결 해제 훅 */
-export function useUnlinkChangeIssues(
-  projectId: string | undefined,
-  changeNumber: string | undefined,
-) {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (issueIds: string[]) =>
-      unlinkChangeIssues(projectId!, changeNumber!, issueIds),
-    onSuccess: () => {
-      toast.success("이슈 연결을 해제했습니다");
-      queryClient.invalidateQueries({
-        queryKey: [...PROJECT_CHANGE_DETAIL_QUERY_KEY, projectId, changeNumber],
-      });
-      queryClient.invalidateQueries({
-        queryKey: [
-          ...PROJECT_CHANGE_TIMELINE_QUERY_KEY,
-          projectId,
-          changeNumber,
-        ],
-      });
-    },
-    onError: () => {
-      toast.error("이슈 연결 해제에 실패했습니다");
+      toast.error("이슈 적용에 실패했습니다");
     },
   });
 }

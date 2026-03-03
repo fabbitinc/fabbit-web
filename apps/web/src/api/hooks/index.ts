@@ -8,4 +8,7 @@ export * from "./useIssues";
 export * from "./useMembers";
 export * from "./useLabels";
 export * from "./useChanges";
+export * from "./useIndependentIssues";
+export * from "./useIndependentChanges";
 export * from "./useActivities";
+export * from "./useTeams";

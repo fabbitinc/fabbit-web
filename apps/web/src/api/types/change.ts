@@ -33,7 +33,7 @@ export interface LinkedIssueBadgeDto {
 
 export interface ChangeDto {
   id: string;
-  projectId: string;
+  projectId: string | null;
   number: number;
   type: string;
   title: string;
@@ -67,6 +67,11 @@ export interface CreateChangeRequest {
   title: string;
   body?: Record<string, unknown> | null;
   issueNumber?: number | null;
+  assignee_user_ids?: string[];
+  reviewer_user_ids?: string[];
+  label_ids?: string[];
+  part_ids?: string[];
+  file_ids?: string[];
 }
 
 export interface UpdateChangeRequest {

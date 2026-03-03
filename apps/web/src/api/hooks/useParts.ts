@@ -2,6 +2,11 @@ import { useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
+  listCategories,
+  renameCategory,
+  listDefaultOwners,
+  upsertDefaultOwner,
+  deleteDefaultOwner,
   getPartFilterOptions,
   listParts,
   lookupParts,
@@ -11,6 +16,8 @@ import {
   getPartSuppliers,
   getPartFiles,
   getPartProjects,
+  getPartOwner,
+  updatePartOwner,
   registerDrawingForPart,
   deleteDrawingFromPart,
   attachFilesToPart,
@@ -21,8 +28,10 @@ import {
   uploadFileToPresignedUrl,
   completeFileUpload,
 } from "../file";
-import type { ListPartsParams, LookupPartsParams } from "../types/parts";
+import type { ListPartsParams, LookupPartsParams, UpdatePartOwnerRequest, RenameCategoryRequest, PartDefaultOwnerRequest } from "../types/parts";
 
+export const CATEGORIES_QUERY_KEY = ["categories"] as const;
+export const DEFAULT_OWNERS_QUERY_KEY = ["defaultOwners"] as const;
 export const PART_FILTER_OPTIONS_QUERY_KEY = ["partFilterOptions"] as const;
 export const PARTS_QUERY_KEY = ["parts"] as const;
 export const PART_DETAIL_QUERY_KEY = ["partDetail"] as const;
@@ -31,6 +40,71 @@ export const PART_BOM_TREE_QUERY_KEY = ["partBomTree"] as const;
 export const PART_SUPPLIERS_QUERY_KEY = ["partSuppliers"] as const;
 export const PART_FILES_QUERY_KEY = ["partFiles"] as const;
 export const PART_PROJECTS_QUERY_KEY = ["partProjects"] as const;
+export const PART_OWNER_QUERY_KEY = ["partOwner"] as const;
+
+/** 카테고리 목록 조회 훅 (부품 개수 포함) */
+export function useCategories() {
+  return useQuery({
+    queryKey: [...CATEGORIES_QUERY_KEY],
+    queryFn: listCategories,
+  });
+}
+
+/** 카테고리 이름 변경 mutation */
+export function useRenameCategory() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ category, request }: { category: string; request: RenameCategoryRequest }) =>
+      renameCategory(category, request),
+    onSuccess: () => {
+      toast.success("카테고리 이름이 변경되었습니다");
+      queryClient.invalidateQueries({ queryKey: [...CATEGORIES_QUERY_KEY] });
+      queryClient.invalidateQueries({ queryKey: [...DEFAULT_OWNERS_QUERY_KEY] });
+      queryClient.invalidateQueries({ queryKey: PART_FILTER_OPTIONS_QUERY_KEY });
+    },
+    onError: () => {
+      toast.error("카테고리 이름 변경에 실패했습니다");
+    },
+  });
+}
+
+/** 기본 담당 설정 목록 조회 훅 */
+export function useDefaultOwners() {
+  return useQuery({
+    queryKey: [...DEFAULT_OWNERS_QUERY_KEY],
+    queryFn: listDefaultOwners,
+  });
+}
+
+/** 기본 담당 설정 upsert mutation */
+export function useUpsertDefaultOwner() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (request: PartDefaultOwnerRequest) => upsertDefaultOwner(request),
+    onSuccess: () => {
+      toast.success("기본 담당 설정이 저장되었습니다");
+      queryClient.invalidateQueries({ queryKey: [...DEFAULT_OWNERS_QUERY_KEY] });
+    },
+    onError: () => {
+      toast.error("기본 담당 설정 저장에 실패했습니다");
+    },
+  });
+}
+
+/** 기본 담당 설정 삭제 mutation */
+export function useDeleteDefaultOwner() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (category?: string | null) => deleteDefaultOwner(category),
+    onSuccess: () => {
+      toast.success("기본 담당 설정이 삭제되었습니다");
+      queryClient.invalidateQueries({ queryKey: [...DEFAULT_OWNERS_QUERY_KEY] });
+    },
+    onError: () => {
+      toast.error("기본 담당 설정 삭제에 실패했습니다");
+    },
+  });
+}
 
 /** Part 필터 옵션 조회 훅 */
 export function usePartFilterOptions() {
@@ -139,6 +213,31 @@ export function usePartFiles(partId: string | undefined) {
     queryKey: [...PART_FILES_QUERY_KEY, partId],
     queryFn: () => getPartFiles(partId!),
     enabled: !!partId,
+  });
+}
+
+/** Part 담당자/팀 조회 훅 */
+export function usePartOwner(partId: string | undefined) {
+  return useQuery({
+    queryKey: [...PART_OWNER_QUERY_KEY, partId],
+    queryFn: () => getPartOwner(partId!),
+    enabled: !!partId,
+  });
+}
+
+/** Part 담당자/팀 수정 mutation */
+export function useUpdatePartOwner(partId: string | undefined) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (request: UpdatePartOwnerRequest) => updatePartOwner(partId!, request),
+    onSuccess: () => {
+      toast.success("담당 설정이 변경되었습니다");
+      queryClient.invalidateQueries({ queryKey: [...PART_OWNER_QUERY_KEY, partId] });
+      queryClient.invalidateQueries({ queryKey: [...PART_DETAIL_QUERY_KEY, partId] });
+    },
+    onError: () => {
+      toast.error("담당 설정 변경에 실패했습니다");
+    },
   });
 }
 
