@@ -5,33 +5,6 @@
         "version": "0.1.0"
     },
     "paths": {
-        "/api/v1/ai-usage/summary": {
-            "get": {
-                "tags": [
-                    "ai-usage"
-                ],
-                "summary": "Get Usage Summary",
-                "description": "\ud604\uc7ac \ube4c\ub9c1 \uc8fc\uae30\uc758 AI \uc0ac\uc6a9\ub7c9 \uc694\uc57d \uc870\ud68c.\n\n\uc870\uc9c1\uc758 \uac00\uc785\uc77c(`created_at`)\uc744 \uae30\uc900\uc73c\ub85c \ube4c\ub9c1 \uc8fc\uae30\ub97c \uacc4\uc0b0\ud558\uace0,\n\uae30\ub2a5\ubcc4(BOM \ubd84\uc11d, \ub3c4\uba74 \ubd84\uc11d, \ucc44\ud305) \uc0ac\uc6a9\ub7c9\uacfc \ud50c\ub79c \ud55c\ub3c4\ub97c \ubc18\ud658\ud569\ub2c8\ub2e4.\n**ADMIN** \uc774\uc0c1 \uad8c\ud55c\uc774 \ud544\uc694\ud569\ub2c8\ub2e4.",
-                "operationId": "get_usage_summary_api_v1_ai_usage_summary_get",
-                "responses": {
-                    "200": {
-                        "description": "Successful Response",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/UsageSummaryResponse"
-                                }
-                            }
-                        }
-                    }
-                },
-                "security": [
-                    {
-                        "HTTPBearer": []
-                    }
-                ]
-            }
-        },
         "/api/v1/activation/health-check": {
             "post": {
                 "tags": [
@@ -9577,25 +9550,6 @@
                 "title": "DiffDetail",
                 "description": "\ucd94\uac00/\uc81c\uac70 \ubaa9\ub85d."
             },
-            "FeatureUsage": {
-                "properties": {
-                    "used": {
-                        "type": "integer",
-                        "title": "Used"
-                    },
-                    "limit": {
-                        "type": "integer",
-                        "title": "Limit"
-                    }
-                },
-                "type": "object",
-                "required": [
-                    "used",
-                    "limit"
-                ],
-                "title": "FeatureUsage",
-                "description": "\uae30\ub2a5\ubcc4 \uc0ac\uc6a9\ub7c9/\ud55c\ub3c4."
-            },
             "FileCompleteResponse": {
                 "properties": {
                     "file_id": {
@@ -12102,21 +12056,17 @@
                         "type": "string",
                         "title": "Description"
                     },
+                    "max_members": {
+                        "type": "integer",
+                        "title": "Max Members"
+                    },
                     "storage_gb": {
                         "type": "integer",
                         "title": "Storage Gb"
                     },
-                    "max_bom": {
+                    "ai_credits": {
                         "type": "integer",
-                        "title": "Max Bom"
-                    },
-                    "max_drawing_parses": {
-                        "type": "integer",
-                        "title": "Max Drawing Parses"
-                    },
-                    "max_chats": {
-                        "type": "integer",
-                        "title": "Max Chats"
+                        "title": "Ai Credits"
                     },
                     "price_monthly": {
                         "type": "integer",
@@ -12128,10 +12078,9 @@
                     "plan_type",
                     "display_name",
                     "description",
+                    "max_members",
                     "storage_gb",
-                    "max_bom",
-                    "max_drawing_parses",
-                    "max_chats",
+                    "ai_credits",
                     "price_monthly"
                 ],
                 "title": "PlanResponse"
@@ -14895,49 +14844,6 @@
                 },
                 "type": "object",
                 "title": "UpdateTeamRequest"
-            },
-            "UsageSummaryResponse": {
-                "properties": {
-                    "period_start": {
-                        "type": "string",
-                        "format": "date-time",
-                        "title": "Period Start"
-                    },
-                    "period_end": {
-                        "type": "string",
-                        "format": "date-time",
-                        "title": "Period End"
-                    },
-                    "plan_type": {
-                        "type": "string",
-                        "title": "Plan Type"
-                    },
-                    "plan_display_name": {
-                        "type": "string",
-                        "title": "Plan Display Name"
-                    },
-                    "bom": {
-                        "$ref": "#/components/schemas/FeatureUsage"
-                    },
-                    "drawing_parse": {
-                        "$ref": "#/components/schemas/FeatureUsage"
-                    },
-                    "chat": {
-                        "$ref": "#/components/schemas/FeatureUsage"
-                    }
-                },
-                "type": "object",
-                "required": [
-                    "period_start",
-                    "period_end",
-                    "plan_type",
-                    "plan_display_name",
-                    "bom",
-                    "drawing_parse",
-                    "chat"
-                ],
-                "title": "UsageSummaryResponse",
-                "description": "\ud604\uc7ac \ube4c\ub9c1 \uc8fc\uae30\uc758 AI \uc0ac\uc6a9\ub7c9 \uc694\uc57d."
             },
             "UserResponse": {
                 "properties": {

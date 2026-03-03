@@ -28,6 +28,7 @@ import {
   Check,
   Pipette,
   Pencil,
+  CreditCard,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -105,6 +106,7 @@ import { COLOR_PRESETS } from "@/constants/labelConfig";
 import { setOrgProfileImage, deleteOrgProfileImage } from "@/api/member";
 import { createUpload, uploadFileToUrl, completeUpload } from "@/api/upload";
 import type { MemberRole } from "@/api/types/member";
+import { BillingSection } from "@/features/billing/components/BillingSection";
 
 function getRoleBadge(role: string): {
   label: string;
@@ -145,6 +147,7 @@ type SettingsTab =
   | "members"
   | "parts"
   | "change"
+  | "billing"
   | "security"
   | "logs"
   | "advanced";
@@ -154,6 +157,7 @@ const VALID_TABS = new Set<string>([
   "members",
   "parts",
   "change",
+  "billing",
   "security",
   "logs",
   "advanced",
@@ -173,6 +177,7 @@ const settingsTabs: Array<{
   { id: "members", label: "멤버", icon: Users },
   { id: "parts", label: "부품", icon: Package },
   { id: "change", label: "변경 관리", icon: GitPullRequestArrow },
+  { id: "billing", label: "결제 관리", icon: CreditCard },
   { id: "security", label: "보안", icon: ShieldCheck },
   { id: "logs", label: "로그 기록", icon: History },
   { id: "advanced", label: "기타 설정", icon: ListChecks },
@@ -662,6 +667,8 @@ export function OrganizationSettingsPage() {
               {changeInnerTab === "labels" && <OrgLabelsTabContent />}
             </div>
           )}
+
+          {activeTab === "billing" && <BillingSection />}
 
           {activeTab === "security" && (
             <div className="space-y-6">
