@@ -6,7 +6,6 @@ export * from "./project";
 export * from "./file";
 export * from "./import";
 export * from "./attribute";
-export * from "./upload";
 export * from "./mapping";
 export * from "./synthesis";
 export * from "./ontology";

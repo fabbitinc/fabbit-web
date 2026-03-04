@@ -11,7 +11,7 @@ import {
 import { cn } from "@/lib/utils";
 import { type TemplateType } from "@/pages/parts/partsTemplateStore";
 import { PARTS_TERMS } from "@/pages/parts/partsTerminology";
-import { createUpload } from "@/api/upload";
+import { createFileUpload as createUpload } from "@/api/file";
 import { useUploadStore } from "@/stores/mapping";
 import type { UploadedFile } from "@/features/mapping/types/mapping.types";
 import "@/pages/parts/parts-template-mapping.css";

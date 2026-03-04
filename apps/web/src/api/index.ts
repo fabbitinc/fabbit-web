@@ -10,7 +10,6 @@ export * from "./import";
 export * from "./attribute";
 export * from "./adapters";
 export * from "./hooks";
-export * from "./upload";
 export * from "./mapping";
 export * from "./synthesis";
 export * from "./ontology";

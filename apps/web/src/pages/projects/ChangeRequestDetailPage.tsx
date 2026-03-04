@@ -39,6 +39,17 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
   Tooltip,
   TooltipTrigger,
   TooltipContent,
@@ -1925,13 +1936,37 @@ export function ChangeRequestDetail({
                           </p>
                         </div>
                         {onDeleteFile && (
-                          <button
-                            type="button"
-                            className="hidden shrink-0 rounded p-0.5 text-muted-foreground/50 hover:bg-destructive/10 hover:text-destructive group-hover:inline-flex"
-                            onClick={() => onDeleteFile(file.id)}
-                          >
-                            <X className="h-3 w-3" />
-                          </button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <button
+                                type="button"
+                                className="hidden shrink-0 cursor-pointer rounded p-0.5 text-muted-foreground/50 hover:bg-destructive/10 hover:text-destructive group-hover:inline-flex"
+                              >
+                                <X className="h-3 w-3" />
+                              </button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>
+                                  첨부파일 삭제
+                                </AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  &ldquo;{file.name}&rdquo; 파일을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel className="cursor-pointer">
+                                  취소
+                                </AlertDialogCancel>
+                                <AlertDialogAction
+                                  className="cursor-pointer bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                                  onClick={() => onDeleteFile(file.id)}
+                                >
+                                  삭제
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                         )}
                       </div>
                     ))}

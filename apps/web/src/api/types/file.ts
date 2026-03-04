@@ -4,8 +4,6 @@ export interface CreateFileRequest {
   original_name: string;
   content_type: string;
   file_size: number;
-  owner_type?: string | null;
-  owner_id?: string | null;
 }
 
 export interface CreateFileResponse {

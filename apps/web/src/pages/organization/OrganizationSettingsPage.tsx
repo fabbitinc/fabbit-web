@@ -104,7 +104,11 @@ import {
 import type { CreateLabelRequest } from "@/api/types";
 import { COLOR_PRESETS } from "@/constants/labelConfig";
 import { setOrgProfileImage, deleteOrgProfileImage } from "@/api/member";
-import { createUpload, uploadFileToUrl, completeUpload } from "@/api/upload";
+import {
+  createFileUpload as createUpload,
+  uploadFileToPresignedUrl,
+  completeFileUpload as completeUpload,
+} from "@/api/file";
 import type { MemberRole } from "@/api/types/member";
 import { BillingSection } from "@/features/billing/components/BillingSection";
 
@@ -347,7 +351,11 @@ export function OrganizationSettingsPage() {
           content_type: file.type,
           file_size: file.size,
         });
-        await uploadFileToUrl(upload.upload_url, file);
+        await uploadFileToPresignedUrl(
+          upload.upload_url,
+          file,
+          file.type || "application/octet-stream",
+        );
         await completeUpload(upload.file_id);
         const result = await setOrgProfileImage({ file_id: upload.file_id });
         setOrgImageUrl(result.profile_image_url);

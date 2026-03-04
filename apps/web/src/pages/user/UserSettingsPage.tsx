@@ -13,10 +13,12 @@ import {
   updateProfile,
   setProfileImage as setProfileImageApi,
   deleteProfileImage as deleteProfileImageApi,
-  createUpload,
-  uploadFileToUrl,
-  completeUpload,
 } from "@/api";
+import {
+  createFileUpload as createUpload,
+  uploadFileToPresignedUrl,
+  completeFileUpload as completeUpload,
+} from "@/api/file";
 
 type UserSettingsTab = "profile" | "security" | "notifications" | "preferences";
 
@@ -90,7 +92,11 @@ export function UserSettingsPage() {
         });
 
         // 2. S3 업로드
-        await uploadFileToUrl(upload.upload_url, file);
+        await uploadFileToPresignedUrl(
+          upload.upload_url,
+          file,
+          file.type || "application/octet-stream",
+        );
 
         // 3. 업로드 완료 처리
         await completeUpload(upload.file_id);

@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useMappingStore, useUploadStore } from "@/stores/mapping";
 import { type TemplateType } from "@/pages/parts/partsTemplateStore";
-import { completeUpload } from "@/api/upload";
+import { completeFileUpload as completeUpload } from "@/api/file";
 import { previewMapping } from "@/api/mapping";
 
 type StepStatus = "pending" | "in_progress" | "completed";

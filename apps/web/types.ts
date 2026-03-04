@@ -1341,16 +1341,6 @@ export interface components {
              * @description 파일 크기 (바이트)
              */
             file_size: number;
-            /**
-             * Owner Type
-             * @description 소유자 타입 (project, folder, part, ...)
-             */
-            owner_type?: string | null;
-            /**
-             * Owner Id
-             * @description 소유자 엔티티 ID
-             */
-            owner_id?: string | null;
         };
         /** CreateFileResponse */
         CreateFileResponse: {

@@ -44,11 +44,11 @@ import { cn } from "@/lib/utils";
 import { usePartsUploadStore } from "@/stores/partsUploadStore";
 import { useQueryClient } from "@tanstack/react-query";
 import {
-  createUpload,
-  batchCreateUploads,
-  completeUpload,
-  batchCompleteUploads,
-} from "@/api/upload";
+  createFileUpload as createUpload,
+  batchCreateFileUpload as batchCreateUploads,
+  completeFileUpload as completeUpload,
+  batchCompleteFileUpload as batchCompleteUploads,
+} from "@/api/file";
 import { listMappings } from "@/api/mapping";
 import { startSynthesis, getSynthesisBatch } from "@/api/synthesis";
 import { searchNodes } from "@/api/ontology";
@@ -845,13 +845,13 @@ export function PartsUploadDialog() {
 
     try {
       // URL 일괄 발급
-      const batchResponse = await batchCreateUploads({
-        items: files.map((file) => ({
+      const batchResponse = await batchCreateUploads(
+        files.map((file) => ({
           original_name: file.name,
           content_type: file.type || "application/octet-stream",
           file_size: file.size,
         })),
-      });
+      );
 
       // entryId → uploadId 로컬 매핑 (React state와 무관하게 추적)
       const entryUploadMap = new Map<string, string>();
@@ -896,9 +896,7 @@ export function PartsUploadDialog() {
 
       // 업로드 완료 일괄 확인
       if (completedUploadIds.length > 0) {
-        const completeResult = await batchCompleteUploads({
-          file_ids: completedUploadIds,
-        });
+        const completeResult = await batchCompleteUploads(completedUploadIds);
 
         const failedIds = new Set(
           completeResult.failed.map((f) => f.file_id),
