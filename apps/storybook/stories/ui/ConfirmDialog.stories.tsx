@@ -22,6 +22,38 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
+export const Showcase: Story = {
+  render: () => {
+    const [openDestructive, setOpenDestructive] = React.useState(false);
+    const [openDefault, setOpenDefault] = React.useState(false);
+
+    return (
+      <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+        <Button variant="destructive" onClick={() => setOpenDestructive(true)}>위험 작업</Button>
+        <Button variant="outline" onClick={() => setOpenDefault(true)}>일반 확인</Button>
+        <ConfirmDialog
+          open={openDestructive}
+          onOpenChange={setOpenDestructive}
+          onConfirm={() => setOpenDestructive(false)}
+          title="프로젝트를 삭제할까요?"
+          description="삭제 후에는 복구할 수 없습니다."
+          confirmLabel="삭제"
+          variant="destructive"
+        />
+        <ConfirmDialog
+          open={openDefault}
+          onOpenChange={setOpenDefault}
+          onConfirm={() => setOpenDefault(false)}
+          title="멤버를 제거할까요?"
+          description="접근 권한이 즉시 해제됩니다."
+          confirmLabel="제거"
+          variant="default"
+        />
+      </div>
+    );
+  },
+};
+
 export const Preview: Story = {
   render: (args) => {
     const [open, setOpen] = React.useState(false);

@@ -54,6 +54,34 @@ export const ProgressStates: Story = {
   ),
 };
 
+export const Showcase: Story = {
+  render: () => (
+    <div style={{ display: "flex", flexDirection: "column", gap: "16px", width: "360px" }}>
+      <div className="space-y-2">
+        <div className="flex items-center justify-between text-sm">
+          <span>도면 업로드</span>
+          <span className="text-muted-foreground">24%</span>
+        </div>
+        <Progress value={24} />
+      </div>
+      <div className="space-y-2">
+        <div className="flex items-center justify-between text-sm">
+          <span>BOM 분석</span>
+          <span className="text-muted-foreground">66%</span>
+        </div>
+        <Progress value={66} />
+      </div>
+      <div className="space-y-2">
+        <div className="flex items-center justify-between text-sm">
+          <span>검토 체크리스트</span>
+          <span className="text-muted-foreground">100%</span>
+        </div>
+        <Progress value={100} />
+      </div>
+    </div>
+  ),
+};
+
 export const AlertDialogPreview: Story = {
   render: () => {
     const [open, setOpen] = React.useState(false);

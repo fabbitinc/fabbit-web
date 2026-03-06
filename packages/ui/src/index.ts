@@ -13,6 +13,8 @@ export {
 } from "./alert-dialog";
 export { Avatar, AvatarFallback, AvatarImage } from "./avatar";
 export { Badge, badgeVariants } from "./badge";
+export { BrandMark, BrandLogo } from "./brand";
+export type { BrandMarkProps, BrandLogoProps, BrandSize } from "./brand";
 export { Button, buttonVariants } from "./button";
 export { Checkbox } from "./checkbox";
 export { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./collapsible";

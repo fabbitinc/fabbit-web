@@ -94,3 +94,60 @@ export const InputOtpField: Story = {
     </div>
   ),
 };
+
+export const Showcase: Story = {
+  render: () => (
+    <div style={{ display: "flex", flexDirection: "column", gap: "16px", width: "360px" }}>
+      <label className="flex items-start gap-3 rounded-lg border p-4">
+        <Checkbox defaultChecked className="mt-0.5" />
+        <div className="space-y-1">
+          <p className="text-sm font-medium">리뷰 완료 알림 받기</p>
+          <p className="text-muted-foreground text-sm">도면 검토가 끝나면 알림을 보냅니다.</p>
+        </div>
+      </label>
+      <label className="flex items-start gap-3 rounded-lg border p-4">
+        <Checkbox className="mt-0.5" />
+        <div className="space-y-1">
+          <p className="text-sm font-medium">미확인 (체크 안됨)</p>
+          <p className="text-muted-foreground text-sm">체크되지 않은 상태입니다.</p>
+        </div>
+      </label>
+      <div className="flex items-center justify-between rounded-lg border p-4">
+        <div className="space-y-1">
+          <p className="text-sm font-medium">자동 보관</p>
+          <p className="text-muted-foreground text-sm">30일 후 프로젝트를 보관합니다.</p>
+        </div>
+        <Switch defaultChecked />
+      </div>
+      <div className="flex flex-col gap-2">
+        <Label>권한</Label>
+        <Select defaultValue="editor">
+          <SelectTrigger>
+            <SelectValue placeholder="권한을 선택하세요" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="viewer">Viewer</SelectItem>
+            <SelectItem value="editor">Editor</SelectItem>
+            <SelectItem value="admin">Admin</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="flex flex-col gap-2">
+        <Label>초대 코드</Label>
+        <InputOTP maxLength={6} defaultValue="24A9B1">
+          <InputOTPGroup>
+            <InputOTPSlot index={0} />
+            <InputOTPSlot index={1} />
+            <InputOTPSlot index={2} />
+          </InputOTPGroup>
+          <InputOTPSeparator />
+          <InputOTPGroup>
+            <InputOTPSlot index={3} />
+            <InputOTPSlot index={4} />
+            <InputOTPSlot index={5} />
+          </InputOTPGroup>
+        </InputOTP>
+      </div>
+    </div>
+  ),
+};

@@ -1,4 +1,0 @@
-interface:
-  display_name: "Type Conventions"
-  short_description: "API DTO, UI model, and component props type rules"
-  default_prompt: "Use $cv-type to define API DTO, UI model, and component props type conventions for this frontend project."

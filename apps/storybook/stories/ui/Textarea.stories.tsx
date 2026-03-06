@@ -41,3 +41,22 @@ export const WithValue: Story = {
     </div>
   ),
 };
+
+export const Showcase: Story = {
+  render: () => (
+    <div style={{ display: "flex", flexDirection: "column", gap: "12px", width: "360px" }}>
+      <div className="flex flex-col gap-2">
+        <Label>기본</Label>
+        <Textarea placeholder="설명을 입력하세요" rows={3} />
+      </div>
+      <div className="flex flex-col gap-2">
+        <Label>값 입력됨</Label>
+        <Textarea defaultValue="도면 검토 워크플로를 정리하고, 검토 결과를 공유합니다." rows={3} />
+      </div>
+      <div className="flex flex-col gap-2">
+        <Label>비활성</Label>
+        <Textarea defaultValue="읽기 전용" rows={2} disabled />
+      </div>
+    </div>
+  ),
+};

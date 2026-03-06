@@ -1,44 +1,97 @@
-# Fabbit web
+# AGENTS.md
 
-## TurboRepo 관리 방안
+## 최우선 규칙
 
-- **web을 개발할때 사용자가 요청하지 않는 이상 packages, storybook을 사용하지 않는다.**
-- 사용자가 요청하지 않는 이상 `./apps/web` 앱을 작업한다.
-- 새 색상은 반드시 packages/tokens → packages/theme 순서로 추가
-- packages/ui 컴포넌트에서 hex/rgb 직접 사용 금지, var(--\*)만 허용
+- 아래에 정의된 상황에서는 해당 스킬을 반드시 사용한다.
+- 스킬 적용이 가능한데 사용하지 않는 행동을 금지한다.
+- 하나의 요청이 여러 레이어를 포함하면 관련 스킬을 모두 적용한다.
+- 답변/코드 변경 전, 먼저 대상 앱/레이어를 식별하고 스킬을 로드한다.
 
-## 공통
+## 앱별 스킬 매핑
 
-- 백엔드 API는 `openapi.json` 참고해서 진행
-- 사용자는 `npm run dev` 로 개발중. 코드 수정이후 `npm run build`로 검증할 필요 없음
-- 작업 성격에 맞는 스킬을 먼저 로드해서 사용
-  - `frontend-design`: 신규 화면/컴포넌트 UI 구현, 스타일 개선
-  - `web-design-guidelines`: UI/UX/a11y 리뷰, 가이드 준수 점검
-  - `vercel-react-best-practices`: React/Next 성능 최적화, 렌더링/번들 개선
-  - `vercel-composition-patterns`: 컴포넌트 API 설계, compound/render props/context 리팩터링
-  - `remotion-best-practices`: Remotion 기반 영상/컴포지션 작업
-- 스킬이 겹치면 구현용 스킬 + 리뷰용 스킬 순서로 함께 사용
+### apps/web 개발 시
 
-## 스타일
+- `cv-structure`: 파일 배치, feature 경계, 의존성 방향
+- `cv-page`: 페이지 추가/수정, 라우팅, URL 파라미터, 탭 패턴
+- `cv-component`: 도메인 컴포넌트 작성, Props 설계, 합성 패턴
+- `cv-hook`: 커스텀 훅 작성 (action/query/logic/listener)
+- `cv-api`: API 함수, queryOptions/mutationOptions 정의
+- `cv-type`: 타입 정의 (DTO, Model, Props)
+- `cv-store`: Zustand 스토어 추가/수정
+- `cv-style`: 토큰, 테마, 에러 처리, 토스트, 로딩 패턴
 
-- Attlasian Design System 을 참고 해서 제작
-- UI 컴포넌트는 기본적으로 shadcn/ui 프리미티브(`src/components/ui`)를 기반으로 조합/확장해서 사용
-- 새 UI가 필요하면 기존 shadcn 컴포넌트(Button, Input, Select, Badge 등) 재사용을 우선하고, 중복 커스텀 구현은 지양
-- 필요한 프리미티브가 없으면 shadcn 컴포넌트를 먼저 추가/도입하고, 그래도 커버되지 않는 경우에만 새 컴포넌트 생성
-- 색상은 컴포넌트에 직접 하드코딩하지 않고 토큰(CSS 변수)으로만 사용
-- 새 색상/톤 추가 시 "정의 먼저, 사용 나중" 원칙 준수
-  - 기본 fallback: `src/index.css`의 `:root`와 `.dark`에 모두 추가(삭제하지 않고 최소 안전값 유지)
-  - 브랜드 계열: `src/styles/themes/primary-themes.css`의 모든 `theme-primary-*`에 추가
-  - 공통 상태(success/warning/danger/info) 계열: `src/styles/themes/common-themes.css`의 모든 `theme-common-*`에 추가
-- 실제 운영/브랜드 값은 `theme-primary-*`, `theme-common-*`에서 우선 관리하고, `:root`/`.dark`는 fallback 역할로 유지
-- 특정 테마에만 필요한 토큰을 단독 추가하지 않음(모든 테마에 동일 키로 제공)
-- 의미 기반 네이밍 사용 (`--brand-*`, `--status-*`, `--theme-*`)하고 용도 불명 토큰명 금지
-- 컴포넌트는 가능하면 클래스 기반으로 적용하고, 인라인 스타일은 CSS 변수 참조가 필요한 최소 범위에서만 사용
-- 테마 작업 후 `/dev/design`에서 primary/common 선택 전환으로 시각 검증 후 마무리
+### packages/ui 개발 시
 
-## 주석 규칙
+- `cv-structure`: 패키지 경계, 컴포넌트 배치 판단
+- `cv-component`: 프리미티브 컴포넌트 작성, Props 설계
+- `cv-type`: Props 타입 정의
+- `cv-style`: CSS 변수, 토큰 사용 규칙
 
-- 나중에 구현할 기능은 `// BACKLOG: 구체적 설명` 형식으로 표기
-- 설명은 **무엇을**, **왜 미뤘는지**(선행 조건 등)를 구체적으로 작성
-- 예: `// BACKLOG: 이력 탭 — 리비전 이력 및 감사 로그 표시. 백엔드 리비전/감사 API 설계 후 구현.`
-- `TODO`는 당장 고쳐야 하는 항목, `BACKLOG`은 의도적으로 미룬 기능으로 구분
+### packages/theme 개발 시
+
+- `cv-structure`: 패키지 경계
+- `cv-style`: 토큰 정의, 테마 적용 규칙
+
+### apps/storybook 개발 시
+
+- `cv-structure`: 패키지 경계 (packages/ui만 import)
+- `cv-component`: 프리미티브 컴포넌트 규칙 참조
+
+### apps/dev 개발 시
+
+- `cv-structure`: 패키지 경계, 검증 흐름
+- `cv-component`: 컴포넌트 조합 규칙 참조
+- `cv-page`: 레이아웃 구성 참조
+
+## 레이어별 트리거 규칙
+
+### 1) 페이지 작업
+
+- 트리거: 페이지 추가/수정, 라우팅 변경, URL 파라미터 설계, 탭/서브탭 패턴
+- 반드시 사용할 스킬: `cv-page`
+
+### 2) 컴포넌트 작업
+
+- 트리거: 컴포넌트 추가/수정, Props 설계/변경, 합성 패턴 적용, packages/ui 승격
+- 반드시 사용할 스킬: `cv-component`
+
+### 3) 훅 작업
+
+- 트리거: 커스텀 훅 추가/수정, action/query/logic/listener 훅 작성
+- 반드시 사용할 스킬: `cv-hook`
+
+### 4) API 작업
+
+- 트리거: API 함수 추가/수정, queryOptions/mutationOptions 정의, DTO 변환
+- 반드시 사용할 스킬: `cv-api`
+
+### 5) 타입 작업
+
+- 트리거: DTO/Model/Props 타입 추가/수정, 타입 변환 규칙 적용
+- 반드시 사용할 스킬: `cv-type`
+
+### 6) 스토어 작업
+
+- 트리거: Zustand 스토어 추가/수정, 전역 상태 설계
+- 반드시 사용할 스킬: `cv-store`
+
+### 7) 스타일/횡단 관심사 작업
+
+- 트리거: 토큰/색상 추가, 테마 변경, 에러 처리, 토스트/로딩 패턴
+- 반드시 사용할 스킬: `cv-style`
+
+### 8) 구조/배치 작업
+
+- 트리거: 파일/폴더 배치 결정, feature 추가, 패키지 경계 변경, 의존성 방향 점검
+- 반드시 사용할 스킬: `cv-structure`
+
+## 다중 레이어 요청 처리 규칙
+
+- 요청이 두 개 이상 레이어를 포함하면, 해당 스킬을 모두 적용한다.
+- 적용 순서는 요청의 변경 시작점 기준으로 선택하되, 누락 없이 전부 반영한다.
+- 리뷰/질문/설계 토론도 동일하게 스킬 규칙을 강제 적용한다.
+
+## 예외 처리
+
+- 스킬 파일이 없거나 읽을 수 없으면 즉시 그 사실을 보고하고, 가능한 범위에서 가장 가까운 규칙을 적용한다.
+- 예외 상황에서도 "스킬 사용 시도" 자체는 생략하지 않는다.

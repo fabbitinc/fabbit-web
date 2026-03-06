@@ -31,6 +31,41 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
+export const Showcase: Story = {
+  render: () => (
+    <div style={{ display: "flex", gap: "12px", alignItems: "center", flexWrap: "wrap" }}>
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button variant="outline">Popover</Button>
+        </PopoverTrigger>
+        <PopoverContent>
+          <PopoverHeader>
+            <PopoverTitle>도면 분석 상태</PopoverTitle>
+            <PopoverDescription>12개 파일 중 9개 분석 완료.</PopoverDescription>
+          </PopoverHeader>
+        </PopoverContent>
+      </Popover>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button variant="outline" size="icon"><span className="text-sm font-semibold">N</span></Button>
+        </TooltipTrigger>
+        <TooltipContent sideOffset={8}>새로운 변경 요청 4건</TooltipContent>
+      </Tooltip>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="outline">메뉴</Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent>
+          <DropdownMenuItem>결과 다운로드</DropdownMenuItem>
+          <DropdownMenuItem>자동화 설정</DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem variant="destructive">프로젝트 삭제</DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
+  ),
+};
+
 export const PopoverCard: Story = {
   render: () => (
     <Popover>

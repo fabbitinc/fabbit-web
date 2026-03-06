@@ -52,3 +52,20 @@ export const Destructive: Story = {
     variant: "destructive",
   },
 };
+
+export const Showcase: Story = {
+  render: () => (
+    <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", alignItems: "center" }}>
+      <Button>새 항목 만들기</Button>
+      <Button variant="secondary">보조 작업</Button>
+      <Button variant="outline">아웃라인</Button>
+      <Button variant="ghost">고스트</Button>
+      <Button variant="destructive">삭제</Button>
+      <Button variant="link">링크</Button>
+      <Button size="sm">작은 버튼</Button>
+      <Button size="lg">큰 버튼</Button>
+      <Button size="icon"><span className="text-base leading-none">+</span></Button>
+      <Button disabled>비활성</Button>
+    </div>
+  ),
+};

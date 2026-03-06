@@ -52,3 +52,22 @@ export const Disabled: Story = {
     </div>
   ),
 };
+
+export const Showcase: Story = {
+  render: () => (
+    <div style={{ display: "flex", flexDirection: "column", gap: "12px", width: "320px" }}>
+      <div className="flex flex-col gap-2">
+        <Label>기본</Label>
+        <Input placeholder="프로젝트 이름을 입력하세요" />
+      </div>
+      <div className="flex flex-col gap-2">
+        <Label>값 입력됨</Label>
+        <Input defaultValue="Fabbit Alpha" />
+      </div>
+      <div className="flex flex-col gap-2">
+        <Label>비활성</Label>
+        <Input defaultValue="읽기 전용 값" disabled />
+      </div>
+    </div>
+  ),
+};

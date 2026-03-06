@@ -1,4 +1,0 @@
-interface:
-  display_name: "Style Conventions"
-  short_description: "Token system, theme rules, error handling, and UX feedback patterns"
-  default_prompt: "Use $cv-style to define token system, theme rules, error handling, and UX feedback patterns for this frontend project."

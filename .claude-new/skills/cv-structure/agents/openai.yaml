@@ -1,4 +1,0 @@
-interface:
-  display_name: "Structure Conventions"
-  short_description: "Monorepo folder structure, file placement, and dependency direction rules"
-  default_prompt: "Use $cv-structure to define folder structure, package boundaries, and dependency direction rules for this frontend monorepo."
