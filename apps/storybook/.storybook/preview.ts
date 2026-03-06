@@ -40,10 +40,11 @@ const preview: Preview = {
   },
   globalTypes: {
     primaryTheme: {
-      name: "Primary",
       description: "브랜드 테마",
       toolbar: {
+        title: "Theme",
         icon: "paintbrush",
+        dynamicTitle: true,
         items: [
           { value: "theme-primary-1", title: "1 · Blueprint Blue" },
           { value: "theme-primary-2", title: "2 · High-Tech Precision" },
@@ -59,20 +60,22 @@ const preview: Preview = {
       },
     },
     commonTheme: {
-      name: "Common",
       description: "상태 색상 테마",
       toolbar: {
+        title: "Common",
         icon: "contrast",
+        dynamicTitle: true,
         items: [
           { value: "theme-common-1", title: "Common 1 / Default" },
         ],
       },
     },
     colorMode: {
-      name: "Mode",
       description: "라이트/다크 모드",
       toolbar: {
+        title: "Mode",
         icon: "circlehollow",
+        dynamicTitle: true,
         items: [
           { value: "light", title: "Light" },
           { value: "dark", title: "Dark" },

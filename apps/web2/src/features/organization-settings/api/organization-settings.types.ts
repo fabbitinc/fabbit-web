@@ -1,0 +1,26 @@
+import type { components } from "@/api/generated/schema";
+
+export type AddTeamMembersRequestDto = components["schemas"]["AddTeamMembersRequest"];
+export type CategoryStatsResponseDto = components["schemas"]["CategoryStatsResponse"];
+export type ChangeMemberRoleRequestDto = components["schemas"]["ChangeRoleRequest"];
+export type CreateInvitationRequestDto = components["schemas"]["CreateInvitationRequest"];
+export type CreateTeamRequestDto = components["schemas"]["CreateTeamRequest"];
+export type InvitationListResponseDto = components["schemas"]["InvitationListResponse"];
+export type InvitationResponseDto = components["schemas"]["InvitationResponse"];
+export type LabelListResponseDto = components["schemas"]["LabelListResponse"];
+export type LabelResponseDto = components["schemas"]["LabelResponse"];
+export type MemberListResponseDto = components["schemas"]["MemberListResponse"];
+export type MemberSummaryDto = components["schemas"]["MemberSummary"];
+export type PartDefaultOwnerItemDto = components["schemas"]["PartDefaultOwnerItem"];
+export type PartDefaultOwnerListResponseDto = components["schemas"]["PartDefaultOwnerListResponse"];
+export type PartDefaultOwnerRequestDto = components["schemas"]["PartDefaultOwnerRequest"];
+export type ProfileImageResponseDto = components["schemas"]["ProfileImageResponse"];
+export type RemoveTeamMembersRequestDto = components["schemas"]["RemoveTeamMembersRequest"];
+export type RenameCategoryRequestDto = components["schemas"]["RenameCategoryRequest"];
+export type SetProfileImageRequestDto = components["schemas"]["SetProfileImageRequest"];
+export type TeamListResponseDto = components["schemas"]["TeamListResponse"];
+export type TeamMemberListResponseDto = components["schemas"]["TeamMemberListResponse"];
+export type TeamMemberSummaryDto = components["schemas"]["TeamMemberSummary"];
+export type TeamSummaryDto = components["schemas"]["TeamSummary"];
+export type UserSummaryDto = components["schemas"]["UserSummary"];
+export type CreateLabelRequestDto = components["schemas"]["CreateLabelRequest"];

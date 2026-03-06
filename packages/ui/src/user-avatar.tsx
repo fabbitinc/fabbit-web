@@ -1,4 +1,3 @@
-import * as React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "./avatar";
 import { cn } from "./lib/cn";
 

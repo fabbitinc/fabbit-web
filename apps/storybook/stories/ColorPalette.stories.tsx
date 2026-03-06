@@ -419,13 +419,17 @@ function collectShowcases(): StoryGroup[] {
     const mergedArgs = { ...meta.args, ...storyDef.args };
     let element: React.ReactNode;
 
-    if (storyDef.render) {
-      element = storyDef.render(mergedArgs);
-    } else if (meta.component) {
-      const Comp = meta.component;
-      element = createElement(Comp, mergedArgs);
-    } else {
-      continue;
+    try {
+      if (storyDef.render) {
+        element = storyDef.render(mergedArgs);
+      } else if (meta.component) {
+        const Comp = meta.component;
+        element = createElement(Comp, mergedArgs);
+      } else {
+        continue;
+      }
+    } catch {
+      element = createElement("div", { className: "text-destructive text-xs" }, `Error rendering ${fileName}`);
     }
 
     groups.push({ fileName, entries: [{ label: "Showcase", element }] });

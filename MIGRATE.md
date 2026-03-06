@@ -1,0 +1,52 @@
+# MIGRATE
+
+- [x] `apps/web2` 기본 앱 생성
+- [x] `packages/ui` / `packages/theme` / `apps/storybook` 기반 정리
+  - 메모: Storybook 출력 경로를 `apps/storybook/.out-storybook`으로 변경함. 기존 `storybook-static` 경로에서는 이 환경에서 `utime ENOENT`가 재현됨.
+- [x] OpenAPI codegen 기반 생성
+- [x] 앱 셸 / 라우팅 / 인증 / 세션 초기화 이관
+- [x] 회원가입 / 워크스페이스 생성 / 초대 수락 이관
+  - 메모: `VITE_TURNSTILE_SITE_KEY`가 없으면 가입 화면에서 Turnstile 위젯은 숨김 처리됨.
+- [x] 대시보드 이관
+- [x] 조직 설정 이관
+  - 메모: `members`, `parts`, `change`, 조직 프로필 이미지는 codegen 기반 실연동으로 이관함.
+  - 메모: `billing`, `security`, `logs`, `advanced`는 레거시와 동일하게 로컬/mock 성격이며, `usage` 차트 추이는 기존과 같이 mock 데이터를 유지함.
+- [x] 사용자 설정 이관
+  - 메모: 프로필 수정/이미지 변경은 codegen 기반 실연동으로 이관했고, 비밀번호 변경은 기존 레거시에 없지만 이미 존재하는 API를 연결해 보강함.
+  - 메모: `notifications`, `preferences`, 일부 `security` 토글은 아직 서버 계약이 없어 브라우저 persist 설정으로 유지함.
+- [x] 프로젝트 목록 이관
+  - 메모: 검색 / 페이지 / 페이지 크기 / 정렬 상태를 쿼리스트링(`q`, `page`, `pageSize`, `sort`, `order`)으로 재설계함.
+  - 메모: 정렬은 레거시와 동일하게 현재 페이지 응답에 대한 클라이언트 정렬을 유지했고, 서버 정렬 계약은 아직 없음.
+- [x] 프로젝트 상세 / 설정 이관
+  - 메모: 상세 뷰는 `overview`, `parts`, `activity`, `settings`로 재구성했고, 설정 내부는 `general`, `members`, `labels`, `danger`를 URL 기반으로 관리함.
+  - 메모: 현재 OpenAPI에는 레거시의 프로젝트 전용 라벨 계약이 없어, `labels` 탭은 조직 공용 라벨 정책으로 안내하고 `/organization/settings?menu=change`로 연결함.
+- [x] 변경관리 목록 이관
+  - 메모: 목록 상태는 `view`, `state`, `q`, `page`, `pageSize` 쿼리스트링으로 재설계함.
+  - 메모: 변경 요청은 `cr_state`를 행 상태 배지로 노출하고, 상단 필터는 레거시와 동일하게 `open/closed` 기준으로 단순화함.
+- [x] 이슈 / 변경요청 생성 / 상세 이관
+  - 메모: 생성/상세 모두 codegen + 업로드 API 기반으로 이관했고, 이슈/변경요청의 제목·본문 편집, 상태 전환, 댓글, 첨부파일, 연결 엔티티 편집까지 기존 흐름을 대체할 수 있는 수준으로 반영함.
+  - 메모: 변경 요청의 `changes` 탭은 레거시와 동일하게 현재 mock diff를 유지함. 서버 diff 계약이 생기면 실제 변경 비교로 교체해야 함.
+  - 메모: 이 단계에서는 기존 순서대로 화면/기능 이관을 우선하고, `packages/ui` 사용 적합성 및 승격 후보 검토는 전체 마이그레이션 완료 후 일괄 점검함.
+- [x] 부품 목록 / 상세 이관
+  - 메모: 목록은 codegen 기반 검색/필터/정렬/페이지네이션/내보내기/프로젝트 연결까지 이관했고, 상세는 `properties`, `bom`, `attachments`, `suppliers`, `projects`, `owner`, `history` 탭으로 재구성함.
+  - 메모: `history` 탭은 레거시와 동일하게 현재 mock 이력을 유지함. 실제 이력 API가 생기면 교체 필요.
+  - 메모: 목록 상단의 업로드 CTA는 후속 `업로드 / 전역 모달 흐름 이관` 단계에서 연결 예정이라 현재는 비활성 상태로 둠.
+- [x] 부품 템플릿 분석 / 처리 / 매핑 이관
+  - 메모: `apps/web2`에 `part-template-mapping` feature를 새로 만들고, 업로드 -> 업로드 완료 처리 -> preview -> ontology 기반 매핑 보드 -> validate -> confirm/update 흐름을 codegen 계약으로 다시 연결함.
+  - 메모: 단계 이동 중 새로고침 복구를 위해 업로드/매핑 draft 상태는 `sessionStorage`에 한정해 유지함. 최종 저장 또는 취소 시 초기화됨.
+- [x] BOM 탐색 이관
+  - 메모: `/parts/:partId/bom` 전용 화면을 `apps/web2`에 이관했고, `direction`, `view`, `q`, `root`를 URL 파라미터로 관리하면서 정전개/역전개, multi-level/single-level/flattened 뷰, 검색, 엑셀 내보내기를 codegen 계약으로 연결함.
+  - 메모: 트리 펼침 상태와 우측 미리보기 패널은 화면 로컬 상태로 유지하고, 상세/재귀 탐색 기준점은 URL에만 남겨 새로고침 시 복구되도록 분리함.
+- [x] 업로드 / 전역 모달 흐름 이관
+  - 메모: `MainAppLayout`에 전역 업로드 다이얼로그 호스트를 추가했고, `parts` 목록의 업로드 CTA를 실제 모달 오픈으로 연결함.
+  - 메모: 업로드는 codegen 기반 `synthesis` / `files/upload` 계약으로 재구성했고, 매핑 선택 -> 파일 헤더 검증 -> ROOT_BOM root context 입력 -> presigned upload -> synthesis batch polling -> parts/dashboard invalidate 흐름으로 다시 연결함.
+- [x] 레거시 `items` 기능 흡수
+  - 메모: 원본 앱도 이미 `/items`, `/items/:id`, `/items/:id/bom`을 `/parts` 계열로 리다이렉트하고 있어, `items`는 사용자 진입점 기준으로 이미 은퇴된 축으로 판단함.
+  - 메모: 남아 있던 `ItemsPage` / `ItemDetailPage` / `BOMPage` / `SimpleBomImportModal`은 mock 데이터 또는 현재 OpenAPI에 없는 계약(`/api/v1/items/import/bom/*`, `/api/v1/projects/:projectId/attributes/*`, `/api/v1/folders/*`)에 의존함. 따라서 `web2`에서는 `parts` 목록/상세/BOM 탐색/업로드/템플릿 매핑 흐름으로 기능을 통합 흡수하고 별도 화면은 재생성하지 않음.
+- [x] `packages/ui` 사용 현황 및 분리 후보 최종 검토
+  - 메모: `apps/web2`는 로컬 `components/ui`를 두지 않고 `@fabbit/ui`를 기준 UI 레이어로 사용함. 주요 화면/폼/다이얼로그는 공통 프리미티브(`Button`, `Input`, `Dialog`, `ConfirmDialog`, `Badge`, `Popover`, `Progress` 등)를 패키지에서 직접 조합함.
+  - 메모: 검토 결과 `settings-shell`, `migration-placeholder`, 각 feature의 selection dialog / detail screen / tab shell / progress panel은 페이지 레이아웃 또는 도메인 조합물 성격이 강해 `packages/ui` 승격 대상에서 제외함.
+- [x] 전체 검증 및 교체 준비
+  - 메모: `pnpm --filter @fabbit/web2 build` 통과.
+  - 메모: `pnpm --filter @fabbit/storybook build-storybook` 통과. 결과물은 `apps/storybook/.out-storybook`.
+  - 메모: `pnpm --filter @fabbit/web2 lint` 통과. 다만 `react-hooks/set-state-in-effect`, `jsx-a11y/control-has-associated-label`, 일부 React Compiler 경고 등 34건의 warning이 남아 있어 cutover 전 별도 정리 backlog로 관리하는 편이 좋음.

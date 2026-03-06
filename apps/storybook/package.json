@@ -5,17 +5,17 @@
   "type": "module",
   "scripts": {
     "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build"
+    "build-storybook": "storybook build --output-dir ./.out-storybook"
   },
   "dependencies": {
     "@fabbit/ui": "workspace:*",
+    "lucide-react": "^0.563.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4"
   },
   "devDependencies": {
     "@storybook/addon-a11y": "^10.2.13",
     "@storybook/addon-docs": "^10.2.13",
-    "@storybook/addon-toolbars": "^9.0.8",
     "@storybook/react-vite": "^10.2.13",
     "@tailwindcss/vite": "^4.1.18",
     "@types/node": "^22.10.1",

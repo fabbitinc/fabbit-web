@@ -12,6 +12,9 @@
     "dev": "turbo run dev --filter=@fabbit/web",
     "build": "turbo run build --filter=@fabbit/web",
     "lint": "turbo run lint --filter=@fabbit/web",
+    "dev:web2": "turbo run dev --filter=@fabbit/web2",
+    "build:web2": "turbo run build --filter=@fabbit/web2",
+    "lint:web2": "turbo run lint --filter=@fabbit/web2",
     "storybook": "turbo run storybook --filter=@fabbit/storybook",
     "build-storybook": "turbo run build-storybook --filter=@fabbit/storybook"
   },
