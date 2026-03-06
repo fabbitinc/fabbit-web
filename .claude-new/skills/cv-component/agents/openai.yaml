@@ -1,0 +1,4 @@
+interface:
+  display_name: "Component Conventions"
+  short_description: "Primitive and domain component rules, props design, and composition patterns"
+  default_prompt: "Use $cv-component to define component tier rules, props design, and composition patterns for this frontend project."

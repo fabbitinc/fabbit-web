@@ -1,2 +1,5 @@
-@import "../../web/src/index.css";
-@source "../../web/src/**/*.{ts,tsx,mdx}";
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "@fabbit/ui/styles.css";
+@source "../../../packages/ui/src/**/*.{ts,tsx}";
+@source "../stories/**/*.{ts,tsx,mdx}";

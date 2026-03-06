@@ -1,0 +1,4 @@
+interface:
+  display_name: "Store Conventions"
+  short_description: "Zustand store creation, persist strategy, and selector rules"
+  default_prompt: "Use $cv-store to define Zustand store creation, persist strategy, and selector rules for this frontend project."

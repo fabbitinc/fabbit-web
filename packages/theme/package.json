@@ -2,5 +2,9 @@
   "name": "@fabbit/theme",
   "private": true,
   "version": "0.0.0",
-  "type": "module"
+  "type": "module",
+  "exports": {
+    ".": "./src/index.css",
+    "./styles.css": "./src/index.css"
+  }
 }

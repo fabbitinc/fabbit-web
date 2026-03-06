@@ -1,0 +1,4 @@
+interface:
+  display_name: "API Conventions"
+  short_description: "HTTP functions, TanStack Query options, and DTO transform rules"
+  default_prompt: "Use $cv-api to define HTTP functions, queryOptions/mutationOptions, and DTO transform rules for this frontend project."

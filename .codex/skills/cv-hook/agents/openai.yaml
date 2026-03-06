@@ -1,0 +1,4 @@
+interface:
+  display_name: "Hook Conventions"
+  short_description: "Custom hook naming and boundary rules (action/query/logic/listener)"
+  default_prompt: "Use $cv-hook to define custom hook naming and boundary rules for this frontend project."

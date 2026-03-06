@@ -1,0 +1,4 @@
+interface:
+  display_name: "Page Conventions"
+  short_description: "Route entry point, URL parameter parsing, and layout rules"
+  default_prompt: "Use $cv-page to define page routing, URL parameter parsing, and layout composition rules for this frontend project."
