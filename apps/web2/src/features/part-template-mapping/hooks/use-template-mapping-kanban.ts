@@ -1,44 +1,13 @@
 import { useMemo } from "react";
 import { usePartTemplateMappingStore } from "@/features/part-template-mapping/stores/template-mapping-store";
 import type { OntologySchemaModel } from "@/features/part-template-mapping/types/part-template-mapping-model";
+import {
+  type KanbanCardData,
+  type KanbanColumnId,
+  type KanbanColumnModel,
+} from "@/features/part-template-mapping/types/template-mapping-kanban";
 import { useTemplateMappingActions } from "./use-template-mapping-actions";
 import { useTemplateMappingDerivedState } from "./use-template-mapping-derived-state";
-
-export type KanbanColumnId =
-  | "Part"
-  | "parent_part"
-  | "Supplier"
-  | "Drawing"
-  | "Project"
-  | "unmapped";
-
-export interface KanbanCardData {
-  id: string;
-  sourceColumn: string;
-  targetProperty: string | null;
-  confidence: number;
-  approved: boolean;
-  isExtended: boolean;
-  isRelation: boolean;
-  relType?: string;
-  relNodeProperty?: string;
-  relProperty?: string;
-  sampleData: string[];
-}
-
-export interface KanbanColumnModel {
-  id: KanbanColumnId;
-  title: string;
-  color: string;
-  cards: KanbanCardData[];
-}
-
-export const COLUMN_TO_REL_TYPE: Record<string, string> = {
-  parent_part: "CONSISTS_OF",
-  Supplier: "SUPPLIED_BY",
-  Drawing: "DEFINED_BY",
-  Project: "HAS_ITEM",
-};
 
 const REL_TYPE_TO_COLUMN: Record<string, KanbanColumnId> = {
   CONSISTS_OF: "parent_part",
@@ -171,7 +140,7 @@ export function useTemplateMappingKanban(ontologySchema?: OntologySchemaModel) {
       ...column,
       cards: cardsByColumn[column.id].sort(sortByHeader),
     }));
-  }, [derived.activeRelationMappings, derived.baseMappings, derived.extendedMappings, derived.getSampleData, derived.unmappedColumns, mappingHeaders]);
+  }, [derived, mappingHeaders]);
 
   return {
     columns,

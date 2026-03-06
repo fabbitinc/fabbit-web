@@ -1,0 +1,95 @@
+import type { Meta, StoryObj } from "@storybook/react-vite";
+import { useState } from "react";
+import {
+  PartDetailScreen,
+  type PartDetailScreenTab,
+  type PartHeaderCardPart,
+} from "@fabbit/components";
+import { Badge, Card, CardContent, CardHeader, CardTitle } from "@fabbit/ui";
+
+function panel(title: string, description: string) {
+  return (
+    <Card className="border-border/70">
+      <CardHeader>
+        <CardTitle>{title}</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <p className="text-sm text-muted-foreground">{description}</p>
+        <Badge variant="secondary">부품 상세</Badge>
+      </CardContent>
+    </Card>
+  );
+}
+
+const samplePart = {
+  category: "기구",
+  childrenCount: 14,
+  filesCount: 8,
+  lifecycleState: "양산",
+  material: "AL6061-T6",
+  name: "드라이브 유닛 베이스 플레이트",
+  parentsCount: 3,
+  partNumber: "DRV-PLATE-0142",
+  projectsCount: 4,
+  revision: "C",
+  suppliersCount: 2,
+  unit: "EA",
+} satisfies PartHeaderCardPart;
+
+function PartDetailScreenStory({
+  initialTab = "properties",
+  isError = false,
+  isLoading = false,
+  part = samplePart,
+}: {
+  initialTab?: PartDetailScreenTab;
+  isError?: boolean;
+  isLoading?: boolean;
+  part?: PartHeaderCardPart;
+}) {
+  const [activeTab, setActiveTab] = useState<PartDetailScreenTab>(initialTab);
+
+  return (
+    <PartDetailScreen
+      activeTab={activeTab}
+      attachmentsContent={panel("첨부 파일", "도면, 데이터시트, CAD 산출물을 관리합니다.")}
+      bomContent={panel("BOM", "부품 간 부모/자식 관계와 수량 정보를 표시합니다.")}
+      historyContent={panel("이력", "상태 변경과 업로드 이력을 시간순으로 확인합니다.")}
+      isError={isError}
+      isLoading={isLoading}
+      ownerContent={panel("담당", "담당자와 팀 할당 정보를 관리합니다.")}
+      part={part}
+      projectsContent={panel("프로젝트", "해당 부품이 연결된 프로젝트 목록을 제공합니다.")}
+      propertiesContent={panel("속성", "기본 정보, 리드타임, 카테고리, 도면 프리뷰를 확인합니다.")}
+      suppliersContent={panel("공급사", "공급사 코드와 단가 정보를 정리합니다.")}
+      onBackClick={() => undefined}
+      onRetry={() => undefined}
+      onTabChange={setActiveTab}
+    />
+  );
+}
+
+const meta = {
+  title: "Components/PartDetailScreen",
+  component: PartDetailScreenStory,
+  tags: ["autodocs"],
+  parameters: {
+    layout: "fullscreen",
+  },
+} satisfies Meta<typeof PartDetailScreenStory>;
+
+export default meta;
+
+type Story = StoryObj<typeof meta>;
+
+export const Default: Story = {
+  render: () => <PartDetailScreenStory />,
+};
+
+export const Attachments: Story = {
+  render: () => <PartDetailScreenStory initialTab="attachments" />,
+};
+
+export const ErrorState: Story = {
+  render: () => <PartDetailScreenStory isError part={undefined} />,
+};

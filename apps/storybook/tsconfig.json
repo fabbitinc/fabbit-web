@@ -12,5 +12,5 @@
     "jsx": "react-jsx",
     "types": ["node"]
   },
-  "include": [".storybook", "stories", "../../packages/ui/src"]
+  "include": [".storybook", "stories", "../../packages/ui/src", "../../packages/components/src"]
 }

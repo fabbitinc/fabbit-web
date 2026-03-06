@@ -93,6 +93,7 @@ export function LinkPartsToProjectDialog({
                     }`}
                   >
                     <input
+                      aria-label={`${project.name} 프로젝트 선택`}
                       checked={selectedProjectId === project.id}
                       className="mt-1 size-4 accent-primary"
                       name="part-link-project"

@@ -14,6 +14,7 @@ const primaryThemes = [
   "theme-primary-8",
   "theme-primary-9",
   "theme-primary-10",
+  "theme-primary-11",
 ] as const;
 const commonThemes = [
   "theme-common-1",
@@ -56,6 +57,7 @@ const preview: Preview = {
           { value: "theme-primary-8", title: "8 · Intelligence Violet" },
           { value: "theme-primary-9", title: "9 · Graphite Precision" },
           { value: "theme-primary-10", title: "10 · Bronze Premium" },
+          { value: "theme-primary-11", title: "11 · Fabbit Core" },
         ],
       },
     },

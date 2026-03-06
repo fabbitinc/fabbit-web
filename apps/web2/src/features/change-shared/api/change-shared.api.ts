@@ -1,15 +1,14 @@
-import { apiClient } from "@/api/client";
+import { lookupChangeRequestsApiV1ChangesLookupGet } from "@/api/generated/orval/changes/changes";
+import { lookupIssuesApiV1IssuesLookupGet } from "@/api/generated/orval/issues/issues";
+import { lookupLabelsApiV1LabelsLookupGet } from "@/api/generated/orval/labels/labels";
+import { lookupMembersApiV1MembersLookupGet } from "@/api/generated/orval/members/members";
+import { lookupPartsApiV1PartsLookupGet } from "@/api/generated/orval/parts/parts";
 import type {
   ChangeLookupQueryDto,
-  ChangeLookupResponseDto,
   IssueLookupQueryDto,
-  IssueLookupResponseDto,
   LabelLookupQueryDto,
-  LabelLookupResponseDto,
   MemberLookupQueryDto,
-  MemberLookupResponseDto,
   PartLookupQueryDto,
-  PartLookupResponseDto,
 } from "@/features/change-shared/api/change-shared.types";
 import type {
   LookupChangeModel,
@@ -20,11 +19,9 @@ import type {
 } from "@/features/change-shared/types/change-shared-model";
 
 export async function lookupMembers(query: MemberLookupQueryDto): Promise<LookupMemberModel[]> {
-  const response = await apiClient.get<MemberLookupResponseDto>("/api/v1/members/lookup", {
-    params: query,
-  });
+  const response = await lookupMembersApiV1MembersLookupGet(query);
 
-  return response.data.items.map((user) => ({
+  return response.items.map((user) => ({
     userId: user.user_id,
     fullName: user.full_name,
     email: user.email,
@@ -33,11 +30,9 @@ export async function lookupMembers(query: MemberLookupQueryDto): Promise<Lookup
 }
 
 export async function lookupLabels(query: LabelLookupQueryDto): Promise<LookupLabelModel[]> {
-  const response = await apiClient.get<LabelLookupResponseDto>("/api/v1/labels/lookup", {
-    params: query,
-  });
+  const response = await lookupLabelsApiV1LabelsLookupGet(query);
 
-  return response.data.items.map((label) => ({
+  return response.items.map((label) => ({
     id: label.id,
     name: label.name,
     color: label.color,
@@ -45,11 +40,9 @@ export async function lookupLabels(query: LabelLookupQueryDto): Promise<LookupLa
 }
 
 export async function lookupParts(query: PartLookupQueryDto): Promise<LookupPartModel[]> {
-  const response = await apiClient.get<PartLookupResponseDto>("/api/v1/parts/lookup", {
-    params: query,
-  });
+  const response = await lookupPartsApiV1PartsLookupGet(query);
 
-  return response.data.items.map((part) => ({
+  return response.items.map((part) => ({
     id: part.id,
     partNumber: part.part_number,
     name: part.name ?? null,
@@ -57,11 +50,9 @@ export async function lookupParts(query: PartLookupQueryDto): Promise<LookupPart
 }
 
 export async function lookupIssues(query: IssueLookupQueryDto): Promise<LookupIssueModel[]> {
-  const response = await apiClient.get<IssueLookupResponseDto>("/api/v1/issues/lookup", {
-    params: query,
-  });
+  const response = await lookupIssuesApiV1IssuesLookupGet(query);
 
-  return response.data.items.map((issue) => ({
+  return response.items.map((issue) => ({
     id: issue.id,
     number: issue.number,
     title: issue.title,
@@ -71,11 +62,9 @@ export async function lookupIssues(query: IssueLookupQueryDto): Promise<LookupIs
 }
 
 export async function lookupChanges(query: ChangeLookupQueryDto): Promise<LookupChangeModel[]> {
-  const response = await apiClient.get<ChangeLookupResponseDto>("/api/v1/changes/lookup", {
-    params: query,
-  });
+  const response = await lookupChangeRequestsApiV1ChangesLookupGet(query);
 
-  return response.data.items.map((change) => ({
+  return response.items.map((change) => ({
     id: change.id,
     number: change.number,
     title: change.title,

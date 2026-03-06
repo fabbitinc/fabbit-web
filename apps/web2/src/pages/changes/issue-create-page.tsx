@@ -1,5 +1,4 @@
 import { useNavigate } from "react-router-dom";
-import { uploadFiles } from "@/api/file.api";
 import { ChangeCreateForm } from "@/features/change-shared";
 import { useCreateIssueAction } from "@/features/issue/hooks/use-create-issue-action";
 
@@ -16,16 +15,7 @@ export function IssueCreatePage() {
       isPending={createIssueAction.isPending}
       submitLabel="이슈 생성"
       onSubmit={async (input) => {
-        const fileIds = await uploadFiles(input.files);
-        const issue = await createIssueAction.mutateAsync({
-          title: input.title,
-          body: input.body ?? undefined,
-          assignee_user_ids: input.assigneeIds.length > 0 ? input.assigneeIds : undefined,
-          label_ids: input.labelIds.length > 0 ? input.labelIds : undefined,
-          part_ids: input.partIds.length > 0 ? input.partIds : undefined,
-          file_ids: fileIds.length > 0 ? fileIds : undefined,
-        });
-
+        const issue = await createIssueAction.mutateAsync(input);
         navigate(`/changes/issues/${issue.number}`);
       }}
     />

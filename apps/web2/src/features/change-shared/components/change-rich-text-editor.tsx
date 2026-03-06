@@ -15,6 +15,7 @@ import {
   Undo,
 } from "lucide-react";
 import { createMentionExtensions, staticMentionExtensions } from "@/features/change-shared/components/change-rich-text-mention";
+import { useChangeRichTextMentionLogic } from "@/features/change-shared/hooks/use-change-rich-text-mention-logic";
 import { cn } from "@/lib/utils";
 
 interface ToolbarButtonProps {
@@ -153,9 +154,10 @@ export function ChangeRichTextEditor({
   onChangeText,
   onIssueMentionClick,
 }: ChangeRichTextEditorProps) {
+  const mentionLookup = useChangeRichTextMentionLogic();
   const mentionExtensions = useMemo(
-    () => (editable ? createMentionExtensions() : staticMentionExtensions),
-    [editable],
+    () => (editable ? createMentionExtensions(mentionLookup) : staticMentionExtensions),
+    [editable, mentionLookup],
   );
 
   const editor = useEditor({
@@ -223,7 +225,6 @@ export function ChangeRichTextEditor({
   return (
     <div className={cn("rounded-lg border bg-card", className)}>
       {editable && !hideToolbar ? <EditorToolbar editor={editor} /> : null}
-      {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions */}
       <div onClick={handleEditorClick}>
         <EditorContent
           editor={editor}

@@ -1,4 +1,23 @@
-import { apiClient } from "@/api/client";
+import {
+  addProjectMembersApiV1ProjectsProjectIdMembersPost,
+  listProjectMembersApiV1ProjectsProjectIdMembersGet,
+  lookupMembersApiV1ProjectsProjectIdMembersLookupGet,
+  removeProjectMembersApiV1ProjectsProjectIdMembersDelete,
+} from "@/api/generated/orval/project-members/project-members";
+import {
+  getProjectPartsApiV1ProjectsProjectIdPartsGet,
+  linkPartsToProjectApiV1ProjectsProjectIdPartsPost,
+  lookupPartsApiV1ProjectsProjectIdPartsLookupGet,
+  unlinkPartsFromProjectApiV1ProjectsProjectIdPartsDelete,
+} from "@/api/generated/orval/project-parts/project-parts";
+import {
+  archiveProjectApiV1ProjectsProjectIdArchivePost,
+  deleteProjectApiV1ProjectsProjectIdDelete,
+  getProjectActivitiesApiV1ProjectsProjectIdActivitiesGet,
+  getProjectApiV1ProjectsProjectIdGet,
+  unarchiveProjectApiV1ProjectsProjectIdUnarchivePost,
+  updateProjectApiV1ProjectsProjectIdPatch,
+} from "@/api/generated/orval/projects/projects";
 import type {
   AddProjectMembersRequestDto,
   AddProjectMembersResponseDto,
@@ -30,82 +49,74 @@ import type {
 } from "@/features/project-detail/types/project-detail-model";
 
 export async function fetchProjectDetail(projectId: string): Promise<ProjectDetailModel> {
-  const response = await apiClient.get<ProjectDetailResponseDto>(`/api/v1/projects/${projectId}`);
-  return toProjectDetailModel(response.data);
+  const response = await getProjectApiV1ProjectsProjectIdGet(projectId);
+  return toProjectDetailModel(response);
 }
 
 export async function updateProject(projectId: string, request: UpdateProjectRequestDto): Promise<ProjectDetailModel> {
-  const response = await apiClient.patch<ProjectDetailResponseDto>(`/api/v1/projects/${projectId}`, request);
-  return toProjectDetailModel(response.data);
+  const response = await updateProjectApiV1ProjectsProjectIdPatch(projectId, request);
+  return toProjectDetailModel(response);
 }
 
 export async function archiveProject(projectId: string) {
-  await apiClient.post(`/api/v1/projects/${projectId}/archive`);
+  await archiveProjectApiV1ProjectsProjectIdArchivePost(projectId);
 }
 
 export async function unarchiveProject(projectId: string) {
-  await apiClient.post(`/api/v1/projects/${projectId}/unarchive`);
+  await unarchiveProjectApiV1ProjectsProjectIdUnarchivePost(projectId);
 }
 
 export async function deleteProject(projectId: string) {
-  await apiClient.delete(`/api/v1/projects/${projectId}`);
+  await deleteProjectApiV1ProjectsProjectIdDelete(projectId);
 }
 
 export async function fetchProjectActivities(
   projectId: string,
   query: ProjectActivitiesQueryDto,
 ): Promise<ProjectActivitiesResultModel> {
-  const response = await apiClient.get<ProjectActivitiesResponseDto>(`/api/v1/projects/${projectId}/activities`, {
-    params: query,
-  });
+  const response = await getProjectActivitiesApiV1ProjectsProjectIdActivitiesGet(projectId, query);
+  const activities = response as ProjectActivitiesResponseDto;
 
   return {
-    items: response.data.items.map((item) => toProjectActivityItemModel(item, response.data.users)),
-    nextCursor: response.data.next_cursor ?? null,
+    items: activities.items.map((item) => toProjectActivityItemModel(item, activities.users)),
+    nextCursor: activities.next_cursor ?? null,
   };
 }
 
 export async function fetchProjectMembers(projectId: string): Promise<ProjectMemberModel[]> {
-  const response = await apiClient.get<ProjectMemberListResponseDto>(`/api/v1/projects/${projectId}/members`);
-  return response.data.items.map(toProjectMemberModel);
+  const response = await listProjectMembersApiV1ProjectsProjectIdMembersGet(projectId);
+  return response.items.map(toProjectMemberModel);
 }
 
 export async function lookupProjectMembers(
   projectId: string,
   query: ProjectMemberLookupQueryDto,
 ): Promise<ProjectUserLookupModel[]> {
-  const response = await apiClient.get<ProjectMemberLookupResponseDto>(`/api/v1/projects/${projectId}/members/lookup`, {
-    params: query,
-  });
+  const response = await lookupMembersApiV1ProjectsProjectIdMembersLookupGet(projectId, query);
 
-  return response.data.items.map(toProjectUserLookupModel);
+  return response.items.map(toProjectUserLookupModel);
 }
 
 export async function addProjectMembers(
   projectId: string,
   request: AddProjectMembersRequestDto,
 ): Promise<AddProjectMembersResponseDto> {
-  const response = await apiClient.post<AddProjectMembersResponseDto>(`/api/v1/projects/${projectId}/members`, request);
-  return response.data;
+  return addProjectMembersApiV1ProjectsProjectIdMembersPost(projectId, request);
 }
 
 export async function removeProjectMembers(projectId: string, request: RemoveProjectMembersRequestDto) {
-  await apiClient.delete(`/api/v1/projects/${projectId}/members`, {
-    data: request,
-  });
+  await removeProjectMembersApiV1ProjectsProjectIdMembersDelete(projectId, request);
 }
 
 export async function fetchProjectParts(
   projectId: string,
   query: ProjectPartsQueryDto,
 ): Promise<ProjectPartsResultModel> {
-  const response = await apiClient.get<ProjectPartsResponseDto>(`/api/v1/projects/${projectId}/parts`, {
-    params: query,
-  });
+  const response = await getProjectPartsApiV1ProjectsProjectIdPartsGet(projectId, query);
 
   return {
-    total: response.data.total,
-    items: response.data.items.map(toProjectPartModel),
+    total: response.total,
+    items: response.items.map(toProjectPartModel),
   };
 }
 
@@ -113,25 +124,20 @@ export async function lookupProjectParts(
   projectId: string,
   query: ProjectPartLookupQueryDto,
 ): Promise<ProjectPartModel[]> {
-  const response = await apiClient.get<ProjectPartLookupResponseDto>(`/api/v1/projects/${projectId}/parts/lookup`, {
-    params: query,
-  });
+  const response = await lookupPartsApiV1ProjectsProjectIdPartsLookupGet(projectId, query);
 
-  return response.data.items.map(toProjectPartModel);
+  return response.items.map(toProjectPartModel);
 }
 
 export async function linkProjectParts(
   projectId: string,
   request: LinkProjectPartsRequestDto,
 ): Promise<LinkProjectPartsResponseDto> {
-  const response = await apiClient.post<LinkProjectPartsResponseDto>(`/api/v1/projects/${projectId}/parts`, request);
-  return response.data;
+  return linkPartsToProjectApiV1ProjectsProjectIdPartsPost(projectId, request);
 }
 
 export async function unlinkProjectParts(projectId: string, request: UnlinkProjectPartsRequestDto) {
-  await apiClient.delete(`/api/v1/projects/${projectId}/parts`, {
-    data: request,
-  });
+  await unlinkPartsFromProjectApiV1ProjectsProjectIdPartsDelete(projectId, request);
 }
 
 function toProjectDetailModel(project: ProjectDetailResponseDto): ProjectDetailModel {

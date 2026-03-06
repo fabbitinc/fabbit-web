@@ -1,26 +1,46 @@
-import { apiClient } from "@/api/client";
+import {
+  createInvitationApiV1OrganizationsInvitationsPost,
+  deleteProfileImageApiV1OrganizationsProfileImageDelete,
+  listInvitationsApiV1OrganizationsInvitationsGet,
+  setProfileImageApiV1OrganizationsProfileImagePut,
+  cancelInvitationApiV1OrganizationsInvitationsInvitationIdDelete,
+} from "@/api/generated/orval/organizations/organizations";
+import {
+  createLabelApiV1LabelsPost,
+  deleteLabelApiV1LabelsLabelIdDelete,
+  listLabelsApiV1LabelsGet,
+} from "@/api/generated/orval/labels/labels";
+import {
+  changeMemberRoleApiV1MembersUserIdRolePatch,
+  listOrgMembersApiV1MembersGet,
+  removeMemberApiV1MembersUserIdDelete,
+} from "@/api/generated/orval/members/members";
+import {
+  deleteDefaultOwnerApiV1PartsOwnerDefaultsDelete,
+  listDefaultOwnersApiV1PartsOwnerDefaultsGet,
+  upsertDefaultOwnerApiV1PartsOwnerDefaultsPut,
+} from "@/api/generated/orval/part-owner/part-owner";
+import { listCategoriesApiV1PartsCategoriesGet, renameCategoryApiV1PartsCategoriesCategoryPatch } from "@/api/generated/orval/parts/parts";
+import {
+  addTeamMembersApiV1TeamsTeamIdMembersPost,
+  listTeamMembersApiV1TeamsTeamIdMembersGet,
+  removeTeamMembersApiV1TeamsTeamIdMembersDelete,
+} from "@/api/generated/orval/team-members/team-members";
+import { createTeamApiV1TeamsPost, deleteTeamApiV1TeamsTeamIdDelete, listTeamsApiV1TeamsGet } from "@/api/generated/orval/teams/teams";
 import type {
   AddTeamMembersRequestDto,
-  CategoryStatsResponseDto,
   ChangeMemberRoleRequestDto,
   CreateInvitationRequestDto,
   CreateLabelRequestDto,
   CreateTeamRequestDto,
-  InvitationListResponseDto,
   InvitationResponseDto,
-  LabelListResponseDto,
   LabelResponseDto,
-  MemberListResponseDto,
   MemberSummaryDto,
   PartDefaultOwnerItemDto,
-  PartDefaultOwnerListResponseDto,
   PartDefaultOwnerRequestDto,
-  ProfileImageResponseDto,
   RemoveTeamMembersRequestDto,
   RenameCategoryRequestDto,
   SetProfileImageRequestDto,
-  TeamListResponseDto,
-  TeamMemberListResponseDto,
   TeamMemberSummaryDto,
   TeamSummaryDto,
   UserSummaryDto,
@@ -36,112 +56,107 @@ import type {
 } from "@/features/organization-settings/types/organization-settings-model";
 
 export async function fetchOrganizationMembers() {
-  const response = await apiClient.get<MemberListResponseDto>("/api/v1/members");
+  const response = await listOrgMembersApiV1MembersGet();
   return {
-    items: response.data.items.map(toOrganizationMemberModel),
-    maxMembers: response.data.max_members,
+    items: response.items.map(toOrganizationMemberModel),
+    maxMembers: response.max_members,
   };
 }
 
 export async function fetchOrganizationInvitations() {
-  const response = await apiClient.get<InvitationListResponseDto>("/api/v1/organizations/invitations");
-  return response.data.invitations.map(toOrganizationInvitationModel);
+  const response = await listInvitationsApiV1OrganizationsInvitationsGet();
+  return response.invitations.map(toOrganizationInvitationModel);
 }
 
 export async function createOrganizationInvitation(request: CreateInvitationRequestDto) {
-  const response = await apiClient.post<InvitationResponseDto>("/api/v1/organizations/invitations", request);
-  return toOrganizationInvitationModel(response.data);
+  const response = await createInvitationApiV1OrganizationsInvitationsPost(request);
+  return toOrganizationInvitationModel(response);
 }
 
 export async function cancelOrganizationInvitation(invitationId: string) {
-  await apiClient.delete(`/api/v1/organizations/invitations/${invitationId}`);
+  await cancelInvitationApiV1OrganizationsInvitationsInvitationIdDelete(invitationId);
 }
 
 export async function removeOrganizationMember(userId: string) {
-  await apiClient.delete(`/api/v1/members/${userId}`);
+  await removeMemberApiV1MembersUserIdDelete(userId);
 }
 
 export async function changeOrganizationMemberRole(userId: string, request: ChangeMemberRoleRequestDto) {
-  await apiClient.patch(`/api/v1/members/${userId}/role`, request);
+  await changeMemberRoleApiV1MembersUserIdRolePatch(userId, request);
 }
 
 export async function setOrganizationProfileImage(request: SetProfileImageRequestDto) {
-  const response = await apiClient.put<ProfileImageResponseDto>("/api/v1/organizations/profile-image", request);
-  return response.data;
+  return setProfileImageApiV1OrganizationsProfileImagePut(request);
 }
 
 export async function deleteOrganizationProfileImage() {
-  await apiClient.delete("/api/v1/organizations/profile-image");
+  await deleteProfileImageApiV1OrganizationsProfileImageDelete();
 }
 
 export async function fetchOrganizationTeams() {
-  const response = await apiClient.get<TeamListResponseDto>("/api/v1/teams");
-  return response.data.items.map(toOrganizationTeamModel);
+  const response = await listTeamsApiV1TeamsGet();
+  return response.items.map(toOrganizationTeamModel);
 }
 
 export async function createOrganizationTeam(request: CreateTeamRequestDto) {
-  await apiClient.post("/api/v1/teams", request);
+  await createTeamApiV1TeamsPost(request);
 }
 
 export async function deleteOrganizationTeam(teamId: string) {
-  await apiClient.delete(`/api/v1/teams/${teamId}`);
+  await deleteTeamApiV1TeamsTeamIdDelete(teamId);
 }
 
 export async function fetchOrganizationTeamMembers(teamId: string) {
-  const response = await apiClient.get<TeamMemberListResponseDto>(`/api/v1/teams/${teamId}/members`);
-  return response.data.items.map(toOrganizationUserSummaryModel);
+  const response = await listTeamMembersApiV1TeamsTeamIdMembersGet(teamId);
+  return response.items.map(toOrganizationUserSummaryModel);
 }
 
 export async function addOrganizationTeamMembers(teamId: string, request: AddTeamMembersRequestDto) {
-  await apiClient.post(`/api/v1/teams/${teamId}/members`, request);
+  await addTeamMembersApiV1TeamsTeamIdMembersPost(teamId, request);
 }
 
 export async function removeOrganizationTeamMembers(teamId: string, request: RemoveTeamMembersRequestDto) {
-  await apiClient.delete(`/api/v1/teams/${teamId}/members`, {
-    data: request,
-  });
+  await removeTeamMembersApiV1TeamsTeamIdMembersDelete(teamId, request);
 }
 
 export async function fetchOrganizationCategories() {
-  const response = await apiClient.get<CategoryStatsResponseDto>("/api/v1/parts/categories");
-  return response.data.items.map((item) => ({
+  const response = await listCategoriesApiV1PartsCategoriesGet();
+  return response.items.map((item) => ({
     category: item.category,
     partCount: item.part_count,
   } satisfies OrganizationCategoryModel));
 }
 
 export async function renameOrganizationCategory(category: string, request: RenameCategoryRequestDto) {
-  await apiClient.patch(`/api/v1/parts/categories/${encodeURIComponent(category)}`, request);
+  await renameCategoryApiV1PartsCategoriesCategoryPatch(encodeURIComponent(category), request);
 }
 
 export async function fetchOrganizationDefaultOwners() {
-  const response = await apiClient.get<PartDefaultOwnerListResponseDto>("/api/v1/parts/owner/defaults");
-  return response.data.items.map(toOrganizationDefaultOwnerModel);
+  const response = await listDefaultOwnersApiV1PartsOwnerDefaultsGet();
+  return response.items.map(toOrganizationDefaultOwnerModel);
 }
 
 export async function upsertOrganizationDefaultOwner(request: PartDefaultOwnerRequestDto) {
-  const response = await apiClient.put<PartDefaultOwnerItemDto>("/api/v1/parts/owner/defaults", request);
-  return toOrganizationDefaultOwnerModel(response.data);
+  const response = await upsertDefaultOwnerApiV1PartsOwnerDefaultsPut(request);
+  return toOrganizationDefaultOwnerModel(response);
 }
 
 export async function deleteOrganizationDefaultOwner(category?: string | null) {
-  await apiClient.delete("/api/v1/parts/owner/defaults", {
-    params: category != null ? { category } : undefined,
-  });
+  await deleteDefaultOwnerApiV1PartsOwnerDefaultsDelete(category != null ? { category } : undefined);
 }
 
 export async function fetchOrganizationLabels() {
-  const response = await apiClient.get<LabelListResponseDto>("/api/v1/labels");
-  return response.data.items.map(toOrganizationLabelModel);
+  const response = await listLabelsApiV1LabelsGet();
+  return response.items.map(toOrganizationLabelModel);
 }
 
 export async function createOrganizationLabel(request: CreateLabelRequestDto) {
-  const response = await apiClient.post<LabelResponseDto>("/api/v1/labels", request);
-  return toOrganizationLabelModel(response.data);
+  const response = await createLabelApiV1LabelsPost(request);
+  return toOrganizationLabelModel(response);
 }
 
 export async function deleteOrganizationLabel(labelId: string) {
-  await apiClient.delete(`/api/v1/labels/${labelId}`);
+  await deleteLabelApiV1LabelsLabelIdDelete(labelId);
 }
 
 function toOrganizationUserSummaryModel(user: UserSummaryDto | TeamMemberSummaryDto): OrganizationUserSummaryModel {

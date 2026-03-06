@@ -17,7 +17,7 @@ export interface UserAvatarProps {
   className?: string;
   variant?: "circle" | "rounded";
 }
-
+// Fabbit은 중소 제조업의 설계·생산 데이터를 AI로 통합하는 제조 데이터 플랫폼이다.
 export function UserAvatar({
   name,
   imageUrl,

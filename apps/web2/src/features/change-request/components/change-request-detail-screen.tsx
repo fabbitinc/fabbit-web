@@ -1,24 +1,17 @@
-import { useDeferredValue, useEffect, useState } from "react";
+import { useDeferredValue, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, FileCheck, GitMerge, Loader2, RefreshCcw } from "lucide-react";
-import { Badge, Button, ConfirmDialog, Input, UserAvatar } from "@fabbit/ui";
-import { uploadFiles } from "@/api/file.api";
+import {
+  ChangeRequestDetailScreen as ChangeRequestDetailScreenView,
+  type ChangeRequestDetailScreenProps as ChangeRequestDetailScreenViewProps,
+  type TimelineEventData,
+  type TimelineEventType,
+} from "@fabbit/components";
 import { useAuthStore } from "@/features/auth";
+import { useTiptapMentionFetchers } from "@/features/change-shared/hooks/use-tiptap-mention-fetchers";
 import { useIssueLookupQuery } from "@/features/change-shared/hooks/use-issue-lookup-query";
 import { useLabelLookupQuery } from "@/features/change-shared/hooks/use-label-lookup-query";
 import { useMemberLookupQuery } from "@/features/change-shared/hooks/use-member-lookup-query";
 import { usePartLookupQuery } from "@/features/change-shared/hooks/use-part-lookup-query";
-import type {
-  LookupIssueModel,
-  LookupLabelModel,
-  LookupMemberModel,
-  LookupPartModel,
-} from "@/features/change-shared/types/change-shared-model";
-import { ChangeRichTextEditor } from "@/features/change-shared";
-import { ChangeRequestDiffTab } from "@/features/change-request/components/change-request-diff-tab";
-import { ChangeRequestSelectionDialog } from "@/features/change-request/components/change-request-selection-dialog";
-import { ChangeRequestSidebar } from "@/features/change-request/components/change-request-sidebar";
-import { ChangeRequestTimelineSection } from "@/features/change-request/components/change-request-timeline-section";
 import { useAddChangeRequestFilesAction } from "@/features/change-request/hooks/use-add-change-request-files-action";
 import { useChangeRequestDetailQuery } from "@/features/change-request/hooks/use-change-request-detail-query";
 import { useChangeRequestTimelineQuery } from "@/features/change-request/hooks/use-change-request-timeline-query";
@@ -36,8 +29,11 @@ import { useSyncChangeRequestPartsAction } from "@/features/change-request/hooks
 import { useSyncChangeRequestReviewersAction } from "@/features/change-request/hooks/use-sync-change-request-reviewers-action";
 import { useUpdateChangeRequestAction } from "@/features/change-request/hooks/use-update-change-request-action";
 import { useUpdateChangeRequestCommentAction } from "@/features/change-request/hooks/use-update-change-request-comment-action";
-import type { ChangeRequestDetailTab } from "@/features/change-request/types/change-request-model";
-import { normalizeRichTextDocument, type RichTextDocument } from "@/lib/rich-text";
+import type {
+  ChangeRequestTimelineActivityModel,
+  ChangeRequestDetailTab,
+} from "@/features/change-request/types/change-request-model";
+import { normalizeRichTextDocument } from "@/lib/rich-text";
 
 type SelectionDialogKind = "assignees" | "reviewers" | "labels" | "parts" | "issues";
 
@@ -53,47 +49,116 @@ function formatDateTime(value: string) {
   }).format(new Date(value));
 }
 
-function getChangeRequestStateLabel(state: string) {
-  const stateLabelMap: Record<string, string> = {
-    DRAFT: "초안",
-    OPEN: "열림",
-    SUBMITTED: "제출됨",
-    MERGED: "반영됨",
-    CLOSED: "닫힘",
-  };
+function timeAgo(dateStr: string): string {
+  const diff = Date.now() - new Date(dateStr).getTime();
+  const minutes = Math.floor(diff / 60000);
 
-  return stateLabelMap[state] ?? state;
+  if (minutes < 1) {
+    return "방금";
+  }
+
+  if (minutes < 60) {
+    return `${minutes}분 전`;
+  }
+
+  const hours = Math.floor(minutes / 60);
+
+  if (hours < 24) {
+    return `${hours}시간 전`;
+  }
+
+  const days = Math.floor(hours / 24);
+
+  if (days < 30) {
+    return `${days}일 전`;
+  }
+
+  return formatDateTime(dateStr);
 }
 
-function getChangeRequestStateVariant(state: string): "outline" | "neutral" | "accent" | "success" {
-  if (state === "MERGED") {
-    return "success";
+function mapCrActivityToTimelineEvent(item: ChangeRequestTimelineActivityModel): TimelineEventData | null {
+  const actionTypeMap: Record<string, TimelineEventType> = {
+    "cr:created": "cr_created",
+    "cr:state_changed": "cr_state_changed",
+    "cr:merged": "cr_merged",
+    "cr:issue_changed": "cr_issue_linked",
+    "issue:reviewer_changed": "reviewer_changed",
+    "issue:assignee_changed": "assigned",
+    "issue:label_changed": "labels_changed",
+    "issue:part_changed": "part_added",
+    "issue:file_attached": "file_attached",
+    "issue:file_detached": "file_detached",
+    "issue:mentioned": "issue_mentioned",
+  };
+
+  const type = actionTypeMap[item.action];
+
+  if (!type) {
+    return null;
   }
 
-  if (state === "CLOSED") {
-    return "neutral";
+  const detail = (item.detail ?? {}) as Record<string, unknown>;
+
+  const event: TimelineEventData = {
+    id: item.id,
+    type,
+    author: {
+      name: item.actor?.fullName ?? "알 수 없는 사용자",
+      profileImageUrl: item.actor?.profileImageUrl,
+    },
+    createdAtLabel: timeAgo(item.createdAt),
+  };
+
+  if (type === "cr_state_changed") {
+    event.content = detail;
   }
 
-  if (state === "DRAFT") {
-    return "outline";
+  if (type === "assigned" || type === "reviewer_changed") {
+    event.addedNames = detail.addedNames as string[] | undefined;
+    event.removedNames = detail.removedNames as string[] | undefined;
   }
 
-  return "accent";
+  if (type === "labels_changed") {
+    event.addedLabels = detail.addedLabels as { name: string; color: string }[] | undefined;
+    event.removedLabels = detail.removedLabels as { name: string; color: string }[] | undefined;
+  }
+
+  if (type === "part_added") {
+    event.addedPartCount = detail.addedPartCount as number | undefined;
+    event.addedPartNumbers = detail.addedPartNumbers as string[] | undefined;
+    event.removedPartCount = detail.removedPartCount as number | undefined;
+    event.removedPartNumbers = detail.removedPartNumbers as string[] | undefined;
+  }
+
+  if (type === "file_attached" || type === "file_detached") {
+    event.fileCount = detail.fileCount as number | undefined;
+    event.fileNames = detail.fileNames as string[] | undefined;
+  }
+
+  if (type === "cr_issue_linked" || type === "issue_mentioned") {
+    event.linkedIssues = detail.linkedIssues as TimelineEventData["linkedIssues"];
+    event.linkedIssueCount = detail.linkedIssueCount as number | undefined;
+    event.isComment = detail.isComment as boolean | undefined;
+  }
+
+  return event;
 }
 
 interface ChangeRequestDetailScreenProps {
-  changeNumber: number;
   activeTab: ChangeRequestDetailTab;
+  changeNumber: number;
   onTabChange: (tab: ChangeRequestDetailTab) => void;
 }
 
 export function ChangeRequestDetailScreen({
-  changeNumber,
   activeTab,
+  changeNumber,
   onTabChange,
 }: ChangeRequestDetailScreenProps) {
   const navigate = useNavigate();
-  const currentUserId = useAuthStore((state) => state.user?.id ?? null);
+  const currentUser = useAuthStore((state) => state.user);
+  const { userMentionFetcher, issueMentionFetcher } = useTiptapMentionFetchers();
+
   const changeRequestQuery = useChangeRequestDetailQuery(changeNumber);
   const timelineQuery = useChangeRequestTimelineQuery(changeNumber, activeTab === "conversation");
   const updateChangeRequestAction = useUpdateChangeRequestAction(changeNumber);
@@ -113,90 +178,90 @@ export function ChangeRequestDetailScreen({
   const reopenChangeRequestAction = useReopenChangeRequestAction(changeNumber);
 
   const changeRequest = changeRequestQuery.data;
-  const [isEditing, setIsEditing] = useState(false);
-  const [title, setTitle] = useState("");
-  const [body, setBody] = useState<RichTextDocument | null>(null);
+
   const [dialogKind, setDialogKind] = useState<SelectionDialogKind | null>(null);
   const [dialogSearch, setDialogSearch] = useState("");
   const [selectedDialogIds, setSelectedDialogIds] = useState<string[]>([]);
-  const [isCloseConfirmOpen, setIsCloseConfirmOpen] = useState(false);
 
   const deferredDialogSearch = useDeferredValue(dialogSearch.trim());
 
   const memberLookup = useMemberLookupQuery(
-    {
-      search: deferredDialogSearch || undefined,
-      limit: 20,
-    },
+    { search: deferredDialogSearch || undefined, limit: 20 },
     dialogKind === "assignees" || dialogKind === "reviewers",
   );
   const labelLookup = useLabelLookupQuery(
-    {
-      search: deferredDialogSearch || undefined,
-      limit: 20,
-    },
+    { search: deferredDialogSearch || undefined, limit: 20 },
     dialogKind === "labels",
   );
   const partLookup = usePartLookupQuery(
-    {
-      search: deferredDialogSearch || undefined,
-      limit: 20,
-    },
+    { search: deferredDialogSearch || undefined, limit: 20 },
     dialogKind === "parts",
   );
   const issueLookup = useIssueLookupQuery(
-    {
-      search: deferredDialogSearch || undefined,
-      limit: 20,
-    },
+    { search: deferredDialogSearch || undefined, limit: 20 },
     dialogKind === "issues",
   );
 
-  useEffect(() => {
-    if (!changeRequest || isEditing) {
+  const sortedTimeline = useMemo(() => {
+    const items = timelineQuery.data ?? [];
+    return [...items].sort((left, right) => new Date(left.createdAt).getTime() - new Date(right.createdAt).getTime());
+  }, [timelineQuery.data]);
+
+  const commentCount = useMemo(
+    () => sortedTimeline.filter((item) => item.type === "comment").length,
+    [sortedTimeline],
+  );
+
+  const timelineItems = useMemo<ChangeRequestDetailScreenViewProps["timelineItems"]>(() => {
+    const next: ChangeRequestDetailScreenViewProps["timelineItems"] = [];
+
+    sortedTimeline.forEach((item) => {
+      if (item.type === "comment") {
+        next.push({
+          kind: "comment",
+          id: item.id,
+          author: item.author
+            ? {
+                fullName: item.author.fullName ?? "알 수 없는 사용자",
+                profileImageUrl: item.author.profileImageUrl,
+              }
+            : null,
+          authorId: item.authorId,
+          body: normalizeRichTextDocument(item.body),
+          isModified: item.isModified,
+          updatedAt: item.updatedAt,
+        });
+        return;
+      }
+
+      const event = mapCrActivityToTimelineEvent(item);
+
+      if (!event) {
+        return;
+      }
+
+      next.push({
+        kind: "event",
+        id: item.id,
+        event,
+      });
+    });
+
+    return next;
+  }, [sortedTimeline]);
+
+  const navigateToIssueMention = (targetIssueNumber: number, issueType: "issue" | "change_request") =>
+    navigate(
+      issueType === "change_request"
+        ? `/changes/requests/${targetIssueNumber}`
+        : `/changes/issues/${targetIssueNumber}`,
+    );
+
+  const openDialog = (kind: SelectionDialogKind) => {
+    if (!changeRequest) {
       return;
     }
 
-    setTitle(changeRequest.title);
-    setBody(normalizeRichTextDocument(changeRequest.body));
-  }, [changeRequest, isEditing]);
-
-  if (changeRequestQuery.isLoading) {
-    return (
-      <div className="flex min-h-[50vh] items-center justify-center">
-        <Loader2 className="size-6 animate-spin text-muted-foreground" />
-      </div>
-    );
-  }
-
-  if (changeRequestQuery.isError || !changeRequest) {
-    return (
-      <div className="flex min-h-[50vh] items-center justify-center">
-        <div className="flex flex-col items-center gap-3 text-center">
-          <p className="text-sm text-muted-foreground">변경 요청을 불러오지 못했습니다.</p>
-          <div className="flex items-center gap-2">
-            <Button type="button" variant="outline" onClick={() => navigate("/changes?view=requests")}>
-              목록으로
-            </Button>
-            <Button type="button" onClick={() => void changeRequestQuery.refetch()}>
-              다시 시도
-            </Button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  const isEditable = changeRequest.crState !== "MERGED" && changeRequest.crState !== "CLOSED";
-  const canSubmit = changeRequest.crState === "DRAFT";
-  const canMerge = changeRequest.crState === "OPEN" || changeRequest.crState === "SUBMITTED";
-  const canClose =
-    changeRequest.crState === "DRAFT" ||
-    changeRequest.crState === "OPEN" ||
-    changeRequest.crState === "SUBMITTED";
-  const canReopen = changeRequest.crState === "CLOSED";
-
-  const openDialog = (kind: SelectionDialogKind) => {
     setDialogSearch("");
     setDialogKind(kind);
     setSelectedDialogIds(
@@ -208,7 +273,7 @@ export function ChangeRequestDetailScreen({
             ? changeRequest.labels.map((label) => label.id)
             : kind === "parts"
               ? changeRequest.parts.map((part) => part.id)
-              : changeRequest.linkedIssues.map((issue) => issue.id),
+              : changeRequest.linkedIssues.map((linkedIssue) => linkedIssue.id),
     );
   };
 
@@ -218,463 +283,301 @@ export function ChangeRequestDetailScreen({
     setSelectedDialogIds([]);
   };
 
-  const handleDialogConfirm = async () => {
-    if (!dialogKind) {
-      return;
+  const dialogConfig = useMemo(() => {
+    if (!changeRequest || !dialogKind) {
+      return null;
     }
 
-    if (dialogKind === "assignees") {
-      await syncAssigneesAction.mutateAsync(selectedDialogIds);
+    switch (dialogKind) {
+      case "assignees":
+        return {
+          title: "담당자 편집",
+          description: "변경 요청을 담당할 멤버를 선택합니다.",
+          searchPlaceholder: "이름 또는 이메일로 검색",
+          emptyMessage: "검색 조건에 맞는 멤버가 없습니다.",
+          items: (memberLookup.data ?? []).map((member) => ({
+            id: member.userId,
+            title: member.fullName,
+            subtitle: member.email,
+            avatarName: member.fullName,
+            avatarImageUrl: member.profileImageUrl,
+          })),
+          isLoading: memberLookup.isLoading,
+          isPending: syncAssigneesAction.isPending,
+        };
+      case "reviewers":
+        return {
+          title: "검토자 편집",
+          description: "변경 요청을 검토할 멤버를 선택합니다.",
+          searchPlaceholder: "이름 또는 이메일로 검색",
+          emptyMessage: "검색 조건에 맞는 멤버가 없습니다.",
+          items: (memberLookup.data ?? []).map((member) => ({
+            id: member.userId,
+            title: member.fullName,
+            subtitle: member.email,
+            avatarName: member.fullName,
+            avatarImageUrl: member.profileImageUrl,
+          })),
+          isLoading: memberLookup.isLoading,
+          isPending: syncReviewersAction.isPending,
+        };
+      case "labels":
+        return {
+          title: "라벨 편집",
+          description: "변경 요청 분류에 사용할 라벨을 선택합니다.",
+          searchPlaceholder: "라벨 이름으로 검색",
+          emptyMessage: "검색 조건에 맞는 라벨이 없습니다.",
+          items: (labelLookup.data ?? []).map((label) => ({
+            id: label.id,
+            title: label.name,
+            subtitle: label.color,
+          })),
+          isLoading: labelLookup.isLoading,
+          isPending: syncLabelsAction.isPending,
+        };
+      case "parts":
+        return {
+          title: "관련 부품 편집",
+          description: "변경 요청과 연결할 부품을 선택합니다.",
+          searchPlaceholder: "부품 번호 또는 이름으로 검색",
+          emptyMessage: "검색 조건에 맞는 부품이 없습니다.",
+          items: (partLookup.data ?? []).map((part) => ({
+            id: part.id,
+            title: part.partNumber,
+            subtitle: part.name ?? "이름 없음",
+          })),
+          isLoading: partLookup.isLoading,
+          isPending: syncPartsAction.isPending,
+        };
+      case "issues":
+        return {
+          title: "이슈 연결 편집",
+          description: "변경 요청과 연결할 이슈를 선택합니다.",
+          searchPlaceholder: "번호 또는 제목으로 검색",
+          emptyMessage: "검색 조건에 맞는 이슈가 없습니다.",
+          items: (issueLookup.data?.filter((item) => item.type === "issue") ?? []).map((item) => ({
+            id: item.id,
+            title: `#${item.number} ${item.title}`,
+            subtitle: item.state === "CLOSED" ? "닫힘" : "열림",
+          })),
+          isLoading: issueLookup.isLoading,
+          isPending: syncIssuesAction.isPending,
+        };
+      default:
+        return null;
     }
+  }, [
+    changeRequest,
+    dialogKind,
+    issueLookup.data,
+    issueLookup.isLoading,
+    labelLookup.data,
+    labelLookup.isLoading,
+    memberLookup.data,
+    memberLookup.isLoading,
+    partLookup.data,
+    partLookup.isLoading,
+    syncAssigneesAction.isPending,
+    syncIssuesAction.isPending,
+    syncLabelsAction.isPending,
+    syncPartsAction.isPending,
+    syncReviewersAction.isPending,
+  ]);
 
-    if (dialogKind === "reviewers") {
-      await syncReviewersAction.mutateAsync(selectedDialogIds);
-    }
-
-    if (dialogKind === "labels") {
-      await syncLabelsAction.mutateAsync(selectedDialogIds);
-    }
-
-    if (dialogKind === "parts") {
-      await syncPartsAction.mutateAsync(selectedDialogIds);
-    }
-
-    if (dialogKind === "issues") {
-      await syncIssuesAction.mutateAsync(selectedDialogIds);
-    }
-
-    closeDialog();
-  };
+  const changeRequestViewModel = changeRequest
+    ? {
+        title: changeRequest.title,
+        number: changeRequest.number,
+        crState: changeRequest.crState,
+        commentsCount: commentCount,
+        createdAt: changeRequest.createdAt,
+        updatedAt: changeRequest.updatedAt,
+        mergedAt: changeRequest.mergedAt,
+        mergedBy: changeRequest.mergedBy,
+        body: normalizeRichTextDocument(changeRequest.body),
+        isModified: changeRequest.isModified,
+        createdBy: changeRequest.createdBy
+          ? {
+              fullName: changeRequest.createdBy.fullName ?? "알 수 없음",
+              profileImageUrl: changeRequest.createdBy.profileImageUrl,
+            }
+          : null,
+        assignees: changeRequest.assignees.map((assignee) => ({
+          userId: assignee.userId,
+          fullName: assignee.fullName,
+          email: assignee.email,
+          phone: assignee.phone,
+          profileImageUrl: assignee.profileImageUrl,
+        })),
+        reviewers: changeRequest.reviewers.map((reviewer) => ({
+          userId: reviewer.userId,
+          fullName: reviewer.fullName,
+          email: reviewer.email,
+          phone: reviewer.phone,
+          profileImageUrl: reviewer.profileImageUrl,
+          reviewStatus: reviewer.reviewStatus,
+          reviewedAt: reviewer.reviewedAt,
+        })),
+        labels: changeRequest.labels.map((label) => ({
+          id: label.id,
+          name: label.name,
+          color: label.color,
+        })),
+        parts: changeRequest.parts.map((part) => ({
+          id: part.id,
+          partNumber: part.partNumber,
+          name: part.name,
+        })),
+        files: changeRequest.files.map((file) => ({
+          fileId: file.fileId,
+          originalName: file.originalName,
+          contentType: file.contentType,
+          fileSize: file.fileSize,
+          fileUrl: file.fileUrl,
+          createdAt: file.createdAt,
+        })),
+        linkedIssues: changeRequest.linkedIssues.map((linkedIssue) => ({
+          id: linkedIssue.id,
+          number: linkedIssue.number,
+          title: linkedIssue.title,
+          state: linkedIssue.state,
+        })),
+      }
+    : undefined;
 
   return (
-    <div className="space-y-6">
-      <section className="app-panel rounded-[32px] p-6 sm:p-8">
-        <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
-          <div>
-            <Button type="button" variant="ghost" onClick={() => navigate("/changes?view=requests")}>
-              <ArrowLeft className="size-4" />
-              변경 요청 목록
-            </Button>
-            <div className="mt-4 flex flex-wrap items-center gap-3">
-              <Badge variant="accent">Change Request #{changeRequest.number}</Badge>
-              <Badge variant={getChangeRequestStateVariant(changeRequest.crState)}>
-                {getChangeRequestStateLabel(changeRequest.crState)}
-              </Badge>
-              {changeRequest.isModified ? <Badge variant="outline">수정됨</Badge> : null}
-            </div>
-            <h1 className="mt-4 text-3xl font-semibold tracking-tight text-foreground">{changeRequest.title}</h1>
-            <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
-              생성자 {changeRequest.createdBy?.fullName ?? "알 수 없음"} · 생성 {formatDateTime(changeRequest.createdAt)} · 마지막 수정{" "}
-              {formatDateTime(changeRequest.updatedAt)}
-            </p>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => {
-                void changeRequestQuery.refetch();
-                if (activeTab === "conversation") {
-                  void timelineQuery.refetch();
+    <ChangeRequestDetailScreenView
+      changeRequest={changeRequestViewModel}
+      activeTab={activeTab}
+      tabs={detailTabs}
+      timelineItems={timelineItems}
+      commentCount={commentCount}
+      isLoading={changeRequestQuery.isLoading}
+      isError={changeRequestQuery.isError || !changeRequest}
+      isTimelineLoading={timelineQuery.isLoading}
+      isSavingChangeRequest={updateChangeRequestAction.isPending}
+      isCreatingComment={createCommentAction.isPending}
+      isSubmittingChangeRequest={submitChangeRequestAction.isPending}
+      isMergingChangeRequest={mergeChangeRequestAction.isPending}
+      isReopeningChangeRequest={reopenChangeRequestAction.isPending}
+      isAttachingFiles={addFilesAction.isPending}
+      currentUser={{
+        id: currentUser?.id ?? null,
+        name: currentUser?.name ?? null,
+        profileImageUrl: currentUser?.profileImageUrl ?? null,
+      }}
+      mentionFetchers={{
+        user: userMentionFetcher,
+        issue: issueMentionFetcher,
+      }}
+      dialog={
+        dialogKind && dialogConfig
+          ? {
+              ...dialogConfig,
+              searchValue: dialogSearch,
+              selectedIds: selectedDialogIds,
+              onOpenChange: (open) => {
+                if (!open) {
+                  closeDialog();
                 }
-              }}
-            >
-              <RefreshCcw className="size-4" />
-              새로고침
-            </Button>
-            {canSubmit ? (
-              <Button
-                disabled={submitChangeRequestAction.isPending}
-                type="button"
-                onClick={() => submitChangeRequestAction.mutate()}
-              >
-                {submitChangeRequestAction.isPending ? <Loader2 className="size-4 animate-spin" /> : <FileCheck className="size-4" />}
-                제출
-              </Button>
-            ) : null}
-            {canMerge ? (
-              <Button
-                disabled={mergeChangeRequestAction.isPending}
-                type="button"
-                onClick={() => mergeChangeRequestAction.mutate()}
-              >
-                {mergeChangeRequestAction.isPending ? <Loader2 className="size-4 animate-spin" /> : <GitMerge className="size-4" />}
-                변경 반영
-              </Button>
-            ) : null}
-            {canClose ? (
-              <Button type="button" variant="outline" onClick={() => setIsCloseConfirmOpen(true)}>
-                변경 요청 닫기
-              </Button>
-            ) : null}
-            {canReopen ? (
-              <Button
-                disabled={reopenChangeRequestAction.isPending}
-                type="button"
-                variant="outline"
-                onClick={() => reopenChangeRequestAction.mutate()}
-              >
-                {reopenChangeRequestAction.isPending ? <Loader2 className="size-4 animate-spin" /> : null}
-                다시 제출
-              </Button>
-            ) : null}
-          </div>
-        </div>
-      </section>
-
-      <section className="app-panel rounded-[32px] p-2">
-        <div className="flex flex-wrap gap-2">
-          {detailTabs.map((tab) => (
-            <button
-              key={tab.id}
-              type="button"
-              className={`cursor-pointer rounded-[20px] px-4 py-2 text-sm font-medium transition-colors ${
-                activeTab === tab.id
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:bg-muted/70 hover:text-foreground"
-              }`}
-              onClick={() => onTabChange(tab.id)}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-      </section>
-
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
-        <div className="space-y-6">
-          {activeTab === "conversation" ? (
-            <>
-              <section className="app-panel rounded-[32px] p-6">
-                <div className="flex items-center justify-between gap-4">
-                  <div>
-                    <p className="text-lg font-semibold text-foreground">변경 요청 설명</p>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      제목과 본문을 수정하고, 멘션을 포함한 서술을 관리합니다.
-                    </p>
-                  </div>
-                  {isEditable ? (
-                    <Button type="button" variant="outline" onClick={() => setIsEditing((current) => !current)}>
-                      {isEditing ? "편집 종료" : "편집"}
-                    </Button>
-                  ) : null}
-                </div>
-
-                {isEditing ? (
-                  <div className="mt-5 space-y-4">
-                    <div className="space-y-2">
-                      <label htmlFor="change-request-detail-title" className="text-sm font-medium text-foreground">
-                        제목
-                      </label>
-                      <Input
-                        id="change-request-detail-title"
-                        value={title}
-                        onChange={(event) => setTitle(event.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <label className="text-sm font-medium text-foreground">본문</label>
-                      <ChangeRichTextEditor
-                        content={body ?? undefined}
-                        placeholder="변경 요청 본문을 입력하세요"
-                        minHeight={220}
-                        onChangeJson={(content) => setBody(normalizeRichTextDocument(content))}
-                      />
-                    </div>
-                    <div className="flex justify-end gap-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => {
-                          setTitle(changeRequest.title);
-                          setBody(normalizeRichTextDocument(changeRequest.body));
-                          setIsEditing(false);
-                        }}
-                      >
-                        취소
-                      </Button>
-                      <Button
-                        disabled={!title.trim() || updateChangeRequestAction.isPending}
-                        type="button"
-                        onClick={async () => {
-                          try {
-                            await updateChangeRequestAction.mutateAsync({
-                              title,
-                              body,
-                            });
-                            setIsEditing(false);
-                          } catch {
-                            return;
-                          }
-                        }}
-                      >
-                        {updateChangeRequestAction.isPending ? <Loader2 className="size-4 animate-spin" /> : null}
-                        저장
-                      </Button>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="mt-5">
-                    <ChangeRichTextEditor
-                      editable={false}
-                      hideToolbar
-                      className="border-0 bg-transparent"
-                      content={changeRequest.body ?? undefined}
-                      minHeight={80}
-                      onIssueMentionClick={(targetIssueNumber, issueType) =>
-                        navigate(
-                          issueType === "change_request"
-                            ? `/changes/requests/${targetIssueNumber}`
-                            : `/changes/issues/${targetIssueNumber}`,
-                        )
-                      }
-                    />
-                    {!changeRequest.bodyText ? (
-                      <p className="mt-2 text-sm text-muted-foreground">아직 입력된 본문이 없습니다.</p>
-                    ) : null}
-                  </div>
-                )}
-              </section>
-
-              <ChangeRequestTimelineSection
-                currentUserId={currentUserId}
-                isLoading={timelineQuery.isLoading}
-                items={timelineQuery.data ?? []}
-                onCreateComment={async (nextBody) => {
-                  await createCommentAction.mutateAsync(nextBody);
-                }}
-                onDeleteComment={async (commentId) => {
-                  await deleteCommentAction.mutateAsync(commentId);
-                }}
-                onNavigateToIssueMention={(targetIssueNumber, issueType) =>
-                  navigate(
-                    issueType === "change_request"
-                      ? `/changes/requests/${targetIssueNumber}`
-                      : `/changes/issues/${targetIssueNumber}`,
-                  )
+              },
+              onSearchChange: setDialogSearch,
+              onToggle: (id) =>
+                setSelectedDialogIds((previous) =>
+                  previous.includes(id) ? previous.filter((item) => item !== id) : [...previous, id],
+                ),
+              onConfirm: async () => {
+                if (dialogKind === "assignees") {
+                  await syncAssigneesAction.mutateAsync(selectedDialogIds);
                 }
-                onUpdateComment={async (commentId, nextBody) => {
-                  await updateCommentAction.mutateAsync({
-                    commentId,
-                    body: nextBody,
-                  });
-                }}
-              />
-            </>
-          ) : (
-            <ChangeRequestDiffTab />
-          )}
-        </div>
 
-        <ChangeRequestSidebar
-          changeRequest={changeRequest}
-          isAttachingFiles={addFilesAction.isPending}
-          onAttachFiles={async (files) => {
-            const fileIds = await uploadFiles(files);
-            if (fileIds.length > 0) {
-              await addFilesAction.mutateAsync(fileIds);
+                if (dialogKind === "reviewers") {
+                  await syncReviewersAction.mutateAsync(selectedDialogIds);
+                }
+
+                if (dialogKind === "labels") {
+                  await syncLabelsAction.mutateAsync(selectedDialogIds);
+                }
+
+                if (dialogKind === "parts") {
+                  await syncPartsAction.mutateAsync(selectedDialogIds);
+                }
+
+                if (dialogKind === "issues") {
+                  await syncIssuesAction.mutateAsync(selectedDialogIds);
+                }
+
+                closeDialog();
+              },
             }
-          }}
-          onDeleteFile={(fileId) => deleteFileAction.mutateAsync(fileId)}
-          onEditAssignees={() => openDialog("assignees")}
-          onEditIssues={() => openDialog("issues")}
-          onEditLabels={() => openDialog("labels")}
-          onEditParts={() => openDialog("parts")}
-          onEditReviewers={() => openDialog("reviewers")}
-          onNavigateToIssue={(issueNumber) => navigate(`/changes/issues/${issueNumber}`)}
-        />
-      </div>
+          : null
+      }
+      onBack={() => navigate("/changes?view=requests")}
+      onRetry={() => {
+        void changeRequestQuery.refetch();
+      }}
+      onTabChange={(tab) => onTabChange(tab as ChangeRequestDetailTab)}
+      onSaveChangeRequest={async ({ title, body }) => {
+        const normalizedBody = normalizeRichTextDocument(body);
 
-      {dialogKind === "assignees" ? (
-        <ChangeRequestSelectionDialog<LookupMemberModel>
-          open
-          title="담당자 편집"
-          description="변경 요청을 담당할 멤버를 선택합니다."
-          searchValue={dialogSearch}
-          searchPlaceholder="이름 또는 이메일로 검색"
-          selectedIds={selectedDialogIds}
-          items={memberLookup.data ?? []}
-          getItemId={(item) => item.userId}
-          emptyMessage="검색 조건에 맞는 멤버가 없습니다."
-          isLoading={memberLookup.isLoading}
-          isPending={syncAssigneesAction.isPending}
-          onOpenChange={(open) => {
-            if (!open) {
-              closeDialog();
-            }
-          }}
-          onSearchChange={setDialogSearch}
-          onToggle={(id) =>
-            setSelectedDialogIds((current) =>
-              current.includes(id) ? current.filter((currentId) => currentId !== id) : [...current, id],
-            )
-          }
-          onConfirm={handleDialogConfirm}
-          renderItem={(item) => (
-            <div className="flex items-center gap-3">
-              <UserAvatar imageUrl={item.profileImageUrl} name={item.fullName} />
-              <div className="min-w-0">
-                <p className="truncate text-sm font-medium text-foreground">{item.fullName}</p>
-                <p className="truncate text-xs text-muted-foreground">{item.email}</p>
-              </div>
-            </div>
-          )}
-        />
-      ) : null}
+        if (!normalizedBody) {
+          return;
+        }
 
-      {dialogKind === "reviewers" ? (
-        <ChangeRequestSelectionDialog<LookupMemberModel>
-          open
-          title="검토자 편집"
-          description="변경 요청을 검토할 멤버를 선택합니다."
-          searchValue={dialogSearch}
-          searchPlaceholder="이름 또는 이메일로 검색"
-          selectedIds={selectedDialogIds}
-          items={memberLookup.data ?? []}
-          getItemId={(item) => item.userId}
-          emptyMessage="검색 조건에 맞는 멤버가 없습니다."
-          isLoading={memberLookup.isLoading}
-          isPending={syncReviewersAction.isPending}
-          onOpenChange={(open) => {
-            if (!open) {
-              closeDialog();
-            }
-          }}
-          onSearchChange={setDialogSearch}
-          onToggle={(id) =>
-            setSelectedDialogIds((current) =>
-              current.includes(id) ? current.filter((currentId) => currentId !== id) : [...current, id],
-            )
-          }
-          onConfirm={handleDialogConfirm}
-          renderItem={(item) => (
-            <div className="flex items-center gap-3">
-              <UserAvatar imageUrl={item.profileImageUrl} name={item.fullName} />
-              <div className="min-w-0">
-                <p className="truncate text-sm font-medium text-foreground">{item.fullName}</p>
-                <p className="truncate text-xs text-muted-foreground">{item.email}</p>
-              </div>
-            </div>
-          )}
-        />
-      ) : null}
+        await updateChangeRequestAction.mutateAsync({
+          title,
+          body: normalizedBody,
+        });
+      }}
+      onCreateComment={async (body) => {
+        const normalizedBody = normalizeRichTextDocument(body);
 
-      {dialogKind === "labels" ? (
-        <ChangeRequestSelectionDialog<LookupLabelModel>
-          open
-          title="라벨 편집"
-          description="변경 요청 분류에 사용할 라벨을 선택합니다."
-          searchValue={dialogSearch}
-          searchPlaceholder="라벨 이름으로 검색"
-          selectedIds={selectedDialogIds}
-          items={labelLookup.data ?? []}
-          getItemId={(item) => item.id}
-          emptyMessage="검색 조건에 맞는 라벨이 없습니다."
-          isLoading={labelLookup.isLoading}
-          isPending={syncLabelsAction.isPending}
-          onOpenChange={(open) => {
-            if (!open) {
-              closeDialog();
-            }
-          }}
-          onSearchChange={setDialogSearch}
-          onToggle={(id) =>
-            setSelectedDialogIds((current) =>
-              current.includes(id) ? current.filter((currentId) => currentId !== id) : [...current, id],
-            )
-          }
-          onConfirm={handleDialogConfirm}
-          renderItem={(item) => (
-            <div className="flex items-center gap-3">
-              <Badge variant="outline">{item.name}</Badge>
-              <span className="text-xs text-muted-foreground">{item.color}</span>
-            </div>
-          )}
-        />
-      ) : null}
+        if (!normalizedBody) {
+          return;
+        }
 
-      {dialogKind === "parts" ? (
-        <ChangeRequestSelectionDialog<LookupPartModel>
-          open
-          title="관련 부품 편집"
-          description="변경 요청과 연결할 부품을 선택합니다."
-          searchValue={dialogSearch}
-          searchPlaceholder="부품 번호 또는 이름으로 검색"
-          selectedIds={selectedDialogIds}
-          items={partLookup.data ?? []}
-          getItemId={(item) => item.id}
-          emptyMessage="검색 조건에 맞는 부품이 없습니다."
-          isLoading={partLookup.isLoading}
-          isPending={syncPartsAction.isPending}
-          onOpenChange={(open) => {
-            if (!open) {
-              closeDialog();
-            }
-          }}
-          onSearchChange={setDialogSearch}
-          onToggle={(id) =>
-            setSelectedDialogIds((current) =>
-              current.includes(id) ? current.filter((currentId) => currentId !== id) : [...current, id],
-            )
-          }
-          onConfirm={handleDialogConfirm}
-          renderItem={(item) => (
-            <div>
-              <p className="truncate text-sm font-medium text-foreground">{item.partNumber}</p>
-              <p className="truncate text-xs text-muted-foreground">{item.name ?? "이름 없음"}</p>
-            </div>
-          )}
-        />
-      ) : null}
+        await createCommentAction.mutateAsync(normalizedBody);
+      }}
+      onUpdateComment={async (commentId, body) => {
+        const normalizedBody = normalizeRichTextDocument(body);
 
-      {dialogKind === "issues" ? (
-        <ChangeRequestSelectionDialog<LookupIssueModel>
-          open
-          title="이슈 연결 편집"
-          description="변경 요청과 연결할 이슈를 선택합니다."
-          searchValue={dialogSearch}
-          searchPlaceholder="번호 또는 제목으로 검색"
-          selectedIds={selectedDialogIds}
-          items={issueLookup.data?.filter((item) => item.type === "issue") ?? []}
-          getItemId={(item) => item.id}
-          emptyMessage="검색 조건에 맞는 이슈가 없습니다."
-          isLoading={issueLookup.isLoading}
-          isPending={syncIssuesAction.isPending}
-          onOpenChange={(open) => {
-            if (!open) {
-              closeDialog();
-            }
-          }}
-          onSearchChange={setDialogSearch}
-          onToggle={(id) =>
-            setSelectedDialogIds((current) =>
-              current.includes(id) ? current.filter((currentId) => currentId !== id) : [...current, id],
-            )
-          }
-          onConfirm={handleDialogConfirm}
-          renderItem={(item) => (
-            <div>
-              <p className="truncate text-sm font-medium text-foreground">#{item.number} {item.title}</p>
-              <p className="truncate text-xs text-muted-foreground">{item.state === "CLOSED" ? "닫힘" : "열림"}</p>
-            </div>
-          )}
-        />
-      ) : null}
+        if (!normalizedBody) {
+          return;
+        }
 
-      <ConfirmDialog
-        open={isCloseConfirmOpen}
-        title="변경 요청을 닫을까요?"
-        description="닫힌 변경 요청은 다시 제출할 수 있지만, 현재 작업 흐름에서는 닫힘 상태로 집계됩니다."
-        confirmLabel="변경 요청 닫기"
-        cancelLabel="취소"
-        variant="destructive"
-        onCancel={() => setIsCloseConfirmOpen(false)}
-        onConfirm={() => {
-          closeChangeRequestAction.mutate();
-        }}
-        onOpenChange={setIsCloseConfirmOpen}
-      />
-    </div>
+        await updateCommentAction.mutateAsync({
+          commentId,
+          body: normalizedBody,
+        });
+      }}
+      onDeleteComment={async (commentId) => {
+        await deleteCommentAction.mutateAsync(commentId);
+      }}
+      onSubmitChangeRequest={() => {
+        submitChangeRequestAction.mutate();
+      }}
+      onMergeChangeRequest={() => {
+        mergeChangeRequestAction.mutate();
+      }}
+      onCloseChangeRequest={() => {
+        closeChangeRequestAction.mutate();
+      }}
+      onReopenChangeRequest={() => {
+        reopenChangeRequestAction.mutate();
+      }}
+      onNavigateToIssueMention={navigateToIssueMention}
+      onEditAssignees={() => openDialog("assignees")}
+      onEditReviewers={() => openDialog("reviewers")}
+      onEditLabels={() => openDialog("labels")}
+      onEditParts={() => openDialog("parts")}
+      onEditIssues={() => openDialog("issues")}
+      onNavigateToIssue={(issueNumber) => navigate(`/changes/issues/${issueNumber}`)}
+      onAttachFiles={async (files) => {
+        await addFilesAction.mutateAsync(files);
+      }}
+      onDeleteFile={async (fileId) => {
+        await deleteFileAction.mutateAsync(fileId);
+      }}
+    />
   );
 }

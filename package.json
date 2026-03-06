@@ -10,6 +10,7 @@
   ],
   "scripts": {
     "dev": "turbo run dev --filter=@fabbit/web",
+    "dev2": "turbo run dev --filter=@fabbit/web2",
     "build": "turbo run build --filter=@fabbit/web",
     "lint": "turbo run lint --filter=@fabbit/web",
     "dev:web2": "turbo run dev --filter=@fabbit/web2",

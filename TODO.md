@@ -3,7 +3,7 @@
 - [ ] 로그인 화면에서 비밀번호 틀릴떄 이상함
 <!-- - [ ] 랜딩페이지에서 회원가입 -> 워크스페이스 생성 -->
 - [ ] BOM Diff (버전 비교) 기능
-- [ ] openapi 생성형으로 교체해야함: npx openapi-typescript openapi.json -o types.ts
+- [ ] 번들 크기 최적화
 
 ### 도면 업로드
 

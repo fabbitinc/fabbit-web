@@ -1,28 +1,37 @@
-import axios from "axios";
-import { apiClient } from "@/api/client";
+import {
+  acceptInvitationApiV1AuthAcceptInvitationPost,
+  checkEmailApiV1AuthCheckEmailGet,
+  checkSlugApiV1AuthCheckSlugGet,
+  getSiteApiV1AuthSiteGet,
+  loginApiV1AuthLoginPost,
+  logoutApiV1AuthLogoutPost,
+  refreshApiV1AuthRefreshPost,
+  registerApiV1AuthRegisterPost,
+  sendVerificationApiV1AuthSendVerificationPost,
+  verifyEmailApiV1AuthVerifyEmailPost,
+  verifyInvitationApiV1AuthInvitationsVerifyGet,
+} from "@/api/generated/orval/auth/auth";
+import {
+  createOrganizationApiV1OrganizationsPost,
+  switchOrgApiV1OrganizationsSwitchPost,
+} from "@/api/generated/orval/organizations/organizations";
+import { meApiV1UsersMeGet } from "@/api/generated/orval/users/users";
 import { getSubdomain } from "@/lib/subdomain";
 import type {
   AcceptInvitationRequestDto,
-  AcceptInvitationResponseDto,
-  CheckEmailResponseDto,
-  CheckSlugResponseDto,
   CreateOrganizationRequestDto,
   CreateOrganizationResponseDto,
   LoginRequestDto,
   MeResponseDto,
   RefreshRequestDto,
-  RefreshResponseDto,
   RegisterRequestDto,
   RegisterResponseDto,
   ScopedLoginResponseDto,
   SendVerificationRequestDto,
-  SendVerificationResponseDto,
   SiteResponseDto,
   WorkspaceLoginResponseDto,
   SwitchOrgRequestDto,
   VerifyEmailRequestDto,
-  VerifyEmailResponseDto,
-  VerifyInvitationResponseDto,
 } from "@/features/auth/api/auth.types";
 import type {
   AuthSessionModel,
@@ -32,110 +41,77 @@ import type {
   WorkspaceSiteModel,
 } from "@/features/auth/types/auth-model";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-
 export async function sendVerification(
   request: SendVerificationRequestDto,
 ) {
-  const response = await apiClient.post<SendVerificationResponseDto>("/api/v1/auth/send-verification", request);
-  return response.data;
+  return sendVerificationApiV1AuthSendVerificationPost(request);
 }
 
 export async function verifyEmail(request: VerifyEmailRequestDto) {
-  const response = await apiClient.post<VerifyEmailResponseDto>("/api/v1/auth/verify-email", request);
-  return response.data;
+  return verifyEmailApiV1AuthVerifyEmailPost(request);
 }
 
 export async function registerUser(request: RegisterRequestDto) {
-  const response = await apiClient.post<RegisterResponseDto>("/api/v1/auth/register", request);
-  return response.data;
+  return registerApiV1AuthRegisterPost(request);
 }
 
 export async function loginWorkspace(request: LoginRequestDto) {
-  const response = await apiClient.post<WorkspaceLoginResponseDto>("/api/v1/auth/login", request);
-  return response.data;
+  return loginApiV1AuthLoginPost(request) as Promise<WorkspaceLoginResponseDto>;
 }
 
 export async function loginScoped(request: LoginRequestDto) {
-  const response = await axios.post<ScopedLoginResponseDto>(
-    `${API_BASE_URL}/api/v1/auth/login`,
-    request,
-    {
-      headers: {
-        "Content-Type": "application/json",
-      },
-    },
-  );
-
-  return response.data;
+  return loginApiV1AuthLoginPost(request) as Promise<ScopedLoginResponseDto>;
 }
 
 export async function refreshSession(request: RefreshRequestDto) {
-  const response = await apiClient.post<RefreshResponseDto>("/api/v1/auth/refresh", request);
-  return response.data;
+  return refreshApiV1AuthRefreshPost(request);
 }
 
 export async function logoutSession(refreshToken: string) {
-  await apiClient.post("/api/v1/auth/logout", { refresh_token: refreshToken });
+  await logoutApiV1AuthLogoutPost({ refresh_token: refreshToken });
 }
 
 export async function fetchCurrentUser() {
-  const response = await apiClient.get<MeResponseDto>("/api/v1/users/me");
-  return response.data;
+  return meApiV1UsersMeGet();
 }
 
 export async function fetchWorkspaceSite() {
-  const response = await apiClient.get<SiteResponseDto>("/api/v1/auth/site");
-  return toWorkspaceSiteModel(response.data);
+  const response = await getSiteApiV1AuthSiteGet();
+  return toWorkspaceSiteModel(response);
 }
 
 export async function checkEmail(email: string) {
-  const response = await apiClient.get<CheckEmailResponseDto>("/api/v1/auth/check-email", {
-    params: { email },
-  });
-  return response.data;
+  return checkEmailApiV1AuthCheckEmailGet({ email });
 }
 
 export async function checkSlug(slug: string) {
-  const response = await apiClient.get<CheckSlugResponseDto>("/api/v1/auth/check-slug", {
-    params: { slug },
-  });
-  return response.data;
+  return checkSlugApiV1AuthCheckSlugGet({ slug });
 }
 
 export async function verifyInvitation(token: string) {
-  const response = await apiClient.get<VerifyInvitationResponseDto>("/api/v1/auth/invitations/verify", {
-    params: { token },
-  });
-  return response.data;
+  return verifyInvitationApiV1AuthInvitationsVerifyGet({ token });
 }
 
 export async function acceptInvitation(request: AcceptInvitationRequestDto) {
-  const response = await apiClient.post<AcceptInvitationResponseDto>("/api/v1/auth/accept-invitation", request);
-  return response.data;
+  return acceptInvitationApiV1AuthAcceptInvitationPost(request);
 }
 
 export async function createOrganization(
   request: CreateOrganizationRequestDto,
   scopedToken: string,
 ) {
-  const response = await axios.post<CreateOrganizationResponseDto>(
-    `${API_BASE_URL}/api/v1/organizations`,
+  return createOrganizationApiV1OrganizationsPost(
     request,
     {
       headers: {
-        "Content-Type": "application/json",
         Authorization: `Bearer ${scopedToken}`,
       },
     },
   );
-
-  return response.data;
 }
 
 export async function switchOrganization(request: SwitchOrgRequestDto) {
-  const response = await apiClient.post<WorkspaceLoginResponseDto>("/api/v1/organizations/switch", request);
-  return response.data;
+  return switchOrgApiV1OrganizationsSwitchPost(request) as Promise<WorkspaceLoginResponseDto>;
 }
 
 function toUserModel(user: MeResponseDto["user"] | WorkspaceLoginResponseDto["user"] | RegisterResponseDto["user"]): UserModel {

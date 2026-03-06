@@ -166,6 +166,7 @@ function CreateOrganizationLabelDialog({
             </div>
             <div className="flex items-center gap-2 pt-1">
               <button
+                aria-label="라벨 색상 직접 선택"
                 className="flex h-7 w-7 items-center justify-center rounded-md border border-dashed border-border hover:bg-muted"
                 type="button"
                 onClick={() => colorInputRef.current?.click()}
@@ -174,6 +175,7 @@ function CreateOrganizationLabelDialog({
               </button>
               <input
                 ref={colorInputRef}
+                aria-label="라벨 색상 선택"
                 className="sr-only"
                 type="color"
                 value={color}

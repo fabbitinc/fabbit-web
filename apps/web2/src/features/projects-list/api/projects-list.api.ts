@@ -1,4 +1,7 @@
-import { apiClient } from "@/api/client";
+import {
+  createProjectApiV1ProjectsPost,
+  listProjectsApiV1ProjectsGet,
+} from "@/api/generated/orval/projects/projects";
 import type {
   CreateProjectRequestDto,
   ListProjectsQueryDto,
@@ -11,21 +14,19 @@ import type {
 } from "@/features/projects-list/types/project-list-model";
 
 export async function fetchProjectList(query: ListProjectsQueryDto): Promise<ProjectListResultModel> {
-  const response = await apiClient.get<ProjectListResponseDto>("/api/v1/projects", {
-    params: query,
-  });
+  const response = await listProjectsApiV1ProjectsGet(query);
 
   return {
-    total: response.data.total,
-    offset: response.data.offset,
-    limit: response.data.limit,
-    items: response.data.items.map(toProjectListItemModel),
+    total: response.total,
+    offset: response.offset,
+    limit: response.limit,
+    items: response.items.map(toProjectListItemModel),
   };
 }
 
 export async function createProject(request: CreateProjectRequestDto): Promise<ProjectListItemModel> {
-  const response = await apiClient.post<ProjectDetailResponseDto>("/api/v1/projects", request);
-  return toProjectListItemModel(response.data);
+  const response = await createProjectApiV1ProjectsPost(request);
+  return toProjectListItemModel(response);
 }
 
 function toProjectListItemModel(project: ProjectDetailResponseDto | ProjectListResponseDto["items"][number]): ProjectListItemModel {

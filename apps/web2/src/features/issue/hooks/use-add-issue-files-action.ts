@@ -1,20 +1,30 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { type MutationFunctionContext, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { addIssueFiles } from "@/features/issue/api/issue.api";
+import { uploadFiles } from "@/api/file.api";
+import { issueMutations } from "@/features/issue/api/issue.queries";
 import { invalidateIssueQueries } from "@/features/issue/lib/invalidate-issue-queries";
 import { extractApiError } from "@/lib/api-error";
 
 export function useAddIssueFilesAction(issueNumber: number) {
   const queryClient = useQueryClient();
+  const addFilesMutation = issueMutations.addFiles(issueNumber);
 
   return useMutation({
-    mutationKey: ["issue", issueNumber, "add-issue-files-action"],
-    mutationFn: (fileIds: string[]) =>
-      addIssueFiles(issueNumber, {
+    mutationKey: addFilesMutation.mutationKey,
+    mutationFn: async (files: File[], context: MutationFunctionContext) => {
+      const mutationFn = addFilesMutation.mutationFn;
+
+      if (!mutationFn) {
+        throw new Error("이슈 파일 첨부 mutationFn이 정의되지 않았습니다.");
+      }
+
+      const fileIds = await uploadFiles(files);
+      return mutationFn({
         file_ids: fileIds,
-      }),
-    onSuccess: async (_, fileIds) => {
-      toast.success(`${fileIds.length}개의 파일을 첨부했습니다.`);
+      }, context);
+    },
+    onSuccess: async (_, files) => {
+      toast.success(`${files.length}개의 파일을 첨부했습니다.`);
       await invalidateIssueQueries(queryClient, issueNumber);
     },
     onError: (error) => {

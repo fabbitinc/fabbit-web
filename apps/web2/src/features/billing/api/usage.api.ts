@@ -1,15 +1,18 @@
-import { apiClient } from "@/api/client";
+import {
+  getCreditUsageApiV1UsageCreditsGet,
+  getStorageUsageApiV1UsageStorageGet,
+} from "@/api/generated/orval/usage/usage";
 import type { CreditUsageResponseDto, StorageUsageResponseDto } from "@/features/billing/api/usage.types";
 import type { CreditUsageModel, StorageUsageModel } from "@/features/billing/types/billing-model";
 
 export async function fetchStorageUsage() {
-  const response = await apiClient.get<StorageUsageResponseDto>("/api/v1/usage/storage");
-  return toStorageUsageModel(response.data);
+  const response = await getStorageUsageApiV1UsageStorageGet();
+  return toStorageUsageModel(response);
 }
 
 export async function fetchCreditUsage() {
-  const response = await apiClient.get<CreditUsageResponseDto>("/api/v1/usage/credits");
-  return toCreditUsageModel(response.data);
+  const response = await getCreditUsageApiV1UsageCreditsGet();
+  return toCreditUsageModel(response);
 }
 
 function toStorageUsageModel(response: StorageUsageResponseDto): StorageUsageModel {

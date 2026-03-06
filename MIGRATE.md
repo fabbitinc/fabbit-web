@@ -3,7 +3,9 @@
 - [x] `apps/web2` 기본 앱 생성
 - [x] `packages/ui` / `packages/theme` / `apps/storybook` 기반 정리
   - 메모: Storybook 출력 경로를 `apps/storybook/.out-storybook`으로 변경함. 기존 `storybook-static` 경로에서는 이 환경에서 `utime ENOENT`가 재현됨.
-- [x] OpenAPI codegen 기반 생성
+- [x] OpenAPI codegen / Orval generated client 기반 생성
+  - 메모: `apps/web2/generate:api`는 `openapi-typescript`로 schema 타입을 생성한 뒤, `orval`로 `src/api/generated/orval`의 operation client를 생성하도록 정리함.
+  - 메모: feature `*.api.ts`의 수동 `axios/apiClient` endpoint 호출은 제거하고, generated operation + feature model 변환 구조로 치환함.
 - [x] 앱 셸 / 라우팅 / 인증 / 세션 초기화 이관
 - [x] 회원가입 / 워크스페이스 생성 / 초대 수락 이관
   - 메모: `VITE_TURNSTILE_SITE_KEY`가 없으면 가입 화면에서 Turnstile 위젯은 숨김 처리됨.
@@ -24,7 +26,7 @@
   - 메모: 목록 상태는 `view`, `state`, `q`, `page`, `pageSize` 쿼리스트링으로 재설계함.
   - 메모: 변경 요청은 `cr_state`를 행 상태 배지로 노출하고, 상단 필터는 레거시와 동일하게 `open/closed` 기준으로 단순화함.
 - [x] 이슈 / 변경요청 생성 / 상세 이관
-  - 메모: 생성/상세 모두 codegen + 업로드 API 기반으로 이관했고, 이슈/변경요청의 제목·본문 편집, 상태 전환, 댓글, 첨부파일, 연결 엔티티 편집까지 기존 흐름을 대체할 수 있는 수준으로 반영함.
+  - 메모: 생성/상세 모두 Orval generated client + 업로드 API 기반으로 이관했고, 이슈/변경요청의 제목·본문 편집, 상태 전환, 댓글, 첨부파일, 연결 엔티티 편집까지 기존 흐름을 대체할 수 있는 수준으로 반영함.
   - 메모: 변경 요청의 `changes` 탭은 레거시와 동일하게 현재 mock diff를 유지함. 서버 diff 계약이 생기면 실제 변경 비교로 교체해야 함.
   - 메모: 이 단계에서는 기존 순서대로 화면/기능 이관을 우선하고, `packages/ui` 사용 적합성 및 승격 후보 검토는 전체 마이그레이션 완료 후 일괄 점검함.
 - [x] 부품 목록 / 상세 이관
@@ -49,4 +51,4 @@
 - [x] 전체 검증 및 교체 준비
   - 메모: `pnpm --filter @fabbit/web2 build` 통과.
   - 메모: `pnpm --filter @fabbit/storybook build-storybook` 통과. 결과물은 `apps/storybook/.out-storybook`.
-  - 메모: `pnpm --filter @fabbit/web2 lint` 통과. 다만 `react-hooks/set-state-in-effect`, `jsx-a11y/control-has-associated-label`, 일부 React Compiler 경고 등 34건의 warning이 남아 있어 cutover 전 별도 정리 backlog로 관리하는 편이 좋음.
+  - 메모: `pnpm --filter @fabbit/web2 lint` 통과.

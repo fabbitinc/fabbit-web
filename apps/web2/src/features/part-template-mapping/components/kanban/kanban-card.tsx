@@ -15,7 +15,11 @@ import {
 } from "@fabbit/ui";
 import { cn } from "@/lib/utils";
 import { usePartTemplateMappingStore } from "@/features/part-template-mapping/stores/template-mapping-store";
-import { COLUMN_TO_REL_TYPE, type KanbanCardData, type KanbanColumnId } from "@/features/part-template-mapping/hooks/use-template-mapping-kanban";
+import {
+  COLUMN_TO_REL_TYPE,
+  type KanbanCardData,
+  type KanbanColumnId,
+} from "@/features/part-template-mapping/types/template-mapping-kanban";
 import { useKanbanContext } from "./kanban-context";
 
 const EXTENDED_VALUE = "__extended__";

@@ -39,12 +39,6 @@ export function ProjectPartsTab({ isReadonly, projectId }: ProjectPartsTabProps)
   const totalCount = partsQuery.data?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
 
-  useEffect(() => {
-    if (partsQuery.isSuccess && page > totalPages) {
-      setPage(totalPages);
-    }
-  }, [page, partsQuery.isSuccess, totalPages]);
-
   const removingPart = useMemo(
     () => partsQuery.data?.items.find((part) => part.id === removingPartId) ?? null,
     [partsQuery.data?.items, removingPartId],
@@ -144,7 +138,12 @@ export function ProjectPartsTab({ isReadonly, projectId }: ProjectPartsTabProps)
           }
 
           unlinkProjectPartsAction.mutate([removingPartId], {
-            onSuccess: () => setRemovingPartId(null),
+            onSuccess: () => {
+              if ((partsQuery.data?.items.length ?? 0) === 1 && page > 1) {
+                setPage((current) => current - 1);
+              }
+              setRemovingPartId(null);
+            },
           });
         }}
         onOpenChange={(open) => {

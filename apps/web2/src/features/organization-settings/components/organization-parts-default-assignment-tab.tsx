@@ -37,14 +37,18 @@ export function OrganizationPartsDefaultAssignmentTab() {
   const [nextCategory, setNextCategory] = useState("");
   const [deleteTarget, setDeleteTarget] = useState<{ category?: string | null } | null>(null);
 
-  const entries = defaultOwnersQuery.data ?? [];
+  const entries = useMemo(() => defaultOwnersQuery.data ?? [], [defaultOwnersQuery.data]);
   const usedCategories = useMemo(
     () => new Set(entries.filter((entry) => entry.category != null).map((entry) => entry.category as string)),
     [entries],
   );
-  const availableCategories = (categoriesQuery.data ?? [])
-    .map((category) => category.category)
-    .filter((category) => !usedCategories.has(category));
+  const availableCategories = useMemo(
+    () =>
+      (categoriesQuery.data ?? [])
+        .map((category) => category.category)
+        .filter((category) => !usedCategories.has(category)),
+    [categoriesQuery.data, usedCategories],
+  );
 
   const fallbackEntry =
     entries.find((entry) => entry.category === null) ?? {
@@ -74,7 +78,9 @@ export function OrganizationPartsDefaultAssignmentTab() {
                 <th className="px-4 py-3 text-left font-medium">카테고리</th>
                 <th className="px-4 py-3 text-left font-medium">담당팀</th>
                 <th className="px-4 py-3 text-left font-medium">담당자</th>
-                <th className="w-12 px-4 py-3" />
+                <th className="w-12 px-4 py-3">
+                  <span className="sr-only">관리</span>
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -106,7 +112,7 @@ export function OrganizationPartsDefaultAssignmentTab() {
                     }
                   />
                 </td>
-                <td className="px-4 py-3" />
+                <td aria-hidden="true" className="px-4 py-3" />
               </tr>
             </tbody>
           </table>
@@ -122,7 +128,9 @@ export function OrganizationPartsDefaultAssignmentTab() {
                 <th className="px-4 py-3 text-left font-medium">카테고리</th>
                 <th className="px-4 py-3 text-left font-medium">담당팀</th>
                 <th className="px-4 py-3 text-left font-medium">담당자</th>
-                <th className="w-12 px-4 py-3" />
+                <th className="w-12 px-4 py-3">
+                  <span className="sr-only">관리</span>
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -156,7 +164,12 @@ export function OrganizationPartsDefaultAssignmentTab() {
                     />
                   </td>
                   <td className="px-4 py-3">
-                    <Button size="icon" variant="ghost" onClick={() => setDeleteTarget({ category: entry.category })}>
+                    <Button
+                      aria-label={`${entry.category} 기본 담당 설정 삭제`}
+                      size="icon"
+                      variant="ghost"
+                      onClick={() => setDeleteTarget({ category: entry.category })}
+                    >
                       <Trash2 className="size-3.5" />
                     </Button>
                   </td>

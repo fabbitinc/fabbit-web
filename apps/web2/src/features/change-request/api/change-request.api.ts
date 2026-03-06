@@ -1,11 +1,28 @@
-import { apiClient } from "@/api/client";
+import {
+  addFilesApiV1ChangesIssueNumberFilesPost,
+  closeCrApiV1ChangesIssueNumberClosePost,
+  createChangeRequestApiV1ChangesPost,
+  createCommentApiV1ChangesIssueNumberCommentsPost,
+  deleteCommentApiV1ChangesIssueNumberCommentsCommentIdDelete,
+  deleteFileApiV1ChangesIssueNumberFilesFileIdDelete,
+  getChangeRequestApiV1ChangesIssueNumberGet,
+  getTimelineApiV1ChangesIssueNumberTimelineGet,
+  mergeCrApiV1ChangesIssueNumberMergePost,
+  reopenCrApiV1ChangesIssueNumberReopenPost,
+  submitCrApiV1ChangesIssueNumberSubmitPost,
+  syncAssigneesApiV1ChangesIssueNumberAssigneesPut,
+  syncIssuesApiV1ChangesIssueNumberIssuesPut,
+  syncLabelsApiV1ChangesIssueNumberLabelsPut,
+  syncPartsApiV1ChangesIssueNumberPartsPut,
+  syncReviewersApiV1ChangesIssueNumberReviewersPut,
+  updateChangeRequestApiV1ChangesIssueNumberPatch,
+  updateCommentApiV1ChangesIssueNumberCommentsCommentIdPatch,
+} from "@/api/generated/orval/changes/changes";
 import type {
   AddChangeRequestFilesRequestDto,
-  AddChangeRequestFilesResponseDto,
   ChangeRequestDetailResponseDto,
   CreateChangeRequestCommentRequestDto,
   CreateChangeRequestCommentResponseDto,
-  ChangeRequestResponseDto,
   CreateChangeRequestDto,
   ChangeRequestTimelineResponseDto,
   SyncChangeRequestAssigneesRequestDto,
@@ -37,105 +54,85 @@ import type {
 import { getPlainTextFromRichText } from "@/lib/rich-text";
 
 export async function createChangeRequest(request: CreateChangeRequestDto) {
-  const response = await apiClient.post<ChangeRequestResponseDto>("/api/v1/changes", request);
-  return response.data;
+  return createChangeRequestApiV1ChangesPost(request);
 }
 
 export async function fetchChangeRequestDetail(changeNumber: number): Promise<ChangeRequestDetailModel> {
-  const response = await apiClient.get<ChangeRequestDetailResponseDto>(`/api/v1/changes/${changeNumber}`);
-  return toChangeRequestDetailModel(response.data);
+  const response = await getChangeRequestApiV1ChangesIssueNumberGet(changeNumber);
+  return toChangeRequestDetailModel(response as ChangeRequestDetailResponseDto);
 }
 
 export async function updateChangeRequest(
   changeNumber: number,
   request: UpdateChangeRequestDto,
 ): Promise<ChangeRequestDetailModel> {
-  const response = await apiClient.patch<ChangeRequestDetailResponseDto>(`/api/v1/changes/${changeNumber}`, request);
-  return toChangeRequestDetailModel(response.data);
+  const response = await updateChangeRequestApiV1ChangesIssueNumberPatch(changeNumber, request);
+  return toChangeRequestDetailModel(response as ChangeRequestDetailResponseDto);
 }
 
 export async function syncChangeRequestIssues(
   changeNumber: number,
   request: SyncChangeRequestIssuesRequestDto,
 ): Promise<SyncChangeRequestIssuesResponseDto> {
-  const response = await apiClient.put<SyncChangeRequestIssuesResponseDto>(
-    `/api/v1/changes/${changeNumber}/issues`,
-    request,
-  );
-  return response.data;
+  return syncIssuesApiV1ChangesIssueNumberIssuesPut(changeNumber, request);
 }
 
 export async function syncChangeRequestAssignees(
   changeNumber: number,
   request: SyncChangeRequestAssigneesRequestDto,
 ): Promise<SyncChangeRequestAssigneesResponseDto> {
-  const response = await apiClient.put<SyncChangeRequestAssigneesResponseDto>(
-    `/api/v1/changes/${changeNumber}/assignees`,
-    request,
-  );
-  return response.data;
+  return syncAssigneesApiV1ChangesIssueNumberAssigneesPut(changeNumber, request);
 }
 
 export async function syncChangeRequestReviewers(
   changeNumber: number,
   request: SyncChangeRequestReviewersRequestDto,
 ): Promise<SyncChangeRequestReviewersResponseDto> {
-  const response = await apiClient.put<SyncChangeRequestReviewersResponseDto>(
-    `/api/v1/changes/${changeNumber}/reviewers`,
-    request,
-  );
-  return response.data;
+  return syncReviewersApiV1ChangesIssueNumberReviewersPut(changeNumber, request);
 }
 
 export async function syncChangeRequestLabels(
   changeNumber: number,
   request: SyncChangeRequestLabelsRequestDto,
 ): Promise<SyncChangeRequestLabelsResponseDto> {
-  const response = await apiClient.put<SyncChangeRequestLabelsResponseDto>(
-    `/api/v1/changes/${changeNumber}/labels`,
-    request,
-  );
-  return response.data;
+  return syncLabelsApiV1ChangesIssueNumberLabelsPut(changeNumber, request);
 }
 
 export async function syncChangeRequestParts(
   changeNumber: number,
   request: SyncChangeRequestPartsRequestDto,
 ): Promise<SyncChangeRequestPartsResponseDto> {
-  const response = await apiClient.put<SyncChangeRequestPartsResponseDto>(
-    `/api/v1/changes/${changeNumber}/parts`,
-    request,
-  );
-  return response.data;
+  return syncPartsApiV1ChangesIssueNumberPartsPut(changeNumber, request);
 }
 
 export async function submitChangeRequest(changeNumber: number): Promise<ChangeRequestDetailModel> {
-  const response = await apiClient.post<ChangeRequestDetailResponseDto>(`/api/v1/changes/${changeNumber}/submit`);
-  return toChangeRequestDetailModel(response.data);
+  const response = await submitCrApiV1ChangesIssueNumberSubmitPost(changeNumber);
+  return toChangeRequestDetailModel(response as ChangeRequestDetailResponseDto);
 }
 
 export async function mergeChangeRequest(changeNumber: number): Promise<ChangeRequestDetailModel> {
-  const response = await apiClient.post<ChangeRequestDetailResponseDto>(`/api/v1/changes/${changeNumber}/merge`);
-  return toChangeRequestDetailModel(response.data);
+  const response = await mergeCrApiV1ChangesIssueNumberMergePost(changeNumber);
+  return toChangeRequestDetailModel(response as ChangeRequestDetailResponseDto);
 }
 
 export async function closeChangeRequest(changeNumber: number): Promise<ChangeRequestDetailModel> {
-  const response = await apiClient.post<ChangeRequestDetailResponseDto>(`/api/v1/changes/${changeNumber}/close`);
-  return toChangeRequestDetailModel(response.data);
+  const response = await closeCrApiV1ChangesIssueNumberClosePost(changeNumber);
+  return toChangeRequestDetailModel(response as ChangeRequestDetailResponseDto);
 }
 
 export async function reopenChangeRequest(changeNumber: number): Promise<ChangeRequestDetailModel> {
-  const response = await apiClient.post<ChangeRequestDetailResponseDto>(`/api/v1/changes/${changeNumber}/reopen`);
-  return toChangeRequestDetailModel(response.data);
+  const response = await reopenCrApiV1ChangesIssueNumberReopenPost(changeNumber);
+  return toChangeRequestDetailModel(response as ChangeRequestDetailResponseDto);
 }
 
 export async function fetchChangeRequestTimeline(changeNumber: number): Promise<ChangeRequestTimelineItemModel[]> {
-  const response = await apiClient.get<ChangeRequestTimelineResponseDto>(`/api/v1/changes/${changeNumber}/timeline`);
+  const response = await getTimelineApiV1ChangesIssueNumberTimelineGet(changeNumber);
+  const timeline = response as ChangeRequestTimelineResponseDto;
 
-  return response.data.items.map((item) =>
+  return timeline.items.map((item) =>
     item.type === "comment"
-      ? toChangeRequestTimelineCommentModel(item, response.data.users)
-      : toChangeRequestTimelineActivityModel(item, response.data.users),
+      ? toChangeRequestTimelineCommentModel(item, timeline.users)
+      : toChangeRequestTimelineActivityModel(item, timeline.users),
   );
 }
 
@@ -143,11 +140,8 @@ export async function createChangeRequestComment(
   changeNumber: number,
   request: CreateChangeRequestCommentRequestDto,
 ): Promise<ChangeRequestTimelineCommentModel> {
-  const response = await apiClient.post<CreateChangeRequestCommentResponseDto>(
-    `/api/v1/changes/${changeNumber}/comments`,
-    request,
-  );
-  return toChangeRequestCommentModel(response.data);
+  const response = await createCommentApiV1ChangesIssueNumberCommentsPost(changeNumber, request);
+  return toChangeRequestCommentModel(response as CreateChangeRequestCommentResponseDto);
 }
 
 export async function updateChangeRequestComment(
@@ -155,30 +149,24 @@ export async function updateChangeRequestComment(
   commentId: string,
   request: UpdateChangeRequestCommentRequestDto,
 ): Promise<ChangeRequestTimelineCommentModel> {
-  const response = await apiClient.patch<UpdateChangeRequestCommentResponseDto>(
-    `/api/v1/changes/${changeNumber}/comments/${commentId}`,
-    request,
-  );
-  return toChangeRequestCommentModel(response.data);
+  const response = await updateCommentApiV1ChangesIssueNumberCommentsCommentIdPatch(changeNumber, commentId, request);
+  return toChangeRequestCommentModel(response as UpdateChangeRequestCommentResponseDto);
 }
 
 export async function deleteChangeRequestComment(changeNumber: number, commentId: string) {
-  await apiClient.delete(`/api/v1/changes/${changeNumber}/comments/${commentId}`);
+  await deleteCommentApiV1ChangesIssueNumberCommentsCommentIdDelete(changeNumber, commentId);
 }
 
 export async function addChangeRequestFiles(
   changeNumber: number,
   request: AddChangeRequestFilesRequestDto,
 ): Promise<ChangeRequestFileModel[]> {
-  const response = await apiClient.post<AddChangeRequestFilesResponseDto>(
-    `/api/v1/changes/${changeNumber}/files`,
-    request,
-  );
-  return response.data.map(toChangeRequestFileModel);
+  const response = await addFilesApiV1ChangesIssueNumberFilesPost(changeNumber, request);
+  return response.map(toChangeRequestFileModel);
 }
 
 export async function deleteChangeRequestFile(changeNumber: number, fileId: string) {
-  await apiClient.delete(`/api/v1/changes/${changeNumber}/files/${fileId}`);
+  await deleteFileApiV1ChangesIssueNumberFilesFileIdDelete(changeNumber, fileId);
 }
 
 function toChangeRequestDetailModel(change: ChangeRequestDetailResponseDto): ChangeRequestDetailModel {

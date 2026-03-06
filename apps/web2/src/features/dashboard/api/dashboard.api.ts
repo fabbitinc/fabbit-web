@@ -1,10 +1,10 @@
-import { apiClient } from "@/api/client";
+import { getDashboardStatsApiV1DashboardStatsGet } from "@/api/generated/orval/dashboard/dashboard";
 import type { DashboardStatsResponseDto } from "@/features/dashboard/api/dashboard.types";
 import type { DashboardStatsModel } from "@/features/dashboard/types/dashboard-model";
 
 export async function fetchDashboardStats() {
-  const response = await apiClient.get<DashboardStatsResponseDto>("/api/v1/dashboard/stats");
-  return toDashboardStatsModel(response.data);
+  const response = await getDashboardStatsApiV1DashboardStatsGet();
+  return toDashboardStatsModel(response);
 }
 
 function toDashboardStatsModel(response: DashboardStatsResponseDto): DashboardStatsModel {

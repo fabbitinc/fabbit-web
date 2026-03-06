@@ -1,5 +1,5 @@
 import { Check, GitBranch, GripVertical, Puzzle } from "lucide-react";
-import type { KanbanCardData } from "@/features/part-template-mapping/hooks/use-template-mapping-kanban";
+import type { KanbanCardData } from "@/features/part-template-mapping/types/template-mapping-kanban";
 
 interface KanbanDragOverlayProps {
   card: KanbanCardData;

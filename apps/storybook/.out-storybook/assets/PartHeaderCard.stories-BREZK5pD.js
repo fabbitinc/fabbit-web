@@ -1,0 +1,28 @@
+import{j as n}from"./index-BC33NHKD.js";import{N as s}from"./change-request-detail-screen-BB3V5S0M.js";import"./iframe-BDY6rKdT.js";import"./preload-helper-PPVm8Dsz.js";import"./index-C3SxMwu4.js";import"./user-avatar-Cz1MQ_Sd.js";import"./circle-alert-Df3U-mR7.js";import"./chevrons-up-down-BJxNzKgS.js";import"./sparkles-CdpkT6Re.js";import"./settings-CQ3R25cq.js";import"./tag-gRIXPjqS.js";const t={partNumber:"DRV-PLATE-0142",name:"드라이브 유닛 베이스 플레이트",revision:"C",material:"AL6061-T6",unit:"EA",category:"기구",lifecycleState:"양산",childrenCount:14,parentsCount:3,suppliersCount:2,filesCount:8,projectsCount:4},y={title:"Components/PartHeaderCard",component:s,tags:["autodocs"],parameters:{layout:"padded"}},e={args:{part:t}},r={args:{part:{...t,category:null,lifecycleState:null,material:null,name:null,unit:null}}},a={render:()=>n.jsxs("div",{className:"space-y-6",children:[n.jsx(s,{part:t}),n.jsx(s,{part:{...t,category:"전장",lifecycleState:"중단",name:"모터 제어 PCB",partNumber:"CTRL-PCB-0207",revision:"F"}})]})};e.parameters={...e.parameters,docs:{...e.parameters?.docs,source:{originalSource:`{
+  args: {
+    part: samplePart
+  }
+}`,...e.parameters?.docs?.source}}};r.parameters={...r.parameters,docs:{...r.parameters?.docs,source:{originalSource:`{
+  args: {
+    part: {
+      ...samplePart,
+      category: null,
+      lifecycleState: null,
+      material: null,
+      name: null,
+      unit: null
+    }
+  }
+}`,...r.parameters?.docs?.source}}};a.parameters={...a.parameters,docs:{...a.parameters?.docs,source:{originalSource:`{
+  render: () => <div className="space-y-6">
+      <PartHeaderCard part={samplePart} />
+      <PartHeaderCard part={{
+      ...samplePart,
+      category: "전장",
+      lifecycleState: "중단",
+      name: "모터 제어 PCB",
+      partNumber: "CTRL-PCB-0207",
+      revision: "F"
+    }} />
+    </div>
+}`,...a.parameters?.docs?.source}}};const f=["Default","WithoutOptionalFields","Showcase"];export{e as Default,a as Showcase,r as WithoutOptionalFields,f as __namedExportsOrder,y as default};

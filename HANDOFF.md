@@ -1,97 +1,126 @@
-# Handoff: Design System (packages/ui + storybook)
+# Handoff: 3-Tier Design System + Storybook 페이지 프로토타이핑
 
 ## Goal
 
-`packages/ui`와 `apps/storybook`에서 테마 기반 디자인 시스템을 완성한다.
-`apps/web`은 건드리지 않는다 — 디자인 시스템 완료 후 별도 마이그레이션 예정.
+3-tier 컴포넌트 아키텍처(`packages/ui` → `packages/components` → `apps/web`)를 구축하고, `apps/storybook`에서 테마 기반으로 UI 프리미티브, 도메인 컴포넌트, **완성된 피처 화면**까지 시각 검증할 수 있게 한다. `apps/web`은 건드리지 않는다.
 
 ## Current Progress
 
-### 1. 테마 시스템 구축 완료
+### 1. 테마 시스템 (이전 세션에서 완료)
 
-- **10개 Primary 테마** (`packages/theme/src/primary-themes.css`):
-  1. Eco-Digital Sustainability (틸 그린)
-  2. High-Tech Precision (시안 블루)
-  3. Moody Heritage (다크 슬레이트 + 엠버)
-  4. Blueprint Blue (시그널 블루) - PLM 추천 1순위
-  5. Professional Ink (잉크 블랙)
-  6. Neo-Mint Wellness (민트 틸)
-  7. Agentic Dark (시안 on 차콜) - 유일한 다크 테마
-  8. Mossy Production (모스 그린) - PLM 추천 3순위
-  9. Kinetic Energy (엠버 오렌지)
-  10. Elevated Mahogany (마호가니)
+- 10개 Primary 테마 (`packages/theme/src/primary-themes.css`)
+- 스토리북 툴바 테마 전환 동작
+- Badge 6종 status variant, LabelBadge 등
 
-- **각 테마에 포함된 토큰 그룹**:
-  - Brand (brand-50/500/600, accent-500)
-  - AI gradient (ai-from/to/hover/text)
-  - Logo gradient (logo-from/to)
-  - Theme surface (text-primary/secondary, border, surface, background)
-  - Base shadcn 토큰 매핑 (primary, secondary, muted, accent, destructive, background, foreground, card, popover, border, input, ring, sidebar-*)
-  - Nav tokens (topbar-*, sidebar-*, resizer-*)
-  - Status tokens (success/warning/danger/info/neutral/accent - 각 fg/bg/border)
+### 2. packages/ui 프리미티브 (총 40+개)
 
-- **Common 테마** (`common-themes.css`): theme-common-1 하나, status 6종(success/warning/danger/info/neutral/accent)
+**이번 세션에서 추가한 것:**
+- 1차 배치: Table, Card, Sheet, Breadcrumb, Skeleton, Sonner
+- 2차 배치: Accordion, Toggle, ToggleGroup, Pagination, Command, RadioGroup, Slider
+- 3차 배치: **Alert** (5 variants), **Calendar** (react-day-picker + date-fns), **HoverCard** (@radix-ui)
+- 기존 스토리 누락: **Collapsible** 스토리 추가
 
-- **Core tokens** (`core-tokens.css`): `:root`와 `.dark` fallback. neutral/accent status 토큰 추가됨.
+모든 UI 스토리에 **Showcase** 섹션 포함. Mock 데이터는 전문용어 제외 전부 한글.
 
-- **Tailwind 매핑** (`packages/ui/src/styles.css`): `@theme inline`에 `--color-status-*` 18개 매핑 추가.
+**주의**: `cn()` import 경로는 `./lib/cn`이다 (`@fabbit/utils` 아님).
 
-### 2. Badge 컴포넌트 status variant 추가 완료
+### 3. packages/components 도메인 컴포넌트 (총 20+개)
 
-- `packages/ui/src/badge.tsx`에 6개 variant 추가: `success`, `warning`, `danger`, `info`, `neutral`, `accent`
-- 모두 `bg-status-*-bg text-status-* border-status-*-border` 패턴
-- 기존 shadcn variant (default, secondary, destructive, outline, ghost, link) 유지
+**레이아웃 컴포넌트 (신규):**
+- `AppHeader` — props-only 헤더 (brand, user, search, notification, menuItems)
+- `AppSidebar` — props-only 사이드바 (sections, collapsed, footer, mobileOpen)
+- `AppShell` — 레이아웃 셸 (header + sidebar + banner + children, CSS Grid)
 
-### 3. Storybook 구성 완료
+**데이터 표시 컴포넌트 (신규):**
+- `KpiCard` — KPI 지표 (label, value, change, changePositive)
+- `StatusCard` — 설비/항목 상태 (name, status, progress)
+- `SummaryCard` — 요약 카드 (icon, label, value, sub, onClick)
+- `ActivityList` — 작업 목록 (icon, number, title, label, status, author)
+- `UsageCard` — 사용량 카드 (icon, label, used/limit, unit, warningThreshold)
+- `TimelineList` — 이력 타임라인 (icon, title, timestamp, badge)
+- `DescriptionList` — 키-값 쌍 (items, columns 1/2/3)
+- `EmptyState` — 빈 상태 (icon, title, description, actionLabel)
+- `StatGroup` — 카드 그리드 배치 (columns 2/3/4)
 
-- **`apps/storybook/.storybook/preview.ts`**: 10개 테마 전부 툴바에 등록
-- **`apps/storybook/.storybook/preview.css`**: 테마 CSS import
-- **Color Palette 스토리** (`stories/ColorPalette.stories.tsx`):
-  - `Palette` (Token Palette): 브랜드/AI/로고/테마/네비/상태 토큰을 시각 스워치로 표시
-  - `Components` (Component Preview): `Showcase` 스토리만 자동 수집
-- **UI 스토리 파일별 `Showcase` 스토리 추가 완료**:
-  - Badge, Button, Input, Textarea, Controls(Checkbox/Switch/Select/OTP), Feedback(Progress), Navigation(Tabs/ScrollArea/Separator), Overlays(Popover/Tooltip/DropdownMenu), ConfirmDialog, UserAvatar
+**폼/필터 컴포넌트 (신규):**
+- `FormSection` — 폼 섹션 묶음 (title, description, children)
+- `FilterBar` — 검색 + 필터 칩 (searchValue, chips, actions)
+- `StepIndicator` — 공정/워크플로우 단계 (steps, currentStepId)
 
-### 4. Base shadcn 토큰 → 테마 연결 완료
+**기존 (이전 세션에서 생성):**
+- SelectionDialog, SettingsShell, ProjectListTable, PartsListTable
+- IssueSidebar, ChangeRequestSidebar, ChangeRequestDiffTab
+- PartHeaderCard, PartDrawingPreview, PartHistoryTab, PartPropertiesTab
+- ProjectOverviewTab, ProjectSettingsLabelsTab
+- OrganizationAdvancedTab, OrganizationLogsTab
+- MappingSaveDialog, SynthesisProgressPanel
+- AIUsagePanel, StorageUsagePanel, CardManagementPanel
 
-각 primary-theme이 `--primary`, `--background`, `--foreground`, `--border` 등 기본 shadcn 토큰을 override하여, 테마 전환 시 Button/Checkbox/Switch/Progress 등 모든 UI가 브랜드 색상을 반영함.
+**규칙**: 컴포넌트 스토리에는 Showcase 섹션 **없음** (UI만 Showcase).
+
+### 4. stories/pages/ 피처 화면 프로토타입
+
+| 페이지 | 아키타입 | 조합 컴포넌트 |
+|---|---|---|
+| `Pages/Dashboard` | 대시보드 | AppShell + StatGroup + SummaryCard + ActivityList + KpiCard + UsageCard |
+| `Pages/IssueDetail` | 상세 화면 | AppShell + IssueSidebar + TimelineList + Badge + Button + Separator |
+| `Pages/ProjectList` | 목록 화면 | AppShell + FilterBar + Table + Pagination + EmptyState |
+
+**핵심 규칙**: pages 스토리에서 인라인 div 마크업 금지. 반드시 `@fabbit/ui` + `@fabbit/components`만 조합.
+- Dashboard에서 이 규칙을 위반해서 SummaryCard, ActivityList, UsageCard 3개를 도메인 컴포넌트로 추출함.
+
+### 5. 스토리북 빌드
+
+모든 변경 후 `pnpm --filter @fabbit/storybook build-storybook` 성공 확인됨.
 
 ## What Worked
 
-- **CSS 변수 참조 (`var()`)**: 테마 내에서 `--primary: var(--brand-500)` 패턴으로 중복 최소화. 9개 라이트 테마가 동일한 `var()` 매핑 사용.
-- **`@layer components` 제거**: 이전 세션에서 테마 CSS의 `@layer components` 래퍼를 제거하여 specificity 문제 해결. 테마 클래스가 `:root` fallback을 정상 override.
-- **`import.meta.glob` auto-scan**: `stories/ui/*.stories.tsx`에서 `Showcase` export만 자동 수집하여 Component Preview 구성.
-- **NotebookLM 리서치**: 2026 색상 트렌드를 기반으로 테마 방향성 결정 (기존 "2026 웹 UI/UX 디자인 트렌드" 노트북 활용).
+- **3-tier 분리**: UI primitive → domain composition → page story 흐름이 명확
+- **props-only 도메인 컴포넌트**: API/스토어 의존 없이 스토리북에서 독립 시각화
+- **AppShell CSS Grid**: `gridTemplateRows` + `gridTemplateColumns`로 sidebar/header/banner/content 유연한 배치
+- **stories/pages/ 패턴**: 새 패키지 없이 피처 화면 프로토타이핑 가능
+- **Mock 데이터 한글화**: 전문용어(CNC, AL-6061, WO-2026-0198 등) 제외 모두 한글
 
 ## What Didn't Work
 
-- **MDX → CSF 전환 필요**: MDX 페이지에서는 decorator가 실행되지 않아 테마 전환이 안됨. CSF `.stories.tsx`로 전환 후 해결.
-- **`@layer components`로 테마 감싸기**: Tailwind v4에서 layer 우선순위 문제로 테마 값이 적용 안됨. layer 제거 필수.
-- **Storybook decorator `minHeight: "100vh"`**: 모든 스토리에 적용되면 Badge 같은 작은 컴포넌트에 거대한 빈 공간 생김. `context.parameters.layout === "fullscreen"` 조건부 적용으로 해결.
+- **`@fabbit/utils` import**: UI 컴포넌트에서 `cn`을 `@fabbit/utils`에서 가져오면 storybook 빌드 실패. `./lib/cn`으로 import 해야 함
+- **`date-fns` resolve**: Calendar 추가 후 storybook에서 `date-fns` resolve 실패. storybook 패키지에도 `date-fns`, `react-day-picker` 의존성 추가 필요
+- **Card에 `asChild` 없음**: Card는 순수 div 기반이라 `asChild` prop이 없음. SummaryCard에서 `onClick` + `role="button"` 패턴으로 해결
+- **pages 스토리에서 인라인 마크업**: Dashboard에서 내 작업 목록/사용량 카드를 직접 div로 작성 → 패키지 원칙 위반. 도메인 컴포넌트로 추출해서 해결
 
 ## Next Steps
 
 ### 즉시 할 일
 
-1. **스토리북 시각 검증**: 10개 테마 전환하면서 모든 Showcase가 정상 렌더되는지 확인. 특히 테마 7(Agentic Dark)의 다크 배경에서 가독성 체크.
-2. **LabelBadge 컴포넌트 검토**: 현재 동적 hex 기반 인라인 스타일 사용 중. 디자인 시스템 토큰과의 관계 정리 필요 (사용자 커스텀 라벨이므로 현행 유지 가능).
-3. **다크 모드 토큰 정합성**: 테마 7은 자체 다크이지만, 다른 테마 + colorMode=dark 조합 시 `:root` → `.dark` → `.theme-primary-*` 우선순위 확인 필요.
+1. **IssueDetail/ProjectList 스토리 정리**: 아직 일부 인라인 마크업 존재 (이슈 본문 Card, 댓글 입력 영역). 필요 시 도메인 컴포넌트 추출
+2. **추가 pages 스토리**: 부품 상세(PartDetail), 설정(Settings), 변경 요청 상세(ChangeRequestDetail) 등
+3. **테마 10개 시각 검증**: 특히 Agentic Dark(7)에서 AppShell/AppSidebar 가독성 확인
 
 ### 이후 작업
 
-4. **`apps/web` 마이그레이션**: 하드코딩된 Tailwind 기본 팔레트(`emerald-200`, `gray-500` 등)를 디자인 토큰으로 교체. 43개 파일에서 약 1009건의 hex 사용 확인됨.
-5. **추가 UI 컴포넌트**: `packages/ui`에 필요한 컴포넌트 추가 시 반드시 토큰 기반으로 구현 + Showcase 스토리 포함.
-6. **테마 최종 선정**: 제조/PLM용 추천 — Blueprint Blue(4), High-Tech Precision(2), Mossy Production(8).
+4. **`apps/web` 리팩토링**: 기존 `apps/web/src/components/layout/Header.tsx`, `Sidebar.tsx`를 `@fabbit/components`의 AppHeader/AppSidebar로 교체. 데이터만 주입하는 wrapper 패턴
+5. **`apps/web` 페이지 컴포넌트 분리**: 현재 페이지에 인라인된 도메인 UI를 `packages/components`로 올리기 (DashboardPage의 SummaryCard 등)
+6. **스킬 파일 업데이트**: `stories/pages/` 패턴과 "pages 스토리는 packages만 조합" 규칙을 cv-component 스킬에 추가
 
 ## Key Files
 
 | File | Role |
 |------|------|
-| `packages/theme/src/primary-themes.css` | 10개 브랜드 테마 (brand + nav + status + base shadcn 토큰) |
-| `packages/theme/src/common-themes.css` | 공통 상태 색상 테마 |
-| `packages/theme/src/core-tokens.css` | `:root` / `.dark` fallback |
-| `packages/ui/src/styles.css` | Tailwind `@theme inline` 매핑 |
-| `packages/ui/src/badge.tsx` | 6종 status variant 포함 |
+| `packages/theme/src/primary-themes.css` | 10개 브랜드 테마 |
+| `packages/ui/src/index.ts` | UI 프리미티브 전체 export (40+개) |
+| `packages/ui/src/alert.tsx` | Alert (5 variants: default/destructive/warning/success/info) |
+| `packages/ui/src/calendar.tsx` | Calendar (react-day-picker 래퍼) |
+| `packages/ui/src/hover-card.tsx` | HoverCard (@radix-ui 래퍼) |
+| `packages/components/src/index.ts` | 도메인 컴포넌트 전체 export (20+개) |
+| `packages/components/src/app-header.tsx` | props-only 헤더 |
+| `packages/components/src/app-sidebar.tsx` | props-only 사이드바 |
+| `packages/components/src/app-shell.tsx` | 레이아웃 셸 (CSS Grid) |
+| `packages/components/src/activity-list.tsx` | 작업 목록 컴포넌트 |
+| `packages/components/src/summary-card.tsx` | 요약 카드 컴포넌트 |
+| `packages/components/src/usage-card.tsx` | 사용량 카드 컴포넌트 |
+| `apps/storybook/stories/pages/Dashboard.stories.tsx` | 대시보드 피처 화면 |
+| `apps/storybook/stories/pages/IssueDetail.stories.tsx` | 이슈 상세 피처 화면 |
+| `apps/storybook/stories/pages/ProjectList.stories.tsx` | 프로젝트 목록 피처 화면 |
 | `apps/storybook/.storybook/preview.ts` | 테마 10개 툴바 등록 + decorator |
-| `apps/storybook/stories/ColorPalette.stories.tsx` | Token Palette + Component Preview |
-| `apps/storybook/stories/ui/*.stories.tsx` | 각 컴포넌트별 Showcase 스토리 |
+| `.codex/skills/cv-component/SKILL.md` | 3-tier 컴포넌트 규칙 |
+| `.codex/skills/cv-structure/SKILL.md` | 모노레포 구조 규칙 |

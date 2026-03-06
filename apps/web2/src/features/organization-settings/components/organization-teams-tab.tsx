@@ -8,7 +8,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
   Badge,
   Button,
   Dialog,
@@ -70,7 +69,9 @@ export function OrganizationTeamsTab() {
           </colgroup>
           <thead className="bg-muted/40 text-muted-foreground">
             <tr>
-              <th className="px-4 py-3" />
+              <th className="px-4 py-3">
+                <span className="sr-only">펼치기</span>
+              </th>
               <th className="px-4 py-3 text-left font-medium">이름</th>
               <th className="px-4 py-3 text-left font-medium">설명</th>
               <th className="px-4 py-3 text-left font-medium">멤버</th>
@@ -118,11 +119,20 @@ function TeamRow({
   onDelete: () => void;
   orgMembers: OrganizationMemberModel[];
 }) {
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+
   return (
     <>
-      <tr className="cursor-pointer border-t border-border/70 hover:bg-muted/20" onClick={onToggle}>
+      <tr className="border-t border-border/70 hover:bg-muted/20">
         <td className="px-4 py-3 text-muted-foreground">
-          {isExpanded ? <ChevronDown className="size-4" /> : <ChevronRight className="size-4" />}
+          <button
+            aria-label={`${team.name} 팀 ${isExpanded ? "접기" : "펼치기"}`}
+            type="button"
+            className="inline-flex size-7 cursor-pointer items-center justify-center rounded-md transition-colors hover:bg-muted hover:text-foreground"
+            onClick={onToggle}
+          >
+            {isExpanded ? <ChevronDown className="size-4" /> : <ChevronRight className="size-4" />}
+          </button>
         </td>
         <td className="px-4 py-3 font-medium text-foreground">{team.name}</td>
         <td className="px-4 py-3 text-muted-foreground">{team.description || "—"}</td>
@@ -131,16 +141,20 @@ function TeamRow({
         </td>
         <td className="px-4 py-3 text-muted-foreground">{new Date(team.createdAt).toLocaleDateString("ko-KR")}</td>
         <td className="px-4 py-3 text-center">
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button
-                size="icon"
-                variant="ghost"
-                onClick={(event) => event.stopPropagation()}
-              >
-                <Trash2 className="size-3.5" />
-              </Button>
-            </AlertDialogTrigger>
+          <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+            <button
+              aria-label={`${team.name} 팀 삭제`}
+              title={`${team.name} 팀 삭제`}
+              type="button"
+              className="inline-flex size-8 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              onClick={(event) => {
+                event.stopPropagation();
+                setIsDeleteDialogOpen(true);
+              }}
+            >
+              <Trash2 className="size-3.5" />
+              <span className="sr-only">삭제</span>
+            </button>
             <AlertDialogContent>
               <AlertDialogHeader>
                 <AlertDialogTitle>팀 삭제</AlertDialogTitle>
@@ -149,8 +163,15 @@ function TeamRow({
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>닫기</AlertDialogCancel>
-                <AlertDialogAction onClick={onDelete}>삭제</AlertDialogAction>
+                <AlertDialogCancel onClick={() => setIsDeleteDialogOpen(false)}>닫기</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={() => {
+                    setIsDeleteDialogOpen(false);
+                    onDelete();
+                  }}
+                >
+                  삭제
+                </AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
@@ -307,6 +328,7 @@ function TeamMembersPanel({
               <span className="text-muted-foreground">{member.email}</span>
               <div className="flex justify-end">
                 <Button
+                  aria-label={`${member.fullName} 팀 멤버 제거`}
                   disabled={removeMembersAction.isPending}
                   size="icon"
                   variant="ghost"

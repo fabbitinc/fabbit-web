@@ -1,7 +1,7 @@
 import { useDroppable } from "@dnd-kit/core";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@fabbit/ui";
 import { cn } from "@/lib/utils";
-import type { KanbanColumnModel } from "@/features/part-template-mapping/hooks/use-template-mapping-kanban";
+import type { KanbanColumnModel } from "@/features/part-template-mapping/types/template-mapping-kanban";
 import { KanbanCard } from "./kanban-card";
 
 const COLUMN_COLORS: Record<string, { text: string; border: string; dropBg: string }> = {

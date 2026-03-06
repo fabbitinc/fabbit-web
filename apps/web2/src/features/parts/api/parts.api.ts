@@ -1,4 +1,29 @@
-import { apiClient } from "@/api/client";
+import { listOrgMembersApiV1MembersGet } from "@/api/generated/orval/members/members";
+import {
+  getPartOwnerApiV1PartsPartIdOwnerGet,
+  updatePartOwnerApiV1PartsPartIdOwnerPatch,
+} from "@/api/generated/orval/part-owner/part-owner";
+import {
+  linkPartsToProjectApiV1ProjectsProjectIdPartsPost,
+} from "@/api/generated/orval/project-parts/project-parts";
+import { listProjectsApiV1ProjectsGet } from "@/api/generated/orval/projects/projects";
+import {
+  attachFilesApiV1PartsPartIdFilesPost,
+  deleteDrawingFromPartApiV1PartsPartIdDrawingsDelete,
+  detachFileApiV1PartsPartIdFilesFileIdDelete,
+  exportBomApiV1PartsPartIdBomTreeExportGet,
+  exportPartsApiV1PartsExportGet,
+  getBomTreeApiV1PartsPartIdBomTreeGet,
+  getFilterOptionsApiV1PartsFilterOptionsGet,
+  getPartApiV1PartsPartIdGet,
+  getPartBomApiV1PartsPartIdBomGet,
+  getPartFilesApiV1PartsPartIdFilesGet,
+  getPartProjectsApiV1PartsPartIdProjectsGet,
+  getPartSuppliersApiV1PartsPartIdSuppliersGet,
+  listPartsApiV1PartsGet,
+  registerDrawingForPartApiV1PartsPartIdDrawingsPost,
+} from "@/api/generated/orval/parts/parts";
+import { listTeamsApiV1TeamsGet } from "@/api/generated/orval/teams/teams";
 import type {
   AttachPartFilesRequestDto,
   AttachPartFilesResponseDto,
@@ -14,7 +39,6 @@ import type {
   PartBomResponseDto,
   PartDetailResponseDto,
   PartFilesResponseDto,
-  PartFilterOptionsResponseDto,
   PartListResponseDto,
   PartOwnerResponseDto,
   PartProjectsResponseDto,
@@ -22,7 +46,6 @@ import type {
   ProjectListResponseDto,
   RegisterPartDrawingRequestDto,
   RegisterPartDrawingResponseDto,
-  TeamListResponseDto,
   UpdatePartOwnerRequestDto,
 } from "@/features/parts/api/parts.types";
 import type {
@@ -45,38 +68,38 @@ import type {
 } from "@/features/parts/types/parts-model";
 
 export async function fetchPartsList(query: ListPartsQueryDto): Promise<PartListResultModel> {
-  const response = await apiClient.get<PartListResponseDto>("/api/v1/parts", {
-    params: query,
-  });
+  const response = await listPartsApiV1PartsGet(query);
+  const result = response as PartListResponseDto;
 
   return {
-    total: response.data.total,
-    offset: response.data.offset,
-    limit: response.data.limit,
-    items: response.data.items.map(toPartListItemModel),
+    total: result.total,
+    offset: result.offset,
+    limit: result.limit,
+    items: result.items.map(toPartListItemModel),
   };
 }
 
 export async function fetchPartFilterOptions(): Promise<PartFilterOptionsModel> {
-  const response = await apiClient.get<PartFilterOptionsResponseDto>("/api/v1/parts/filter-options");
+  const response = await getFilterOptionsApiV1PartsFilterOptionsGet();
 
   return {
-    categories: response.data.categories,
-    lifecycleStates: response.data.lifecycle_states,
+    categories: response.categories,
+    lifecycleStates: response.lifecycle_states,
   };
 }
 
 export async function fetchPartDetail(partId: string): Promise<PartDetailModel> {
-  const response = await apiClient.get<PartDetailResponseDto>(`/api/v1/parts/${partId}`);
-  return toPartDetailModel(response.data);
+  const response = await getPartApiV1PartsPartIdGet(partId);
+  return toPartDetailModel(response as PartDetailResponseDto);
 }
 
 export async function fetchPartBom(partId: string): Promise<PartBomModel> {
-  const response = await apiClient.get<PartBomResponseDto>(`/api/v1/parts/${partId}/bom`);
+  const response = await getPartBomApiV1PartsPartIdBomGet(partId);
+  const bom = response as PartBomResponseDto;
 
   return {
-    children: response.data.children.map(toPartBomItemModel),
-    parents: response.data.parents.map(toPartBomItemModel),
+    children: bom.children.map(toPartBomItemModel),
+    parents: bom.parents.map(toPartBomItemModel),
   };
 }
 
@@ -84,20 +107,20 @@ export async function fetchPartBomTree(
   partId: string,
   query: PartBomTreeQueryDto,
 ): Promise<PartBomTreeModel> {
-  const response = await apiClient.get<PartBomTreeResponseDto>(`/api/v1/parts/${partId}/bom/tree`, {
-    params: query,
-  });
+  const response = await getBomTreeApiV1PartsPartIdBomTreeGet(partId, query);
+  const tree = response as PartBomTreeResponseDto;
 
   return {
-    root: toPartBomTreeNodeModel(response.data.root),
-    direction: response.data.direction === "reverse" ? "reverse" : "forward",
-    totalCount: response.data.total_count,
+    root: toPartBomTreeNodeModel(tree.root),
+    direction: tree.direction === "reverse" ? "reverse" : "forward",
+    totalCount: tree.total_count,
   };
 }
 
 export async function fetchPartSuppliers(partId: string): Promise<PartSupplierModel[]> {
-  const response = await apiClient.get<PartSuppliersResponseDto>(`/api/v1/parts/${partId}/suppliers`);
-  return response.data.items.map((supplier) => ({
+  const response = await getPartSuppliersApiV1PartsPartIdSuppliersGet(partId);
+  const suppliers = response as PartSuppliersResponseDto;
+  return suppliers.items.map((supplier) => ({
     id: supplier.id,
     companyName: supplier.company_name,
     code: supplier.code ?? null,
@@ -107,22 +130,24 @@ export async function fetchPartSuppliers(partId: string): Promise<PartSupplierMo
 }
 
 export async function fetchPartFiles(partId: string): Promise<PartFileModel[]> {
-  const response = await apiClient.get<PartFilesResponseDto>(`/api/v1/parts/${partId}/files`);
-  return response.data.items.map(toPartFileModel);
+  const response = await getPartFilesApiV1PartsPartIdFilesGet(partId);
+  const files = response as PartFilesResponseDto;
+  return files.items.map(toPartFileModel);
 }
 
 export async function attachPartFiles(partId: string, request: AttachPartFilesRequestDto): Promise<PartFileModel[]> {
-  const response = await apiClient.post<AttachPartFilesResponseDto>(`/api/v1/parts/${partId}/files`, request);
-  return response.data.map(toPartFileModel);
+  const response = await attachFilesApiV1PartsPartIdFilesPost(partId, request);
+  return (response as AttachPartFilesResponseDto).map(toPartFileModel);
 }
 
 export async function detachPartFile(partId: string, fileId: string) {
-  await apiClient.delete(`/api/v1/parts/${partId}/files/${fileId}`);
+  await detachFileApiV1PartsPartIdFilesFileIdDelete(partId, fileId);
 }
 
 export async function fetchPartProjects(partId: string): Promise<PartProjectModel[]> {
-  const response = await apiClient.get<PartProjectsResponseDto>(`/api/v1/parts/${partId}/projects`);
-  return response.data.items.map((project) => ({
+  const response = await getPartProjectsApiV1PartsPartIdProjectsGet(partId);
+  const projects = response as { items: PartProjectsResponseDto["items"] };
+  return projects.items.map((project) => ({
     id: project.id,
     name: project.name,
     description: project.description ?? null,
@@ -130,30 +155,29 @@ export async function fetchPartProjects(partId: string): Promise<PartProjectMode
 }
 
 export async function fetchPartOwner(partId: string): Promise<PartOwnerModel> {
-  const response = await apiClient.get<PartOwnerResponseDto>(`/api/v1/parts/${partId}/owner`);
-  return toPartOwnerModel(response.data);
+  const response = await getPartOwnerApiV1PartsPartIdOwnerGet(partId);
+  return toPartOwnerModel(response as PartOwnerResponseDto);
 }
 
 export async function updatePartOwner(partId: string, request: UpdatePartOwnerRequestDto): Promise<PartOwnerModel> {
-  const response = await apiClient.patch<PartOwnerResponseDto>(`/api/v1/parts/${partId}/owner`, request);
-  return toPartOwnerModel(response.data);
+  const response = await updatePartOwnerApiV1PartsPartIdOwnerPatch(partId, request);
+  return toPartOwnerModel(response as PartOwnerResponseDto);
 }
 
 export async function registerPartDrawing(partId: string, request: RegisterPartDrawingRequestDto): Promise<PartDrawingModel> {
-  const response = await apiClient.post<RegisterPartDrawingResponseDto>(`/api/v1/parts/${partId}/drawings`, request);
-  return toPartDrawingModel(response.data);
+  const response = await registerDrawingForPartApiV1PartsPartIdDrawingsPost(partId, request);
+  return toPartDrawingModel(response as RegisterPartDrawingResponseDto);
 }
 
 export async function deletePartDrawing(partId: string) {
-  await apiClient.delete(`/api/v1/parts/${partId}/drawings`);
+  await deleteDrawingFromPartApiV1PartsPartIdDrawingsDelete(partId);
 }
 
 export async function fetchAvailableProjects(query: ListProjectsQueryDto): Promise<PartsAvailableProjectModel[]> {
-  const response = await apiClient.get<ProjectListResponseDto>("/api/v1/projects", {
-    params: query,
-  });
+  const response = await listProjectsApiV1ProjectsGet(query);
+  const projects = response as ProjectListResponseDto;
 
-  return response.data.items.map((project) => ({
+  return projects.items.map((project) => ({
     id: project.id,
     name: project.name,
     description: project.description ?? null,
@@ -166,13 +190,12 @@ export async function linkPartsToProject(
   projectId: string,
   request: LinkProjectPartsRequestDto,
 ): Promise<LinkProjectPartsResponseDto> {
-  const response = await apiClient.post<LinkProjectPartsResponseDto>(`/api/v1/projects/${projectId}/parts`, request);
-  return response.data;
+  return linkPartsToProjectApiV1ProjectsProjectIdPartsPost(projectId, request);
 }
 
 export async function fetchTeamLookup(): Promise<PartsAvailableTeamModel[]> {
-  const response = await apiClient.get<TeamListResponseDto>("/api/v1/teams");
-  return response.data.items.map((team) => ({
+  const response = await listTeamsApiV1TeamsGet();
+  return response.items.map((team) => ({
     id: team.id,
     name: team.name,
     memberCount: team.member_count,
@@ -180,13 +203,13 @@ export async function fetchTeamLookup(): Promise<PartsAvailableTeamModel[]> {
 }
 
 export async function fetchAssignableMembers(): Promise<PartOwnerUserModel[]> {
-  const response = await apiClient.get<MemberListResponseDto>("/api/v1/members");
-  return response.data.items.map(toPartOwnerUserModel);
+  const response = await listOrgMembersApiV1MembersGet();
+  return response.items.map(toPartOwnerUserModel);
 }
 
 export async function fetchAssignableTeams(): Promise<PartsAvailableTeamModel[]> {
-  const response = await apiClient.get<TeamListResponseDto>("/api/v1/teams");
-  return response.data.items.map((team) => ({
+  const response = await listTeamsApiV1TeamsGet();
+  return response.items.map((team) => ({
     id: team.id,
     name: team.name,
     memberCount: team.member_count,
@@ -194,21 +217,19 @@ export async function fetchAssignableTeams(): Promise<PartsAvailableTeamModel[]>
 }
 
 export async function exportParts(query: ExportPartsQueryDto): Promise<Blob> {
-  const response = await apiClient.get("/api/v1/parts/export", {
-    params: query,
+  const response = await exportPartsApiV1PartsExportGet(query, {
     responseType: "blob",
   });
 
-  return response.data as Blob;
+  return response as Blob;
 }
 
 export async function exportPartBomTree(partId: string, query: ExportPartBomTreeQueryDto): Promise<Blob> {
-  const response = await apiClient.get(`/api/v1/parts/${partId}/bom/tree/export`, {
-    params: query,
+  const response = await exportBomApiV1PartsPartIdBomTreeExportGet(partId, query, {
     responseType: "blob",
   });
 
-  return response.data as Blob;
+  return response as Blob;
 }
 
 function toPartListItemModel(part: PartListResponseDto["items"][number]): PartListItemModel {

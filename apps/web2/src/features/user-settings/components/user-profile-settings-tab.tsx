@@ -1,13 +1,23 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { Camera, Loader2, Trash2 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage, Button, Input, Label } from "@fabbit/ui";
-import { useAuthStore } from "@/features/auth";
+import { useAuthStore, type UserModel } from "@/features/auth";
 import { useDeleteUserProfileImageAction } from "@/features/user-settings/hooks/use-delete-user-profile-image-action";
 import { useUpdateUserProfileAction } from "@/features/user-settings/hooks/use-update-user-profile-action";
 import { useUploadUserProfileImageAction } from "@/features/user-settings/hooks/use-upload-user-profile-image-action";
 
 export function UserProfileSettingsTab() {
   const user = useAuthStore((state) => state.user);
+  const formKey = `${user?.id ?? "anonymous"}:${user?.name ?? ""}:${user?.phone ?? ""}:${user?.profileImageUrl ?? ""}`;
+
+  return <UserProfileSettingsForm key={formKey} user={user} />;
+}
+
+interface UserProfileSettingsFormProps {
+  user: UserModel | null;
+}
+
+function UserProfileSettingsForm({ user }: UserProfileSettingsFormProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const updateProfileAction = useUpdateUserProfileAction();
   const uploadProfileImageAction = useUploadUserProfileImageAction();
@@ -15,11 +25,6 @@ export function UserProfileSettingsTab() {
 
   const [name, setName] = useState(user?.name ?? "");
   const [phone, setPhone] = useState(user?.phone ?? "");
-
-  useEffect(() => {
-    setName(user?.name ?? "");
-    setPhone(user?.phone ?? "");
-  }, [user?.name, user?.phone]);
 
   function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -58,6 +63,7 @@ export function UserProfileSettingsTab() {
           <input
             ref={fileInputRef}
             accept="image/*"
+            aria-label="프로필 이미지 업로드"
             className="hidden"
             type="file"
             onChange={handleFileChange}

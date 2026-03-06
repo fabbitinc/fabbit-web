@@ -23,6 +23,8 @@ import {
   COLUMN_TO_REL_TYPE,
   type KanbanCardData,
   type KanbanColumnId,
+} from "@/features/part-template-mapping/types/template-mapping-kanban";
+import {
   useTemplateMappingKanban,
 } from "@/features/part-template-mapping/hooks/use-template-mapping-kanban";
 import { removeExistingMapping } from "./kanban-utils";

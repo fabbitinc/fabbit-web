@@ -65,9 +65,9 @@ export const SelectField: Story = {
           <SelectValue placeholder="권한을 선택하세요" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="viewer">Viewer</SelectItem>
-          <SelectItem value="editor">Editor</SelectItem>
-          <SelectItem value="admin">Admin</SelectItem>
+          <SelectItem value="viewer">뷰어</SelectItem>
+          <SelectItem value="editor">편집자</SelectItem>
+          <SelectItem value="admin">관리자</SelectItem>
         </SelectContent>
       </Select>
     </div>
@@ -126,9 +126,9 @@ export const Showcase: Story = {
             <SelectValue placeholder="권한을 선택하세요" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="viewer">Viewer</SelectItem>
-            <SelectItem value="editor">Editor</SelectItem>
-            <SelectItem value="admin">Admin</SelectItem>
+            <SelectItem value="viewer">뷰어</SelectItem>
+            <SelectItem value="editor">편집자</SelectItem>
+            <SelectItem value="admin">관리자</SelectItem>
           </SelectContent>
         </Select>
       </div>

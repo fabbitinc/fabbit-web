@@ -12,18 +12,8 @@ import { ChangeRichTextEditor } from "@/features/change-shared/components/change
 import { useLabelLookupQuery } from "@/features/change-shared/hooks/use-label-lookup-query";
 import { useMemberLookupQuery } from "@/features/change-shared/hooks/use-member-lookup-query";
 import { usePartLookupQuery } from "@/features/change-shared/hooks/use-part-lookup-query";
+import type { ChangeCreateFormSubmitInput } from "@/features/change-shared/types/change-create-form";
 import { normalizeRichTextDocument, type RichTextDocument } from "@/lib/rich-text";
-
-export interface ChangeCreateFormSubmitInput {
-  title: string;
-  body: RichTextDocument | null;
-  assigneeIds: string[];
-  reviewerIds: string[];
-  labelIds: string[];
-  partIds: string[];
-  files: File[];
-  linkedIssueNumber: number | null;
-}
 
 interface ChangeCreateFormProps {
   backHref: string;
@@ -181,6 +171,7 @@ export function ChangeCreateForm({
               </label>
               <Input
                 id="change-create-files"
+                aria-label="첨부 파일 업로드"
                 multiple
                 type="file"
                 className="hidden"
@@ -325,6 +316,7 @@ export function ChangeCreateForm({
                 {partLookup.data?.map((part) => (
                   <button
                     key={part.id}
+                    aria-label={`${part.partNumber} 부품 선택`}
                     className={`flex w-full cursor-pointer items-center justify-between rounded-[18px] border px-3 py-2 text-left ${
                       partIds.includes(part.id) ? "border-primary bg-primary/5" : "border-border/70 bg-background"
                     }`}

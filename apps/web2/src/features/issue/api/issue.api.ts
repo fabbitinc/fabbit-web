@@ -1,12 +1,26 @@
-import { apiClient } from "@/api/client";
+import {
+  addFilesApiV1IssuesIssueNumberFilesPost,
+  closeIssueApiV1IssuesIssueNumberClosePost,
+  createCommentApiV1IssuesIssueNumberCommentsPost,
+  createIssueApiV1IssuesPost,
+  deleteCommentApiV1IssuesIssueNumberCommentsCommentIdDelete,
+  deleteFileApiV1IssuesIssueNumberFilesFileIdDelete,
+  getIssueApiV1IssuesIssueNumberGet,
+  getTimelineApiV1IssuesIssueNumberTimelineGet,
+  reopenIssueApiV1IssuesIssueNumberReopenPost,
+  syncAssigneesApiV1IssuesIssueNumberAssigneesPut,
+  syncChangesApiV1IssuesIssueNumberChangesPut,
+  syncLabelsApiV1IssuesIssueNumberLabelsPut,
+  syncPartsApiV1IssuesIssueNumberPartsPut,
+  updateCommentApiV1IssuesIssueNumberCommentsCommentIdPatch,
+  updateIssueApiV1IssuesIssueNumberPatch,
+} from "@/api/generated/orval/issues/issues";
 import type {
   AddIssueFilesRequestDto,
-  AddIssueFilesResponseDto,
   CreateIssueCommentRequestDto,
   CreateIssueCommentResponseDto,
   CreateIssueRequestDto,
   IssueDetailResponseDto,
-  IssueResponseDto,
   IssueTimelineResponseDto,
   SyncIssueAssigneesRequestDto,
   SyncIssueAssigneesResponseDto,
@@ -34,78 +48,65 @@ import type {
 import { getPlainTextFromRichText } from "@/lib/rich-text";
 
 export async function createIssue(request: CreateIssueRequestDto) {
-  const response = await apiClient.post<IssueResponseDto>("/api/v1/issues", request);
-  return response.data;
+  return createIssueApiV1IssuesPost(request);
 }
 
 export async function fetchIssueDetail(issueNumber: number): Promise<IssueDetailModel> {
-  const response = await apiClient.get<IssueDetailResponseDto>(`/api/v1/issues/${issueNumber}`);
-  return toIssueDetailModel(response.data);
+  const response = await getIssueApiV1IssuesIssueNumberGet(issueNumber);
+  return toIssueDetailModel(response as IssueDetailResponseDto);
 }
 
 export async function updateIssue(issueNumber: number, request: UpdateIssueRequestDto): Promise<IssueDetailModel> {
-  const response = await apiClient.patch<IssueDetailResponseDto>(`/api/v1/issues/${issueNumber}`, request);
-  return toIssueDetailModel(response.data);
+  const response = await updateIssueApiV1IssuesIssueNumberPatch(issueNumber, request);
+  return toIssueDetailModel(response as IssueDetailResponseDto);
 }
 
 export async function syncIssueAssignees(
   issueNumber: number,
   request: SyncIssueAssigneesRequestDto,
 ): Promise<SyncIssueAssigneesResponseDto> {
-  const response = await apiClient.put<SyncIssueAssigneesResponseDto>(
-    `/api/v1/issues/${issueNumber}/assignees`,
-    request,
-  );
-  return response.data;
+  return syncAssigneesApiV1IssuesIssueNumberAssigneesPut(issueNumber, request);
 }
 
 export async function syncIssueChanges(
   issueNumber: number,
   request: SyncIssueChangesRequestDto,
 ): Promise<SyncIssueChangesResponseDto> {
-  const response = await apiClient.put<SyncIssueChangesResponseDto>(
-    `/api/v1/issues/${issueNumber}/changes`,
-    request,
-  );
-  return response.data;
+  return syncChangesApiV1IssuesIssueNumberChangesPut(issueNumber, request);
 }
 
 export async function syncIssueLabels(
   issueNumber: number,
   request: SyncIssueLabelsRequestDto,
 ): Promise<SyncIssueLabelsResponseDto> {
-  const response = await apiClient.put<SyncIssueLabelsResponseDto>(
-    `/api/v1/issues/${issueNumber}/labels`,
-    request,
-  );
-  return response.data;
+  return syncLabelsApiV1IssuesIssueNumberLabelsPut(issueNumber, request);
 }
 
 export async function syncIssueParts(
   issueNumber: number,
   request: SyncIssuePartsRequestDto,
 ): Promise<SyncIssuePartsResponseDto> {
-  const response = await apiClient.put<SyncIssuePartsResponseDto>(`/api/v1/issues/${issueNumber}/parts`, request);
-  return response.data;
+  return syncPartsApiV1IssuesIssueNumberPartsPut(issueNumber, request);
 }
 
 export async function closeIssue(issueNumber: number): Promise<IssueDetailModel> {
-  const response = await apiClient.post<IssueDetailResponseDto>(`/api/v1/issues/${issueNumber}/close`);
-  return toIssueDetailModel(response.data);
+  const response = await closeIssueApiV1IssuesIssueNumberClosePost(issueNumber);
+  return toIssueDetailModel(response as IssueDetailResponseDto);
 }
 
 export async function reopenIssue(issueNumber: number): Promise<IssueDetailModel> {
-  const response = await apiClient.post<IssueDetailResponseDto>(`/api/v1/issues/${issueNumber}/reopen`);
-  return toIssueDetailModel(response.data);
+  const response = await reopenIssueApiV1IssuesIssueNumberReopenPost(issueNumber);
+  return toIssueDetailModel(response as IssueDetailResponseDto);
 }
 
 export async function fetchIssueTimeline(issueNumber: number): Promise<IssueTimelineItemModel[]> {
-  const response = await apiClient.get<IssueTimelineResponseDto>(`/api/v1/issues/${issueNumber}/timeline`);
+  const response = await getTimelineApiV1IssuesIssueNumberTimelineGet(issueNumber);
+  const timeline = response as IssueTimelineResponseDto;
 
-  return response.data.items.map((item) =>
+  return timeline.items.map((item) =>
     item.type === "comment"
-      ? toIssueTimelineCommentModel(item, response.data.users)
-      : toIssueTimelineActivityModel(item, response.data.users),
+      ? toIssueTimelineCommentModel(item, timeline.users)
+      : toIssueTimelineActivityModel(item, timeline.users),
   );
 }
 
@@ -113,11 +114,8 @@ export async function createIssueComment(
   issueNumber: number,
   request: CreateIssueCommentRequestDto,
 ): Promise<IssueTimelineCommentModel> {
-  const response = await apiClient.post<CreateIssueCommentResponseDto>(
-    `/api/v1/issues/${issueNumber}/comments`,
-    request,
-  );
-  return toIssueCommentModel(response.data);
+  const response = await createCommentApiV1IssuesIssueNumberCommentsPost(issueNumber, request);
+  return toIssueCommentModel(response as CreateIssueCommentResponseDto);
 }
 
 export async function updateIssueComment(
@@ -125,27 +123,24 @@ export async function updateIssueComment(
   commentId: string,
   request: UpdateIssueCommentRequestDto,
 ): Promise<IssueTimelineCommentModel> {
-  const response = await apiClient.patch<UpdateIssueCommentResponseDto>(
-    `/api/v1/issues/${issueNumber}/comments/${commentId}`,
-    request,
-  );
-  return toIssueCommentModel(response.data);
+  const response = await updateCommentApiV1IssuesIssueNumberCommentsCommentIdPatch(issueNumber, commentId, request);
+  return toIssueCommentModel(response as UpdateIssueCommentResponseDto);
 }
 
 export async function deleteIssueComment(issueNumber: number, commentId: string) {
-  await apiClient.delete(`/api/v1/issues/${issueNumber}/comments/${commentId}`);
+  await deleteCommentApiV1IssuesIssueNumberCommentsCommentIdDelete(issueNumber, commentId);
 }
 
 export async function addIssueFiles(
   issueNumber: number,
   request: AddIssueFilesRequestDto,
 ): Promise<IssueFileModel[]> {
-  const response = await apiClient.post<AddIssueFilesResponseDto>(`/api/v1/issues/${issueNumber}/files`, request);
-  return response.data.map(toIssueFileModel);
+  const response = await addFilesApiV1IssuesIssueNumberFilesPost(issueNumber, request);
+  return response.map(toIssueFileModel);
 }
 
 export async function deleteIssueFile(issueNumber: number, fileId: string) {
-  await apiClient.delete(`/api/v1/issues/${issueNumber}/files/${fileId}`);
+  await deleteFileApiV1IssuesIssueNumberFilesFileIdDelete(issueNumber, fileId);
 }
 
 function toIssueDetailModel(issue: IssueDetailResponseDto): IssueDetailModel {

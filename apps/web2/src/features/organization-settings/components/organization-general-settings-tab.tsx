@@ -57,6 +57,7 @@ export function OrganizationGeneralSettingsTab() {
             <input
               ref={fileInputRef}
               accept="image/*"
+              aria-label="조직 프로필 이미지 업로드"
               className="hidden"
               type="file"
               onChange={handleFileChange}

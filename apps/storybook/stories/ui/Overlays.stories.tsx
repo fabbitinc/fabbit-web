@@ -36,7 +36,7 @@ export const Showcase: Story = {
     <div style={{ display: "flex", gap: "12px", alignItems: "center", flexWrap: "wrap" }}>
       <Popover>
         <PopoverTrigger asChild>
-          <Button variant="outline">Popover</Button>
+          <Button variant="outline">팝오버</Button>
         </PopoverTrigger>
         <PopoverContent>
           <PopoverHeader>

@@ -234,7 +234,11 @@ export function OrganizationMembersUsersTab() {
                 <th className="px-4 py-3 text-left font-medium">이메일</th>
                 <th className="px-4 py-3 text-left font-medium">직무</th>
                 <th className="px-4 py-3 text-left font-medium">역할</th>
-                {isManagerRole(currentRole) ? <th className="w-0 px-4 py-3" /> : null}
+                {isManagerRole(currentRole) ? (
+                  <th className="w-0 px-4 py-3">
+                    <span className="sr-only">관리</span>
+                  </th>
+                ) : null}
               </tr>
             </thead>
             <tbody>
@@ -277,7 +281,7 @@ export function OrganizationMembersUsersTab() {
                       {canRemoveMember(currentRole, currentUser?.id, member.role, member.userId) ? (
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
-                            <Button size="icon" variant="ghost">
+                            <Button aria-label={`${member.fullName} 사용자 제거`} size="icon" variant="ghost">
                               <Trash2 className="size-3.5" />
                             </Button>
                           </AlertDialogTrigger>

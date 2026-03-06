@@ -1,7 +1,7 @@
-import { apiClient } from "@/api/client";
+import { confirmMappingApiV1MappingsConfirmPost, listMappingsApiV1MappingsGet, previewMappingApiV1MappingsPreviewPost, updateMappingApiV1MappingsMappingIdPut, validateMappingApiV1MappingsValidatePost } from "@/api/generated/orval/mappings/mappings";
+import { getOntologySchemaApiV1OntologySchemaGet } from "@/api/generated/orval/ontology/ontology";
 import type {
   MappingConfirmRequestDto,
-  MappingListResponseDto,
   MappingPreviewRequestDto,
   MappingPreviewResponseDto,
   MappingResponseDto,
@@ -21,60 +21,61 @@ import type {
 } from "@/features/part-template-mapping/types/part-template-mapping-model";
 
 export async function fetchTemplateOntologySchema(): Promise<OntologySchemaModel> {
-  const response = await apiClient.get<OntologySchemaResponseDto>("/api/v1/ontology/schema");
-  return toOntologySchemaModel(response.data);
+  const response = await getOntologySchemaApiV1OntologySchemaGet();
+  return toOntologySchemaModel(response as OntologySchemaResponseDto);
 }
 
 export async function previewTemplateMapping(request: MappingPreviewRequestDto): Promise<MappingPreviewModel> {
-  const response = await apiClient.post<MappingPreviewResponseDto>("/api/v1/mappings/preview", request, {
+  const response = await previewMappingApiV1MappingsPreviewPost(request, {
     timeout: 120_000,
   });
 
-  return toMappingPreviewModel(response.data);
+  return toMappingPreviewModel(response as MappingPreviewResponseDto);
 }
 
 export async function listTemplateMappings(): Promise<MappingRecordModel[]> {
-  const response = await apiClient.get<MappingListResponseDto>("/api/v1/mappings");
-  return response.data.items.map(toMappingRecordModel);
+  const response = await listMappingsApiV1MappingsGet();
+  return (response.items as MappingResponseDto[]).map(toMappingRecordModel);
 }
 
 export async function confirmTemplateMapping(request: MappingConfirmRequestDto): Promise<MappingRecordModel> {
-  const response = await apiClient.post<MappingResponseDto>("/api/v1/mappings/confirm", request);
-  return toMappingRecordModel(response.data);
+  const response = await confirmMappingApiV1MappingsConfirmPost(request);
+  return toMappingRecordModel(response as MappingResponseDto);
 }
 
 export async function updateTemplateMapping(
   mappingId: string,
   request: MappingUpdateRequestDto,
 ): Promise<MappingRecordModel> {
-  const response = await apiClient.put<MappingResponseDto>(`/api/v1/mappings/${mappingId}`, request);
-  return toMappingRecordModel(response.data);
+  const response = await updateMappingApiV1MappingsMappingIdPut(mappingId, request);
+  return toMappingRecordModel(response as MappingResponseDto);
 }
 
 export async function validateTemplateMapping(
   request: MappingValidateRequestDto,
 ): Promise<MappingValidationModel> {
-  const response = await apiClient.post<MappingValidateResponseDto>("/api/v1/mappings/validate", request);
+  const response = await validateMappingApiV1MappingsValidatePost(request);
+  const validation = response as MappingValidateResponseDto;
 
   return {
-    normalizedMapping: toMappingDefinitionModel(response.data.normalized_mapping),
-    errors: (response.data.errors ?? []).map((issue) => ({
+    normalizedMapping: toMappingDefinitionModel(validation.normalized_mapping),
+    errors: (validation.errors ?? []).map((issue) => ({
       code: issue.code,
       severity: issue.severity,
       message: issue.message,
       path: issue.path ?? undefined,
       dismissedReason: issue.dismissed_reason ?? null,
     })),
-    warnings: (response.data.warnings ?? []).map((issue) => ({
+    warnings: (validation.warnings ?? []).map((issue) => ({
       code: issue.code,
       severity: issue.severity,
       message: issue.message,
       path: issue.path ?? undefined,
       dismissedReason: issue.dismissed_reason ?? null,
     })),
-    impactSummary: response.data.impact_summary
+    impactSummary: validation.impact_summary
       ? {
-          disabledColumnCount: response.data.impact_summary.disabled_column_count,
+          disabledColumnCount: validation.impact_summary.disabled_column_count,
         }
       : null,
   };

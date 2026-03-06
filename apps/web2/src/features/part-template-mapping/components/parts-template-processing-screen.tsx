@@ -1,14 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { AlertCircle, CheckCircle2, Circle, Loader2 } from "lucide-react";
-import { Button, Progress } from "@fabbit/ui";
+import {
+  PartsTemplateProcessingScreen as PartsTemplateProcessingScreenView,
+  type PartsTemplateProcessingStep,
+} from "@fabbit/components";
 import { usePartTemplateMappingStore } from "@/features/part-template-mapping/stores/template-mapping-store";
 import { useTemplateUploadStore } from "@/features/part-template-mapping/stores/template-upload-store";
 import { useProcessTemplateMappingAction } from "@/features/part-template-mapping/hooks/use-process-template-mapping-action";
 
 type StepStatus = "pending" | "in_progress" | "completed";
 
-interface ProcessingStep {
+interface ProcessingStep extends PartsTemplateProcessingStep {
   key: "parsing" | "normalizing" | "analyzing" | "finalizing";
   label: string;
   status: StepStatus;
@@ -54,10 +56,7 @@ export function PartsTemplateProcessingScreen({
   const [retryToken, setRetryToken] = useState(0);
 
   const effectiveFileName = fileName || uploadedFiles[0]?.name || "업로드된 파일";
-  const mappingPath = useMemo(
-    () => (partId ? `/parts/${partId}/templates/mapping` : "/parts/templates/mapping"),
-    [partId],
-  );
+  const mappingPath = useMemo(() => (partId ? `/parts/${partId}/templates/mapping` : "/parts/templates/mapping"), [partId]);
 
   useEffect(() => {
     setStep(2);
@@ -155,86 +154,21 @@ export function PartsTemplateProcessingScreen({
   };
 
   return (
-    <div className="space-y-6">
-      <section className="app-panel rounded-[32px] p-6 sm:p-8">
-        <h1 className="text-3xl font-semibold tracking-tight text-foreground">부품 템플릿 처리</h1>
-        <p className="mt-3 text-sm text-muted-foreground">
-          {effectiveFileName} 파일을 분석해 속성과 관계 매핑 후보를 구성합니다.
-        </p>
-
-        {!primaryUploadId && (
-          <div className="mt-5 flex items-center gap-2 rounded-2xl border border-[var(--status-warning-border)] bg-[var(--status-warning-bg)] px-4 py-3 text-sm text-[var(--status-warning)]">
-            <AlertCircle className="size-4" />
-            업로드 정보가 없습니다. 파일을 먼저 업로드한 뒤 다시 시도해주세요.
-          </div>
-        )}
-
-        <div className="mt-6 space-y-2">
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">진행률</span>
-            <span className="font-medium text-foreground">{progress}%</span>
-          </div>
-          <Progress value={progress} className="h-2" />
-        </div>
-      </section>
-
-      <section className="grid gap-4 xl:grid-cols-[320px_minmax(0,1fr)]">
-        <section className="app-panel rounded-[32px] p-5">
-          <h2 className="text-sm font-semibold text-foreground">처리 단계</h2>
-          <div className="mt-4 space-y-2">
-            {steps.map((step) => (
-              <div key={step.key} className="flex items-center gap-2 rounded-2xl border border-border bg-background px-3 py-3 text-sm">
-                {getStepIcon(step.status)}
-                <span className="text-foreground">{step.label}</span>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <section className="app-panel rounded-[32px] p-5">
-          <h2 className="text-sm font-semibold text-foreground">처리 로그</h2>
-          <div className="mt-4 space-y-2 rounded-[24px] bg-muted/30 p-4">
-            {logs.map((log, index) => (
-              <p key={`${log}-${index}`} className="text-xs text-muted-foreground">
-                {log}
-              </p>
-            ))}
-          </div>
-
-          {error && <p className="mt-4 text-sm text-[var(--status-danger)]">{error}</p>}
-
-          <div className="mt-5 flex items-center justify-end gap-2">
-            {error ? (
-              <Button onClick={handleRetry} disabled={!primaryUploadId}>
-                재시도
-              </Button>
-            ) : (
-              <Button
-                disabled={!isCompleted}
-                onClick={() =>
-                  navigate(mappingPath, {
-                    state: { fileName: effectiveFileName },
-                  })
-                }
-              >
-                매핑 확인
-              </Button>
-            )}
-          </div>
-        </section>
-      </section>
-    </div>
+    <PartsTemplateProcessingScreenView
+      canProceed={isCompleted}
+      canRetry={Boolean(primaryUploadId)}
+      error={error}
+      fileName={effectiveFileName}
+      hasUpload={Boolean(primaryUploadId)}
+      logs={logs}
+      progress={progress}
+      steps={steps}
+      onProceed={() =>
+        navigate(mappingPath, {
+          state: { fileName: effectiveFileName },
+        })
+      }
+      onRetry={handleRetry}
+    />
   );
-}
-
-function getStepIcon(status: StepStatus) {
-  if (status === "completed") {
-    return <CheckCircle2 className="size-4 text-[var(--status-success)]" />;
-  }
-
-  if (status === "in_progress") {
-    return <Loader2 className="size-4 animate-spin text-primary" />;
-  }
-
-  return <Circle className="size-4 text-muted-foreground" />;
 }

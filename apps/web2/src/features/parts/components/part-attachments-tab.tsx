@@ -1,7 +1,6 @@
 import { useRef, useState } from "react";
 import { Download, FileArchive, FileAudio, FileCode, FileImage, FileSpreadsheet, FileText, FileVideo, Trash2, Upload } from "lucide-react";
 import { Button, ConfirmDialog } from "@fabbit/ui";
-import { uploadFiles } from "@/api/file.api";
 import { useAttachPartFilesAction } from "@/features/parts/hooks/use-attach-part-files-action";
 import { useDetachPartFileAction } from "@/features/parts/hooks/use-detach-part-file-action";
 import { usePartFilesQuery } from "@/features/parts/hooks/use-part-files-query";
@@ -86,20 +85,19 @@ export function PartAttachmentsTab({ partId }: PartAttachmentsTabProps) {
 
         <input
           ref={fileInputRef}
+          aria-label="부품 첨부 파일 업로드"
           className="hidden"
           multiple
           type="file"
           onChange={async (event) => {
             const files = Array.from(event.target.files ?? []);
-            if (files.length === 0) {
-              return;
+            if (files.length > 0) {
+              try {
+                await attachPartFilesAction.mutateAsync(files);
+              } finally {
+                event.target.value = "";
+              }
             }
-
-            const fileIds = await uploadFiles(files);
-            if (fileIds.length > 0) {
-              await attachPartFilesAction.mutateAsync({ file_ids: fileIds });
-            }
-            event.target.value = "";
           }}
         />
 

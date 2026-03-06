@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import { Button, Input, Textarea } from "@fabbit/ui";
 import { useUpdateProjectAction } from "@/features/project-detail/hooks/use-update-project-action";
@@ -10,14 +10,19 @@ interface ProjectSettingsGeneralTabProps {
 }
 
 export function ProjectSettingsGeneralTab({ isReadonly, project }: ProjectSettingsGeneralTabProps) {
+  return (
+    <ProjectSettingsGeneralForm
+      key={`${project.id}:${project.name}:${project.description ?? ""}`}
+      isReadonly={isReadonly}
+      project={project}
+    />
+  );
+}
+
+function ProjectSettingsGeneralForm({ isReadonly, project }: ProjectSettingsGeneralTabProps) {
   const updateProjectAction = useUpdateProjectAction();
   const [name, setName] = useState(project.name);
   const [description, setDescription] = useState(project.description ?? "");
-
-  useEffect(() => {
-    setName(project.name);
-    setDescription(project.description ?? "");
-  }, [project.description, project.name]);
 
   const isDirty = name !== project.name || description !== (project.description ?? "");
 

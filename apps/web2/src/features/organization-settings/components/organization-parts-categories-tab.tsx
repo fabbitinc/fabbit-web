@@ -45,7 +45,9 @@ export function OrganizationPartsCategoriesTab() {
             <tr>
               <th className="px-4 py-3 text-left font-medium">카테고리명</th>
               <th className="px-4 py-3 text-left font-medium">부품 수</th>
-              <th className="w-12 px-4 py-3" />
+              <th className="w-12 px-4 py-3">
+                <span className="sr-only">관리</span>
+              </th>
             </tr>
           </thead>
           <tbody>

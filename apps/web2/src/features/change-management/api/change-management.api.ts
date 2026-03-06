@@ -1,9 +1,8 @@
-import { apiClient } from "@/api/client";
+import { listChangeRequestsApiV1ChangesGet } from "@/api/generated/orval/changes/changes";
+import { listIssuesApiV1IssuesGet } from "@/api/generated/orval/issues/issues";
 import type {
   ChangeRequestListQueryDto,
-  ChangeRequestListResponseDto,
   IssueListQueryDto,
-  IssueListResponseDto,
 } from "@/features/change-management/api/change-management.types";
 import type {
   ChangeManagementItemModel,
@@ -11,40 +10,60 @@ import type {
   ChangeManagementUserModel,
 } from "@/features/change-management/types/change-management-model";
 
+interface ChangeManagementSourceUser {
+  user_id: string;
+  full_name: string;
+  profile_image_url?: string | null;
+}
+
+interface ChangeManagementSourceLabel {
+  id: string;
+  name: string;
+  color: string;
+}
+
+interface ChangeManagementSourceItem {
+  id: string;
+  number: number;
+  title: string;
+  state: string;
+  created_at: string;
+  updated_at: string;
+  created_by?: { full_name: string } | null;
+  labels?: ChangeManagementSourceLabel[];
+  assignees?: ChangeManagementSourceUser[];
+  comments_count?: number;
+  cr_state?: string | null;
+}
+
 export async function fetchIssueList(query: IssueListQueryDto): Promise<ChangeManagementListModel> {
-  const response = await apiClient.get<IssueListResponseDto>("/api/v1/issues", {
-    params: query,
-  });
+  const response = await listIssuesApiV1IssuesGet(query);
 
   return {
-    openCount: response.data.open_count,
-    closedCount: response.data.closed_count,
-    total: response.data.total,
-    offset: response.data.offset,
-    limit: response.data.limit,
-    items: response.data.items.map((item) => toChangeManagementItemModel("issues", item)),
+    openCount: response.open_count,
+    closedCount: response.closed_count,
+    total: response.total,
+    offset: response.offset,
+    limit: response.limit,
+    items: response.items.map((item) => toChangeManagementItemModel("issues", item)),
   };
 }
 
 export async function fetchChangeRequestList(query: ChangeRequestListQueryDto): Promise<ChangeManagementListModel> {
-  const response = await apiClient.get<ChangeRequestListResponseDto>("/api/v1/changes", {
-    params: query,
-  });
+  const response = await listChangeRequestsApiV1ChangesGet(query);
 
   return {
-    openCount: response.data.open_count,
-    closedCount: response.data.closed_count,
-    total: response.data.total,
-    offset: response.data.offset,
-    limit: response.data.limit,
-    items: response.data.items.map((item) => toChangeManagementItemModel("requests", item)),
+    openCount: response.open_count,
+    closedCount: response.closed_count,
+    total: response.total,
+    offset: response.offset,
+    limit: response.limit,
+    items: response.items.map((item) => toChangeManagementItemModel("requests", item)),
   };
 }
 
 function toChangeManagementUserModel(
-  user:
-    | IssueListResponseDto["items"][number]["assignees"][number]
-    | ChangeRequestListResponseDto["items"][number]["assignees"][number],
+  user: ChangeManagementSourceUser,
 ): ChangeManagementUserModel {
   return {
     userId: user.user_id,
@@ -55,7 +74,7 @@ function toChangeManagementUserModel(
 
 function toChangeManagementItemModel(
   kind: ChangeManagementItemModel["kind"],
-  item: IssueListResponseDto["items"][number] | ChangeRequestListResponseDto["items"][number],
+  item: ChangeManagementSourceItem,
 ): ChangeManagementItemModel {
   return {
     id: item.id,
@@ -63,16 +82,16 @@ function toChangeManagementItemModel(
     kind,
     title: item.title,
     state: item.state,
-    crState: "cr_state" in item ? item.cr_state : null,
+    crState: item.cr_state ?? null,
     createdAt: item.created_at,
     updatedAt: item.updated_at,
     createdBy: item.created_by?.full_name ?? null,
-    labels: item.labels.map((label) => ({
+    labels: (item.labels ?? []).map((label) => ({
       id: label.id,
       name: label.name,
       color: label.color,
     })),
-    assignees: item.assignees.map(toChangeManagementUserModel),
-    commentsCount: item.comments_count,
+    assignees: (item.assignees ?? []).map(toChangeManagementUserModel),
+    commentsCount: item.comments_count ?? 0,
   };
 }

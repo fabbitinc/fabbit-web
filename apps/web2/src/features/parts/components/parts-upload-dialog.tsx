@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { josa } from "es-hangul";
 import { AlertCircle, AlertTriangle, CheckCircle2, ChevronDown, ChevronUp, Loader2, Sparkles, Upload, X } from "lucide-react";
 import * as XLSX from "xlsx";
-import { useQueryClient } from "@tanstack/react-query";
+import { SynthesisProgressPanel } from "@fabbit/components";
 import {
   Button,
   Dialog,
@@ -20,13 +20,11 @@ import {
   Switch,
 } from "@fabbit/ui";
 import { useNavigate } from "react-router-dom";
-import { dashboardQueries } from "@/features/dashboard/api/dashboard.queries";
-import { useTemplateMappingListQuery } from "@/features/part-template-mapping";
-import { SynthesisProgressPanel } from "@/features/parts/components/synthesis-progress-panel";
 import { PartsUploadNodeSearchInput } from "@/features/parts/components/parts-upload-node-search-input";
+import { usePartsUploadBatchCompletionListener } from "@/features/parts/hooks/use-parts-upload-batch-completion-listener";
 import { usePartsUploadBatchQuery } from "@/features/parts/hooks/use-parts-upload-batch-query";
+import { usePartsUploadTemplateMappingListQuery } from "@/features/parts/hooks/use-parts-upload-template-mapping-list-query";
 import { useSubmitPartsUploadAction } from "@/features/parts/hooks/use-submit-parts-upload-action";
-import { partsKeys } from "@/features/parts/api/parts.queries";
 import { usePartsUploadStore } from "@/features/parts/stores/parts-upload-store";
 import type { PartsUploadBatchSessionModel, PartsUploadFileModel } from "@/features/parts/types/parts-upload-model";
 import { cn } from "@/lib/utils";
@@ -136,10 +134,8 @@ function ExtraColumnsNotice({ columns }: { columns: string[] }) {
 
 export function PartsUploadDialog() {
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const stagedFilesRef = useRef<PartsUploadFileModel[]>([]);
-  const handledBatchIdRef = useRef<string | null>(null);
   const previousMappingIdRef = useRef<string | null>(null);
 
   const isOpen = usePartsUploadStore((state) => state.isOpen);
@@ -152,9 +148,14 @@ export function PartsUploadDialog() {
   const [stagedFiles, setStagedFiles] = useState<PartsUploadFileModel[]>([]);
   const [batchSession, setBatchSession] = useState<PartsUploadBatchSessionModel | null>(null);
 
-  const mappingListQuery = useTemplateMappingListQuery(isOpen);
+  const mappingListQuery = usePartsUploadTemplateMappingListQuery(isOpen);
   const submitPartsUploadAction = useSubmitPartsUploadAction();
   const batchStatusQuery = usePartsUploadBatchQuery(batchSession?.batchId ?? null);
+  const { resetHandledBatchId } = usePartsUploadBatchCompletionListener({
+    batchSession,
+    batchStatus: batchStatusQuery.data,
+    contextPartId,
+  });
 
   const sortedMappings = useMemo(() => {
     return [...(mappingListQuery.data ?? [])].sort((left, right) => {
@@ -274,31 +275,6 @@ export function PartsUploadDialog() {
     void revalidateFiles(stagedFilesRef.current, selectedMapping.mappedHeaders, updateStagedFile);
   }, [selectedMapping, updateStagedFile]);
 
-  useEffect(() => {
-    if (!batchSession || !batchStatusQuery.data) {
-      return;
-    }
-
-    const isDone =
-      batchStatusQuery.data.pendingCount === 0 && batchStatusQuery.data.processingCount === 0;
-
-    if (!isDone || handledBatchIdRef.current === batchSession.batchId) {
-      return;
-    }
-
-    handledBatchIdRef.current = batchSession.batchId;
-
-    void queryClient.invalidateQueries({ queryKey: partsKeys.all });
-    void queryClient.invalidateQueries({ queryKey: dashboardQueries.stats().queryKey });
-
-    if (batchStatusQuery.data.failedJobCount > 0 || batchStatusQuery.data.failed.length > 0) {
-      toast.warning("일부 부품 업로드 처리에 실패했습니다.");
-      return;
-    }
-
-    toast.success("부품 업로드 처리가 완료되었습니다.");
-  }, [batchSession, batchStatusQuery.data, queryClient]);
-
   async function handleFiles(nextFiles: File[]) {
     if (!selectedMapping || nextFiles.length === 0) {
       return;
@@ -336,7 +312,7 @@ export function PartsUploadDialog() {
     setOverwrite(false);
     setStagedFiles([]);
     setBatchSession(null);
-    handledBatchIdRef.current = null;
+    resetHandledBatchId();
     previousMappingIdRef.current = null;
   }
 

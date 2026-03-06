@@ -9,6 +9,9 @@ import type {
 } from "@/features/change-management/api/change-management.types";
 
 export const changeManagementKeys = {
+  all: ["change-management"] as const,
+  issuesAll: ["change-management", "issues"] as const,
+  requestsAll: ["change-management", "requests"] as const,
   issues: (query: IssueListQueryDto) => ["change-management", "issues", query] as const,
   requests: (query: ChangeRequestListQueryDto) => ["change-management", "requests", query] as const,
 };

@@ -1,7 +1,10 @@
-import { apiClient } from "@/api/client";
+import { searchNodesApiV1OntologyNodesSearchGet } from "@/api/generated/orval/ontology/ontology";
+import {
+  getSynthesisBatchApiV1SynthesisBatchesBatchIdGet,
+  startSynthesisApiV1SynthesisPost,
+} from "@/api/generated/orval/synthesis/synthesis";
 import type {
   NodeSearchQueryDto,
-  NodeSearchResponseDto,
   SynthesisBatchStartResponseDto,
   SynthesisBatchStatusResponseDto,
   SynthesisStartRequestDto,
@@ -15,23 +18,21 @@ import type {
 } from "@/features/parts/types/parts-upload-model";
 
 export async function startPartsSynthesis(request: SynthesisStartRequestDto): Promise<PartsUploadBatchStartModel> {
-  const response = await apiClient.post<SynthesisBatchStartResponseDto>("/api/v1/synthesis", request);
-  return toPartsUploadBatchStartModel(response.data);
+  const response = await startSynthesisApiV1SynthesisPost(request);
+  return toPartsUploadBatchStartModel(response);
 }
 
 export async function fetchPartsUploadBatchStatus(batchId: string): Promise<PartsUploadBatchStatusModel> {
-  const response = await apiClient.get<SynthesisBatchStatusResponseDto>(`/api/v1/synthesis/batches/${batchId}`);
-  return toPartsUploadBatchStatusModel(response.data);
+  const response = await getSynthesisBatchApiV1SynthesisBatchesBatchIdGet(batchId);
+  return toPartsUploadBatchStatusModel(response);
 }
 
 export async function searchPartsUploadNodes(
   query: NodeSearchQueryDto,
 ): Promise<PartsUploadNodeSearchItemModel[]> {
-  const response = await apiClient.get<NodeSearchResponseDto>("/api/v1/ontology/nodes/search", {
-    params: query,
-  });
+  const response = await searchNodesApiV1OntologyNodesSearchGet(query);
 
-  return response.data.items.map((item) => ({
+  return response.items.map((item) => ({
     value: item.value,
     label: item.label ?? null,
   }));
