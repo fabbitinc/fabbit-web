@@ -19,7 +19,7 @@ import {
   reopenIssue,
 } from "../independent-issue";
 import type { CreateIssueRequest, UpdateIssueRequest } from "../types";
-import { createFileUpload, uploadFileToPresignedUrl, completeFileUpload } from "../file";
+import { uploadFiles } from "../file";
 
 export const ISSUES_QUERY_KEY = ["issues"] as const;
 export const ISSUE_DETAIL_QUERY_KEY = ["issueDetail"] as const;
@@ -165,17 +165,7 @@ export function useIndependentUploadIssueFiles(issueNumber: string | undefined) 
 
   return useMutation({
     mutationFn: async (files: File[]) => {
-      const fileIds: string[] = [];
-      for (const file of files) {
-        const { file_id, upload_url } = await createFileUpload({
-          original_name: file.name,
-          content_type: file.type || "application/octet-stream",
-          file_size: file.size,
-        });
-        await uploadFileToPresignedUrl(upload_url, file, file.type || "application/octet-stream");
-        await completeFileUpload(file_id);
-        fileIds.push(file_id);
-      }
+      const fileIds = await uploadFiles(files);
       await attachIssueFiles(issueNumber!, fileIds);
     },
     onSuccess: () => {

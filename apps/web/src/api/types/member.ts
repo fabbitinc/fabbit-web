@@ -12,6 +12,7 @@ export interface MemberDto {
 
 export interface MemberListResponse {
   items: MemberDto[];
+  maxMembers: number;
 }
 
 // 초대

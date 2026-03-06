@@ -126,10 +126,26 @@ export function AcceptInvitePage() {
         window.location.href = targetUrl;
       }
     } catch (error) {
-      setStatus("ready");
-      setFormError(
-        error instanceof Error ? error.message : "초대 수락에 실패했습니다.",
-      );
+      const axiosErr = error as { response?: { data?: { code?: string; message?: string } } };
+      const code = axiosErr?.response?.data?.code;
+      const serverMessage = axiosErr?.response?.data?.message;
+
+      const ERROR_MESSAGES: Record<string, string> = {
+        MEMBER_LIMIT_EXCEEDED: "조직의 멤버 수가 플랜 한도에 도달하여 초대를 수락할 수 없습니다. 조직 관리자에게 문의하세요.",
+        INVITATION_EXPIRED: "초대가 만료되었습니다. 새로운 초대를 요청해 주세요.",
+        INVITATION_CANCELLED: "초대가 취소되었습니다.",
+        ALREADY_MEMBER: "이미 해당 조직의 멤버입니다.",
+      };
+
+      const message = (code && ERROR_MESSAGES[code]) || serverMessage || "초대 수락에 실패했습니다.";
+
+      if (code === "MEMBER_LIMIT_EXCEEDED") {
+        setErrorMessage(message);
+        setStatus("error");
+      } else {
+        setStatus("ready");
+        setFormError(message);
+      }
     }
   };
 

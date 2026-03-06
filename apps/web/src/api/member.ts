@@ -23,6 +23,7 @@ interface ApiMemberSummary {
 
 interface ApiMemberListResponse {
   items: ApiMemberSummary[];
+  max_members: number;
 }
 
 interface ApiInvitationResponse {
@@ -75,6 +76,7 @@ export async function getMembers(): Promise<MemberListResponse> {
   const response = await apiClient.get<ApiMemberListResponse>("/api/v1/members");
   return {
     items: response.data.items.map(mapMember),
+    maxMembers: response.data.max_members,
   };
 }
 

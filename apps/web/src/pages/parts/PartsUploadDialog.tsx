@@ -14,6 +14,9 @@ import * as XLSX from "xlsx";
 import {
   CheckCircle2,
   AlertCircle,
+  AlertTriangle,
+  ChevronDown,
+  ChevronUp,
   Loader2,
   Plus,
   Sparkles,
@@ -61,16 +64,17 @@ import type { SynthesisBatchStatusResponse } from "@/api/types/synthesis";
 const UPLOAD_ACCEPT = ".xlsx,.xls,.csv";
 const BATCH_POLL_INTERVAL = 1_000;
 
-type FileStatus = "validating" | "uploading" | "completed" | "failed";
+type FileStatus = "validating" | "completed" | "failed";
 
 interface UploadFileEntry {
   id: string;
   name: string;
   size: number;
+  file: File;
   status: FileStatus;
-  progress: number;
   uploadId?: string;
   error?: string;
+  extraColumns?: string[];
   rootContext?: Record<string, string>;
 }
 
@@ -254,6 +258,44 @@ function NodeSearchInput({
           </div>,
           document.body,
         )}
+    </div>
+  );
+}
+
+// --- 미반영 컬럼 경고 ---
+
+function ExtraColumnsWarning({ columns }: { columns: string[] }) {
+  const [expanded, setExpanded] = useState(false);
+
+  return (
+    <div className="mt-1.5 rounded border border-amber-500/20 bg-amber-500/5 px-2 py-1.5">
+      <button
+        type="button"
+        className="flex w-full cursor-pointer items-center gap-1.5 text-left"
+        onClick={() => setExpanded((prev) => !prev)}
+      >
+        <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-amber-600" />
+        <span className="flex-1 text-xs text-amber-600">
+          미반영 컬럼 {columns.length}개
+        </span>
+        {expanded ? (
+          <ChevronUp className="h-3.5 w-3.5 shrink-0 text-amber-600" />
+        ) : (
+          <ChevronDown className="h-3.5 w-3.5 shrink-0 text-amber-600" />
+        )}
+      </button>
+      {expanded && (
+        <div className="mt-1.5 flex flex-wrap gap-1">
+          {columns.map((col) => (
+            <span
+              key={col}
+              className="inline-block rounded bg-amber-500/10 px-1.5 py-0.5 text-[11px] text-amber-700"
+            >
+              {col}
+            </span>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -656,6 +698,74 @@ export function PartsUploadDialog() {
       .filter((v, i, a) => a.indexOf(v) === i);
   }, [selectedTemplate]);
 
+  // 매핑 변경 시 올려둔 파일 재검증
+  useEffect(() => {
+    if (!selectedTemplate || uploadedFiles.length === 0) return;
+
+    const { mapped_headers } = selectedTemplate;
+
+    async function revalidateFiles() {
+      const normalizedMapped = new Set(
+        mapped_headers.map((h) => h.toLowerCase().trim()),
+      );
+
+      for (const entry of uploadedFiles) {
+        // validating 중이면 건드리지 않음
+        if (entry.status === "validating") continue;
+
+        // 재검증 시작
+        updateFileStatus(entry.id, {
+          status: "validating",
+          error: undefined,
+          extraColumns: undefined,
+        });
+
+        try {
+          const headers = await parseFileHeaders(entry.file);
+
+          if (headers.length === 0) {
+            updateFileStatus(entry.id, {
+              status: "failed",
+              error: "파일에서 헤더를 찾을 수 없습니다",
+            });
+            continue;
+          }
+
+          const result = validateHeaders(headers, mapped_headers);
+
+          if (!result.valid) {
+            const preview = result.missing.slice(0, 3).join(", ");
+            const suffix =
+              result.missing.length > 3
+                ? ` 외 ${result.missing.length - 3}개`
+                : "";
+            updateFileStatus(entry.id, {
+              status: "failed",
+              error: `필수 컬럼 누락: ${preview}${suffix}`,
+            });
+            continue;
+          }
+
+          const extra = headers.filter(
+            (h) => !normalizedMapped.has(h.toLowerCase().trim()),
+          );
+          updateFileStatus(entry.id, {
+            status: "completed",
+            ...(extra.length > 0 ? { extraColumns: extra } : { extraColumns: undefined }),
+          });
+        } catch {
+          updateFileStatus(entry.id, {
+            status: "failed",
+            error: "파일 헤더를 읽을 수 없습니다",
+          });
+        }
+      }
+    }
+
+    void revalidateFiles();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedTemplateId]);
+
   // 각 라벨별로 연결된 파일 컬럼명 (rel_columns의 키)
   const rootLabelRelColumns = useMemo(() => {
     if (!selectedTemplate || requiredRootLabels.length === 0)
@@ -689,9 +799,10 @@ export function PartsUploadDialog() {
     isSubmitting ||
     isSynthesisProcessing ||
     uploadedFiles.some(
-      (f) => f.status === "validating" || f.status === "uploading",
+      (f) => f.status === "validating",
     );
   const completedFiles = uploadedFiles.filter((f) => f.status === "completed");
+  const failedFiles = uploadedFiles.filter((f) => f.status === "failed");
   const allSettled =
     uploadedFiles.length > 0 &&
     uploadedFiles.every(
@@ -700,6 +811,7 @@ export function PartsUploadDialog() {
   const canSubmit =
     Boolean(selectedTemplate) &&
     completedFiles.length > 0 &&
+    failedFiles.length === 0 &&
     allSettled &&
     (requiredRootLabels.length === 0 ||
       completedFiles.every((f) =>
@@ -712,7 +824,7 @@ export function PartsUploadDialog() {
     );
   }
 
-  // --- 파일 처리 플로우: 검증 → 업로드 ---
+  // --- 파일 처리 플로우: 헤더 검증만 수행 (업로드는 handleSubmit에서) ---
 
   async function handleFiles(files: File[]) {
     if (files.length === 0 || !selectedTemplate) return;
@@ -735,15 +847,13 @@ export function PartsUploadDialog() {
       id: `upload-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
       name: file.name,
       size: file.size,
+      file,
       status: "validating" as const,
-      progress: 0,
     }));
 
     setUploadedFiles((prev) => [...prev, ...entries]);
 
     // 2) 각 파일 헤더 검증
-    const validated: { entry: UploadFileEntry; file: File }[] = [];
-
     for (let i = 0; i < validFiles.length; i++) {
       const entry = entries[i];
       const file = validFiles[i];
@@ -774,158 +884,22 @@ export function PartsUploadDialog() {
           continue;
         }
 
-        // 검증 통과
-        updateFileStatus(entry.id, { progress: 10 });
-        validated.push({ entry, file });
+        // 검증 통과 — 매핑에 정의되지 않은 추가 컬럼 계산
+        const normalizedMapped = new Set(
+          mapped_headers.map((h) => h.toLowerCase().trim()),
+        );
+        const extra = headers.filter(
+          (h) => !normalizedMapped.has(h.toLowerCase().trim()),
+        );
+        updateFileStatus(entry.id, {
+          status: "completed",
+          ...(extra.length > 0 ? { extraColumns: extra } : {}),
+        });
       } catch (error) {
         console.error(`Header parse failed: ${file.name}`, error);
         updateFileStatus(entry.id, {
           status: "failed",
           error: "파일 헤더를 읽을 수 없습니다",
-        });
-      }
-    }
-
-    if (validated.length === 0) return;
-
-    // 3) 검증 통과 파일만 업로드
-    if (validated.length === 1) {
-      await uploadSingleFile(validated[0].entry, validated[0].file);
-    } else {
-      await uploadBatchFiles(
-        validated.map((v) => v.entry),
-        validated.map((v) => v.file),
-      );
-    }
-  }
-
-  async function uploadSingleFile(entry: UploadFileEntry, file: File) {
-    updateFileStatus(entry.id, { status: "uploading", progress: 15 });
-
-    try {
-      // URL 발급
-      const uploadInfo = await createUpload({
-        original_name: file.name,
-        content_type: file.type || "application/octet-stream",
-        file_size: file.size,
-      });
-
-      updateFileStatus(entry.id, {
-        uploadId: uploadInfo.file_id,
-        progress: 20,
-      });
-
-      // S3 업로드 (20~85)
-      await uploadWithProgress(uploadInfo.upload_url, file, (percent) => {
-        updateFileStatus(entry.id, {
-          progress: Math.min(85, Math.max(20, Math.round(20 + percent * 0.65))),
-        });
-      });
-
-      updateFileStatus(entry.id, { progress: 90 });
-
-      // 업로드 완료 확인
-      await completeUpload(uploadInfo.file_id);
-
-      updateFileStatus(entry.id, { status: "completed", progress: 100 });
-    } catch (error) {
-      console.error("File upload failed:", error);
-      updateFileStatus(entry.id, {
-        status: "failed",
-        progress: 0,
-        error: "업로드에 실패했습니다",
-      });
-    }
-  }
-
-  async function uploadBatchFiles(entries: UploadFileEntry[], files: File[]) {
-    for (const entry of entries) {
-      updateFileStatus(entry.id, { status: "uploading", progress: 15 });
-    }
-
-    try {
-      // URL 일괄 발급
-      const batchResponse = await batchCreateUploads(
-        files.map((file) => ({
-          original_name: file.name,
-          content_type: file.type || "application/octet-stream",
-          file_size: file.size,
-        })),
-      );
-
-      // entryId → uploadId 로컬 매핑 (React state와 무관하게 추적)
-      const entryUploadMap = new Map<string, string>();
-      const completedUploadIds: string[] = [];
-
-      await Promise.allSettled(
-        batchResponse.items.map(async (uploadInfo, idx) => {
-          const entry = entries[idx];
-          entryUploadMap.set(entry.id, uploadInfo.file_id);
-          updateFileStatus(entry.id, {
-            uploadId: uploadInfo.file_id,
-            progress: 20,
-          });
-
-          try {
-            // S3 업로드 (20~85)
-            await uploadWithProgress(
-              uploadInfo.upload_url,
-              files[idx],
-              (percent) => {
-                updateFileStatus(entry.id, {
-                  progress: Math.min(
-                    85,
-                    Math.max(20, Math.round(20 + percent * 0.65)),
-                  ),
-                });
-              },
-            );
-
-            updateFileStatus(entry.id, { progress: 90 });
-            completedUploadIds.push(uploadInfo.file_id);
-          } catch (error) {
-            console.error(`File upload failed: ${entry.name}`, error);
-            updateFileStatus(entry.id, {
-              status: "failed",
-              progress: 0,
-              error: "업로드에 실패했습니다",
-            });
-          }
-        }),
-      );
-
-      // 업로드 완료 일괄 확인
-      if (completedUploadIds.length > 0) {
-        const completeResult = await batchCompleteUploads(completedUploadIds);
-
-        const failedIds = new Set(
-          completeResult.failed.map((f) => f.file_id),
-        );
-
-        for (const entry of entries) {
-          const uploadId = entryUploadMap.get(entry.id);
-          if (!uploadId) continue;
-          if (failedIds.has(uploadId)) {
-            updateFileStatus(entry.id, {
-              status: "failed",
-              progress: 0,
-              error: "업로드 완료 확인에 실패했습니다",
-            });
-          } else if (completedUploadIds.includes(uploadId)) {
-            updateFileStatus(entry.id, {
-              status: "completed",
-              progress: 100,
-            });
-          }
-        }
-      }
-    } catch (error) {
-      console.error("Batch upload failed:", error);
-      for (const entry of entries) {
-        updateFileStatus(entry.id, {
-          status: "failed",
-          progress: 0,
-          error: "배치 업로드 요청에 실패했습니다",
         });
       }
     }
@@ -949,21 +923,76 @@ export function PartsUploadDialog() {
   async function handleSubmit() {
     if (!canSubmit || isSubmitting) return;
 
-    const uploadIds = completedFiles
-      .map((f) => f.uploadId)
-      .filter(Boolean) as string[];
-
     setIsSubmitting(true);
 
     try {
+      // 1) S3 업로드
+      const filesToUpload = completedFiles;
+
+      let uploadIds: string[];
+
+      if (filesToUpload.length === 1) {
+        // 단일 파일 업로드
+        const entry = filesToUpload[0];
+        const uploadInfo = await createUpload({
+          original_name: entry.name,
+          content_type: entry.file.type || "application/octet-stream",
+          file_size: entry.size,
+        });
+
+        await uploadWithProgress(uploadInfo.upload_url, entry.file, () => {});
+        await completeUpload(uploadInfo.file_id);
+
+        updateFileStatus(entry.id, { uploadId: uploadInfo.file_id });
+        uploadIds = [uploadInfo.file_id];
+      } else {
+        // 배치 업로드
+        const batchResponse = await batchCreateUploads(
+          filesToUpload.map((entry) => ({
+            original_name: entry.name,
+            content_type: entry.file.type || "application/octet-stream",
+            file_size: entry.size,
+          })),
+        );
+
+        const completedUploadIds: string[] = [];
+
+        await Promise.allSettled(
+          batchResponse.items.map(async (uploadInfo, idx) => {
+            const entry = filesToUpload[idx];
+            updateFileStatus(entry.id, { uploadId: uploadInfo.file_id });
+
+            await uploadWithProgress(
+              uploadInfo.upload_url,
+              entry.file,
+              () => {},
+            );
+            completedUploadIds.push(uploadInfo.file_id);
+          }),
+        );
+
+        if (completedUploadIds.length > 0) {
+          await batchCompleteUploads(completedUploadIds);
+        }
+
+        if (completedUploadIds.length === 0) {
+          toast.error("파일 업로드에 실패했어요.");
+          setIsSubmitting(false);
+          return;
+        }
+
+        uploadIds = completedUploadIds;
+      }
+
+      // 2) Synthesis 시작
       const result = await startSynthesis({
         mapping_id: selectedTemplate!.id,
         overwrite,
         uploads: uploadIds.map((id) => {
-          const file = uploadedFiles.find((f) => f.uploadId === id);
+          const entry = uploadedFiles.find((f) => f.uploadId === id);
           return {
             file_id: id,
-            root_context: file?.rootContext || null,
+            root_context: entry?.rootContext || null,
           };
         }),
       });
@@ -989,8 +1018,8 @@ export function PartsUploadDialog() {
       setSynthesisState({ batchId: result.batch_id, fileNames });
       setIsSubmitting(false);
     } catch (error) {
-      console.error("Synthesis start failed:", error);
-      toast.error("처리 시작에 실패했어요.", {
+      console.error("Upload/Synthesis failed:", error);
+      toast.error("업로드 또는 처리 시작에 실패했어요.", {
         description: "잠시 후 다시 시도해 주세요.",
       });
       setIsSubmitting(false);
@@ -1186,7 +1215,9 @@ export function PartsUploadDialog() {
                         "rounded-md border",
                         file.status === "failed"
                           ? "border-red-500/20 bg-red-500/5"
-                          : "bg-background",
+                          : file.extraColumns && file.extraColumns.length > 0
+                            ? "border-amber-500/20 bg-amber-500/5"
+                            : "bg-background",
                       )}
                     >
                       <div className="flex items-center gap-3 px-3 py-2">
@@ -1213,11 +1244,6 @@ export function PartsUploadDialog() {
                                 검증 중…
                               </span>
                             )}
-                            {file.status === "uploading" && (
-                              <span className="text-xs text-primary">
-                                {file.progress}%
-                              </span>
-                            )}
                           </div>
                           {/* 에러 메시지 */}
                           {file.status === "failed" && file.error && (
@@ -1225,21 +1251,18 @@ export function PartsUploadDialog() {
                               {file.error}
                             </p>
                           )}
-                          {/* 진행률 바 */}
-                          {(file.status === "validating" ||
-                            file.status === "uploading") && (
-                            <div className="mt-1.5 h-1 w-full overflow-hidden rounded-full bg-muted">
-                              <div
-                                className="h-full rounded-full bg-primary transition-all duration-300"
-                                style={{ width: `${file.progress}%` }}
+                          {/* 미반영 컬럼 경고 */}
+                          {file.status !== "failed" &&
+                            file.extraColumns &&
+                            file.extraColumns.length > 0 && (
+                              <ExtraColumnsWarning
+                                columns={file.extraColumns}
                               />
-                            </div>
-                          )}
+                            )}
                         </div>
 
                         {/* 제거 버튼 */}
-                        {file.status !== "uploading" &&
-                          file.status !== "validating" && (
+                        {file.status !== "validating" && (
                             <Button
                               size="icon"
                               variant="ghost"
@@ -1356,6 +1379,11 @@ export function PartsUploadDialog() {
             </Button>
           ) : (
             <>
+              {failedFiles.length > 0 && allSettled && (
+                <p className="mr-auto text-xs text-red-600">
+                  업로드 불가능한 파일을 제거해 주세요
+                </p>
+              )}
               <Button variant="outline" onClick={handleClose} disabled={isBusy}>
                 취소
               </Button>
@@ -1366,7 +1394,7 @@ export function PartsUploadDialog() {
                 {isSubmitting && (
                   <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
                 )}
-                {isSubmitting ? "처리 시작 중…" : "업로드 실행"}
+                {isSubmitting ? "업로드 중…" : "업로드 실행"}
               </Button>
             </>
           )}

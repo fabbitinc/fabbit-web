@@ -39,60 +39,48 @@ export interface PaymentHistory {
   receiptUrl?: string;
 }
 
-/** 스토리지 카테고리 */
-export interface StorageCategory {
-  key: string;
-  label: string;
-  usedGB: number;
-  color: string;
-}
-
-/** 스토리지 사용량 정보 */
-export interface StorageUsage {
-  usedGB: number;
-  limitGB: number;
-  categories: StorageCategory[];
-}
-
-/** 초과 정책 */
-export type OveragePolicy = "block" | "pay_per_use";
-
-/** 스토리지 초과 설정 */
-export interface StorageOverageSettings {
-  policy: OveragePolicy;
-  pricePerGB: number; // 추가 GB당 월 단가 (₩)
-  monthlyCapAmount: number; // 종량제 월 한도 (₩), 0이면 무제한
-}
-
-/** AI 기능 종류 */
-export type AIFeatureKey = "bom_analysis" | "drawing_analysis" | "ai_chat";
-
-/** AI 기능별 사용량 */
-export interface AIFeatureUsage {
-  key: AIFeatureKey;
-  label: string;
-  icon: string;
-  used: number;
-  limit: number;
-  unit: string;
-}
-
-/** AI 사용량 일별 추이 */
-export interface AIUsageTrend {
-  date: string;
-  bom_analysis: number;
-  drawing_analysis: number;
-  ai_chat: number;
-}
-
-/** AI 크레딧 패키지 */
-export interface AICreditPackage {
-  featureKey: AIFeatureKey;
-  label: string;
-  quantity: number;
-  price: number;
-  unit: string;
-}
-
 /** 결제 관리 서브탭 */
 export type BillingSubTab = "cards" | "storage" | "ai";
+
+/** 사용량 서브탭 */
+export type UsageSubTab = "storage" | "ai";
+
+// ── 사용량 API 타입 ──
+
+/** 스토리지 카테고리 */
+export type StorageCategory = "drawing" | "attachment" | "other";
+
+/** 스토리지 카테고리별 항목 */
+export interface StorageCategoryItem {
+  category: StorageCategory;
+  bytesUsed: number;
+  fileCount: number;
+}
+
+/** 스토리지 사용량 응답 */
+export interface StorageUsageData {
+  bytesUsed: number;
+  bytesLimit: number;
+  bytesOverage: number;
+  allowOverage: boolean;
+  categories: StorageCategoryItem[];
+}
+
+/** 크레딧 카테고리별 사용량 */
+export interface CreditCategoryItem {
+  category: string;
+  creditsUsed: number;
+}
+
+/** AI 크레딧 사용량 응답 */
+export interface CreditUsageData {
+  currentPeriodStart: string;
+  currentPeriodEnd: string;
+  totalCreditsUsed: number;
+  planCreditsUsed: number;
+  planCreditsLimit: number;
+  planCreditsRemaining: number;
+  bonusCreditsUsed: number;
+  bonusCreditsRemaining: number;
+  categories: CreditCategoryItem[];
+}

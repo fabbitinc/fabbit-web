@@ -344,6 +344,7 @@ function DrawingPreview({
     const drawing = item.drawing!;
     const hasThumbnail = !!drawing.thumbnail_url;
     const isConverting = drawing.conversion_status === "PENDING";
+    const isFailed = drawing.conversion_status === "FAILED";
 
     function handleDrawingClick() {
       if (drawing.pdf_url) {
@@ -381,13 +382,23 @@ function DrawingPreview({
 
     return (
       <div
-        className="group relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-lg border bg-muted/20"
+        onDragOver={isFailed ? handleDragOver : undefined}
+        onDragLeave={isFailed ? handleDragLeave : undefined}
+        onDrop={isFailed ? handleDrop : undefined}
+        className={cn(
+          "group relative flex aspect-[4/3] items-center justify-center overflow-hidden rounded-lg border bg-muted/20",
+          isFailed &&
+            "cursor-pointer border-dashed border-muted-foreground/20 hover:border-primary/40 hover:bg-muted/30",
+          isFailed && isDragging && "border-primary bg-primary/5",
+        )}
       >
         {/* 프리뷰 영역 (클릭 시 PDF 보기) */}
         <div
-          onClick={drawing.pdf_url ? handleDrawingClick : undefined}
+          onClick={
+            isFailed ? handleClick : drawing.pdf_url ? handleDrawingClick : undefined
+          }
           className={`flex h-full w-full items-center justify-center ${
-            drawing.pdf_url ? "cursor-pointer" : ""
+            isFailed || drawing.pdf_url ? "cursor-pointer" : ""
           }`}
         >
           {hasThumbnail ? (
@@ -413,7 +424,31 @@ function DrawingPreview({
                   </>
                 )}
               </div>
-              {!isConverting && <span className="text-[10px]">도면 미리보기</span>}
+              {isFailed ? (
+                <div className="flex flex-col items-center gap-2">
+                  <span className="text-center text-[11px] text-destructive">
+                    도면 변환에 실패했습니다. 파일을 다시 업로드해 주세요.
+                  </span>
+                  <span className="text-[10px] text-muted-foreground/80">
+                    파일을 드래그하거나 클릭해서 다시 업로드
+                  </span>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-7 px-2.5 text-[11px]"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleClick();
+                    }}
+                    disabled={isUploading}
+                  >
+                    다시 업로드
+                  </Button>
+                </div>
+              ) : (
+                !isConverting && <span className="text-[10px]">도면 미리보기</span>
+              )}
             </div>
           )}
         </div>

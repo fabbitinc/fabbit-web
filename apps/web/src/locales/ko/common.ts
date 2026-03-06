@@ -37,4 +37,21 @@ export default {
     medium: "보통",
     low: "낮음",
   },
+
+  // AI 크레딧 카테고리
+  creditCategory: {
+    bom_analysis: "BOM 속성 분석",
+    drawing_analysis: "도면 분석",
+    ai_chat: "AI 채팅",
+    BOM_ANALYSIS: "BOM 속성 분석",
+    DRAWING_ANALYSIS: "도면 분석",
+    AI_CHAT: "AI 채팅",
+  },
+
+  // 스토리지 카테고리
+  storageCategory: {
+    drawing: "도면",
+    attachment: "첨부파일",
+    other: "기타",
+  },
 };

@@ -21,7 +21,7 @@ import {
   updateIssue,
 } from "../issue";
 import type { CreateIssueRequest, UpdateIssueRequest } from "../types";
-import { createFileUpload, uploadFileToPresignedUrl, completeFileUpload } from "../file";
+import { uploadFiles } from "../file";
 import { PROJECT_LABELS_QUERY_KEY } from "./useLabels";
 import { PROJECT_QUERY_KEY } from "./useProjects";
 
@@ -178,17 +178,7 @@ export function useUploadIssueFiles(projectId: string | undefined, issueNumber: 
 
   return useMutation({
     mutationFn: async (files: File[]) => {
-      const fileIds: string[] = [];
-      for (const file of files) {
-        const { file_id, upload_url } = await createFileUpload({
-          original_name: file.name,
-          content_type: file.type || "application/octet-stream",
-          file_size: file.size,
-        });
-        await uploadFileToPresignedUrl(upload_url, file, file.type || "application/octet-stream");
-        await completeFileUpload(file_id);
-        fileIds.push(file_id);
-      }
+      const fileIds = await uploadFiles(files);
       await attachIssueFiles(projectId!, issueNumber!, fileIds);
     },
     onSuccess: () => {

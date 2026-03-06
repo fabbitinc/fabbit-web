@@ -71,15 +71,29 @@ export async function batchCompleteFileUpload(
 }
 
 /**
- * 파일 목록을 배치 업로드하고 file_id 배열을 반환
- * 1. batch create → presigned URL 일괄 발급
- * 2. 각 파일을 presigned URL로 병렬 업로드
- * 3. batch complete → 일괄 완료 확인
+ * 파일 목록 업로드 후 file_id 배열을 반환
+ * - 1건: 단일 업로드 API 사용
+ * - 2건 이상: batch 업로드 API 사용
  */
 export async function uploadFiles(files: File[]): Promise<string[]> {
   if (files.length === 0) return [];
 
-  // 1. 배치 presigned URL 발급
+  // 단건 업로드
+  if (files.length === 1) {
+    const [file] = files;
+    const contentType = file.type || "application/octet-stream";
+    const { file_id, upload_url } = await createFileUpload({
+      original_name: file.name,
+      content_type: contentType,
+      file_size: file.size,
+    });
+
+    await uploadFileToPresignedUrl(upload_url, file, contentType);
+    await completeFileUpload(file_id);
+    return [file_id];
+  }
+
+  // 다건 업로드: 1. batch presigned URL 발급
   const { items } = await batchCreateFileUpload(
     files.map((file) => ({
       original_name: file.name,
@@ -99,7 +113,7 @@ export async function uploadFiles(files: File[]): Promise<string[]> {
     ),
   );
 
-  // 3. 배치 완료 확인
+  // 3. batch 완료 확인
   const fileIds = items.map((item) => item.file_id);
   await batchCompleteFileUpload(fileIds);
 

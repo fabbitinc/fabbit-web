@@ -27,6 +27,7 @@ import {
   createFileUpload,
   uploadFileToPresignedUrl,
   completeFileUpload,
+  uploadFiles,
 } from "../file";
 import type { ListPartsParams, LookupPartsParams, UpdatePartOwnerRequest, RenameCategoryRequest, PartDefaultOwnerRequest } from "../types/parts";
 
@@ -316,7 +317,7 @@ export function useDeleteDrawing(partId: string | undefined) {
 
 /**
  * 첨부 파일 업로드 + Part 연결 통합 mutation
- * 1. 각 파일마다 presigned URL 발급 → S3 업로드 → 완료 확인
+ * 1. 파일 개수에 따라 단건/배치 업로드 수행
  * 2. 모든 file_id를 일괄로 Part에 연결
  */
 export function useAttachFiles(partId: string | undefined) {
@@ -324,20 +325,7 @@ export function useAttachFiles(partId: string | undefined) {
 
   return useMutation({
     mutationFn: async (files: File[]) => {
-      // 각 파일을 병렬로 업로드
-      const fileIds = await Promise.all(
-        files.map(async (file) => {
-          const contentType = file.type || "application/octet-stream";
-          const { file_id, upload_url } = await createFileUpload({
-            original_name: file.name,
-            content_type: contentType,
-            file_size: file.size,
-          });
-          await uploadFileToPresignedUrl(upload_url, file, contentType);
-          await completeFileUpload(file_id);
-          return file_id;
-        }),
-      );
+      const fileIds = await uploadFiles(files);
 
       // Part에 일괄 연결
       return attachFilesToPart(partId!, { file_ids: fileIds });

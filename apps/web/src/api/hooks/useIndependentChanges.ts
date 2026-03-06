@@ -22,9 +22,7 @@ import {
   reopenChange,
 } from "../independent-change";
 import {
-  createFileUpload,
-  uploadFileToPresignedUrl,
-  completeFileUpload,
+  uploadFiles,
 } from "../file";
 import type { CreateChangeRequest, UpdateChangeRequest } from "../types";
 
@@ -171,17 +169,7 @@ export function useIndependentUploadChangeFiles(changeNumber: string | undefined
 
   return useMutation({
     mutationFn: async (files: File[]) => {
-      const fileIds: string[] = [];
-      for (const file of files) {
-        const { file_id, upload_url } = await createFileUpload({
-          original_name: file.name,
-          content_type: file.type || "application/octet-stream",
-          file_size: file.size,
-        });
-        await uploadFileToPresignedUrl(upload_url, file, file.type || "application/octet-stream");
-        await completeFileUpload(file_id);
-        fileIds.push(file_id);
-      }
+      const fileIds = await uploadFiles(files);
       await attachChangeFiles(changeNumber!, fileIds);
     },
     onSuccess: () => {

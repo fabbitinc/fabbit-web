@@ -1,75 +1,61 @@
-import { useState } from "react";
+import { useMemo } from "react";
 import {
-  FileSpreadsheet,
-  ScanLine,
-  MessageSquare,
-  ShoppingCart,
+  Sparkles,
   CalendarClock,
-  RotateCcw,
+  Loader2,
+  ShoppingCart,
 } from "lucide-react";
-import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  Tooltip,
-  ResponsiveContainer,
-  CartesianGrid,
-} from "recharts";
-import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
+import { useTranslation } from "react-i18next";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import {
-  mockPlan,
-  mockAIFeatureUsages,
-  mockAIUsageTrend,
-  mockCreditPackages,
-} from "../mock-data/billing-mock";
-import type { AIFeatureKey, AICreditPackage } from "../types/billing.types";
+import { useCreditUsage } from "@/api/hooks/useUsage";
+import { CreditByCategoryChart } from "./charts/CreditByCategoryChart";
+import { generateCreditCategoryTrend } from "../mock-data/usage-mock";
 
-const featureIcons: Record<AIFeatureKey, typeof FileSpreadsheet> = {
-  bom_analysis: FileSpreadsheet,
-  drawing_analysis: ScanLine,
-  ai_chat: MessageSquare,
-};
-
-/** 차트 범례용 단색 (fallback) */
-const featureColors: Record<AIFeatureKey, string> = {
+const CATEGORY_COLORS: Record<string, string> = {
   bom_analysis: "var(--ai-from, #06b6d4)",
   drawing_analysis: "var(--ai-to, #2563eb)",
   ai_chat: "var(--ai-text, #1e40af)",
+  BOM_ANALYSIS: "var(--ai-from, #06b6d4)",
+  DRAWING_ANALYSIS: "var(--ai-to, #2563eb)",
+  AI_CHAT: "var(--ai-text, #1e40af)",
 };
 
-function daysUntil(dateStr: string) {
-  const target = new Date(dateStr);
-  const now = new Date(2026, 2, 3); // 모의 오늘
+function formatDate(iso: string): string {
+  const d = new Date(iso);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+function daysUntil(iso: string): number {
+  const target = new Date(iso);
+  const now = new Date();
   return Math.max(0, Math.ceil((target.getTime() - now.getTime()) / 86_400_000));
 }
 
 export function AIUsageTab() {
-  const [purchaseTarget, setPurchaseTarget] = useState<AICreditPackage | null>(null);
+  const { t } = useTranslation();
+  const { data, isLoading } = useCreditUsage();
 
-  const resetDate = mockPlan.nextBillingDate;
-  const daysLeft = daysUntil(resetDate);
+  // BACKLOG: 기능별 크레딧 추이 — GET /api/v1/usage/credits/trend-by-category API 구현 후 mock 제거.
+  const creditCategoryTrend = useMemo(() => generateCreditCategoryTrend(365), []);
 
-  function handlePurchaseConfirm() {
-    if (!purchaseTarget) return;
-    toast.success(
-      `${purchaseTarget.label} ${purchaseTarget.quantity.toLocaleString()}${purchaseTarget.unit} 크레딧을 구매했습니다.`,
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-16">
+        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+      </div>
     );
-    setPurchaseTarget(null);
   }
+
+  if (!data) return null;
+
+  const planPercent = data.planCreditsLimit > 0
+    ? (data.planCreditsUsed / data.planCreditsLimit) * 100
+    : 0;
+  const isPlanHigh = planPercent >= 80;
+
+  const periodEnd = formatDate(data.currentPeriodEnd);
+  const daysLeft = daysUntil(data.currentPeriodEnd);
 
   return (
     <div className="space-y-8">
@@ -87,266 +73,155 @@ export function AIUsageTab() {
             background: "linear-gradient(135deg, var(--ai-from, #06b6d4), var(--ai-to, #2563eb))",
           }}
         >
-          <RotateCcw className="h-4 w-4 text-white" />
+          <CalendarClock className="h-4 w-4 text-white" />
         </div>
         <div className="min-w-0 flex-1">
           <p className="text-sm font-medium text-foreground">
-            다음 결제일에 사용량이 초기화됩니다
+            다음 결제일에 플랜 크레딧이 초기화됩니다
           </p>
           <p className="text-xs text-muted-foreground">
-            결제 주기에 따라 매월 사용량이 리셋됩니다. 초과 사용 시 추가 크레딧을 구매하세요.
+            추가 구매 크레딧은 초기화되지 않으며 소진 시까지 유지됩니다.
           </p>
         </div>
         <div className="flex shrink-0 items-center gap-1.5 text-xs font-medium" style={{ color: "var(--ai-from, #06b6d4)" }}>
           <CalendarClock className="h-3.5 w-3.5" />
-          {resetDate} ({daysLeft}일 남음)
+          {periodEnd} ({daysLeft}일 남음)
         </div>
       </div>
 
-      {/* ── 기능별 사용량 카드 그리드 ── */}
+      {/* ── 플랜 크레딧 ── */}
       <section className="space-y-3">
         <h2 className="text-base font-semibold text-foreground">
-          AI 기능별 사용량
+          플랜 크레딧
         </h2>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          {mockAIFeatureUsages.map((feat) => {
-            const Icon = featureIcons[feat.key];
-            const percent = (feat.used / feat.limit) * 100;
-            const isHigh = percent >= 80;
-            return (
+        <div className="rounded-lg border border-border p-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
               <div
-                key={feat.key}
-                className="rounded-lg border border-border p-4 space-y-3"
-              >
-                <div className="flex items-center gap-2">
-                  <div
-                    className="flex h-6 w-6 items-center justify-center rounded"
-                    style={{
-                      background: "linear-gradient(135deg, var(--ai-from, #06b6d4), var(--ai-to, #2563eb))",
-                    }}
-                  >
-                    <Icon className="h-3.5 w-3.5 text-white" />
-                  </div>
-                  <span className="text-sm font-medium text-foreground">
-                    {feat.label}
-                  </span>
-                  {isHigh && (
-                    <Badge variant="destructive" className="ml-auto text-[10px]">
-                      한도 임박
-                    </Badge>
-                  )}
-                </div>
-                {/* AI 그라디언트 프로그레스 바 */}
-                <div
-                  className="relative h-2 w-full overflow-hidden rounded-full"
-                  style={{
-                    background: "color-mix(in srgb, var(--ai-from, #06b6d4) 15%, transparent)",
-                  }}
-                >
-                  <div
-                    className="h-full rounded-full transition-all"
-                    style={{
-                      width: `${Math.min(percent, 100)}%`,
-                      background: isHigh
-                        ? "var(--status-danger)"
-                        : "linear-gradient(90deg, var(--ai-from, #06b6d4), var(--ai-to, #2563eb))",
-                    }}
-                  />
-                </div>
-                <div className="flex items-center justify-between">
-                  <p className="text-xs tabular-nums text-muted-foreground">
-                    {feat.used.toLocaleString()} / {feat.limit.toLocaleString()}{" "}
-                    {feat.unit}
-                  </p>
-                  <span
-                    className="text-xs font-medium tabular-nums"
-                    style={{
-                      color: isHigh ? "var(--status-danger)" : "var(--ai-from, #06b6d4)",
-                    }}
-                  >
-                    {percent.toFixed(0)}%
-                  </span>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* ── 사용량 추이 차트 ── */}
-      <section className="space-y-3">
-        <h2 className="text-base font-semibold text-foreground">
-          최근 14일 사용량 추이
-        </h2>
-        <div className="rounded-lg border border-border p-4">
-          <ResponsiveContainer width="100%" height={260}>
-            <AreaChart
-              data={mockAIUsageTrend}
-              margin={{ top: 4, right: 4, bottom: 0, left: -16 }}
-            >
-              <defs>
-                <linearGradient id="aiGradFill-bom" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="var(--ai-from, #06b6d4)" stopOpacity={0.4} />
-                  <stop offset="100%" stopColor="var(--ai-from, #06b6d4)" stopOpacity={0.05} />
-                </linearGradient>
-                <linearGradient id="aiGradFill-drawing" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="var(--ai-to, #2563eb)" stopOpacity={0.4} />
-                  <stop offset="100%" stopColor="var(--ai-to, #2563eb)" stopOpacity={0.05} />
-                </linearGradient>
-                <linearGradient id="aiGradFill-chat" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="var(--ai-text, #1e40af)" stopOpacity={0.4} />
-                  <stop offset="100%" stopColor="var(--ai-text, #1e40af)" stopOpacity={0.05} />
-                </linearGradient>
-              </defs>
-              <CartesianGrid
-                strokeDasharray="3 3"
-                stroke="var(--border)"
-                vertical={false}
-              />
-              <XAxis
-                dataKey="date"
-                tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
-                axisLine={false}
-                tickLine={false}
-              />
-              <YAxis
-                tick={{ fontSize: 11, fill: "var(--muted-foreground)" }}
-                axisLine={false}
-                tickLine={false}
-              />
-              <Tooltip
-                contentStyle={{
-                  fontSize: 12,
-                  borderRadius: 8,
-                  border: "1px solid var(--border)",
-                  background: "var(--popover)",
-                  color: "var(--popover-foreground)",
+                className="flex h-6 w-6 items-center justify-center rounded"
+                style={{
+                  background: "linear-gradient(135deg, var(--ai-from, #06b6d4), var(--ai-to, #2563eb))",
                 }}
-              />
-              <Area
-                type="monotone"
-                dataKey="bom_analysis"
-                name="BOM 분석"
-                stackId="1"
-                stroke="var(--ai-from, #06b6d4)"
-                fill="url(#aiGradFill-bom)"
-              />
-              <Area
-                type="monotone"
-                dataKey="drawing_analysis"
-                name="도면 분석"
-                stackId="1"
-                stroke="var(--ai-to, #2563eb)"
-                fill="url(#aiGradFill-drawing)"
-              />
-              <Area
-                type="monotone"
-                dataKey="ai_chat"
-                name="AI 채팅"
-                stackId="1"
-                stroke="var(--ai-text, #1e40af)"
-                fill="url(#aiGradFill-chat)"
-              />
-            </AreaChart>
-          </ResponsiveContainer>
-          <div className="mt-3 flex items-center justify-center gap-4 text-xs text-muted-foreground">
-            {mockAIFeatureUsages.map((f) => (
-              <div key={f.key} className="flex items-center gap-1.5">
-                <span
-                  className="inline-block h-2 w-2 rounded-full"
-                  style={{ backgroundColor: featureColors[f.key] }}
-                />
-                {f.label}
+              >
+                <Sparkles className="h-3.5 w-3.5 text-white" />
               </div>
-            ))}
+              <span className="text-sm font-medium text-foreground">
+                {data.planCreditsUsed.toLocaleString()} / {data.planCreditsLimit.toLocaleString()} 크레딧
+              </span>
+            </div>
+            {isPlanHigh && (
+              <Badge variant="destructive" className="text-[10px]">
+                한도 임박
+              </Badge>
+            )}
+          </div>
+          <div
+            className="relative h-2 w-full overflow-hidden rounded-full"
+            style={{
+              background: "color-mix(in srgb, var(--ai-from, #06b6d4) 15%, transparent)",
+            }}
+          >
+            <div
+              className="h-full rounded-full transition-all"
+              style={{
+                width: `${Math.min(planPercent, 100)}%`,
+                background: isPlanHigh
+                  ? "var(--status-danger)"
+                  : "linear-gradient(90deg, var(--ai-from, #06b6d4), var(--ai-to, #2563eb))",
+              }}
+            />
+          </div>
+          <div className="flex items-center justify-between">
+            <p className="text-xs tabular-nums text-muted-foreground">
+              잔여 {data.planCreditsRemaining.toLocaleString()} 크레딧
+            </p>
+            <span
+              className="text-xs font-medium tabular-nums"
+              style={{
+                color: isPlanHigh ? "var(--status-danger)" : "var(--ai-from, #06b6d4)",
+              }}
+            >
+              {planPercent.toFixed(0)}%
+            </span>
           </div>
         </div>
       </section>
 
-      {/* ── 추가 크레딧 구매 ── */}
+      {/* ── 추가 구매 크레딧 ── */}
       <section className="space-y-3">
         <h2 className="text-base font-semibold text-foreground">
-          추가 크레딧 구매
+          추가 구매 크레딧
         </h2>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          {mockCreditPackages.map((pkg) => {
-            const Icon = featureIcons[pkg.featureKey];
-            return (
-              <div
-                key={pkg.featureKey}
-                className="flex flex-col justify-between rounded-lg border border-border p-4"
-              >
-                <div>
-                  <div className="flex items-center gap-2">
-                    <div
-                      className="flex h-5 w-5 items-center justify-center rounded"
-                      style={{
-                        background: "linear-gradient(135deg, var(--ai-from, #06b6d4), var(--ai-to, #2563eb))",
-                      }}
-                    >
-                      <Icon className="h-3 w-3 text-white" />
-                    </div>
-                    <span className="text-sm font-medium text-foreground">
-                      {pkg.label}
-                    </span>
-                  </div>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    {pkg.quantity.toLocaleString()} {pkg.unit}
-                  </p>
-                </div>
-                <div className="mt-3 flex items-center justify-between">
-                  <span className="text-sm font-semibold tabular-nums text-foreground">
-                    ₩{pkg.price.toLocaleString("ko-KR")}
-                  </span>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="cursor-pointer gap-1"
-                    onClick={() => setPurchaseTarget(pkg)}
-                  >
-                    <ShoppingCart className="h-3.5 w-3.5" />
-                    구매
-                  </Button>
-                </div>
+        <div className="rounded-lg border border-border p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div className="flex h-6 w-6 items-center justify-center rounded bg-amber-500/10">
+                <ShoppingCart className="h-3.5 w-3.5 text-amber-600" />
               </div>
-            );
-          })}
+              <span className="text-sm font-medium text-foreground">
+                잔여 {data.bonusCreditsRemaining.toLocaleString()} 크레딧
+              </span>
+            </div>
+            {data.bonusCreditsUsed > 0 && (
+              <span className="text-xs tabular-nums text-muted-foreground">
+                사용 {data.bonusCreditsUsed.toLocaleString()}
+              </span>
+            )}
+          </div>
+          <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+            플랜 크레딧을 먼저 소진한 후 추가 구매 크레딧이 사용됩니다.
+            <br />
+            추가 구매 크레딧은 결제 주기와 관계없이 소진 시까지 유지됩니다.
+          </p>
         </div>
       </section>
 
-      {/* ── 구매 확인 AlertDialog ── */}
-      <AlertDialog
-        open={!!purchaseTarget}
-        onOpenChange={(open) => !open && setPurchaseTarget(null)}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>크레딧 구매 확인</AlertDialogTitle>
-            <AlertDialogDescription>
-              {purchaseTarget && (
-                <>
-                  <strong>{purchaseTarget.label}</strong>{" "}
-                  {purchaseTarget.quantity.toLocaleString()}
-                  {purchaseTarget.unit}을(를){" "}
-                  <strong>
-                    ₩{purchaseTarget.price.toLocaleString("ko-KR")}
-                  </strong>
-                  에 구매합니다. 등록된 기본 카드로 즉시 결제됩니다.
-                </>
-              )}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel className="cursor-pointer">취소</AlertDialogCancel>
-            <AlertDialogAction
-              className="cursor-pointer"
-              onClick={handlePurchaseConfirm}
-            >
-              구매하기
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      {/* ── 기능별 사용 횟수 ── */}
+      {data.categories.length > 0 && (
+        <section className="space-y-3">
+          <h2 className="text-base font-semibold text-foreground">
+            기능별 사용 횟수
+          </h2>
+          <div className="space-y-3">
+            {data.categories.map((cat) => {
+              const label = t(`creditCategory.${cat.category}`, cat.category);
+              const color = CATEGORY_COLORS[cat.category] ?? "var(--muted-foreground)";
+              const totalCount = data.categories.reduce((sum, c) => sum + c.creditsUsed, 0);
+              const percent = totalCount > 0
+                ? (cat.creditsUsed / totalCount) * 100
+                : 0;
+
+              return (
+                <div key={cat.category} className="space-y-1">
+                  <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center gap-2">
+                      <span
+                        className="inline-block h-2.5 w-2.5 rounded-full"
+                        style={{ backgroundColor: color }}
+                      />
+                      <span className="font-medium text-foreground">
+                        {label}
+                      </span>
+                    </div>
+                    <span className="tabular-nums text-muted-foreground">
+                      {cat.creditsUsed.toLocaleString()}회 ({percent.toFixed(0)}%)
+                    </span>
+                  </div>
+                  <Progress
+                    value={percent}
+                    className="h-1.5"
+                    indicatorClassName="transition-all"
+                    style={{ "--tw-progress-color": color } as React.CSSProperties}
+                  />
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
+      {/* ── 일별 크레딧 사용 추이 (기능별 Stacked) ── */}
+      <CreditByCategoryChart data={creditCategoryTrend} />
     </div>
   );
 }

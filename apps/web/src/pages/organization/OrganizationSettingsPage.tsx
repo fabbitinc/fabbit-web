@@ -29,6 +29,7 @@ import {
   Pipette,
   Pencil,
   CreditCard,
+  BarChart3,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -111,6 +112,7 @@ import {
 } from "@/api/file";
 import type { MemberRole } from "@/api/types/member";
 import { BillingSection } from "@/features/billing/components/BillingSection";
+import { UsageSection } from "@/features/billing/components/UsageSection";
 
 function getRoleBadge(role: string): {
   label: string;
@@ -152,6 +154,7 @@ type SettingsTab =
   | "parts"
   | "change"
   | "billing"
+  | "usage"
   | "security"
   | "logs"
   | "advanced";
@@ -162,6 +165,7 @@ const VALID_TABS = new Set<string>([
   "parts",
   "change",
   "billing",
+  "usage",
   "security",
   "logs",
   "advanced",
@@ -182,6 +186,7 @@ const settingsTabs: Array<{
   { id: "parts", label: "부품", icon: Package },
   { id: "change", label: "변경 관리", icon: GitPullRequestArrow },
   { id: "billing", label: "결제 관리", icon: CreditCard },
+  { id: "usage", label: "사용량", icon: BarChart3 },
   { id: "security", label: "보안", icon: ShieldCheck },
   { id: "logs", label: "로그 기록", icon: History },
   { id: "advanced", label: "기타 설정", icon: ListChecks },
@@ -678,6 +683,8 @@ export function OrganizationSettingsPage() {
 
           {activeTab === "billing" && <BillingSection />}
 
+          {activeTab === "usage" && <UsageSection />}
+
           {activeTab === "security" && (
             <div className="space-y-6">
               <div>
@@ -923,7 +930,10 @@ function PartsCategoriesTab() {
     setNewName(category);
   };
 
-  const isDuplicate = categories.some((c) => c.category === newName.trim() && c.category !== renameTarget?.category);
+  const isDuplicate = categories.some(
+    (c) =>
+      c.category === newName.trim() && c.category !== renameTarget?.category,
+  );
 
   // 1단계: 이름 입력 Dialog에서 "변경" 클릭 → 경고 AlertDialog 열기
   const handleRequestRename = () => {
@@ -1064,23 +1074,47 @@ function PartsCategoriesTab() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>
-              {isDuplicate ? "카테고리를 합치시겠습니까?" : "카테고리 이름을 변경하시겠습니까?"}
+              {isDuplicate
+                ? "카테고리를 합치시겠습니까?"
+                : "카테고리 이름을 변경하시겠습니까?"}
             </AlertDialogTitle>
             {isDuplicate ? (
               <AlertDialogDescription asChild>
                 <div className="space-y-3 text-sm text-muted-foreground">
-                  <p>카테고리 <span className="font-medium text-foreground">"{renameTarget?.category}"</span>의 부품 {renameTarget?.partCount ?? 0}건이 <span className="font-medium text-foreground">"{newName.trim()}"</span>(으)로 이동됩니다.</p>
+                  <p>
+                    카테고리{" "}
+                    <span className="font-medium text-foreground">
+                      "{renameTarget?.category}"
+                    </span>
+                    의 부품 {renameTarget?.partCount ?? 0}건이{" "}
+                    <span className="font-medium text-foreground">
+                      "{newName.trim()}"
+                    </span>
+                    (으)로 이동됩니다.
+                  </p>
                   <ul className="list-disc space-y-1 pl-4">
-                    <li>기본 담당자 설정은 <span className="font-medium text-foreground">"{newName.trim()}"</span>의 설정이 유지됩니다.</li>
+                    <li>
+                      기본 담당자 설정은{" "}
+                      <span className="font-medium text-foreground">
+                        "{newName.trim()}"
+                      </span>
+                      의 설정이 유지됩니다.
+                    </li>
                     <li>기존 부품의 담당자는 변경되지 않습니다.</li>
                   </ul>
-                  <p className="font-medium text-destructive">이 작업은 되돌릴 수 없습니다.</p>
+                  <p className="font-medium text-destructive">
+                    이 작업은 되돌릴 수 없습니다.
+                  </p>
                 </div>
               </AlertDialogDescription>
             ) : (
               <AlertDialogDescription asChild>
                 <div className="space-y-3 text-sm text-muted-foreground">
-                  <p>"{renameTarget?.category}" 카테고리에 속한 모든 부품({renameTarget?.partCount ?? 0}개)의 카테고리 이름이 일괄 변경됩니다.</p>
+                  <p>
+                    "{renameTarget?.category}" 카테고리에 속한 모든 부품(
+                    {renameTarget?.partCount ?? 0}개)의 카테고리 이름이 일괄
+                    변경됩니다.
+                  </p>
                   <ul className="list-disc space-y-1 pl-4">
                     <li>기본 담당자 설정도 새 이름으로 함께 변경됩니다.</li>
                   </ul>
@@ -1093,7 +1127,11 @@ function PartsCategoriesTab() {
             <AlertDialogAction
               onClick={handleConfirmRename}
               disabled={renameMutation.isPending}
-              className={isDuplicate ? "bg-destructive text-destructive-foreground hover:bg-destructive/90" : ""}
+              className={
+                isDuplicate
+                  ? "bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  : ""
+              }
             >
               {renameMutation.isPending ? (
                 <Loader2 className="mr-1.5 h-4 w-4 animate-spin" />
@@ -1433,8 +1471,8 @@ function PartsDefaultAssignmentTab() {
           부품 기본 담당 설정
         </h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          카테고리별 기본 담당팀과 담당자를 설정합니다. 앞으로 생성되는 부품에 자동으로
-          적용됩니다.
+          카테고리별 기본 담당팀과 담당자를 설정합니다. 앞으로 생성되는 부품에
+          자동으로 적용됩니다.
         </p>
       </div>
 
@@ -1649,7 +1687,10 @@ function PartsDefaultAssignmentTab() {
             <AlertDialogTitle>기본 담당 설정 삭제</AlertDialogTitle>
             <AlertDialogDescription asChild>
               <div className="space-y-2 text-sm text-muted-foreground">
-                <p>"{deleteTarget?.category}" 카테고리의 기본 담당 설정을 삭제합니다.</p>
+                <p>
+                  "{deleteTarget?.category}" 카테고리의 기본 담당 설정을
+                  삭제합니다.
+                </p>
                 <p>기존 부품의 담당자는 유지됩니다.</p>
               </div>
             </AlertDialogDescription>
@@ -1694,6 +1735,10 @@ function MembersUsersTabContent() {
     invitationsData?.invitations.filter((inv) => inv.status === "PENDING") ??
     [];
 
+  const memberCount = membersData?.items.length ?? 0;
+  const maxMembers = membersData?.maxMembers ?? 0;
+  const isAtLimit = maxMembers > 0 && memberCount >= maxMembers;
+
   const handleInvite = () => {
     const trimmed = inviteEmail.trim();
     if (!trimmed) return;
@@ -1710,6 +1755,33 @@ function MembersUsersTabContent() {
 
   return (
     <>
+      {/* 멤버 시트 사용량 */}
+      {maxMembers > 0 && (
+        <div
+          className={cn(
+            "flex items-center justify-between rounded-lg border px-4 py-3",
+            isAtLimit
+              ? "border-destructive/30 bg-destructive/5"
+              : "border-border",
+          )}
+        >
+          <div className="flex items-center gap-2">
+            <Users className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm font-medium text-foreground">
+              멤버 {memberCount} / {maxMembers}명
+            </span>
+            <Badge variant="secondary" className="text-[10px]">
+              플랜 기본
+            </Badge>
+          </div>
+          {isAtLimit && (
+            <p className="text-xs font-medium text-destructive">
+              최대 인원에 도달했습니다. 플랜을 업그레이드하세요.
+            </p>
+          )}
+        </div>
+      )}
+
       {/* 멤버 초대 */}
       <div>
         <h2 className="text-base font-semibold text-foreground">사용자 초대</h2>
@@ -1726,10 +1798,12 @@ function MembersUsersTabContent() {
               if (e.key === "Enter") handleInvite();
             }}
             className="flex-1"
+            disabled={isAtLimit}
           />
           <Select
             value={inviteRole}
             onValueChange={(v) => setInviteRole(v as MemberRole)}
+            disabled={isAtLimit}
           >
             <SelectTrigger className="w-32">
               <SelectValue />
@@ -1741,9 +1815,13 @@ function MembersUsersTabContent() {
             </SelectContent>
           </Select>
           <Button
-            className="gap-1"
+            className="gap-1 cursor-pointer"
             onClick={handleInvite}
-            disabled={!inviteEmail.trim() || createInvitationMutation.isPending}
+            disabled={
+              isAtLimit ||
+              !inviteEmail.trim() ||
+              createInvitationMutation.isPending
+            }
           >
             {createInvitationMutation.isPending ? (
               <Loader2 className="h-4 w-4 animate-spin" />
@@ -1825,7 +1903,8 @@ function MembersUsersTabContent() {
           </h2>
           {membersData && (
             <p className="text-xs text-muted-foreground">
-              {membersData.items.length}명
+              {membersData.items.length}
+              {maxMembers > 0 ? ` / ${maxMembers}` : ""}명
             </p>
           )}
         </div>
