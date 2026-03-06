@@ -80,7 +80,7 @@ function DiffItemCard({ item }: { item: ChangeRequestDiffItem }) {
     : "size-4 text-muted-foreground transition-transform";
 
   return (
-    <div className="rounded-[24px] border border-border/70 bg-card">
+    <div className="rounded-lg border border-border/70 bg-card">
       <button type="button" className={triggerClassName} onClick={() => setIsOpen((current) => !current)}>
         <ChevronRight className={iconClassName} />
         <div className="min-w-0">
@@ -124,7 +124,7 @@ export function ChangeRequestDiffTab({
 }: ChangeRequestDiffTabProps) {
   return (
     <section className="space-y-4">
-      <div className="rounded-[24px] border border-border/70 bg-muted/20 px-4 py-4 text-sm text-muted-foreground">
+      <div className="rounded-lg border border-border/70 bg-muted/20 px-4 py-4 text-sm text-muted-foreground">
         {notice}
       </div>
 

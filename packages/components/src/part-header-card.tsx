@@ -3,6 +3,7 @@ import { Badge } from "@fabbit/ui";
 export interface PartHeaderCardPart {
   partNumber: string;
   name: string | null;
+  description?: string | null;
   revision: string;
   material: string | null;
   unit: string | null;
@@ -33,46 +34,38 @@ function getLifecycleVariant(lifecycleState: string | null): "outline" | "neutra
 
 export function PartHeaderCard({ part }: PartHeaderCardProps) {
   return (
-    <section className="app-panel rounded-[32px] p-6 sm:p-8">
-      <div className="flex flex-col gap-4">
-        <div className="flex flex-wrap items-center gap-3">
-          <div className="rounded-full border border-primary/20 bg-primary/5 px-3 py-1 font-mono text-xs font-semibold text-primary">
-            {part.partNumber}
+    <div className="rounded-lg border bg-card">
+      <div className="p-5">
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-2.5">
+            <h1 className="font-mono text-xl font-bold text-foreground">{part.partNumber}</h1>
+            {part.lifecycleState ? <Badge variant={getLifecycleVariant(part.lifecycleState)}>{part.lifecycleState}</Badge> : null}
           </div>
-          {part.lifecycleState ? <Badge variant={getLifecycleVariant(part.lifecycleState)}>{part.lifecycleState}</Badge> : null}
-          {part.category ? <Badge variant="outline">{part.category}</Badge> : null}
         </div>
 
-        <div>
-          <h1 className="text-3xl font-semibold tracking-tight text-foreground">{part.name ?? part.partNumber}</h1>
-          <p className="mt-2 text-sm leading-6 text-muted-foreground">
-            리비전 {part.revision} · 재질 {part.material ?? "미지정"} · 단위 {part.unit ?? "미지정"}
-          </p>
+        {part.name ? <p className="mt-1 text-base text-foreground">{part.name}</p> : null}
+
+        <div className="mt-4 grid grid-cols-2 gap-x-8 gap-y-1.5 sm:grid-cols-4">
+          <div>
+            <dt className="text-[10px] text-muted-foreground/60">리비전</dt>
+            <dd className="text-sm font-medium text-foreground">{part.revision || "—"}</dd>
+          </div>
+          <div>
+            <dt className="text-[10px] text-muted-foreground/60">재질</dt>
+            <dd className="text-sm text-foreground">{part.material ?? "—"}</dd>
+          </div>
+          <div>
+            <dt className="text-[10px] text-muted-foreground/60">카테고리</dt>
+            <dd className="text-sm text-foreground">{part.category ?? "—"}</dd>
+          </div>
+          <div>
+            <dt className="text-[10px] text-muted-foreground/60">단위</dt>
+            <dd className="text-sm text-foreground">{part.unit ?? "—"}</dd>
+          </div>
         </div>
 
-        <div className="grid gap-3 rounded-[24px] border border-border/70 bg-muted/20 px-4 py-4 text-sm sm:grid-cols-2 xl:grid-cols-5">
-          <div>
-            <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Children</p>
-            <p className="mt-2 font-medium text-foreground">{part.childrenCount}</p>
-          </div>
-          <div>
-            <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Parents</p>
-            <p className="mt-2 font-medium text-foreground">{part.parentsCount}</p>
-          </div>
-          <div>
-            <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Suppliers</p>
-            <p className="mt-2 font-medium text-foreground">{part.suppliersCount}</p>
-          </div>
-          <div>
-            <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Files</p>
-            <p className="mt-2 font-medium text-foreground">{part.filesCount}</p>
-          </div>
-          <div>
-            <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Projects</p>
-            <p className="mt-2 font-medium text-foreground">{part.projectsCount}</p>
-          </div>
-        </div>
+        {part.description ? <p className="mt-3 truncate text-sm text-muted-foreground">{part.description}</p> : null}
       </div>
-    </section>
+    </div>
   );
 }

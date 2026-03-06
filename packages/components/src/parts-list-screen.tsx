@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { ArrowUpDown, Download, FolderPlus, Search, Sparkles, Upload } from "lucide-react";
+import { Download, FolderPlus, Search, Sparkles, Upload } from "lucide-react";
 import {
   PartsListTable,
   type PartsListTableItem,
@@ -118,33 +118,26 @@ export function PartsListScreen({
   onUploadClick,
 }: PartsListScreenProps) {
   return (
-    <div className="space-y-6">
-      <section className="app-panel rounded-[32px] p-6 sm:p-8">
-        <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
-          <div>
-            <div className="inline-flex rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-medium text-primary">
-              Parts
-            </div>
-            <h1 className="mt-4 text-3xl font-semibold tracking-tight text-foreground">부품 관리</h1>
-            <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
-              부품 목록을 검색하고, 프로젝트 연결과 내보내기 흐름을 관리합니다.
-            </p>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-2">
-            <Button type="button" variant="outline" onClick={onTemplateAnalysisClick}>
-              <Sparkles className="size-4" />
-              속성 분석
-            </Button>
-            <Button type="button" variant="outline" onClick={onUploadClick}>
-              <Upload className="size-4" />
-              부품 업로드
-            </Button>
-          </div>
+    <div className="min-h-full space-y-4">
+      <div className="mb-6 flex items-start justify-between">
+        <div>
+          <h1 className="text-xl font-bold text-foreground">부품 관리</h1>
+          <p className="mt-1 text-sm text-muted-foreground">조직의 전체 부품을 관리합니다</p>
         </div>
-      </section>
 
-      <section className="app-panel rounded-[32px] p-5">
+        <div className="flex items-center gap-2">
+          <Button type="button" variant="outline" onClick={onTemplateAnalysisClick}>
+            <Sparkles className="h-4 w-4" />
+            속성 분석
+          </Button>
+          <Button type="button" variant="outline" onClick={onUploadClick}>
+            <Upload className="h-4 w-4" />
+            부품 업로드
+          </Button>
+        </div>
+      </div>
+
+      <section className="rounded-lg border bg-card p-4 shadow-sm">
         <div className="flex flex-col gap-3 xl:flex-row xl:items-center">
           <PartsQueryInput query={queryState.query} onSubmit={onQueryChange} />
 
@@ -240,10 +233,6 @@ export function PartsListScreen({
             <Button disabled={isExporting} type="button" variant="outline" onClick={onCurrentExportClick}>
               <Download className="size-4" />
               현재 조건 내보내기
-            </Button>
-            <Button type="button" variant="ghost" onClick={() => onSortChange(queryState.sortKey)}>
-              <ArrowUpDown className="size-4" />
-              정렬 토글
             </Button>
           </div>
         </div>

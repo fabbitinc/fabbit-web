@@ -1,5 +1,5 @@
 import type { ComponentType, ReactNode } from "react";
-import { ArrowLeft, Building2, Clock, FolderKanban, Network, Package, Paperclip, User } from "lucide-react";
+import { Building2, Clock, FolderKanban, Network, Package, Paperclip, User } from "lucide-react";
 import { Button } from "@fabbit/ui";
 import { PartHeaderCard, type PartHeaderCardPart } from "./part-header-card";
 
@@ -22,12 +22,17 @@ export interface PartDetailScreenProps {
   onTabChange: (tab: PartDetailScreenTab) => void;
 }
 
-const detailTabs: { id: PartDetailScreenTab; label: string; icon: ComponentType<{ className?: string }> }[] = [
+const detailTabs: Array<{
+  id: PartDetailScreenTab;
+  label: string;
+  icon: ComponentType<{ className?: string }>;
+  count?: (part: PartHeaderCardPart) => number;
+}> = [
   { id: "properties", label: "속성", icon: Package },
-  { id: "bom", label: "BOM", icon: Network },
-  { id: "attachments", label: "첨부 파일", icon: Paperclip },
-  { id: "suppliers", label: "공급사", icon: Building2 },
-  { id: "projects", label: "프로젝트", icon: FolderKanban },
+  { id: "bom", label: "BOM", icon: Network, count: (part) => part.childrenCount },
+  { id: "attachments", label: "첨부 파일", icon: Paperclip, count: (part) => part.filesCount },
+  { id: "suppliers", label: "공급사", icon: Building2, count: (part) => part.suppliersCount },
+  { id: "projects", label: "프로젝트", icon: FolderKanban, count: (part) => part.projectsCount },
   { id: "owner", label: "담당", icon: User },
   { id: "history", label: "이력", icon: Clock },
 ];
@@ -77,40 +82,52 @@ export function PartDetailScreen({
   }
 
   return (
-    <div className="space-y-6">
-      <Button type="button" variant="ghost" onClick={onBackClick}>
-        <ArrowLeft className="size-4" />
-        부품 목록
-      </Button>
+    <div className="min-h-full">
+      <div className="mb-4 flex items-center gap-1.5 text-sm">
+        <button
+          className="cursor-pointer text-muted-foreground transition-colors hover:text-primary"
+          type="button"
+          onClick={onBackClick}
+        >
+          부품 관리
+        </button>
+        <span className="text-muted-foreground/40">/</span>
+        <span className="font-semibold text-foreground">{part.partNumber}</span>
+      </div>
 
-      <PartHeaderCard part={part} />
+      <div className="mb-5">
+        <PartHeaderCard part={part} />
+      </div>
 
-      <section className="app-panel rounded-[32px] p-2">
-        <div className="flex flex-wrap gap-2">
+      <div className="mb-5 border-b">
+        <div className="flex flex-wrap">
           {detailTabs.map((tab) => {
             const Icon = tab.icon;
             const isActive = activeTab === tab.id;
+            const count = tab.count ? tab.count(part) : null;
 
             return (
               <button
                 key={tab.id}
                 type="button"
-                className={
-                  `inline-flex cursor-pointer items-center gap-2 rounded-[20px] px-4 py-2 text-sm font-medium transition-colors ${
-                    isActive
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:bg-muted/70 hover:text-foreground"
-                  }`
-                }
+                className={`relative flex cursor-pointer items-center gap-1.5 px-4 py-2.5 text-sm font-medium transition-colors ${
+                  isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+                }`}
                 onClick={() => onTabChange(tab.id)}
               >
-                <Icon className="size-4" />
+                <Icon className="h-3.5 w-3.5" />
                 {tab.label}
+                {count != null && count > 0 ? (
+                  <span className="inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-muted px-1 text-[10px] font-medium text-muted-foreground">
+                    {count}
+                  </span>
+                ) : null}
+                {isActive ? <span className="absolute inset-x-0 -bottom-px h-0.5 bg-primary" /> : null}
               </button>
             );
           })}
         </div>
-      </section>
+      </div>
 
       {activeTab === "properties" ? propertiesContent : null}
       {activeTab === "bom" ? bomContent : null}

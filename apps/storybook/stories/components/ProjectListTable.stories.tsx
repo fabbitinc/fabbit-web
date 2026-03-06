@@ -61,6 +61,7 @@ function ProjectListTableStory({
       totalCount={totalCount}
       onCreateClick={() => undefined}
       onPageChange={(page) => setQueryState((current) => ({ ...current, page }))}
+      onPageSizeChange={(pageSize) => setQueryState((current) => ({ ...current, page: 1, pageSize }))}
       onQueryChange={(query) => setQueryState((current) => ({ ...current, query }))}
       onRetry={() => undefined}
       onRowClick={() => undefined}

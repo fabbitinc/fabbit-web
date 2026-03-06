@@ -56,7 +56,7 @@ export function StorageUsagePanel({ trend, usage }: StorageUsagePanelProps) {
       <section className="space-y-3">
         <h2 className="text-base font-semibold text-foreground">스토리지 사용량</h2>
 
-        <div className="rounded-[24px] border border-border/70 bg-card p-4">
+        <div className="rounded-lg border border-border/70 bg-card p-4">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-2">
               <HardDrive className="size-5 text-muted-foreground" />

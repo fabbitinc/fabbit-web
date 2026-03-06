@@ -45,7 +45,7 @@ export function ProjectSettingsMembersTab({ isReadonly, projectId }: ProjectSett
         {membersQuery.data?.map((member) => (
           <div
             key={member.userId}
-            className="flex flex-col gap-3 rounded-[24px] border border-border/70 bg-card px-4 py-4 sm:flex-row sm:items-center sm:justify-between"
+            className="flex flex-col gap-3 rounded-lg border border-border/70 bg-card px-4 py-4 sm:flex-row sm:items-center sm:justify-between"
           >
             <div className="flex min-w-0 items-center gap-3">
               <UserAvatar imageUrl={member.profileImageUrl} name={member.fullName} />
@@ -72,13 +72,13 @@ export function ProjectSettingsMembersTab({ isReadonly, projectId }: ProjectSett
         ))}
 
         {membersQuery.isLoading ? (
-          <div className="rounded-[24px] border border-border/70 bg-card px-4 py-8 text-center text-sm text-muted-foreground">
+          <div className="rounded-lg border border-border/70 bg-card px-4 py-8 text-center text-sm text-muted-foreground">
             멤버 목록을 불러오는 중입니다.
           </div>
         ) : null}
 
         {!membersQuery.isLoading && (membersQuery.data?.length ?? 0) === 0 ? (
-          <div className="rounded-[24px] border border-border/70 bg-card px-4 py-8 text-center text-sm text-muted-foreground">
+          <div className="rounded-lg border border-border/70 bg-card px-4 py-8 text-center text-sm text-muted-foreground">
             프로젝트 멤버가 없습니다.
           </div>
         ) : null}

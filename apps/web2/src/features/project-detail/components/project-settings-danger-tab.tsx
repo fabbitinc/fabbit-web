@@ -25,7 +25,7 @@ export function ProjectSettingsDangerTab({
 
   return (
     <section className="space-y-4">
-      <div className="rounded-[28px] border border-status-warning-border bg-status-warning-bg/60 p-6">
+      <div className="rounded-lg border border-status-warning-border bg-status-warning-bg/60 p-6">
         <div className="flex items-start gap-3">
           <div className="mt-0.5 rounded-full bg-status-warning/15 p-2 text-status-warning">
             <AlertTriangle className="size-4" />

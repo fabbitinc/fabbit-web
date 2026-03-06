@@ -61,7 +61,7 @@ export function AIUsagePanel({ trend, usage }: AIUsagePanelProps) {
   return (
     <div className="space-y-8">
       <div
-        className="flex items-center gap-3 rounded-[24px] border px-4 py-3"
+        className="flex items-center gap-3 rounded-lg border px-4 py-3"
         style={{
           background: "color-mix(in srgb, var(--ai-from) 6%, transparent)",
           borderColor: "color-mix(in srgb, var(--ai-from) 30%, transparent)",
@@ -85,7 +85,7 @@ export function AIUsagePanel({ trend, usage }: AIUsagePanelProps) {
 
       <section className="space-y-3">
         <h2 className="text-base font-semibold text-foreground">플랜 크레딧</h2>
-        <div className="space-y-3 rounded-[24px] border border-border/70 bg-card p-4">
+        <div className="space-y-3 rounded-lg border border-border/70 bg-card p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div
@@ -120,7 +120,7 @@ export function AIUsagePanel({ trend, usage }: AIUsagePanelProps) {
 
       <section className="space-y-3">
         <h2 className="text-base font-semibold text-foreground">추가 구매 크레딧</h2>
-        <div className="rounded-[24px] border border-border/70 bg-card p-4">
+        <div className="rounded-lg border border-border/70 bg-card p-4">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <div className="flex h-6 w-6 items-center justify-center rounded bg-[var(--status-warning-bg)]">

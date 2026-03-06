@@ -1,16 +1,14 @@
-import { AlertCircle, CheckCircle2, FileCheck2, GitPullRequestArrow, Loader2, MessageSquare, Plus, Search } from "lucide-react";
 import {
-  Badge,
-  Button,
-  Input,
-  LabelBadge,
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-  UserAvatar,
-} from "@fabbit/ui";
+  AlertCircle,
+  CheckCircle2,
+  FileCheck,
+  FilePen,
+  FileX,
+  HelpCircle,
+  MessageSquare,
+  Plus,
+} from "lucide-react";
+import { Button, LabelBadge, UserAvatar } from "@fabbit/ui";
 
 export type ChangeManagementScreenView = "issues" | "requests";
 export type ChangeManagementScreenState = "open" | "closed";
@@ -34,6 +32,7 @@ export interface ChangeManagementScreenItem {
   title: string;
   state: string;
   crState: string | null;
+  createdAt?: string;
   createdBy: string | null;
   updatedAt: string;
   labels: ChangeManagementScreenLabel[];
@@ -71,37 +70,58 @@ export interface ChangeManagementScreenProps {
   onViewChange: (view: ChangeManagementScreenView) => void;
 }
 
-const pageSizeOptions = [20, 40, 80] as const;
-
-function getItemStatusLabel(item: ChangeManagementScreenItem) {
-  if (item.kind === "issues") {
-    return item.state === "CLOSED" ? "닫힘" : "열림";
-  }
-
-  const statusLabelMap: Record<string, string> = {
-    DRAFT: "초안",
-    SUBMITTED: "제출됨",
-    MERGED: "반영됨",
-    CLOSED: "닫힘",
-  };
-
-  return statusLabelMap[item.crState ?? ""] ?? item.crState ?? item.state;
+function formatShortDate(dateString: string) {
+  const date = new Date(dateString);
+  return `${date.getMonth() + 1}/${date.getDate()}`;
 }
 
-function getItemStatusVariant(item: ChangeManagementScreenItem) {
-  if (item.kind === "issues") {
-    return item.state === "CLOSED" ? "neutral" : "accent";
+function timeAgo(iso: string) {
+  const diff = Date.now() - new Date(iso).getTime();
+  const minutes = Math.floor(diff / 60000);
+
+  if (minutes < 1) {
+    return "방금";
   }
 
-  if (item.crState === "MERGED") {
-    return "success";
+  if (minutes < 60) {
+    return `${minutes}분 전`;
   }
 
-  if (item.crState === "CLOSED") {
-    return "neutral";
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) {
+    return `${hours}시간 전`;
   }
 
-  return "accent";
+  const days = Math.floor(hours / 24);
+  if (days < 30) {
+    return `${days}일 전`;
+  }
+
+  return formatShortDate(iso);
+}
+
+function getStatusConfig(item: ChangeManagementScreenItem) {
+  if (item.kind === "requests") {
+    const normalized = (item.crState ?? item.state).toUpperCase();
+
+    if (normalized === "DRAFT") {
+      return { className: "text-gray-500", icon: FilePen, label: "초안" };
+    }
+    if (normalized === "MERGED") {
+      return { className: "text-purple-600", icon: FileCheck, label: "반영" };
+    }
+    if (normalized === "CLOSED") {
+      return { className: "text-red-500", icon: FileX, label: "닫힘" };
+    }
+
+    return { className: "text-emerald-600", icon: FilePen, label: "제출" };
+  }
+
+  if (item.state === "CLOSED") {
+    return { className: "text-purple-600", icon: CheckCircle2, label: "닫힘" };
+  }
+
+  return { className: "text-emerald-600", icon: AlertCircle, label: "열림" };
 }
 
 export function ChangeManagementScreen({
@@ -112,224 +132,211 @@ export function ChangeManagementScreen({
   onCreateClick,
   onItemClick,
   onPageChange,
-  onPageSizeChange,
-  onQueryChange,
   onRetry,
   onStateChange,
   onViewChange,
 }: ChangeManagementScreenProps) {
-  const totalPages = Math.max(1, Math.ceil((listData?.total ?? 0) / queryState.pageSize));
+  const totalCount = listData?.total ?? 0;
+  const totalPages = Math.max(1, Math.ceil(totalCount / queryState.pageSize));
 
   return (
-    <div className="space-y-6">
-      <section className="app-panel rounded-[32px] p-6 sm:p-8">
-        <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-          <div>
-            <Badge variant="accent">Changes</Badge>
-            <h1 className="mt-4 text-3xl font-semibold tracking-tight text-foreground">변경 관리</h1>
-            <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
-              이슈와 변경 요청을 한 곳에서 조회하고, 상태에 따라 생성과 상세 검토로 이어집니다.
-            </p>
-          </div>
-
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div className="rounded-[24px] border border-border/70 bg-muted/30 px-4 py-3">
-              <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Current View</p>
-              <p className="mt-3 text-2xl font-semibold tracking-tight text-foreground">
-                {queryState.view === "issues" ? "Issues" : "Requests"}
-              </p>
-              <p className="mt-1 text-sm text-muted-foreground">{listData?.total.toLocaleString() ?? 0}개 항목</p>
-            </div>
-
-            <div className="rounded-[24px] border border-border/70 bg-muted/30 px-4 py-3">
-              <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Page Size</p>
-              <div className="mt-3">
-                <Select value={String(queryState.pageSize)} onValueChange={(value) => onPageSizeChange(Number(value))}>
-                  <SelectTrigger className="w-[140px] bg-background">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {pageSizeOptions.map((option) => (
-                      <SelectItem key={option} value={String(option)}>
-                        {option}개씩 보기
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="flex flex-wrap gap-2">
-        <Button
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h1 className="text-xl font-bold text-foreground">변경 관리</h1>
+        <button
+          className="cursor-pointer text-muted-foreground transition-colors hover:text-foreground"
+          title="내가 담당자, 검토자, 생성자인 항목만 표시됩니다"
           type="button"
-          variant={queryState.view === "issues" ? "default" : "outline"}
+        >
+          <HelpCircle className="size-5" />
+        </button>
+      </div>
+
+      <div className="flex gap-4 border-b">
+        <button
+          className={`relative px-1 pb-2 text-sm font-medium transition-colors ${
+            queryState.view === "issues" ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+          }`}
+          type="button"
           onClick={() => onViewChange("issues")}
         >
-          <AlertCircle className="size-4" />
           이슈
-        </Button>
-        <Button
+          {queryState.view === "issues" ? (
+            <span className="absolute inset-x-0 bottom-0 h-0.5 rounded-full bg-foreground" />
+          ) : null}
+        </button>
+        <button
+          className={`relative px-1 pb-2 text-sm font-medium transition-colors ${
+            queryState.view === "requests" ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+          }`}
           type="button"
-          variant={queryState.view === "requests" ? "default" : "outline"}
           onClick={() => onViewChange("requests")}
         >
-          <GitPullRequestArrow className="size-4" />
           변경 요청
-        </Button>
-      </section>
+          {queryState.view === "requests" ? (
+            <span className="absolute inset-x-0 bottom-0 h-0.5 rounded-full bg-foreground" />
+          ) : null}
+        </button>
+      </div>
 
-      <section className="space-y-4">
-        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-          <div className="relative max-w-md flex-1">
-            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              className="pl-10"
-              placeholder={queryState.view === "issues" ? "이슈 제목으로 검색" : "변경 요청 제목으로 검색"}
-              value={queryState.query}
-              onChange={(event) => onQueryChange(event.target.value)}
-            />
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Button
+      <div className="rounded-lg border bg-card">
+        <div className="flex items-center justify-between border-b px-5 py-3">
+          <div className="flex items-center gap-4">
+            <button
+              className={`inline-flex cursor-pointer items-center gap-1.5 text-sm font-medium transition-colors ${
+                queryState.state === "open" ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+              }`}
               type="button"
-              variant={queryState.state === "open" ? "default" : "outline"}
               onClick={() => onStateChange("open")}
             >
               <AlertCircle className="size-4" />
-              열림 {listData?.openCount ?? 0}
-            </Button>
-            <Button
+              {listData?.openCount ?? 0} 열림
+            </button>
+            <button
+              className={`inline-flex cursor-pointer items-center gap-1.5 text-sm font-medium transition-colors ${
+                queryState.state === "closed" ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+              }`}
               type="button"
-              variant={queryState.state === "closed" ? "default" : "outline"}
               onClick={() => onStateChange("closed")}
             >
               <CheckCircle2 className="size-4" />
-              닫힘 {listData?.closedCount ?? 0}
-            </Button>
-            <Button type="button" onClick={onCreateClick}>
-              <Plus className="size-4" />
-              {queryState.view === "issues" ? "새 이슈" : "새 변경 요청"}
-            </Button>
+              {listData?.closedCount ?? 0} 닫힘
+            </button>
           </div>
+          <Button size="sm" type="button" onClick={onCreateClick}>
+            <Plus className="size-3.5" />
+            {queryState.view === "issues" ? "새 이슈" : "새 변경 요청"}
+          </Button>
         </div>
 
-        <section className="app-panel overflow-hidden rounded-[32px]">
-          <div className="border-b border-border/70 px-5 py-4">
-            <p className="text-sm font-medium text-foreground">
-              {queryState.view === "issues" ? "이슈 레지스트리" : "변경 요청 레지스트리"}
-            </p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              현재 상태와 담당자, 라벨, 댓글 수를 한 번에 확인합니다.
+        {isLoading ? (
+          <div className="flex items-center justify-center py-20 text-sm text-muted-foreground">
+            목록을 불러오는 중입니다.
+          </div>
+        ) : null}
+
+        {isError && !isLoading ? (
+          <div className="flex flex-col items-center justify-center gap-3 py-16 text-center">
+            <p className="text-sm text-muted-foreground">목록을 불러오지 못했습니다.</p>
+            {onRetry ? (
+              <Button size="sm" type="button" variant="outline" onClick={onRetry}>
+                다시 시도
+              </Button>
+            ) : null}
+          </div>
+        ) : null}
+
+        {!isLoading && !isError && totalCount === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12">
+            {queryState.view === "issues" ? (
+              <AlertCircle className="size-8 text-muted-foreground/30" />
+            ) : (
+              <FilePen className="size-8 text-muted-foreground/30" />
+            )}
+            <p className="mt-3 text-sm text-muted-foreground">
+              {queryState.view === "issues"
+                ? queryState.state === "open"
+                  ? "열린 이슈가 없습니다"
+                  : "닫힌 이슈가 없습니다"
+                : queryState.state === "open"
+                  ? "열린 변경 요청이 없습니다"
+                  : "닫힌 변경 요청이 없습니다"}
             </p>
           </div>
+        ) : null}
 
-          {isLoading ? (
-            <div className="flex h-72 items-center justify-center">
-              <Loader2 className="size-6 animate-spin text-muted-foreground" />
-            </div>
-          ) : null}
+        {!isLoading && !isError && totalCount > 0 ? (
+          <div className="divide-y">
+            {listData?.items.map((item) => {
+              const status = getStatusConfig(item);
+              const StatusIcon = status.icon;
+              const createdAt = item.createdAt ?? item.updatedAt;
 
-          {isError && !isLoading ? (
-            <div className="flex h-72 flex-col items-center justify-center gap-3 px-6 text-center">
-              <p className="text-base font-medium text-foreground">목록을 불러오지 못했습니다.</p>
-              <p className="max-w-md text-sm leading-6 text-muted-foreground">
-                잠시 후 다시 시도해 주세요.
-              </p>
-              {onRetry ? (
-                <Button type="button" variant="outline" onClick={onRetry}>
-                  다시 시도
-                </Button>
-              ) : null}
-            </div>
-          ) : null}
-
-          {!isLoading && !isError && (listData?.items.length ?? 0) === 0 ? (
-            <div className="flex h-72 flex-col items-center justify-center gap-3 px-6 text-center">
-              <FileCheck2 className="size-8 text-muted-foreground/40" />
-              <p className="text-base font-medium text-foreground">
-                {queryState.query ? "검색 결과가 없습니다." : "표시할 항목이 없습니다."}
-              </p>
-              <p className="max-w-md text-sm leading-6 text-muted-foreground">
-                검색 조건이나 상태 필터를 조정하거나 새 항목을 생성해 주세요.
-              </p>
-            </div>
-          ) : null}
-
-          {!isLoading && !isError ? (
-            <div className="divide-y divide-border/60">
-              {listData?.items.map((item) => (
+              return (
                 <button
                   key={item.id}
-                  aria-label={`${item.kind === "issues" ? "이슈" : "변경 요청"} #${item.number} 상세 보기`}
-                  className="flex w-full cursor-pointer flex-col gap-3 px-5 py-4 text-left transition-colors hover:bg-primary/5"
+                  className="flex w-full cursor-pointer items-start gap-3 px-5 py-3 text-left transition-colors hover:bg-muted/30"
                   type="button"
                   onClick={() => onItemClick(item)}
                 >
-                  <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-                    <div className="min-w-0">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <Badge variant={getItemStatusVariant(item)}>{getItemStatusLabel(item)}</Badge>
-                        <span className="text-sm text-muted-foreground">#{item.number}</span>
-                        {item.labels.slice(0, 3).map((label) => (
-                          <LabelBadge key={label.id} colorHex={label.color} label={label.name} size="sm" />
-                        ))}
-                      </div>
-                      <p className="mt-3 text-base font-medium text-foreground">{item.title}</p>
-                      <p className="mt-2 text-sm text-muted-foreground">
-                        {item.createdBy ? `${item.createdBy} 님이 생성` : "작성자 정보 없음"} ·{" "}
-                        {new Intl.DateTimeFormat("ko-KR", { dateStyle: "medium" }).format(new Date(item.updatedAt))}
-                      </p>
-                    </div>
+                  <div className="mt-0.5 w-14 shrink-0">
+                    <span className={`inline-flex items-center gap-1 ${status.className}`}>
+                      <StatusIcon className="size-4" />
+                      <span className="text-xs font-medium">{status.label}</span>
+                    </span>
+                  </div>
 
-                    <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
-                      {item.assignees.length > 0 ? (
-                        <div className="flex -space-x-2">
-                          {item.assignees.slice(0, 3).map((assignee) => (
-                            <UserAvatar
-                              key={assignee.userId}
-                              imageUrl={assignee.profileImageUrl}
-                              name={assignee.fullName}
-                            />
-                          ))}
-                        </div>
-                      ) : (
-                        <span>담당자 없음</span>
-                      )}
-                      <span className="inline-flex items-center gap-1">
-                        <MessageSquare className="size-4" />
-                        {item.commentsCount}
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium text-foreground">{item.title}</span>
+                      {item.labels.map((label) => (
+                        <LabelBadge key={label.id} colorHex={label.color} label={label.name} size="sm" />
+                      ))}
+                    </div>
+                    <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
+                      <span>#{item.number}</span>
+                      <span>·</span>
+                      <span>
+                        {item.createdBy ? `${item.createdBy} 님이 ${timeAgo(createdAt)} 생성했습니다` : `${timeAgo(createdAt)} 업데이트`}
                       </span>
+                      {item.assignees.length > 0 ? (
+                        <>
+                          <span>·</span>
+                          <div className="flex -space-x-1">
+                            {item.assignees.map((assignee) => (
+                              <UserAvatar
+                                key={assignee.userId}
+                                className="size-4 border border-background text-[8px]"
+                                imageUrl={assignee.profileImageUrl}
+                                name={assignee.fullName}
+                              />
+                            ))}
+                          </div>
+                        </>
+                      ) : null}
                     </div>
                   </div>
-                </button>
-              ))}
-            </div>
-          ) : null}
 
-          <div className="flex items-center justify-between border-t border-border/70 px-5 py-4">
-            <p className="text-sm text-muted-foreground">
+                  {item.commentsCount > 0 ? (
+                    <div className="mt-1 flex shrink-0 items-center gap-1 text-xs text-muted-foreground">
+                      <MessageSquare className="size-3.5" />
+                      {item.commentsCount}
+                    </div>
+                  ) : null}
+                </button>
+              );
+            })}
+          </div>
+        ) : null}
+
+        {!isLoading && !isError && totalPages > 1 ? (
+          <div className="flex items-center justify-between border-t bg-muted/30 px-4 py-3">
+            <span className="text-xs text-muted-foreground">
               {queryState.page} / {totalPages}
-            </p>
-            <div className="flex gap-2">
-              <Button disabled={queryState.page <= 1} type="button" variant="outline" onClick={() => onPageChange(queryState.page - 1)}>
+            </span>
+            <div className="flex items-center gap-2">
+              <Button
+                disabled={queryState.page <= 1}
+                size="sm"
+                type="button"
+                variant="ghost"
+                onClick={() => onPageChange(queryState.page - 1)}
+              >
                 이전
               </Button>
               <Button
                 disabled={queryState.page >= totalPages}
+                size="sm"
                 type="button"
-                variant="outline"
+                variant="ghost"
                 onClick={() => onPageChange(queryState.page + 1)}
               >
                 다음
               </Button>
             </div>
           </div>
-        </section>
-      </section>
+        ) : null}
+      </div>
     </div>
   );
 }

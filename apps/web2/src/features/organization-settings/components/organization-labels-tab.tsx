@@ -46,7 +46,7 @@ export function OrganizationLabelsTab() {
         {(labelsQuery.data ?? []).map((label) => (
           <div
             key={label.id}
-            className="flex items-center gap-3 rounded-[20px] border border-border/70 bg-card px-4 py-2.5"
+            className="flex items-center gap-3 rounded-md border border-border/70 bg-card px-4 py-2.5"
           >
             <LabelBadge colorHex={label.color} label={label.name} />
             <span className="min-w-0 flex-1 truncate text-xs text-muted-foreground">{label.description ?? ""}</span>

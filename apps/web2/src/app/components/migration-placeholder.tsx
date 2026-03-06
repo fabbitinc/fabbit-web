@@ -13,7 +13,7 @@ export function MigrationPlaceholder({
   notes,
 }: MigrationPlaceholderProps) {
   return (
-    <section className="app-panel rounded-[28px] p-8">
+    <section className="app-panel rounded-lg p-8">
       <div className="mb-4 flex items-center justify-between gap-4">
         <div>
           <Badge variant="accent">이관 중</Badge>

@@ -45,7 +45,7 @@ export function UserSecuritySettingsTab() {
           <Badge variant="info">서버 연동</Badge>
         </div>
 
-        <div className="grid gap-4 rounded-[24px] border border-border/70 bg-card p-4">
+        <div className="grid gap-4 rounded-lg border border-border/70 bg-card p-4">
           <div className="space-y-2">
             <Label htmlFor="user-current-password">현재 비밀번호</Label>
             <Input
@@ -95,7 +95,7 @@ export function UserSecuritySettingsTab() {
           <Badge variant="secondary">로컬 설정</Badge>
         </div>
 
-        <div className="space-y-4 rounded-[24px] border border-border/70 bg-card p-4">
+        <div className="space-y-4 rounded-lg border border-border/70 bg-card p-4">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-start gap-3">
               <div className="mt-0.5 rounded-full bg-primary/10 p-2 text-primary">

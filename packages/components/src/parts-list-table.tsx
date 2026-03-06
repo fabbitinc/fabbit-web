@@ -40,7 +40,7 @@ interface SortableHeaderProps {
   onSortChange: (sortKey: PartsListTableSortKey) => void;
 }
 
-const pageSizeOptions = [20, 40, 80];
+const pageSizeOptions = [15, 30, 50];
 
 function getLifecycleVariant(lifecycleState: string | null): "outline" | "neutral" | "accent" | "success" {
   if (lifecycleState === "양산") {
@@ -119,11 +119,21 @@ export function PartsListTable({
   const someChecked = items.some((item) => selectedIds.has(item.id));
 
   return (
-    <section className="app-panel overflow-hidden rounded-[32px]">
+    <section className="overflow-hidden rounded-lg border bg-card shadow-sm">
       <div className="overflow-x-auto">
-        <table className="min-w-full border-collapse">
+        <table className="w-full table-fixed text-sm">
+          <colgroup>
+            <col style={{ width: "48px" }} />
+            <col style={{ width: "18%" }} />
+            <col />
+            <col style={{ width: "15%" }} />
+            <col style={{ width: "72px" }} />
+            <col style={{ width: "96px" }} />
+            <col style={{ width: "72px" }} />
+            <col style={{ width: "96px" }} />
+          </colgroup>
           <thead>
-            <tr className="border-b border-border/70 bg-muted/30">
+            <tr className="border-b border-border/70 bg-muted/50">
               <th className="w-12 px-4 py-3 text-center">
                 <Checkbox
                   aria-label="전체 선택"
@@ -190,7 +200,7 @@ export function PartsListTable({
               ? items.map((item) => (
                   <tr
                     key={item.id}
-                    className="cursor-pointer border-b border-border/50 transition-colors hover:bg-muted/20"
+                    className="h-[45px] cursor-pointer border-b border-border/50 transition-colors hover:bg-muted/50"
                     onClick={() => onRowClick(item.id)}
                   >
                     <td className="px-4 py-3 text-center" onClick={(event) => event.stopPropagation()}>
@@ -234,7 +244,7 @@ export function PartsListTable({
       <div className="flex flex-col gap-3 border-t border-border/70 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3 text-sm text-muted-foreground">
           <Select value={String(pageSize)} onValueChange={(value) => onPageSizeChange(Number(value))}>
-            <SelectTrigger className="h-9 w-[96px]">
+            <SelectTrigger className="h-8 w-[80px] text-xs">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

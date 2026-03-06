@@ -7,9 +7,7 @@
 @layer base {
   body {
     min-height: 100vh;
-    background:
-      radial-gradient(circle at top, color-mix(in srgb, var(--primary) 12%, transparent), transparent 45%),
-      linear-gradient(180deg, var(--background), var(--muted));
+    background: var(--background);
   }
 
   #root {
@@ -20,13 +18,13 @@
 @layer components {
   .app-shell {
     min-height: 100vh;
-    background-color: color-mix(in srgb, var(--background) 92%, var(--muted));
+    background-color: var(--background);
   }
 
   .app-panel {
-    border: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
-    background-color: color-mix(in srgb, var(--card) 92%, white 8%);
-    box-shadow: 0 24px 64px -40px color-mix(in srgb, var(--foreground) 24%, transparent);
+    border: 1px solid var(--border);
+    background-color: var(--card);
+    box-shadow: 0 1px 2px 0 color-mix(in srgb, var(--foreground) 8%, transparent);
   }
 
   .auth-hero {

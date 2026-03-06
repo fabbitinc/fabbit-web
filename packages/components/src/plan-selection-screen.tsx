@@ -48,7 +48,7 @@ export function PlanSelectionScreen({
             <button
               key={plan.tier}
               className={cn(
-                "cursor-pointer rounded-[28px] border p-5 text-left transition-colors",
+                "cursor-pointer rounded-lg border p-5 text-left transition-colors",
                 isSelected ? "border-primary bg-primary/5" : "border-border/70 bg-card",
                 isDisabled ? "cursor-not-allowed opacity-60" : "hover:border-primary/50",
               )}

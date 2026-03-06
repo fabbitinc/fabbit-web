@@ -56,14 +56,14 @@ const DEFAULT_EXAMPLES: PartsTemplateAnalysisExample[] = [
 
 function getDropzoneClassName(isUploading: boolean, isDragOver: boolean) {
   if (isUploading) {
-    return "rounded-[28px] border-2 border-dashed border-border bg-muted/30 p-10 text-center opacity-70";
+    return "rounded-lg border-2 border-dashed border-border bg-muted/30 p-10 text-center opacity-70";
   }
 
   if (isDragOver) {
-    return "cursor-pointer rounded-[28px] border-2 border-dashed border-primary bg-primary/5 p-10 text-center";
+    return "cursor-pointer rounded-lg border-2 border-dashed border-primary bg-primary/5 p-10 text-center";
   }
 
-  return "cursor-pointer rounded-[28px] border-2 border-dashed border-border bg-muted/20 p-10 text-center transition-colors hover:border-primary/40";
+  return "cursor-pointer rounded-lg border-2 border-dashed border-border bg-muted/20 p-10 text-center transition-colors hover:border-primary/40";
 }
 
 export function PartsTemplateAnalysisScreen({
@@ -79,7 +79,7 @@ export function PartsTemplateAnalysisScreen({
 
   return (
     <div className="space-y-6">
-      <section className="app-panel rounded-[32px] p-6 sm:p-8">
+      <section className="app-panel rounded-lg p-6 sm:p-8">
         <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
           <div>
             <div className="inline-flex rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-medium text-primary">
@@ -99,7 +99,7 @@ export function PartsTemplateAnalysisScreen({
         </div>
       </section>
 
-      <section className="app-panel rounded-[32px] p-6">
+      <section className="app-panel rounded-lg p-6">
         <h2 className="text-lg font-semibold text-foreground">분석 파일 업로드</h2>
         <p className="mt-2 text-sm text-muted-foreground">
           BOM 또는 부품 목록 파일의 헤더를 읽어 속성 후보와 관계 후보를 추출합니다.
@@ -182,7 +182,7 @@ function TemplateExampleCard({ title, description, rows }: PartsTemplateAnalysis
   const headers = Object.keys(rows[0] ?? {});
 
   return (
-    <section className="app-panel rounded-[32px] p-5">
+    <section className="app-panel rounded-lg p-5">
       <div className="flex items-center gap-2">
         <FileText className="size-4 text-primary" />
         <h3 className="text-sm font-semibold text-foreground">{title}</h3>

@@ -16,7 +16,7 @@ export function PartBomTab({ partId }: PartBomTabProps) {
 
   return (
     <div className="space-y-8">
-      <section className="app-panel rounded-[28px] p-4">
+      <section className="app-panel rounded-lg p-4">
         <div className="flex items-center justify-between gap-3">
           <div>
             <p className="text-lg font-semibold text-foreground">하위 부품</p>
@@ -33,7 +33,7 @@ export function PartBomTab({ partId }: PartBomTabProps) {
         <div className="mt-4 space-y-2">
           {bomQuery.isLoading ? <p className="text-sm text-muted-foreground">BOM을 불러오는 중입니다.</p> : null}
           {!bomQuery.isLoading && children.length === 0 ? (
-            <p className="rounded-[20px] border border-border/70 bg-muted/20 px-4 py-4 text-sm text-muted-foreground">
+            <p className="rounded-md border border-border/70 bg-muted/20 px-4 py-4 text-sm text-muted-foreground">
               하위 부품이 없습니다.
             </p>
           ) : null}
@@ -41,7 +41,7 @@ export function PartBomTab({ partId }: PartBomTabProps) {
             <button
               key={child.id}
               type="button"
-              className="flex w-full cursor-pointer items-center justify-between rounded-[20px] border border-border/70 bg-card px-4 py-3 text-left"
+              className="flex w-full cursor-pointer items-center justify-between rounded-md border border-border/70 bg-card px-4 py-3 text-left"
               onClick={() => navigate(`/parts/${child.id}`)}
             >
               <div className="flex items-center gap-3">
@@ -59,7 +59,7 @@ export function PartBomTab({ partId }: PartBomTabProps) {
         </div>
       </section>
 
-      <section className="app-panel rounded-[28px] p-4">
+      <section className="app-panel rounded-lg p-4">
         <div className="flex items-center justify-between gap-3">
           <div>
             <p className="text-lg font-semibold text-foreground">상위 부품</p>
@@ -75,7 +75,7 @@ export function PartBomTab({ partId }: PartBomTabProps) {
 
         <div className="mt-4 space-y-2">
           {!bomQuery.isLoading && parents.length === 0 ? (
-            <p className="rounded-[20px] border border-border/70 bg-muted/20 px-4 py-4 text-sm text-muted-foreground">
+            <p className="rounded-md border border-border/70 bg-muted/20 px-4 py-4 text-sm text-muted-foreground">
               상위 부품이 없습니다.
             </p>
           ) : null}
@@ -83,7 +83,7 @@ export function PartBomTab({ partId }: PartBomTabProps) {
             <button
               key={parent.id}
               type="button"
-              className="flex w-full cursor-pointer items-center justify-between rounded-[20px] border border-border/70 bg-card px-4 py-3 text-left"
+              className="flex w-full cursor-pointer items-center justify-between rounded-md border border-border/70 bg-card px-4 py-3 text-left"
               onClick={() => navigate(`/parts/${parent.id}`)}
             >
               <div className="flex items-center gap-3">

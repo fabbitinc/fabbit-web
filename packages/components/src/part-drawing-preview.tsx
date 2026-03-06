@@ -48,7 +48,7 @@ export function PartDrawingPreview({
 
   return (
     <>
-      <div className="rounded-[28px] border border-border/70 bg-card p-4">
+      <div className="rounded-lg border bg-card p-4">
         <input
           ref={fileInputRef}
           accept=".pdf,.dwg,.dxf,.png,.jpg,.jpeg,.tif,.tiff"
@@ -66,7 +66,7 @@ export function PartDrawingPreview({
 
         {drawing ? (
           <div className="space-y-4">
-            <div className="overflow-hidden rounded-[20px] border border-border/70 bg-muted/20">
+            <div className="overflow-hidden rounded-lg border bg-muted/20">
               {drawing.thumbnailUrl ? (
                 <img alt={drawing.name ?? drawing.drawingNumber ?? part.partNumber} className="aspect-[4/3] w-full object-cover" src={drawing.thumbnailUrl} />
               ) : (
@@ -118,7 +118,7 @@ export function PartDrawingPreview({
         ) : (
           <button
             type="button"
-            className="flex aspect-[4/3] w-full cursor-pointer flex-col items-center justify-center rounded-[20px] border-2 border-dashed border-border/70 bg-muted/20 transition-colors hover:border-primary/40 hover:bg-primary/5"
+            className="flex aspect-[4/3] w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-border/70 bg-muted/20 transition-colors hover:border-primary/40 hover:bg-primary/5"
             onClick={() => fileInputRef.current?.click()}
           >
             {isUploading ? <Loader2 className="size-8 animate-spin text-primary" /> : <Upload className="size-8 text-primary" />}

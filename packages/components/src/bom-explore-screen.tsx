@@ -136,7 +136,7 @@ export function BomExploreScreen({
 
   if (isLoading) {
     return (
-      <section className="app-panel rounded-[32px] p-8 text-center">
+      <section className="rounded-lg border bg-card p-8 text-center">
         <Loader2 className="mx-auto size-6 animate-spin text-muted-foreground" />
         <p className="mt-3 text-sm text-muted-foreground">BOM 데이터를 불러오는 중입니다.</p>
       </section>
@@ -145,7 +145,7 @@ export function BomExploreScreen({
 
   if (isError || !tree) {
     return (
-      <section className="app-panel rounded-[32px] p-8 text-center">
+      <section className="rounded-lg border bg-card p-8 text-center">
         <Package className="mx-auto size-6 text-muted-foreground" />
         <p className="mt-3 text-sm text-muted-foreground">BOM 데이터를 불러올 수 없습니다.</p>
       </section>
@@ -153,40 +153,30 @@ export function BomExploreScreen({
   }
 
   return (
-    <div className="space-y-5">
-      <section className="app-panel rounded-[32px] p-6 sm:p-8">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-          <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-medium text-primary">
-              <Network className="size-3.5" />
-              BOM
-            </div>
-            <h1 className="mt-4 text-3xl font-semibold tracking-tight text-foreground">BOM 탐색</h1>
-            <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
-              <span className="font-mono text-foreground">{tree.partNumber}</span>
-              {tree.name ? ` · ${tree.name}` : ""} 기준으로 BOM 구조를 탐색합니다.
-            </p>
-          </div>
+    <div className="space-y-4">
+      <div className="flex items-center gap-1.5 text-sm">
+        <button
+          className="cursor-pointer text-muted-foreground transition-colors hover:text-primary"
+          type="button"
+          onClick={() => onNavigateDetail(partId)}
+        >
+          {tree.partNumber}
+        </button>
+        <span className="text-muted-foreground/40">/</span>
+        <span className="font-semibold text-foreground">BOM 전개</span>
+      </div>
 
-          <div className="flex items-center gap-2">
-            <Button variant="outline" onClick={() => onNavigateDetail(partId)}>
-              상세로 돌아가기
-            </Button>
-          </div>
-        </div>
-      </section>
-
-      <section className="app-panel rounded-[32px] p-5">
+      <section className="rounded-lg border bg-card px-4 py-3">
         <div className="flex flex-wrap items-center gap-2">
-          <div className="inline-flex rounded-2xl border border-border">
+          <div className="inline-flex rounded-md border">
             <button
               type="button"
               onClick={() => onDirectionChange("forward")}
               className={cn(
-                "cursor-pointer rounded-l-2xl px-3 py-2 text-xs font-medium transition-colors",
+                "cursor-pointer rounded-l-md px-3 py-1.5 text-xs font-medium transition-colors",
                 direction === "forward"
                   ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:bg-muted/60",
+                  : "text-muted-foreground hover:bg-muted",
               )}
             >
               <ChevronRight className="mr-1 inline size-3" />
@@ -196,10 +186,10 @@ export function BomExploreScreen({
               type="button"
               onClick={() => onDirectionChange("reverse")}
               className={cn(
-                "cursor-pointer border-l border-border px-3 py-2 text-xs font-medium transition-colors",
+                "cursor-pointer rounded-r-md border-l border-border px-3 py-1.5 text-xs font-medium transition-colors",
                 direction === "reverse"
                   ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:bg-muted/60",
+                  : "text-muted-foreground hover:bg-muted",
               )}
             >
               <ChevronDown className="mr-1 inline size-3 rotate-180" />
@@ -208,7 +198,7 @@ export function BomExploreScreen({
           </div>
 
           <Select value={viewType} onValueChange={(value) => onViewTypeChange(value as BomExploreView)}>
-            <SelectTrigger className="h-9 w-[160px]">
+            <SelectTrigger className="h-8 w-[140px] text-xs">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -220,29 +210,29 @@ export function BomExploreScreen({
 
           {viewType === "multi-level" ? (
             <div className="flex gap-1">
-              <Button variant="ghost" size="sm" onClick={handleExpandAll}>
+              <Button className="h-8 px-2 text-xs" variant="ghost" size="sm" onClick={handleExpandAll}>
                 <ChevronsUpDown className="mr-1 size-3.5" />
                 모두 펼치기
               </Button>
-              <Button variant="ghost" size="sm" onClick={handleCollapseAll}>
+              <Button className="h-8 px-2 text-xs" variant="ghost" size="sm" onClick={handleCollapseAll}>
                 모두 접기
               </Button>
             </div>
           ) : null}
 
-          <div className="relative ml-auto min-w-[220px] flex-1 xl:max-w-xs">
-            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <div className="relative ml-auto">
+            <Search className="pointer-events-none absolute left-2.5 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
             <Input
               value={searchQuery}
               onChange={(event) => handleSearchInputChange(event.target.value)}
               placeholder="품번 또는 품명 검색"
-              className="pl-10"
+              className="h-8 w-[200px] pl-8 text-xs"
             />
           </div>
 
           <span className="text-xs text-muted-foreground">총 {totalCount}개 부품</span>
 
-          <Button variant="outline" size="sm" disabled={isExporting} onClick={onExport}>
+          <Button className="h-8 px-2 text-xs" variant="outline" size="sm" disabled={isExporting} onClick={onExport}>
             {isExporting ? (
               <Loader2 className="mr-1 size-3.5 animate-spin" />
             ) : (
@@ -254,7 +244,7 @@ export function BomExploreScreen({
       </section>
 
       <div className="flex gap-4">
-        <section className="app-panel min-w-0 flex-1 overflow-hidden rounded-[32px]">
+        <section className="min-w-0 flex-1 overflow-hidden rounded-lg border bg-card">
           <ScrollArea className="h-[calc(100vh-290px)]">
             {viewType === "multi-level" ? (
               <MultiLevelView
@@ -327,13 +317,13 @@ function PartPreviewPanel({
   ];
 
   return (
-    <section className="app-panel w-72 shrink-0 rounded-[32px] p-0">
+    <section className="w-72 shrink-0 rounded-lg border bg-card p-0">
       <div className="flex items-center justify-between border-b border-border px-4 py-3">
         <h3 className="text-sm font-medium text-foreground">부품 요약</h3>
         <button
           type="button"
           onClick={onClose}
-          className="flex size-7 cursor-pointer items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          className="flex size-6 cursor-pointer items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
         >
           <X className="size-4" />
         </button>

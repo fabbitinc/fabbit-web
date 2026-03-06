@@ -69,10 +69,10 @@ export function ProjectActivityTab({ projectId }: ProjectActivityTabProps) {
         </Select>
       </div>
 
-      <section className="app-panel rounded-[32px] p-5">
+      <section className="app-panel rounded-lg p-5">
         <div className="space-y-3">
           {formattedItems.map((item) => (
-            <div key={item.id} className="flex gap-3 rounded-[24px] border border-border/70 bg-card px-4 py-4">
+            <div key={item.id} className="flex gap-3 rounded-lg border border-border/70 bg-card px-4 py-4">
               <div className="mt-1 rounded-full bg-primary/10 p-2 text-primary">
                 <Activity className="size-4" />
               </div>
@@ -99,13 +99,13 @@ export function ProjectActivityTab({ projectId }: ProjectActivityTabProps) {
           ))}
 
           {activityQuery.isLoading ? (
-            <div className="rounded-[24px] border border-border/70 bg-card px-4 py-10 text-center text-sm text-muted-foreground">
+            <div className="rounded-lg border border-border/70 bg-card px-4 py-10 text-center text-sm text-muted-foreground">
               활동을 불러오는 중입니다.
             </div>
           ) : null}
 
           {!activityQuery.isLoading && formattedItems.length === 0 ? (
-            <div className="rounded-[24px] border border-border/70 bg-card px-4 py-10 text-center text-sm text-muted-foreground">
+            <div className="rounded-lg border border-border/70 bg-card px-4 py-10 text-center text-sm text-muted-foreground">
               선택한 범위의 활동이 없습니다.
             </div>
           ) : null}

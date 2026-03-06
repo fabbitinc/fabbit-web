@@ -1,4 +1,4 @@
-import { Link, Outlet } from "react-router-dom";
+import { NavLink, Outlet } from "react-router-dom";
 import { Building2, FolderKanban, GitPullRequestArrow, Home, Settings2, UserCircle2 } from "lucide-react";
 import { PartsUploadDialog } from "@/features/parts/components/parts-upload-dialog";
 import { cn } from "@/lib/utils";
@@ -16,37 +16,41 @@ export function MainAppLayout() {
   return (
     <>
       <div className="app-shell grid min-h-screen lg:grid-cols-[240px_minmax(0,1fr)]">
-        <aside className="border-r border-border/70 bg-card/90 p-4 backdrop-blur">
-          <div className="app-panel rounded-3xl p-4">
-            <div className="mb-6 flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary text-primary-foreground">
+        <aside className="border-r bg-background">
+          <div className="flex h-full flex-col p-3">
+            <div className="mb-4 flex items-center gap-3 px-3 py-2">
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
                 F
               </div>
               <div>
                 <p className="text-xs font-medium uppercase tracking-[0.24em] text-muted-foreground">Fabbit</p>
-                <p className="text-lg font-semibold text-foreground">Web2</p>
+                <p className="text-base font-semibold text-foreground">Workspace</p>
               </div>
             </div>
 
             <nav className="space-y-2">
               {navigationItems.map(({ href, label, icon: Icon }) => (
-                <Link
+                <NavLink
                   key={href}
-                  className={cn(
-                    "flex items-center gap-3 rounded-2xl px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors",
-                    "hover:bg-muted hover:text-foreground",
-                  )}
+                  className={({ isActive }) =>
+                    cn(
+                      "relative flex items-center gap-2.5 rounded-lg px-4 py-2.5 text-sm font-medium transition-colors",
+                      isActive
+                        ? "bg-muted text-foreground"
+                        : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
+                    )
+                  }
                   to={href}
                 >
-                  <Icon className="size-4" />
+                  <Icon className="h-4 w-4" />
                   <span>{label}</span>
-                </Link>
+                </NavLink>
               ))}
             </nav>
           </div>
         </aside>
 
-        <main className="min-w-0 p-4 lg:p-6">
+        <main className="min-w-0 overflow-auto p-6">
           <Outlet />
         </main>
       </div>

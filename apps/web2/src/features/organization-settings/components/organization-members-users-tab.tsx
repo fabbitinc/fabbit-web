@@ -92,7 +92,7 @@ export function OrganizationMembersUsersTab() {
     <div className="space-y-6">
       {maxMembers > 0 ? (
         <div
-          className={`flex items-center justify-between rounded-[24px] border px-4 py-3 ${
+          className={`flex items-center justify-between rounded-lg border px-4 py-3 ${
             isAtLimit ? "border-destructive/30 bg-destructive/5" : "border-border/70 bg-card"
           }`}
         >
@@ -171,7 +171,7 @@ export function OrganizationMembersUsersTab() {
       {pendingInvitations.length > 0 ? (
         <section className="space-y-3">
           <h2 className="text-base font-semibold text-foreground">대기 중인 초대</h2>
-          <div className="overflow-hidden rounded-[24px] border border-border/70 bg-card">
+          <div className="overflow-hidden rounded-lg border border-border/70 bg-card">
             <div className="grid grid-cols-[1fr_100px_auto] bg-muted/40 px-4 py-3 text-xs font-medium text-muted-foreground">
               <p>이메일</p>
               <p>역할</p>
@@ -226,7 +226,7 @@ export function OrganizationMembersUsersTab() {
             </p>
           ) : null}
         </div>
-        <div className="overflow-hidden rounded-[24px] border border-border/70 bg-card">
+        <div className="overflow-hidden rounded-lg border border-border/70 bg-card">
           <table className="w-full text-sm">
             <thead className="bg-muted/40 text-muted-foreground">
               <tr>

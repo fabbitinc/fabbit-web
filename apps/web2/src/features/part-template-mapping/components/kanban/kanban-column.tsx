@@ -55,7 +55,7 @@ export function KanbanColumn({
     <div
       ref={setNodeRef}
       className={cn(
-        "rounded-[28px] border bg-card transition-colors",
+        "rounded-lg border bg-card transition-colors",
         isOver ? colors.border : "border-border",
         isOver && colors.dropBg,
       )}

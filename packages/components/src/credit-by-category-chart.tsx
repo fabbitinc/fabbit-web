@@ -88,7 +88,7 @@ export function CreditByCategoryChart({ data }: CreditByCategoryChartProps) {
         </Select>
       </div>
 
-      <div className="rounded-[24px] border border-border/70 bg-card p-4">
+      <div className="rounded-lg border border-border/70 bg-card p-4">
         <ResponsiveContainer width="100%" height={240}>
           <AreaChart data={chartData} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
             <defs>

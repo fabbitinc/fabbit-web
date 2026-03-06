@@ -6,9 +6,9 @@
 
 @layer components {
   .app-panel {
-    border: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
-    background-color: color-mix(in srgb, var(--card) 92%, white 8%);
-    box-shadow: 0 24px 64px -40px color-mix(in srgb, var(--foreground) 24%, transparent);
+    border: 1px solid var(--border);
+    background-color: var(--card);
+    box-shadow: 0 1px 2px 0 color-mix(in srgb, var(--foreground) 8%, transparent);
   }
 
   /* ── Tiptap 에디터 ── */

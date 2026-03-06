@@ -449,7 +449,7 @@ export function PartsUploadDialog() {
               <button
                 type="button"
                 className={cn(
-                  "flex w-full cursor-pointer flex-col items-center justify-center rounded-[28px] border-2 border-dashed px-6 py-10 text-center transition-colors",
+                  "flex w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed px-6 py-10 text-center transition-colors",
                   isBusy
                     ? "cursor-not-allowed border-border bg-muted/20 opacity-70"
                     : isDragOver

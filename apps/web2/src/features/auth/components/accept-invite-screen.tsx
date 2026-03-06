@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, type FormEvent } from "react";
 import { AcceptInviteScreen as AcceptInviteScreenView } from "@fabbit/components";
 import { useAcceptInvitationAction } from "@/features/auth/hooks/use-accept-invitation-action";
 import { useInvitationQuery } from "@/features/auth/hooks/use-invitation-query";
@@ -103,7 +103,8 @@ export function AcceptInviteScreen({ token }: AcceptInviteScreenProps) {
       onFullNameChange={setFullName}
       onPasswordChange={setPassword}
       onSubmit={(event) => {
-        void handleAccept(event);
+        const submitEvent: FormEvent<HTMLFormElement> = event;
+        void handleAccept(submitEvent);
       }}
       onToggleConfirmPasswordVisibility={() => setShowConfirmPassword((previous) => !previous)}
       onTogglePasswordVisibility={() => setShowPassword((previous) => !previous)}

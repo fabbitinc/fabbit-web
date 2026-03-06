@@ -43,13 +43,13 @@ export function OrganizationGeneralSettingsTab() {
           <Badge variant="info">부분 연동</Badge>
         </div>
 
-        <div className="flex flex-col gap-8 rounded-[24px] border border-border/70 bg-card p-4 xl:flex-row">
+        <div className="flex flex-col gap-8 rounded-lg border border-border/70 bg-card p-4 xl:flex-row">
           <div className="flex flex-col items-center gap-3">
-            <Avatar className="h-40 w-40 rounded-[28px] border border-border/70 bg-muted/35">
+            <Avatar className="h-40 w-40 rounded-lg border border-border/70 bg-muted/35">
               {organization?.profileImageUrl ? (
-                <AvatarImage alt="조직 프로필 이미지" className="rounded-[28px]" src={organization.profileImageUrl} />
+                <AvatarImage alt="조직 프로필 이미지" className="rounded-lg" src={organization.profileImageUrl} />
               ) : null}
-              <AvatarFallback className="rounded-[28px] text-3xl font-medium text-muted-foreground">
+              <AvatarFallback className="rounded-lg text-3xl font-medium text-muted-foreground">
                 {organization?.name?.charAt(0) ?? "?"}
               </AvatarFallback>
             </Avatar>
@@ -100,7 +100,7 @@ export function OrganizationGeneralSettingsTab() {
           <Badge variant="secondary">로컬 설정</Badge>
         </div>
 
-        <div className="space-y-4 rounded-[24px] border border-border/70 bg-card p-4">
+        <div className="space-y-4 rounded-lg border border-border/70 bg-card p-4">
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-sm font-medium text-foreground">외부 도메인 사용자 초대 허용</p>

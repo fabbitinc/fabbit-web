@@ -1,19 +1,14 @@
-import type { ComponentType } from "react";
-import { Card, CardHeader, CardDescription, CardTitle, CardContent, Progress } from "@fabbit/ui";
+import type { CSSProperties, ComponentType } from "react";
 
 export interface UsageCardProps {
-  /** 아이콘 */
-  icon: ComponentType<{ className?: string }>;
-  /** 라벨 (예: "파일 저장 용량") */
+  icon: ComponentType<{ className?: string; style?: CSSProperties }>;
   label: string;
-  /** 사용량 (예: 8.2) */
   used: number;
-  /** 한도 (예: 10) */
   limit: number;
-  /** 단위 (예: "GB") */
   unit: string;
-  /** 경고 임계값 (%). 기본값: 80 */
   warningThreshold?: number;
+  color?: string;
+  gradient?: string;
   className?: string;
 }
 
@@ -24,33 +19,43 @@ export function UsageCard({
   limit,
   unit,
   warningThreshold = 80,
+  color = "var(--brand-500)",
+  gradient,
   className,
 }: UsageCardProps) {
-  const percent = Math.round((used / limit) * 100);
+  const percent = limit > 0 ? Math.min(100, Math.round((used / limit) * 100)) : 0;
   const isHigh = percent >= warningThreshold;
 
   return (
-    <Card className={className}>
-      <CardHeader className="pb-2">
-        <CardDescription className="flex items-center gap-2">
+    <div className={`rounded-lg border border-border bg-card p-5 ${className ?? ""}`}>
+      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+        <span className="inline-flex" style={{ color }}>
           <Icon className="size-3.5" />
-          {label}
-        </CardDescription>
-        <CardTitle className="text-2xl tabular-nums">
-          {used.toLocaleString()}
-          <span className="ml-1 text-sm font-normal text-muted-foreground">
-            / {limit.toLocaleString()} {unit}
-          </span>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-2">
-        <Progress value={percent} />
-        {isHigh && (
-          <p className="text-xs text-destructive">
-            사용량이 {percent}%에 도달했습니다
-          </p>
-        )}
-      </CardContent>
-    </Card>
+        </span>
+        {label}
+      </div>
+      <div className="mt-2 flex items-baseline gap-1">
+        <span className="text-3xl font-bold tabular-nums text-foreground">{used.toLocaleString()}</span>
+        <span className="text-sm text-muted-foreground">
+          / {limit.toLocaleString()} {unit}
+        </span>
+      </div>
+      <div className="mt-3">
+        <div className="relative h-1.5 w-full overflow-hidden rounded-full bg-muted">
+          <div
+            className="h-full rounded-full transition-all"
+            style={{
+              width: `${percent}%`,
+              background: gradient ?? color,
+            }}
+          />
+        </div>
+      </div>
+      {isHigh ? (
+        <p className="mt-2 text-xs" style={{ color: "var(--status-danger)" }}>
+          사용량이 {percent}%에 도달했습니다
+        </p>
+      ) : null}
+    </div>
   );
 }

@@ -23,7 +23,7 @@ export function UserPreferencesSettingsPanel({
         <Badge variant="secondary">브라우저 저장</Badge>
       </div>
 
-      <div className="space-y-4 rounded-[24px] border border-border/70 bg-card p-4">
+      <div className="space-y-4 rounded-lg border border-border/70 bg-card p-4">
         <div className="flex items-center justify-between gap-3">
           <div>
             <p className="text-sm font-medium text-foreground">컴팩트 모드</p>

@@ -68,7 +68,7 @@ export function LinkPartsToProjectDialog({
             />
           </div>
 
-          <div className="max-h-[360px] overflow-y-auto rounded-[24px] border border-border/70 bg-muted/20 p-3">
+          <div className="max-h-[360px] overflow-y-auto rounded-lg border border-border/70 bg-muted/20 p-3">
             {projectsQuery.isLoading ? (
               <div className="flex h-40 items-center justify-center">
                 <Loader2 className="size-5 animate-spin text-muted-foreground" />
@@ -86,7 +86,7 @@ export function LinkPartsToProjectDialog({
                 {projectsQuery.data?.map((project) => (
                   <label
                     key={project.id}
-                    className={`flex cursor-pointer items-start gap-3 rounded-[20px] border px-4 py-3 ${
+                    className={`flex cursor-pointer items-start gap-3 rounded-md border px-4 py-3 ${
                       selectedProjectId === project.id
                         ? "border-primary bg-primary/5"
                         : "border-border/70 bg-card"

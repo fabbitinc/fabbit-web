@@ -68,7 +68,7 @@ export function SelectionDialog<T>({
             />
           </div>
 
-          <ScrollArea className="h-[360px] rounded-[24px] border border-border/70 bg-muted/20 p-3">
+          <ScrollArea className="h-[360px] rounded-lg border border-border/70 bg-muted/20 p-3">
             <div className="space-y-2 pr-3">
               {isLoading ? (
                 <div className="flex h-40 items-center justify-center text-sm text-muted-foreground">
@@ -90,7 +90,7 @@ export function SelectionDialog<T>({
                   <button
                     key={itemId}
                     type="button"
-                    className={`flex w-full cursor-pointer items-center justify-between rounded-[20px] border px-4 py-3 text-left transition-colors ${
+                    className={`flex w-full cursor-pointer items-center justify-between rounded-md border px-4 py-3 text-left transition-colors ${
                       isSelected
                         ? "border-primary bg-primary/5"
                         : "border-border/70 bg-card hover:border-border hover:bg-background"

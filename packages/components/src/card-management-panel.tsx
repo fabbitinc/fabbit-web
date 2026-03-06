@@ -121,7 +121,7 @@ export function CardManagementPanel({
     <div className="space-y-8">
       <section className="space-y-3">
         <h2 className="text-base font-semibold text-foreground">현재 플랜</h2>
-        <div className="rounded-[24px] border border-border/70 bg-card p-4">
+        <div className="rounded-lg border border-border/70 bg-card p-4">
           <div className="flex items-center justify-between gap-4">
             <div>
               <div className="flex items-center gap-2">
@@ -149,7 +149,7 @@ export function CardManagementPanel({
         </div>
 
         {cards.length === 0 ? (
-          <div className="flex flex-col items-center justify-center gap-2 rounded-[24px] border border-dashed border-border/70 py-10">
+          <div className="flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-border/70 py-10">
             <CreditCard className="size-8 text-muted-foreground" />
             <p className="text-sm text-muted-foreground">등록된 카드가 없습니다.</p>
           </div>
@@ -158,7 +158,7 @@ export function CardManagementPanel({
             {cards.map((card) => (
               <div
                 key={card.id}
-                className="flex items-center justify-between rounded-[24px] border border-border/70 bg-card px-4 py-3"
+                className="flex items-center justify-between rounded-lg border border-border/70 bg-card px-4 py-3"
               >
                 <div className="flex items-center gap-3">
                   <CreditCard className="size-5 text-muted-foreground" />
@@ -211,7 +211,7 @@ export function CardManagementPanel({
 
       <section className="space-y-3">
         <h2 className="text-base font-semibold text-foreground">결제 이력</h2>
-        <div className="overflow-hidden rounded-[24px] border border-border/70 bg-card">
+        <div className="overflow-hidden rounded-lg border border-border/70 bg-card">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-border/70 bg-muted/40">

@@ -45,7 +45,7 @@ export function PartsTemplateMappingScreen({
 }: PartsTemplateMappingScreenProps) {
   if (emptyState) {
     return (
-      <section className="app-panel rounded-[32px] p-8 text-center">
+      <section className="app-panel rounded-lg p-8 text-center">
         <h1 className="text-xl font-semibold text-foreground">매핑 데이터가 없습니다</h1>
         <p className="mt-3 text-sm text-muted-foreground">
           분석 단계를 먼저 완료해야 매핑 보드를 구성할 수 있습니다.
@@ -62,7 +62,7 @@ export function PartsTemplateMappingScreen({
 
   return (
     <div className="parts-template-mapping-theme space-y-6">
-      <section className="app-panel rounded-[32px] p-6 sm:p-8">
+      <section className="app-panel rounded-lg p-6 sm:p-8">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div>
             <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-medium text-primary">
@@ -85,7 +85,7 @@ export function PartsTemplateMappingScreen({
       </section>
 
       {isLoadingBoard ? (
-        <section className="app-panel rounded-[32px] p-8 text-center text-sm text-muted-foreground">
+        <section className="app-panel rounded-lg p-8 text-center text-sm text-muted-foreground">
           <Loader2 className="mx-auto mb-3 size-5 animate-spin" />
           매핑 규칙을 불러오는 중입니다.
         </section>

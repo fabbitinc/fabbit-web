@@ -36,7 +36,7 @@ export function PartsTemplateProcessingScreen({
 }: PartsTemplateProcessingScreenProps) {
   return (
     <div className="space-y-6">
-      <section className="app-panel rounded-[32px] p-6 sm:p-8">
+      <section className="app-panel rounded-lg p-6 sm:p-8">
         <h1 className="text-3xl font-semibold tracking-tight text-foreground">부품 템플릿 처리</h1>
         <p className="mt-3 text-sm text-muted-foreground">
           {fileName} 파일을 분석해 속성과 관계 매핑 후보를 구성합니다.
@@ -59,7 +59,7 @@ export function PartsTemplateProcessingScreen({
       </section>
 
       <section className="grid gap-4 xl:grid-cols-[320px_minmax(0,1fr)]">
-        <section className="app-panel rounded-[32px] p-5">
+        <section className="app-panel rounded-lg p-5">
           <h2 className="text-sm font-semibold text-foreground">처리 단계</h2>
           <div className="mt-4 space-y-2">
             {steps.map((step) => (
@@ -74,9 +74,9 @@ export function PartsTemplateProcessingScreen({
           </div>
         </section>
 
-        <section className="app-panel rounded-[32px] p-5">
+        <section className="app-panel rounded-lg p-5">
           <h2 className="text-sm font-semibold text-foreground">처리 로그</h2>
-          <div className="mt-4 space-y-2 rounded-[24px] bg-muted/30 p-4">
+          <div className="mt-4 space-y-2 rounded-lg bg-muted/30 p-4">
             {logs.map((log, index) => (
               <p key={`${log}-${index}`} className="text-xs text-muted-foreground">
                 {log}

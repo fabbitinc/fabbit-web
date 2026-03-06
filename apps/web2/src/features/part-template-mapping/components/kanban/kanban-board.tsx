@@ -155,7 +155,7 @@ export function KanbanBoard({ ontologySchema }: KanbanBoardProps) {
     <div className="space-y-4">
       {mappingHeaders.length > 0 && mappingSampleRows.length > 0 && (
         <Collapsible open={isSampleOpen} onOpenChange={setIsSampleOpen}>
-          <CollapsibleTrigger className="flex w-full items-center gap-2 rounded-[28px] border border-border bg-card px-5 py-4 text-left transition-colors hover:border-primary/30">
+          <CollapsibleTrigger className="flex w-full items-center gap-2 rounded-lg border border-border bg-card px-5 py-4 text-left transition-colors hover:border-primary/30">
             <Table2 className="size-4 text-muted-foreground" />
             <span className="flex-1 text-sm font-medium text-foreground">원본 데이터 미리보기</span>
             <span className="text-xs text-muted-foreground">
@@ -164,7 +164,7 @@ export function KanbanBoard({ ontologySchema }: KanbanBoardProps) {
             <ChevronDown className={cn("size-4 text-muted-foreground transition-transform", isSampleOpen && "rotate-180")} />
           </CollapsibleTrigger>
           <CollapsibleContent>
-            <div className="mt-3 overflow-auto rounded-[28px] border border-border bg-card">
+            <div className="mt-3 overflow-auto rounded-lg border border-border bg-card">
               <table className="w-full text-xs">
                 <thead>
                   <tr className="border-b border-border">

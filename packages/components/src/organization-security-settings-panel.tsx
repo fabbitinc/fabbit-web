@@ -46,7 +46,7 @@ export function OrganizationSecuritySettingsPanel({
           <Badge variant="secondary">로컬 설정</Badge>
         </div>
 
-        <div className="space-y-4 rounded-[24px] border border-border/70 bg-card p-4">
+        <div className="space-y-4 rounded-lg border border-border/70 bg-card p-4">
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="text-sm font-medium text-foreground">SSO 강제</p>
@@ -74,7 +74,7 @@ export function OrganizationSecuritySettingsPanel({
           <Switch checked={ipRestrictionEnabled} onCheckedChange={onIpRestrictionEnabledChange} />
         </div>
 
-        <div className="rounded-[24px] border border-border/70 bg-card p-4">
+        <div className="rounded-lg border border-border/70 bg-card p-4">
           <div className="flex gap-2">
             <Input
               disabled={!ipRestrictionEnabled}

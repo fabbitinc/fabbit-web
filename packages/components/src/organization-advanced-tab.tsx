@@ -39,7 +39,7 @@ export function OrganizationAdvancedTab({ cards = defaultCards }: OrganizationAd
       <h2 className="text-base font-semibold text-foreground">운영 정책</h2>
       <div className="grid gap-4 md:grid-cols-2">
         {cards.map((card) => (
-          <div key={card.title} className="rounded-[24px] border border-border/70 bg-card p-4">
+          <div key={card.title} className="rounded-lg border border-border/70 bg-card p-4">
             <p className="text-sm font-medium text-foreground">{card.title}</p>
             <p className="mt-1 text-xs text-muted-foreground">{card.description}</p>
             <Badge className="mt-3" variant="outline">

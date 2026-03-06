@@ -55,7 +55,7 @@ function TimelineCommentItem({
 
   return (
     <>
-      <div className="rounded-[24px] border border-border/70 bg-card px-4 py-4">
+      <div className="rounded-lg border border-border/70 bg-card px-4 py-4">
         <div className="flex items-start justify-between gap-4">
           <div className="flex min-w-0 items-center gap-3">
             <UserAvatar imageUrl={item.author?.profileImageUrl ?? null} name={item.author?.fullName ?? "알 수 없는 사용자"} />
@@ -193,7 +193,7 @@ export function IssueTimelineSection({
         <Badge variant="outline">{items.length}개 항목</Badge>
       </div>
 
-      <section className="app-panel rounded-[32px] p-5">
+      <section className="app-panel rounded-lg p-5">
         <div className="space-y-3">
           <ChangeRichTextEditor
             content={body ?? undefined}
@@ -229,13 +229,13 @@ export function IssueTimelineSection({
 
       <section className="space-y-3">
         {isLoading ? (
-          <div className="rounded-[24px] border border-border/70 bg-card px-4 py-10 text-center text-sm text-muted-foreground">
+          <div className="rounded-lg border border-border/70 bg-card px-4 py-10 text-center text-sm text-muted-foreground">
             타임라인을 불러오는 중입니다.
           </div>
         ) : null}
 
         {!isLoading && sortedItems.length === 0 ? (
-          <div className="rounded-[24px] border border-border/70 bg-card px-4 py-10 text-center text-sm text-muted-foreground">
+          <div className="rounded-lg border border-border/70 bg-card px-4 py-10 text-center text-sm text-muted-foreground">
             아직 기록된 댓글이나 활동이 없습니다.
           </div>
         ) : null}
@@ -251,7 +251,7 @@ export function IssueTimelineSection({
               onUpdateComment={onUpdateComment}
             />
           ) : (
-            <div key={item.id} className="rounded-[24px] border border-border/70 bg-card px-4 py-4">
+            <div key={item.id} className="rounded-lg border border-border/70 bg-card px-4 py-4">
               <div className="flex items-start gap-3">
                 <div className="rounded-full bg-primary/10 p-2 text-primary">
                   <History className="size-4" />

@@ -62,7 +62,7 @@ export function ProjectPartsTab({ isReadonly, projectId }: ProjectPartsTabProps)
         </Button>
       </div>
 
-      <section className="app-panel overflow-hidden rounded-[32px]">
+      <section className="app-panel overflow-hidden rounded-lg">
         <div className="border-b border-border/70 px-5 py-4">
           <p className="text-sm font-medium text-foreground">연결된 부품</p>
           <p className="mt-1 text-sm text-muted-foreground">{totalCount.toLocaleString()}개의 부품이 이 프로젝트에 연결되어 있습니다.</p>

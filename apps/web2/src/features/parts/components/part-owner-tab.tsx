@@ -226,13 +226,13 @@ export function PartOwnerTab({ partId }: PartOwnerTabProps) {
   const owner = ownerQuery.data;
 
   return (
-    <section className="app-panel rounded-[28px] p-4">
+    <section className="app-panel rounded-lg p-4">
       <div>
         <p className="text-lg font-semibold text-foreground">담당</p>
         <p className="mt-1 text-sm text-muted-foreground">부품 담당자와 담당팀을 설정합니다.</p>
       </div>
 
-      <div className="mt-4 overflow-hidden rounded-[20px] border border-border/70">
+      <div className="mt-4 overflow-hidden rounded-md border border-border/70">
         <table className="w-full text-sm">
           <tbody>
             <tr className="border-b border-border/60">

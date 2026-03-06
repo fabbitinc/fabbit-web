@@ -71,7 +71,7 @@ export function OrganizationPartsDefaultAssignmentTab() {
 
       <div className="space-y-3">
         <h3 className="text-sm font-medium text-foreground">기본값</h3>
-        <div className="overflow-hidden rounded-[24px] border border-border/70 bg-card">
+        <div className="overflow-hidden rounded-lg border border-border/70 bg-card">
           <table className="w-full text-sm">
             <thead className="bg-muted/40 text-muted-foreground">
               <tr>
@@ -121,7 +121,7 @@ export function OrganizationPartsDefaultAssignmentTab() {
 
       <div className="space-y-3">
         <h3 className="text-sm font-medium text-foreground">카테고리별 담당</h3>
-        <div className="overflow-hidden rounded-[24px] border border-border/70 bg-card">
+        <div className="overflow-hidden rounded-lg border border-border/70 bg-card">
           <table className="w-full text-sm">
             <thead className="bg-muted/40 text-muted-foreground">
               <tr>

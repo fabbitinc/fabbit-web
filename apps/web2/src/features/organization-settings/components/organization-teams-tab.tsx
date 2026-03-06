@@ -57,7 +57,7 @@ export function OrganizationTeamsTab() {
         </Button>
       </div>
 
-      <div className="overflow-hidden rounded-[24px] border border-border/70 bg-card">
+      <div className="overflow-hidden rounded-lg border border-border/70 bg-card">
         <table className="w-full table-fixed text-sm">
           <colgroup>
             <col className="w-10" />

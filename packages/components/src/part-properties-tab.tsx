@@ -45,53 +45,60 @@ export function PartPropertiesTab({
 }: PartPropertiesTabProps) {
   const rows: { label: string; value: ReactNode }[] = [
     { label: "품번", value: <span className="font-mono text-xs">{part.partNumber}</span> },
-    { label: "품명", value: part.name ?? "이름 없음" },
-    { label: "리비전", value: part.revision },
+    { label: "품명", value: part.name ?? <span className="text-muted-foreground/40">—</span> },
+    { label: "리비전", value: part.revision || <span className="text-muted-foreground/40">—</span> },
     {
       label: "상태",
-      value: part.lifecycleState ? <Badge variant={getLifecycleVariant(part.lifecycleState)}>{part.lifecycleState}</Badge> : "미지정",
+      value: part.lifecycleState ? (
+        <Badge variant={getLifecycleVariant(part.lifecycleState)}>{part.lifecycleState}</Badge>
+      ) : (
+        <span className="text-muted-foreground/40">—</span>
+      ),
     },
-    { label: "카테고리", value: part.category ?? "미분류" },
-    { label: "재질", value: part.material ?? "미지정" },
-    { label: "단위", value: part.unit ?? "미지정" },
-    { label: "리드타임", value: part.leadTimeDays != null ? `${part.leadTimeDays}일` : "미지정" },
-    { label: "팬텀", value: part.isPhantom == null ? "미지정" : part.isPhantom ? "예" : "아니오" },
+    { label: "카테고리", value: part.category ?? <span className="text-muted-foreground/40">—</span> },
+    { label: "재질", value: part.material ?? <span className="text-muted-foreground/40">—</span> },
+    { label: "단위", value: part.unit ?? <span className="text-muted-foreground/40">—</span> },
+    {
+      label: "리드타임",
+      value: part.leadTimeDays != null ? `${part.leadTimeDays}일` : <span className="text-muted-foreground/40">—</span>,
+    },
+    {
+      label: "팬텀",
+      value: part.isPhantom == null ? <span className="text-muted-foreground/40">—</span> : part.isPhantom ? "예" : "아니오",
+    },
   ];
 
   return (
-    <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
-      <PartDrawingPreview
-        part={{ drawing: part.drawing, partNumber: part.partNumber }}
-        isDeleting={isDeletingDrawing}
-        isUploading={isUploadingDrawing}
-        onDelete={onDeleteDrawing}
-        onUpload={onUploadDrawing}
-      />
+    <div className="grid grid-cols-1 gap-5 lg:grid-cols-5">
+      <div className="lg:col-span-3">
+        <PartDrawingPreview
+          part={{ drawing: part.drawing, partNumber: part.partNumber }}
+          isDeleting={isDeletingDrawing}
+          isUploading={isUploadingDrawing}
+          onDelete={onDeleteDrawing}
+          onUpload={onUploadDrawing}
+        />
+      </div>
 
-      <div className="space-y-4">
-        <section className="app-panel rounded-[28px] p-4">
-          <p className="text-lg font-semibold text-foreground">속성</p>
-          <div className="mt-4 overflow-hidden rounded-[20px] border border-border/70">
-            <table className="w-full text-sm">
-              <tbody>
-                {rows.map((row) => (
-                  <tr key={row.label} className="border-b border-border/60 last:border-b-0">
-                    <td className="w-28 bg-muted/20 px-4 py-3 text-xs uppercase tracking-[0.18em] text-muted-foreground">
-                      {row.label}
-                    </td>
-                    <td className="px-4 py-3 text-foreground">{row.value}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </section>
+      <div className="space-y-4 lg:col-span-2">
+        <div className="rounded-lg border">
+          <table className="w-full">
+            <tbody>
+              {rows.map((row) => (
+                <tr key={row.label} className="border-b border-border/40 last:border-b-0">
+                  <td className="w-24 py-2.5 pl-4 pr-2 text-xs text-muted-foreground">{row.label}</td>
+                  <td className="py-2.5 pr-4 text-sm text-foreground">{row.value}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
         {part.description ? (
-          <section className="app-panel rounded-[28px] p-4">
-            <p className="text-lg font-semibold text-foreground">설명</p>
-            <p className="mt-3 text-sm leading-7 text-muted-foreground">{part.description}</p>
-          </section>
+          <div>
+            <h4 className="mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground/70">설명</h4>
+            <p className="text-sm leading-relaxed text-foreground/80">{part.description}</p>
+          </div>
         ) : null}
       </div>
     </div>

@@ -131,7 +131,7 @@ function SidebarSection({
   children: ReactNode;
 }) {
   return (
-    <section className="app-panel rounded-[28px] p-4">
+    <section className="app-panel rounded-lg p-4">
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-start gap-3">
           <div className="rounded-full bg-muted/70 p-2 text-muted-foreground">{icon}</div>
@@ -171,7 +171,7 @@ export function ChangeRequestSidebar({
         description="변경 요청의 상태와 주요 메타데이터를 확인합니다."
         icon={<Eye className="size-4" />}
       >
-        <div className="grid gap-3 rounded-[20px] border border-border/70 bg-muted/20 px-4 py-4 text-sm">
+        <div className="grid gap-3 rounded-md border border-border/70 bg-muted/20 px-4 py-4 text-sm">
           <div>
             <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">State</p>
             <div className="mt-2">

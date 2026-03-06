@@ -9,7 +9,7 @@ export function PartSuppliersTab({ partId }: PartSuppliersTabProps) {
   const suppliersQuery = usePartSuppliersQuery(partId);
 
   return (
-    <section className="app-panel rounded-[28px] p-4">
+    <section className="app-panel rounded-lg p-4">
       <div>
         <p className="text-lg font-semibold text-foreground">공급사</p>
         <p className="mt-1 text-sm text-muted-foreground">이 부품에 연결된 공급사 목록입니다.</p>
@@ -18,12 +18,12 @@ export function PartSuppliersTab({ partId }: PartSuppliersTabProps) {
       <div className="mt-4 space-y-2">
         {suppliersQuery.isLoading ? <p className="text-sm text-muted-foreground">공급사를 불러오는 중입니다.</p> : null}
         {!suppliersQuery.isLoading && (suppliersQuery.data?.length ?? 0) === 0 ? (
-          <p className="rounded-[20px] border border-border/70 bg-muted/20 px-4 py-4 text-sm text-muted-foreground">
+          <p className="rounded-md border border-border/70 bg-muted/20 px-4 py-4 text-sm text-muted-foreground">
             등록된 공급사가 없습니다.
           </p>
         ) : null}
         {suppliersQuery.data?.map((supplier) => (
-          <div key={supplier.id} className="flex items-center justify-between gap-3 rounded-[20px] border border-border/70 bg-card px-4 py-3">
+          <div key={supplier.id} className="flex items-center justify-between gap-3 rounded-md border border-border/70 bg-card px-4 py-3">
             <div className="flex items-center gap-3">
               <div className="rounded-full bg-muted/70 p-2">
                 <Building2 className="size-4 text-muted-foreground" />

@@ -7,9 +7,19 @@ import {
   ChevronRight,
   FolderKanban,
   Loader2,
+  Network,
   Search,
 } from "lucide-react";
-import { Badge, Button, ConfirmDialog, Input } from "@fabbit/ui";
+import {
+  Button,
+  ConfirmDialog,
+  Input,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@fabbit/ui";
 
 export type ProjectListTableSortKey = "name" | "part-count";
 export type ProjectListTableSortDirection = "asc" | "desc";
@@ -40,6 +50,7 @@ export interface ProjectListTableProps {
   onQueryChange: (query: string) => void;
   onSortChange: (sortKey: ProjectListTableSortKey) => void;
   onPageChange: (page: number) => void;
+  onPageSizeChange: (pageSize: number) => void;
   onRetry: () => void;
   onRowClick: (projectId: string) => void;
   onCreateClick: () => void;
@@ -52,6 +63,8 @@ interface SortableHeaderProps {
   activeSortDirection: ProjectListTableSortDirection;
   onSort: (sortKey: ProjectListTableSortKey) => void;
 }
+
+const pageSizeOptions = [15, 30, 50] as const;
 
 function SortableHeader({
   column,
@@ -75,7 +88,7 @@ function SortableHeader({
         onClick={() => onSort(column)}
       >
         <span>{label}</span>
-        <Icon className={`size-3.5 ${isActive ? "text-primary" : "text-muted-foreground/65"}`} />
+        <Icon className={`h-3.5 w-3.5 ${isActive ? "text-primary" : "text-muted-foreground/65"}`} />
       </button>
     </th>
   );
@@ -90,6 +103,7 @@ export function ProjectListTable({
   onQueryChange,
   onSortChange,
   onPageChange,
+  onPageSizeChange,
   onRetry,
   onRowClick,
   onCreateClick,
@@ -116,43 +130,26 @@ export function ProjectListTable({
 
   return (
     <section className="space-y-4">
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-        <div className="relative max-w-md flex-1">
-          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            className="pl-10"
-            placeholder="프로젝트 이름으로 검색"
-            value={queryState.query}
-            onChange={(event) => onQueryChange(event.target.value)}
-          />
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Badge variant="secondary">{`${totalCount.toLocaleString()}개 프로젝트`}</Badge>
-          <Button type="button" onClick={onCreateClick}>
-            프로젝트 생성
-          </Button>
-        </div>
+      <div className="relative max-w-sm">
+        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          className="pl-10"
+          placeholder="프로젝트 검색..."
+          value={queryState.query}
+          onChange={(event) => onQueryChange(event.target.value)}
+        />
       </div>
 
-      <section className="app-panel overflow-hidden rounded-[32px]">
-        <div className="border-b border-border/70 px-5 py-4">
-          <p className="text-sm font-medium text-foreground">프로젝트 레지스트리</p>
-          <p className="mt-1 text-sm text-muted-foreground">검색, 정렬, 페이지 이동을 URL 상태로 관리합니다.</p>
-        </div>
-
+      <section className="overflow-hidden rounded-lg border bg-card shadow-sm">
         {isLoading ? (
-          <div className="flex h-72 items-center justify-center">
-            <Loader2 className="size-6 animate-spin text-muted-foreground" />
+          <div className="flex h-64 items-center justify-center">
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
           </div>
         ) : null}
 
         {isError && !isLoading ? (
-          <div className="flex h-72 flex-col items-center justify-center gap-3 px-6 text-center">
-            <p className="text-base font-medium text-foreground">프로젝트 목록을 불러오지 못했습니다.</p>
-            <p className="max-w-md text-sm leading-6 text-muted-foreground">
-              네트워크 상태를 확인한 뒤 다시 시도해 주세요.
-            </p>
+          <div className="flex h-64 flex-col items-center justify-center gap-3 px-6 text-center">
+            <p className="text-sm text-muted-foreground">프로젝트 목록을 불러오지 못했습니다.</p>
             <Button type="button" variant="outline" onClick={onRetry}>
               다시 시도
             </Button>
@@ -160,32 +157,39 @@ export function ProjectListTable({
         ) : null}
 
         {!isLoading && !isError && totalCount === 0 ? (
-          <div className="flex h-72 flex-col items-center justify-center gap-4 px-6 text-center">
-            <div className="flex size-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-              <FolderKanban className="size-6" />
+          <div className="flex h-64 flex-col items-center justify-center gap-4 px-6 text-center">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+              <FolderKanban className="h-6 w-6 text-muted-foreground/40" />
             </div>
             <div>
-              <p className="text-base font-medium text-foreground">
-                {queryState.query ? "검색 결과가 없습니다." : "프로젝트가 아직 없습니다."}
+              <p className="text-sm font-medium text-foreground">
+                {queryState.query ? "검색 결과가 없습니다" : "아직 프로젝트가 없습니다"}
               </p>
-              <p className="mt-2 max-w-md text-sm leading-6 text-muted-foreground">
+              <p className="mt-1 text-xs text-muted-foreground">
                 {queryState.query
-                  ? "검색어를 조정하거나 새 프로젝트를 생성해 보세요."
-                  : "첫 프로젝트를 만들어 부품과 변경 흐름을 묶어 관리하세요."}
+                  ? "다른 검색어를 입력해 보세요"
+                  : "새 프로젝트를 만들어 부품을 관리해 보세요"}
               </p>
             </div>
-            <Button type="button" onClick={onCreateClick}>
-              프로젝트 생성
-            </Button>
+            {!queryState.query ? (
+              <Button size="sm" type="button" onClick={onCreateClick}>
+                새 프로젝트
+              </Button>
+            ) : null}
           </div>
         ) : null}
 
         {!isLoading && !isError && totalCount > 0 ? (
           <div>
             <div className="overflow-x-auto">
-              <table className="min-w-full border-collapse">
+              <table className="w-full table-fixed text-sm">
+                <colgroup>
+                  <col />
+                  <col style={{ width: "55%" }} />
+                  <col style={{ width: "80px" }} />
+                </colgroup>
                 <thead>
-                  <tr className="border-b border-border/70 bg-muted/25">
+                  <tr className="border-b bg-muted/50 text-left">
                     <SortableHeader
                       activeSortDirection={queryState.sortDirection}
                       activeSortKey={queryState.sortKey}
@@ -200,44 +204,35 @@ export function ProjectListTable({
                       activeSortDirection={queryState.sortDirection}
                       activeSortKey={queryState.sortKey}
                       column="part-count"
-                      label="부품 수"
+                      label="부품"
                       onSort={onSortChange}
                     />
-                    <th className="px-4 py-3 text-left text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">
-                      상태
-                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   {sortedProjects.map((project) => (
-                    <tr key={project.id} className="border-b border-border/60 last:border-b-0">
-                      <td className="px-4 py-3">
-                        <button
-                          aria-label={`${project.name} 프로젝트 상세 보기`}
-                          className="group flex w-full cursor-pointer flex-col rounded-2xl px-1 py-2 text-left transition-colors hover:bg-primary/5"
-                          type="button"
-                          onClick={() => onRowClick(project.id)}
-                        >
-                          <span className="font-medium text-foreground transition-colors group-hover:text-primary">
-                            {project.name}
+                    <tr
+                      key={project.id}
+                      className="group h-[45px] cursor-pointer border-b border-border/50 transition-colors hover:bg-muted/50"
+                      onClick={() => onRowClick(project.id)}
+                    >
+                      <td className="px-4 py-2 font-medium text-foreground">{project.name}</td>
+                      <td className="px-4 py-2 text-muted-foreground">
+                        {project.description ? (
+                          <span className="line-clamp-1">{project.description}</span>
+                        ) : (
+                          <span className="text-muted-foreground/40">—</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-2 text-muted-foreground">
+                        {project.partCount > 0 ? (
+                          <span className="inline-flex items-center gap-1 text-sm text-muted-foreground">
+                            <Network className="h-3.5 w-3.5" />
+                            {project.partCount}
                           </span>
-                          <span className="mt-1 text-xs text-muted-foreground">
-                            {project.updatedAt
-                              ? `업데이트 ${new Intl.DateTimeFormat("ko-KR", { dateStyle: "medium" }).format(new Date(project.updatedAt))}`
-                              : "업데이트 일시 정보 없음"}
-                          </span>
-                        </button>
-                      </td>
-                      <td className="px-4 py-3 text-sm leading-6 text-muted-foreground">
-                        {project.description || "설명이 없습니다."}
-                      </td>
-                      <td className="px-4 py-3 text-sm font-medium text-foreground">
-                        {project.partCount.toLocaleString()}개
-                      </td>
-                      <td className="px-4 py-3">
-                        <Badge variant={project.isArchived ? "outline" : "accent"}>
-                          {project.isArchived ? "보관됨" : "운영 중"}
-                        </Badge>
+                        ) : (
+                          <span className="text-muted-foreground/40">—</span>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -245,38 +240,60 @@ export function ProjectListTable({
               </table>
             </div>
 
-            <div className="flex flex-col gap-3 border-t border-border/70 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-sm text-muted-foreground">
-                {rangeStart.toLocaleString()} - {rangeEnd.toLocaleString()} / {totalCount.toLocaleString()}
-              </p>
+            <div className="flex items-center justify-between border-t bg-muted/30 px-4 py-3">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <Select value={String(queryState.pageSize)} onValueChange={(value) => onPageSizeChange(Number(value))}>
+                  <SelectTrigger className="h-8 w-[88px] text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {pageSizeOptions.map((option) => (
+                      <SelectItem key={option} value={String(option)}>
+                        {option}개씩
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <span>
+                  {rangeStart.toLocaleString()}-{rangeEnd.toLocaleString()} / {totalCount.toLocaleString()}건
+                </span>
+              </div>
 
-              <div className="flex items-center gap-2 self-end sm:self-auto">
+              <div className="flex items-center gap-2">
                 <Button
                   disabled={queryState.page <= 1}
+                  size="sm"
                   type="button"
-                  variant="outline"
+                  variant="ghost"
                   onClick={() => onPageChange(queryState.page - 1)}
                 >
-                  <ChevronLeft className="size-4" />
-                  이전
+                  <ChevronLeft className="h-4 w-4" />
                 </Button>
-                <div className="min-w-20 text-center text-sm font-medium text-foreground">
+                <div className="min-w-16 text-center text-sm font-medium text-foreground">
                   {queryState.page} / {totalPages}
                 </div>
                 <Button
                   disabled={queryState.page >= totalPages}
+                  size="sm"
                   type="button"
-                  variant="outline"
+                  variant="ghost"
                   onClick={() => onPageChange(queryState.page + 1)}
                 >
-                  다음
-                  <ChevronRight className="size-4" />
+                  <ChevronRight className="h-4 w-4" />
                 </Button>
               </div>
             </div>
           </div>
         ) : null}
       </section>
+
+      {!isLoading && !isError && totalCount === 0 && queryState.query ? (
+        <div className="flex justify-end">
+          <Button type="button" variant="ghost" onClick={() => setIsLeaveDialogOpen(true)}>
+            검색어 초기화
+          </Button>
+        </div>
+      ) : null}
 
       <ConfirmDialog
         cancelLabel="계속 검색"
@@ -289,14 +306,6 @@ export function ProjectListTable({
         onConfirm={() => onQueryChange("")}
         onOpenChange={setIsLeaveDialogOpen}
       />
-
-      {!isLoading && !isError && totalCount === 0 && queryState.query ? (
-        <div className="flex justify-end">
-          <Button type="button" variant="ghost" onClick={() => setIsLeaveDialogOpen(true)}>
-            검색어 초기화
-          </Button>
-        </div>
-      ) : null}
     </section>
   );
 }

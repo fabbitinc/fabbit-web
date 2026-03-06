@@ -39,7 +39,7 @@ export function OrganizationPartsCategoriesTab() {
         <p className="mt-1 text-sm text-muted-foreground">부품을 분류하는 카테고리 이름을 관리합니다.</p>
       </div>
 
-      <div className="overflow-hidden rounded-[24px] border border-border/70 bg-card">
+      <div className="overflow-hidden rounded-lg border border-border/70 bg-card">
         <table className="w-full text-sm">
           <thead className="bg-muted/40 text-muted-foreground">
             <tr>

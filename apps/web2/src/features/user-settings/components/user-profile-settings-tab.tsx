@@ -53,9 +53,9 @@ function UserProfileSettingsForm({ user }: UserProfileSettingsFormProps) {
 
       <div className="flex flex-col gap-8 xl:flex-row">
         <div className="flex flex-col items-center gap-3">
-          <Avatar className="h-40 w-40 rounded-[28px] border border-border/70 bg-muted/35">
-            {user?.profileImageUrl ? <AvatarImage alt="프로필 이미지" className="rounded-[28px]" src={user.profileImageUrl} /> : null}
-            <AvatarFallback className="rounded-[28px] text-3xl font-medium text-muted-foreground">
+          <Avatar className="h-40 w-40 rounded-lg border border-border/70 bg-muted/35">
+            {user?.profileImageUrl ? <AvatarImage alt="프로필 이미지" className="rounded-lg" src={user.profileImageUrl} /> : null}
+            <AvatarFallback className="rounded-lg text-3xl font-medium text-muted-foreground">
               {name.trim().charAt(0) || "?"}
             </AvatarFallback>
           </Avatar>

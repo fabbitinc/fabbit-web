@@ -30,7 +30,7 @@ export function OrganizationLogsTab({
         <p className="text-sm text-muted-foreground">{caption}</p>
       </div>
 
-      <div className="overflow-hidden rounded-[24px] border border-border/70 bg-card">
+      <div className="overflow-hidden rounded-lg border border-border/70 bg-card">
         <table className="w-full text-sm">
           <thead className="bg-muted/40 text-muted-foreground">
             <tr>

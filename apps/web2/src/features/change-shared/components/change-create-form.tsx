@@ -36,7 +36,7 @@ function SelectionSection({
   children: React.ReactNode;
 }) {
   return (
-    <section className="space-y-3 rounded-[24px] border border-border/70 bg-card p-4">
+    <section className="space-y-3 rounded-lg border border-border/70 bg-card p-4">
       <p className="text-sm font-medium text-foreground">{title}</p>
       {children}
     </section>
@@ -98,14 +98,14 @@ export function ChangeCreateForm({
       </Button>
 
       <div className="grid gap-6 xl:grid-cols-[1fr_320px]">
-        <section className="app-panel rounded-[32px] p-6 sm:p-8">
+        <section className="app-panel rounded-lg p-6 sm:p-8">
           <div>
             <h1 className="text-3xl font-semibold tracking-tight text-foreground">{heading}</h1>
             <p className="mt-3 text-sm leading-6 text-muted-foreground">{description}</p>
           </div>
 
           {linkedIssueNumber != null ? (
-            <div className="mt-6 flex items-start justify-between rounded-[24px] border border-border/70 bg-muted/25 px-4 py-4">
+            <div className="mt-6 flex items-start justify-between rounded-lg border border-border/70 bg-muted/25 px-4 py-4">
               <div>
                 <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Linked Issue</p>
                 <p className="mt-2 text-sm font-medium text-foreground">
@@ -163,7 +163,7 @@ export function ChangeCreateForm({
             <div className="space-y-2">
               <Label htmlFor="change-create-files">첨부파일</Label>
               <label
-                className="flex cursor-pointer items-center justify-center gap-2 rounded-[20px] border border-dashed border-border/80 bg-muted/20 px-4 py-4 text-sm text-muted-foreground"
+                className="flex cursor-pointer items-center justify-center gap-2 rounded-md border border-dashed border-border/80 bg-muted/20 px-4 py-4 text-sm text-muted-foreground"
                 htmlFor="change-create-files"
               >
                 <Paperclip className="size-4" />

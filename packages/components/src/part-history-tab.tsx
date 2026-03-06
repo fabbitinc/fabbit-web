@@ -44,13 +44,13 @@ export function PartHistoryTab({
 }: PartHistoryTabProps) {
   return (
     <section className="space-y-4">
-      <div className="rounded-[24px] border border-border/70 bg-muted/20 px-4 py-4 text-sm text-muted-foreground">
+      <div className="rounded-lg border border-border/70 bg-muted/20 px-4 py-4 text-sm text-muted-foreground">
         {notice}
       </div>
 
       <div className="space-y-3">
         {entries.map((entry) => (
-          <div key={entry.id} className="rounded-[24px] border border-border/70 bg-card px-4 py-4">
+          <div key={entry.id} className="rounded-lg border border-border/70 bg-card px-4 py-4">
             <p className="font-medium text-foreground">{entry.title}</p>
             <p className="mt-2 text-sm leading-6 text-muted-foreground">{entry.description}</p>
             <p className="mt-3 text-xs text-muted-foreground">{formatDateTime(entry.timestamp)}</p>

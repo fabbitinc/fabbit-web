@@ -92,7 +92,7 @@ export function ProjectAddMembersDialog({ projectId }: ProjectAddMembersDialogPr
             </Select>
           </div>
 
-          <div className="max-h-[360px] space-y-2 overflow-y-auto rounded-[24px] border border-border/70 bg-muted/20 p-3">
+          <div className="max-h-[360px] space-y-2 overflow-y-auto rounded-lg border border-border/70 bg-muted/20 p-3">
             {membersLookup.isLoading ? (
               <div className="flex h-40 items-center justify-center">
                 <Loader2 className="size-5 animate-spin text-muted-foreground" />
@@ -108,7 +108,7 @@ export function ProjectAddMembersDialog({ projectId }: ProjectAddMembersDialogPr
             {membersLookup.data?.map((member) => (
               <label
                 key={member.userId}
-                className="flex cursor-pointer items-center gap-3 rounded-[20px] border border-border/70 bg-card px-4 py-3"
+                className="flex cursor-pointer items-center gap-3 rounded-md border border-border/70 bg-card px-4 py-3"
               >
                 <Checkbox checked={selectedMemberIds.includes(member.userId)} onCheckedChange={() => toggleSelectedMember(member.userId)} />
                 <UserAvatar imageUrl={member.profileImageUrl} name={member.fullName} />
