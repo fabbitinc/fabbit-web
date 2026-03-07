@@ -282,6 +282,15 @@ export type {
   PartsTemplateMappingEmptyStateProps,
   PartsTemplateMappingScreenProps,
 } from "./parts-template-mapping-screen";
+export { PartsTemplateMappingCanvasScreen } from "./parts-template-mapping-canvas-screen";
+export type {
+  PartsTemplateMappingCanvasEdge,
+  PartsTemplateMappingCanvasEmptyState,
+  PartsTemplateMappingCanvasField,
+  PartsTemplateMappingCanvasNode,
+  PartsTemplateMappingCanvasNodeTone,
+  PartsTemplateMappingCanvasScreenProps,
+} from "./parts-template-mapping-canvas-screen";
 export { PartsTemplateMappingBoard } from "./parts-template-mapping-board";
 export type {
   PartsTemplateMappingBoardCard,
