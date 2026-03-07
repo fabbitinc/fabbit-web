@@ -1,4 +1,14 @@
-import { ArrowDown, ArrowUp, ArrowUpDown, ChevronLeft, ChevronRight, FileText, Network } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowUp,
+  ArrowUpDown,
+  ChevronLeft,
+  ChevronRight,
+  FileText,
+  Loader2,
+  Network,
+  Search,
+} from "lucide-react";
 import { Badge, Button, Checkbox, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@fabbit/ui";
 
 export type PartsListTableSortKey = "partNumber" | "name" | "category" | "revision" | "lifecycleState";
@@ -33,6 +43,7 @@ export interface PartsListTableProps {
 }
 
 interface SortableHeaderProps {
+  align?: "left" | "center";
   column: PartsListTableSortKey;
   label: string;
   sortKey: PartsListTableSortKey;
@@ -47,8 +58,8 @@ function getLifecycleVariant(lifecycleState: string | null): "outline" | "neutra
     return "success";
   }
 
-  if (lifecycleState === "중단") {
-    return "neutral";
+  if (lifecycleState === "개발") {
+    return "accent";
   }
 
   return "outline";
@@ -80,15 +91,24 @@ function getPageNumbers(current: number, total: number): (number | "...")[] {
   return pages;
 }
 
-function SortableHeader({ column, label, sortKey, sortOrder, onSortChange }: SortableHeaderProps) {
+function SortableHeader({
+  align = "left",
+  column,
+  label,
+  sortKey,
+  sortOrder,
+  onSortChange,
+}: SortableHeaderProps) {
   const isActive = sortKey === column;
   const Icon = isActive ? (sortOrder === "asc" ? ArrowUp : ArrowDown) : ArrowUpDown;
 
   return (
-    <th className="px-3 py-3 text-left">
+    <th className={`px-2 py-3 ${align === "center" ? "text-center" : "pl-4"}`}>
       <button
         type="button"
-        className="inline-flex cursor-pointer items-center gap-1 text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground transition-colors hover:text-foreground"
+        className={`inline-flex cursor-pointer items-center gap-1 text-[11px] font-medium uppercase tracking-wider transition-colors ${
+          isActive ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+        }`}
         onClick={() => onSortChange(column)}
       >
         {label}
@@ -119,22 +139,22 @@ export function PartsListTable({
   const someChecked = items.some((item) => selectedIds.has(item.id));
 
   return (
-    <section className="overflow-hidden rounded-lg border bg-card shadow-sm">
+    <div className="overflow-hidden rounded-lg border bg-card shadow-sm">
       <div className="overflow-x-auto">
         <table className="w-full table-fixed text-sm">
           <colgroup>
-            <col style={{ width: "48px" }} />
-            <col style={{ width: "18%" }} />
+            <col style={{ width: "40px" }} />
+            <col style={{ width: "12%" }} />
             <col />
-            <col style={{ width: "15%" }} />
-            <col style={{ width: "72px" }} />
-            <col style={{ width: "96px" }} />
-            <col style={{ width: "72px" }} />
-            <col style={{ width: "96px" }} />
+            <col style={{ width: "10%" }} />
+            <col style={{ width: "5%" }} />
+            <col style={{ width: "8%" }} />
+            <col style={{ width: "5%" }} />
+            <col style={{ width: "8%" }} />
           </colgroup>
           <thead>
-            <tr className="border-b border-border/70 bg-muted/50">
-              <th className="w-12 px-4 py-3 text-center">
+            <tr className="border-b bg-muted/50 text-left">
+              <th className="px-2 py-3 text-center">
                 <Checkbox
                   aria-label="전체 선택"
                   checked={allChecked ? true : someChecked ? "indeterminate" : false}
@@ -143,106 +163,130 @@ export function PartsListTable({
               </th>
               <SortableHeader column="partNumber" label="품번" sortKey={sortKey} sortOrder={sortOrder} onSortChange={onSortChange} />
               <SortableHeader column="name" label="품명" sortKey={sortKey} sortOrder={sortOrder} onSortChange={onSortChange} />
-              <SortableHeader column="category" label="카테고리" sortKey={sortKey} sortOrder={sortOrder} onSortChange={onSortChange} />
-              <SortableHeader column="revision" label="Rev" sortKey={sortKey} sortOrder={sortOrder} onSortChange={onSortChange} />
               <SortableHeader
+                align="center"
+                column="category"
+                label="카테고리"
+                sortKey={sortKey}
+                sortOrder={sortOrder}
+                onSortChange={onSortChange}
+              />
+              <SortableHeader
+                align="center"
+                column="revision"
+                label="Rev"
+                sortKey={sortKey}
+                sortOrder={sortOrder}
+                onSortChange={onSortChange}
+              />
+              <SortableHeader
+                align="center"
                 column="lifecycleState"
                 label="상태"
                 sortKey={sortKey}
                 sortOrder={sortOrder}
                 onSortChange={onSortChange}
               />
-              <th className="px-3 py-3 text-center text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">도면</th>
-              <th className="px-3 py-3 text-center text-[11px] font-medium uppercase tracking-[0.18em] text-muted-foreground">하위 부품</th>
+              <th className="px-2 py-3 text-center text-[11px] font-medium uppercase tracking-wider text-muted-foreground">도면</th>
+              <th className="px-2 py-3 text-center text-[11px] font-medium uppercase tracking-wider text-muted-foreground">하위 부품</th>
             </tr>
           </thead>
           <tbody>
-            {isLoading
-              ? Array.from({ length: pageSize }).map((_, index) => (
-                  <tr key={`skeleton-${index}`} className="border-b border-border/50 last:border-b-0">
-                    <td className="px-4 py-3 text-center">
-                      <div className="mx-auto h-4 w-4 rounded bg-muted/60" />
-                    </td>
-                    <td className="px-3 py-3">
-                      <div className="h-4 w-24 rounded bg-muted/60" />
-                    </td>
-                    <td className="px-3 py-3">
-                      <div className="h-4 w-32 rounded bg-muted/60" />
-                    </td>
-                    <td className="px-3 py-3">
-                      <div className="h-4 w-20 rounded bg-muted/60" />
-                    </td>
-                    <td className="px-3 py-3">
-                      <div className="mx-auto h-4 w-10 rounded bg-muted/60" />
-                    </td>
-                    <td className="px-3 py-3">
-                      <div className="mx-auto h-5 w-16 rounded-full bg-muted/60" />
-                    </td>
-                    <td className="px-3 py-3">
-                      <div className="mx-auto h-4 w-4 rounded bg-muted/60" />
-                    </td>
-                    <td className="px-3 py-3">
-                      <div className="mx-auto h-4 w-8 rounded bg-muted/60" />
-                    </td>
-                  </tr>
-                ))
-              : null}
-
-            {!isLoading && items.length === 0 ? (
+            {isLoading ? (
               <tr>
-                <td className="px-4 py-14 text-center text-sm text-muted-foreground" colSpan={8}>
-                  검색 조건에 맞는 부품이 없습니다.
+                <td className="py-20 text-center" colSpan={8}>
+                  <div className="flex flex-col items-center gap-3">
+                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                    <p className="text-sm text-muted-foreground">불러오는 중...</p>
+                  </div>
                 </td>
               </tr>
             ) : null}
 
-            {!isLoading
-              ? items.map((item) => (
-                  <tr
-                    key={item.id}
-                    className="h-[45px] cursor-pointer border-b border-border/50 transition-colors hover:bg-muted/50"
-                    onClick={() => onRowClick(item.id)}
-                  >
-                    <td className="px-4 py-3 text-center" onClick={(event) => event.stopPropagation()}>
-                      <Checkbox
-                        aria-label={`${item.partNumber} 선택`}
-                        checked={selectedIds.has(item.id)}
-                        onCheckedChange={() => onToggleSelectOne(item.id)}
-                      />
-                    </td>
-                    <td className="px-3 py-3 font-mono text-xs font-medium text-primary">{item.partNumber}</td>
-                    <td className="px-3 py-3 text-sm text-foreground">{item.name ?? "이름 없음"}</td>
-                    <td className="px-3 py-3 text-sm text-muted-foreground">{item.category ?? "미분류"}</td>
-                    <td className="px-3 py-3 text-center text-sm text-foreground">{item.revision}</td>
-                    <td className="px-3 py-3 text-center">
-                      {item.lifecycleState ? (
-                        <Badge variant={getLifecycleVariant(item.lifecycleState)}>{item.lifecycleState}</Badge>
-                      ) : (
-                        <span className="text-sm text-muted-foreground">미지정</span>
-                      )}
-                    </td>
-                    <td className="px-3 py-3 text-center">
-                      {item.drawingNumber ? <FileText className="mx-auto size-4 text-muted-foreground" /> : <span className="text-muted-foreground">-</span>}
-                    </td>
-                    <td className="px-3 py-3 text-center">
-                      {item.childrenCount > 0 ? (
-                        <span className="inline-flex items-center gap-1 text-sm text-muted-foreground">
-                          <Network className="size-4" />
-                          {item.childrenCount}
-                        </span>
-                      ) : (
-                        <span className="text-muted-foreground">-</span>
-                      )}
-                    </td>
-                  </tr>
-                ))
-              : null}
+            {!isLoading && items.length === 0 ? (
+              <tr>
+                <td className="py-20 text-center" colSpan={8}>
+                  <div className="flex flex-col items-center gap-3">
+                    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+                      <Search className="h-6 w-6 text-muted-foreground" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-foreground">검색 결과가 없습니다</p>
+                      <p className="mt-1 text-xs text-muted-foreground">다른 검색어를 입력하거나 필터를 조정해 보세요</p>
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            ) : null}
+
+            {!isLoading ? items.map((item) => (
+              <tr
+                key={item.id}
+                className="group h-[45px] cursor-pointer border-b border-border/50 transition-colors hover:bg-muted/50"
+                onClick={() => onRowClick(item.id)}
+              >
+                <td className="px-2 py-2 text-center" onClick={(event) => event.stopPropagation()}>
+                  <Checkbox
+                    aria-label={`${item.partNumber} 선택`}
+                    checked={selectedIds.has(item.id)}
+                    onCheckedChange={() => onToggleSelectOne(item.id)}
+                  />
+                </td>
+                <td className="py-2 pl-4 pr-2 font-mono text-xs font-medium text-primary">{item.partNumber}</td>
+                <td className="py-2 pl-4 pr-2 text-foreground">{item.name ?? <span className="text-muted-foreground/40">—</span>}</td>
+                <td className="px-2 py-2 text-center text-muted-foreground">{item.category ?? <span className="text-muted-foreground/40">—</span>}</td>
+                <td className="px-2 py-2 text-center">
+                  {item.revision ? (
+                    <span className="inline-flex h-5 w-5 items-center justify-center rounded bg-muted text-[11px] font-medium text-muted-foreground">
+                      {item.revision}
+                    </span>
+                  ) : (
+                    <span className="text-muted-foreground/40">—</span>
+                  )}
+                </td>
+                <td className="px-2 py-2 text-center">
+                  {item.lifecycleState ? (
+                    <Badge
+                      className={
+                        item.lifecycleState === "양산"
+                          ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                          : item.lifecycleState === "개발"
+                            ? "border-blue-200 bg-blue-50 text-blue-700"
+                            : undefined
+                      }
+                      variant={getLifecycleVariant(item.lifecycleState)}
+                    >
+                      {item.lifecycleState}
+                    </Badge>
+                  ) : (
+                    <span className="text-muted-foreground/40">—</span>
+                  )}
+                </td>
+                <td className="px-2 py-2 text-center">
+                  {item.drawingNumber ? (
+                    <FileText className="mx-auto h-4 w-4 text-muted-foreground" />
+                  ) : (
+                    <span className="text-muted-foreground/40">—</span>
+                  )}
+                </td>
+                <td className="px-2 py-2 text-center">
+                  {item.childrenCount > 0 ? (
+                    <span className="inline-flex items-center gap-1 text-muted-foreground">
+                      <Network className="h-3.5 w-3.5" />
+                      <span className="text-xs">{item.childrenCount}</span>
+                    </span>
+                  ) : (
+                    <span className="text-muted-foreground/40">—</span>
+                  )}
+                </td>
+              </tr>
+            )) : null}
           </tbody>
         </table>
       </div>
 
-      <div className="flex flex-col gap-3 border-t border-border/70 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex items-center gap-3 text-sm text-muted-foreground">
+      <div className="flex items-center justify-between border-t bg-muted/30 px-4 py-3">
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <Select value={String(pageSize)} onValueChange={(value) => onPageSizeChange(Number(value))}>
             <SelectTrigger className="h-8 w-[80px] text-xs">
               <SelectValue />
@@ -250,12 +294,12 @@ export function PartsListTable({
             <SelectContent>
               {pageSizeOptions.map((value) => (
                 <SelectItem key={value} value={String(value)}>
-                  {value}개
+                  {value}개씩
                 </SelectItem>
               ))}
             </SelectContent>
           </Select>
-          <span>
+          <span className="text-xs text-muted-foreground">
             {totalCount > 0 ? `${(page - 1) * pageSize + 1}-${Math.min(page * pageSize, totalCount)} / ${totalCount}건` : "0건"}
           </span>
         </div>
@@ -271,6 +315,7 @@ export function PartsListTable({
               </span>
             ) : (
               <Button
+                className="text-xs"
                 key={pageNumber}
                 size="icon-sm"
                 type="button"
@@ -292,6 +337,6 @@ export function PartsListTable({
           </Button>
         </div>
       </div>
-    </section>
+    </div>
   );
 }

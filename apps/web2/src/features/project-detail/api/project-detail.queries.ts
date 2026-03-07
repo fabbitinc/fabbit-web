@@ -3,8 +3,10 @@ import {
   addProjectMembers,
   archiveProject,
   deleteProject,
+  fetchProjectChanges,
   fetchProjectActivities,
   fetchProjectDetail,
+  fetchProjectIssues,
   fetchProjectMembers,
   fetchProjectParts,
   linkProjectParts,
@@ -32,6 +34,8 @@ export const projectDetailKeys = {
   detail: (projectId: string) => ["project-detail", projectId] as const,
   activities: (projectId: string, query: ProjectActivitiesQueryDto) =>
     ["project-detail", projectId, "activities", query] as const,
+  issues: (projectId: string) => ["project-detail", projectId, "issues"] as const,
+  changes: (projectId: string) => ["project-detail", projectId, "changes"] as const,
   members: (projectId: string) => ["project-detail", projectId, "members"] as const,
   memberLookup: (projectId: string, query: ProjectMemberLookupQueryDto) =>
     ["project-detail", projectId, "member-lookup", query] as const,
@@ -52,6 +56,18 @@ export const projectDetailQueries = {
     queryOptions({
       queryKey: projectDetailKeys.activities(projectId, query),
       queryFn: () => fetchProjectActivities(projectId, query),
+      staleTime: 10_000,
+    }),
+  issues: (projectId: string) =>
+    queryOptions({
+      queryKey: projectDetailKeys.issues(projectId),
+      queryFn: () => fetchProjectIssues(projectId),
+      staleTime: 10_000,
+    }),
+  changes: (projectId: string) =>
+    queryOptions({
+      queryKey: projectDetailKeys.changes(projectId),
+      queryFn: () => fetchProjectChanges(projectId),
       staleTime: 10_000,
     }),
   members: (projectId: string) =>

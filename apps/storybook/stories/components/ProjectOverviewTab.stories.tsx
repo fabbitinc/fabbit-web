@@ -2,9 +2,47 @@ import type { Meta, StoryObj } from "@storybook/react-vite";
 import { ProjectOverviewTab, type ProjectOverviewTabProps } from "@fabbit/components";
 
 const sampleProject = {
+  changeCount: 3,
   description: "양산 전 BOM과 승인 흐름을 통합 정리하는 프로젝트입니다.",
   partCount: 148,
+  issueCount: 7,
+  overviewChangeCount: 5,
+  overviewIssueCount: 8,
+  overviewMergedChangeCount: 12,
+  mergedChangeCount: 12,
   createdAt: "2026-02-03T08:20:00Z",
+  recentActivities: [
+    {
+      actorName: "김도윤",
+      createdAt: "2026-03-07T02:10:00Z",
+      id: "activity-1",
+      scope: "part",
+      state: "추가",
+      summary: "부품 연결",
+    },
+    {
+      actorName: "이서윤",
+      createdAt: "2026-03-06T11:20:00Z",
+      id: "activity-2",
+      scope: "issue",
+      state: "열림",
+      summary: "이슈 생성",
+    },
+  ],
+  recentParts: [
+    {
+      category: "기구",
+      id: "part-1",
+      name: "드라이브 유닛 베이스 플레이트",
+      partNumber: "DRV-PLATE-0142",
+    },
+    {
+      category: "전장",
+      id: "part-2",
+      name: "모터 제어 PCB",
+      partNumber: "CTRL-PCB-0207",
+    },
+  ],
   updatedAt: "2026-03-07T02:10:00Z",
   isArchived: false,
 } satisfies ProjectOverviewTabProps["project"];
@@ -18,9 +56,6 @@ const meta = {
   },
   args: {
     project: sampleProject,
-    onActivityClick: () => undefined,
-    onPartsClick: () => undefined,
-    onSettingsClick: () => undefined,
   },
 } satisfies Meta<typeof ProjectOverviewTab>;
 

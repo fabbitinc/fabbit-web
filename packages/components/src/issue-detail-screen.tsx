@@ -1,6 +1,8 @@
-import { useState } from "react";
-import { AlertCircle, ArrowLeft, CheckCircle2, Loader2, MessageSquare, XCircle } from "lucide-react";
+import { useEffect, useState } from "react";
+import { AlertCircle, ArrowLeft, CheckCircle2, Loader2, MessageSquare, Pencil, XCircle } from "lucide-react";
 import {
+  Avatar,
+  AvatarFallback,
   Badge,
   Button,
   ConfirmDialog,
@@ -10,12 +12,6 @@ import {
   type TiptapMentionFetcher,
   UserAvatar,
 } from "@fabbit/ui";
-import { CommentInput } from "./comment-input";
-import {
-  DetailSelectionDialog,
-  type DetailSelectionDialogProps as DetailSelectionDialogConfig,
-} from "./detail-selection-dialog";
-import { EditableTimelineComment } from "./editable-timeline-comment";
 import {
   IssueSidebar,
   type IssueSidebarFile,
@@ -24,7 +20,6 @@ import {
   type IssueSidebarPart,
   type IssueSidebarUser,
 } from "./issue-sidebar";
-import { TimelineComment } from "./timeline-comment";
 import { TimelineEventItem, type TimelineEventData } from "./timeline-event";
 
 export interface IssueDetailScreenUser {
@@ -63,6 +58,7 @@ export interface IssueDetailScreenCommentItem {
   author: IssueDetailScreenUser | null;
   authorId?: string | null;
   body: TiptapEditorProps["content"] | null;
+  createdAt: string;
   isModified?: boolean;
   updatedAt: string;
 }
@@ -83,50 +79,59 @@ export interface IssueDetailScreenCurrentUser {
   profileImageUrl?: string | null;
 }
 
-export interface IssueDetailScreenDialog extends Omit<DetailSelectionDialogConfig, "open"> {}
-
 export interface IssueDetailScreenProps {
+  availableChanges?: { id: string; number: number; title: string; state: string }[];
+  availableLabels?: { id: string; name: string; colorHex: string }[];
+  availableMembers?: { id: string; name: string; email: string }[];
   commentCount: number;
   currentUser?: IssueDetailScreenCurrentUser | null;
-  dialog?: IssueDetailScreenDialog | null;
   isAttachingFiles?: boolean;
+  isChangesSearching?: boolean;
   isClosingIssue?: boolean;
   isCreatingComment?: boolean;
   isError?: boolean;
   isLoading?: boolean;
+  isMetaUpdating?: boolean;
+  isNotFound?: boolean;
+  isPartsSearching?: boolean;
   isReopeningIssue?: boolean;
   isSavingIssue?: boolean;
   isTimelineLoading?: boolean;
   issue?: IssueDetailScreenIssue;
+  linkedChangeIds?: string[];
   mentionFetchers?: {
     issue?: TiptapMentionFetcher;
     user?: TiptapMentionFetcher;
   };
   onAttachFiles: (files: File[]) => Promise<void> | void;
   onBack: () => void;
+  onChangeSearchChange?: (search: string) => void;
   onCloseIssue: () => Promise<void> | void;
   onCreateComment: (body: TiptapEditorProps["content"] | null) => Promise<void>;
   onCreateLinkedChange: () => void;
   onDeleteComment: (commentId: string) => Promise<void>;
   onDeleteFile: (fileId: string) => Promise<void> | void;
-  onEditAssignees: () => void;
-  onEditLabels: () => void;
-  onEditLinkedChanges: () => void;
-  onEditParts: () => void;
   onNavigateToChange: (changeNumber: number) => void;
   onNavigateToIssueMention: (issueNumber: number, issueType: "issue" | "change_request") => void;
+  onNavigateToPart?: (partId: string) => void;
+  onPartsSearchChange?: (search: string) => void;
   onReopenIssue: () => Promise<void> | void;
+  onRequestChanges?: () => void;
+  onRequestLabels?: () => void;
+  onRequestMembers?: () => void;
+  onRequestParts?: () => void;
   onRetry?: () => void;
   onSaveIssue: (input: { body: TiptapEditorProps["content"] | null; title: string }) => Promise<void>;
+  onSyncAssignees?: (userIds: string[]) => void;
+  onSyncLabels?: (labelIds: string[]) => void;
+  onSyncLinkedChanges?: (changeIds: string[]) => void;
+  onSyncParts?: (partIds: string[]) => void;
   onUpdateComment: (commentId: string, body: TiptapEditorProps["content"] | null) => Promise<void>;
+  searchedParts?: { id: string; partNumber: string; name: string | null }[];
+  selectedAssigneeIds?: string[];
+  selectedLabelIds?: string[];
+  selectedPartIds?: string[];
   timelineItems: IssueDetailScreenTimelineItem[];
-}
-
-function formatDateTime(value: string) {
-  return new Intl.DateTimeFormat("ko-KR", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(new Date(value));
 }
 
 function timeAgo(dateStr: string): string {
@@ -153,7 +158,8 @@ function timeAgo(dateStr: string): string {
     return `${days}일 전`;
   }
 
-  return formatDateTime(dateStr);
+  const date = new Date(dateStr);
+  return `${date.getMonth() + 1}/${date.getDate()}`;
 }
 
 function formatFullDate(iso: string) {
@@ -182,45 +188,186 @@ const STATUS_BADGE_STYLE: Record<string, string> = {
   CLOSED: "border-red-300 bg-red-50 text-red-700 dark:border-red-700 dark:bg-red-950 dark:text-red-400",
 };
 
+function IssueTimelineCommentItem({
+  comment,
+  canEdit,
+  issueMentionFetcher,
+  onNavigateToIssueMention,
+  onUpdate,
+  userMentionFetcher,
+}: {
+  comment: IssueDetailScreenCommentItem;
+  canEdit: boolean;
+  issueMentionFetcher?: TiptapMentionFetcher;
+  onNavigateToIssueMention: (issueNumber: number, issueType: "issue" | "change_request") => void;
+  onUpdate: (commentId: string, body: TiptapEditorProps["content"] | null) => Promise<void>;
+  userMentionFetcher?: TiptapMentionFetcher;
+}) {
+  const [bodyDraft, setBodyDraft] = useState<TiptapEditorProps["content"] | null>(comment.body);
+  const [editorKey, setEditorKey] = useState(0);
+  const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  if (isEditing) {
+    return (
+      <div>
+        <TiptapEditor
+          key={editorKey}
+          content={bodyDraft ?? undefined}
+          editable
+          minHeight={80}
+          userMentionFetcher={userMentionFetcher}
+          issueMentionFetcher={issueMentionFetcher}
+          onChangeJson={(content) => setBodyDraft(content)}
+        />
+        <div className="mt-3 flex justify-end gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setBodyDraft(comment.body);
+              setIsEditing(false);
+            }}
+            disabled={isSaving}
+          >
+            취소
+          </Button>
+          <Button
+            size="sm"
+            disabled={!bodyDraft || isSaving}
+            onClick={async () => {
+              if (!bodyDraft) {
+                return;
+              }
+
+              setIsSaving(true);
+
+              try {
+                await onUpdate(comment.id, bodyDraft);
+                setIsEditing(false);
+              } finally {
+                setIsSaving(false);
+              }
+            }}
+          >
+            {isSaving ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : null}
+            저장
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex gap-3">
+      <div className="flex flex-col items-center">
+        <UserAvatar
+          name={comment.author?.name ?? "알 수 없는 사용자"}
+          imageUrl={comment.author?.profileImageUrl}
+          className="h-8 w-8 shrink-0"
+        />
+      </div>
+      <div className="min-w-0 flex-1 rounded-lg border bg-card">
+        <div className="flex items-center gap-2 border-b bg-muted/30 px-4 py-2">
+          <span className="text-sm font-medium text-foreground">
+            {comment.author?.name ?? "알 수 없는 사용자"}
+          </span>
+          <span className="text-xs text-muted-foreground">{timeAgo(comment.createdAt)}</span>
+          {comment.isModified ? <span className="text-xs text-muted-foreground">· 수정됨</span> : null}
+          {canEdit ? (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="ml-auto h-6 w-6 shrink-0"
+              onClick={() => {
+                setBodyDraft(comment.body);
+                setEditorKey((previous) => previous + 1);
+                setIsEditing(true);
+              }}
+            >
+              <Pencil className="h-3 w-3" />
+            </Button>
+          ) : null}
+        </div>
+        <div className="px-4 py-3">
+          <TiptapEditor
+            content={comment.body ?? undefined}
+            editable={false}
+            hideToolbar
+            minHeight={0}
+            className="border-0 bg-transparent"
+            onIssueMentionClick={onNavigateToIssueMention}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function IssueDetailScreen({
+  availableChanges = [],
+  availableLabels = [],
+  availableMembers = [],
   commentCount,
   currentUser,
-  dialog,
   isAttachingFiles = false,
+  isChangesSearching = false,
   isClosingIssue = false,
   isCreatingComment = false,
   isError = false,
   isLoading = false,
+  isMetaUpdating = false,
+  isNotFound = false,
+  isPartsSearching = false,
   isReopeningIssue = false,
   isSavingIssue = false,
   isTimelineLoading = false,
   issue,
+  linkedChangeIds = [],
   mentionFetchers,
   onAttachFiles,
   onBack,
+  onChangeSearchChange,
   onCloseIssue,
   onCreateComment,
   onCreateLinkedChange,
-  onDeleteComment,
+  onDeleteComment: _onDeleteComment,
   onDeleteFile,
-  onEditAssignees,
-  onEditLabels,
-  onEditLinkedChanges,
-  onEditParts,
   onNavigateToChange,
   onNavigateToIssueMention,
+  onNavigateToPart,
+  onPartsSearchChange,
   onReopenIssue,
+  onRequestChanges,
+  onRequestLabels,
+  onRequestMembers,
+  onRequestParts,
   onRetry,
   onSaveIssue,
+  onSyncAssignees,
+  onSyncLabels,
+  onSyncLinkedChanges,
+  onSyncParts,
   onUpdateComment,
+  searchedParts = [],
+  selectedAssigneeIds = [],
+  selectedLabelIds = [],
+  selectedPartIds = [],
   timelineItems,
 }: IssueDetailScreenProps) {
   const [bodyDraft, setBodyDraft] = useState<TiptapEditorProps["content"] | null>(issue?.body ?? null);
   const [commentBody, setCommentBody] = useState<TiptapEditorProps["content"] | null>(null);
   const [commentEditorKey, setCommentEditorKey] = useState(0);
+  const [commentText, setCommentText] = useState("");
   const [isCloseConfirmOpen, setIsCloseConfirmOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [titleDraft, setTitleDraft] = useState(issue?.title ?? "");
+
+  useEffect(() => {
+    setBodyDraft(issue?.body ?? null);
+    setTitleDraft(issue?.title ?? "");
+    setIsEditing(false);
+  }, [issue?.number]);
 
   if (isLoading) {
     return (
@@ -230,7 +377,7 @@ export function IssueDetailScreen({
     );
   }
 
-  if (isError || !issue) {
+  if (isError) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
         <div className="flex flex-col items-center gap-3 text-center">
@@ -250,23 +397,20 @@ export function IssueDetailScreen({
     );
   }
 
+  if (isNotFound || !issue) {
+    return <p className="py-8 text-center text-sm text-muted-foreground">이슈를 찾을 수 없습니다.</p>;
+  }
+
   const isOpen = issue.state === "OPEN";
   const createdByName = issue.createdBy?.name ?? "알 수 없음";
-
   const startEditing = () => {
     setTitleDraft(issue.title);
     setBodyDraft(issue.body);
     setIsEditing(true);
   };
 
-  const cancelEditing = () => {
-    setTitleDraft(issue.title);
-    setBodyDraft(issue.body);
-    setIsEditing(false);
-  };
-
   return (
-    <div className="mx-auto max-w-[1160px] px-6 py-6">
+    <div className="mx-auto max-w-[1160px]">
       <button
         type="button"
         className="mb-4 inline-flex cursor-pointer items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
@@ -277,10 +421,20 @@ export function IssueDetailScreen({
       </button>
 
       <div>
-        <h2 className="text-xl font-bold text-foreground">
-          {issue.title}
-          <span className="ml-2 font-normal text-muted-foreground">#{issue.number}</span>
-        </h2>
+        {isEditing ? (
+          <Input
+            id="issue-detail-title"
+            value={titleDraft}
+            onChange={(event) => setTitleDraft(event.target.value)}
+            className="text-xl font-bold"
+            autoFocus
+          />
+        ) : (
+          <h2 className="text-xl font-bold text-foreground">
+            {issue.title}
+            <span className="ml-2 font-normal text-muted-foreground">#{issue.number}</span>
+          </h2>
+        )}
         <div className="mt-2 flex flex-wrap items-center gap-2">
           <Badge variant="outline" className={STATUS_BADGE_STYLE[issue.state] ?? ""}>
             <IssueStatusIcon state={issue.state} />
@@ -303,82 +457,82 @@ export function IssueDetailScreen({
       <div className="mt-6 flex gap-6">
         <div className="min-w-0 flex-1 space-y-4">
           {isEditing ? (
-            <div className="flex gap-3">
-              <UserAvatar
-                imageUrl={issue.createdBy?.profileImageUrl ?? null}
-                name={createdByName}
-                className="h-8 w-8 shrink-0"
+            <div>
+              <TiptapEditor
+                content={bodyDraft ?? undefined}
+                placeholder="이슈 본문을 입력하세요"
+                minHeight={100}
+                userMentionFetcher={mentionFetchers?.user}
+                issueMentionFetcher={mentionFetchers?.issue}
+                onChangeJson={(content) => setBodyDraft(content)}
               />
-              <div className="min-w-0 flex-1 space-y-4">
-                <div className="space-y-2">
-                  <label htmlFor="issue-detail-title" className="text-sm font-medium text-foreground">
-                    제목
-                  </label>
-                  <Input
-                    id="issue-detail-title"
-                    value={titleDraft}
-                    onChange={(event) => setTitleDraft(event.target.value)}
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-foreground">본문</label>
-                  <TiptapEditor
-                    content={bodyDraft ?? undefined}
-                    placeholder="이슈 본문을 입력하세요"
-                    minHeight={220}
-                    userMentionFetcher={mentionFetchers?.user}
-                    issueMentionFetcher={mentionFetchers?.issue}
-                    onChangeJson={(content) => setBodyDraft(content)}
-                  />
-                </div>
-                <div className="flex justify-end gap-2">
-                  <Button type="button" variant="outline" onClick={cancelEditing}>
-                    취소
-                  </Button>
-                  <Button
-                    disabled={!titleDraft.trim() || isSavingIssue}
-                    type="button"
-                    onClick={async () => {
-                      try {
-                        await onSaveIssue({ title: titleDraft, body: bodyDraft });
-                        setIsEditing(false);
-                      } catch {
-                        return;
-                      }
-                    }}
-                  >
-                    {isSavingIssue ? <Loader2 className="size-4 animate-spin" /> : null}
-                    저장
-                  </Button>
-                </div>
+              <div className="mt-3 flex justify-end gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setTitleDraft(issue.title);
+                    setBodyDraft(issue.body);
+                    setIsEditing(false);
+                  }}
+                  disabled={isSavingIssue}
+                >
+                  취소
+                </Button>
+                <Button
+                  type="button"
+                  disabled={!titleDraft.trim() || isSavingIssue}
+                  onClick={async () => {
+                    try {
+                      await onSaveIssue({ title: titleDraft.trim(), body: bodyDraft });
+                      setIsEditing(false);
+                    } catch {
+                      return;
+                    }
+                  }}
+                >
+                  {isSavingIssue ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : null}
+                  저장
+                </Button>
               </div>
             </div>
           ) : (
-            <TimelineComment
-              author={{
-                name: createdByName,
-                profileImageUrl: issue.createdBy?.profileImageUrl,
-              }}
-              createdAtLabel={timeAgo(issue.createdAt)}
-              isModified={issue.isModified}
-              showAuthorBadge
-              onEdit={isOpen ? startEditing : undefined}
-            >
-              {issue.body ? (
-                <div className="-mx-4 -my-3">
-                  <TiptapEditor
-                    editable={false}
-                    hideToolbar
-                    className="border-0 bg-transparent"
-                    content={issue.body ?? undefined}
-                    minHeight={0}
-                    onIssueMentionClick={onNavigateToIssueMention}
-                  />
+            <div className="flex gap-3">
+              <UserAvatar
+                name={createdByName}
+                imageUrl={issue.createdBy?.profileImageUrl}
+                className="h-8 w-8 shrink-0"
+              />
+              <div className="min-w-0 flex-1 rounded-lg border bg-card">
+                <div className="flex items-center gap-2 border-b bg-muted/30 px-4 py-2">
+                  <span className="text-sm font-medium text-foreground">{createdByName}</span>
+                  <span className="text-xs text-muted-foreground">{timeAgo(issue.createdAt)}</span>
+                  {issue.isModified ? <span className="text-xs text-muted-foreground">· 수정됨</span> : null}
+                  <Badge variant="outline" className="ml-auto text-[10px]">
+                    작성자
+                  </Badge>
+                  {isOpen ? (
+                    <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0" onClick={startEditing}>
+                      <Pencil className="h-3 w-3" />
+                    </Button>
+                  ) : null}
                 </div>
-              ) : (
-                <p className="text-sm text-muted-foreground">아직 입력된 본문이 없습니다.</p>
-              )}
-            </TimelineComment>
+                <div className="px-4 py-3">
+                  {issue.body ? (
+                    <TiptapEditor
+                      editable={false}
+                      hideToolbar
+                      className="border-0 bg-transparent"
+                      content={issue.body ?? undefined}
+                      minHeight={0}
+                      onIssueMentionClick={onNavigateToIssueMention}
+                    />
+                  ) : (
+                    <p className="text-sm text-muted-foreground">아직 입력된 본문이 없습니다.</p>
+                  )}
+                </div>
+              </div>
+            </div>
           )}
 
           {isTimelineLoading ? (
@@ -386,21 +540,13 @@ export function IssueDetailScreen({
           ) : (
             timelineItems.map((item) =>
               item.kind === "comment" ? (
-                <EditableTimelineComment
+                <IssueTimelineCommentItem
                   key={item.id}
-                  author={{
-                    name: item.author?.name ?? "알 수 없는 사용자",
-                    profileImageUrl: item.author?.profileImageUrl,
-                  }}
-                  authorId={item.authorId}
-                  body={item.body}
-                  createdAtLabel={timeAgo(item.updatedAt)}
-                  currentUserId={currentUser?.id ?? null}
-                  isModified={item.isModified}
+                  comment={item}
+                  canEdit={Boolean(currentUser?.id && item.authorId && currentUser.id === item.authorId)}
                   issueMentionFetcher={mentionFetchers?.issue}
-                  onDelete={() => onDeleteComment(item.id)}
                   onNavigateToIssueMention={onNavigateToIssueMention}
-                  onUpdate={(nextBody) => onUpdateComment(item.id, nextBody)}
+                  onUpdate={onUpdateComment}
                   userMentionFetcher={mentionFetchers?.user}
                 />
               ) : (
@@ -411,63 +557,67 @@ export function IssueDetailScreen({
 
           <div className="border-t" />
 
-          <CommentInput
-            userName={currentUser?.name ?? undefined}
-            userImageUrl={currentUser?.profileImageUrl ?? null}
-            editor={
+          <div className="flex gap-3">
+            <Avatar className="h-8 w-8 shrink-0">
+              <AvatarFallback className="text-xs">나</AvatarFallback>
+            </Avatar>
+            <div className="min-w-0 flex-1">
               <TiptapEditor
                 key={commentEditorKey}
-                placeholder="댓글을 작성하세요... @로 멤버, #로 이슈를 멘션할 수 있습니다."
+                placeholder="댓글을 작성하세요..."
                 minHeight={100}
                 userMentionFetcher={mentionFetchers?.user}
                 issueMentionFetcher={mentionFetchers?.issue}
                 onChangeJson={(content) => setCommentBody(content)}
+                onChangeText={setCommentText}
               />
-            }
-            actions={
-              <>
-                {isOpen ? (
+              <div className="mt-3 flex items-center justify-between">
+                <div />
+                <div className="flex gap-2">
+                  {isOpen ? (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={isClosingIssue}
+                      onClick={() => setIsCloseConfirmOpen(true)}
+                    >
+                      <XCircle className="mr-1.5 h-3.5 w-3.5" />
+                      이슈 닫기
+                    </Button>
+                  ) : (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={isReopeningIssue}
+                      onClick={() => {
+                        void onReopenIssue();
+                      }}
+                    >
+                      {isReopeningIssue ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : null}
+                      다시 열기
+                    </Button>
+                  )}
                   <Button
                     size="sm"
-                    variant="outline"
-                    disabled={isClosingIssue}
-                    onClick={() => setIsCloseConfirmOpen(true)}
-                  >
-                    <XCircle className="mr-1.5 h-3.5 w-3.5" />
-                    이슈 닫기
-                  </Button>
-                ) : (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    disabled={isReopeningIssue}
-                    onClick={() => {
-                      void onReopenIssue();
+                    disabled={isCreatingComment}
+                    onClick={async () => {
+                      if (!commentBody || !commentText.trim()) {
+                        return;
+                      }
+
+                      await onCreateComment(commentBody);
+                      setCommentBody(null);
+                      setCommentText("");
+                      setCommentEditorKey((previous) => previous + 1);
                     }}
                   >
-                    {isReopeningIssue ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
-                    다시 열기
+                    {isCreatingComment ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : null}
+                    댓글
                   </Button>
-                )}
-                <Button
-                  size="sm"
-                  disabled={!commentBody || isCreatingComment}
-                  onClick={async () => {
-                    if (!commentBody) {
-                      return;
-                    }
-
-                    await onCreateComment(commentBody);
-                    setCommentBody(null);
-                    setCommentEditorKey((previous) => previous + 1);
-                  }}
-                >
-                  {isCreatingComment ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
-                  댓글
-                </Button>
-              </>
-            }
-          />
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div className="hidden w-70 shrink-0 lg:block">
@@ -478,11 +628,56 @@ export function IssueDetailScreen({
             linkedIssues={issue.linkedIssues}
             relatedParts={issue.relatedParts}
             attachments={issue.attachments}
-            onEditAssignees={onEditAssignees}
-            onEditLabels={onEditLabels}
-            onEditParts={onEditParts}
-            onEditLinkedChanges={onEditLinkedChanges}
+            assigneePicker={
+              onSyncAssignees
+                ? {
+                    availableMembers,
+                    selectedIds: selectedAssigneeIds,
+                    onSync: onSyncAssignees,
+                    onRequest: onRequestMembers ?? (() => undefined),
+                    isUpdating: isMetaUpdating,
+                  }
+                : undefined
+            }
+            labelPicker={
+              onSyncLabels
+                ? {
+                    availableLabels,
+                    selectedIds: selectedLabelIds,
+                    onSync: onSyncLabels,
+                    onRequest: onRequestLabels ?? (() => undefined),
+                    isUpdating: isMetaUpdating,
+                  }
+                : undefined
+            }
+            partPicker={
+              onSyncParts
+                ? {
+                    searchedParts,
+                    selectedIds: selectedPartIds,
+                    onSync: onSyncParts,
+                    onRequest: onRequestParts ?? (() => undefined),
+                    onSearchChange: onPartsSearchChange,
+                    isSearching: isPartsSearching,
+                    isUpdating: isMetaUpdating,
+                  }
+                : undefined
+            }
+            linkedChangePicker={
+              onSyncLinkedChanges
+                ? {
+                    availableChanges,
+                    selectedIds: linkedChangeIds,
+                    onSync: onSyncLinkedChanges,
+                    onRequest: onRequestChanges ?? (() => undefined),
+                    onSearchChange: onChangeSearchChange,
+                    isSearching: isChangesSearching,
+                    isUpdating: isMetaUpdating,
+                  }
+                : undefined
+            }
             onNavigateToChange={onNavigateToChange}
+            onNavigateToPart={onNavigateToPart}
             onCreateLinkedChange={onCreateLinkedChange}
             isAttachingFiles={isAttachingFiles}
             onAttachFiles={(files) => {
@@ -495,8 +690,6 @@ export function IssueDetailScreen({
         </div>
       </div>
 
-      {dialog ? <DetailSelectionDialog open {...dialog} /> : null}
-
       <ConfirmDialog
         open={isCloseConfirmOpen}
         title="이슈를 닫을까요?"
@@ -506,6 +699,7 @@ export function IssueDetailScreen({
         variant="destructive"
         onCancel={() => setIsCloseConfirmOpen(false)}
         onConfirm={() => {
+          setIsCloseConfirmOpen(false);
           void onCloseIssue();
         }}
         onOpenChange={setIsCloseConfirmOpen}

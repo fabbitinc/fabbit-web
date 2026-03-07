@@ -118,9 +118,10 @@ export function PartsListScreen({
       queryState={queryState}
       selectedIds={selectedIds}
       totalCount={totalCount}
+      onAllExportClick={() => exportPartsAction.mutate({})}
       onCategoryChange={onCategoryChange}
       onClearSelection={() => setSelectedIds(new Set())}
-      onCurrentExportClick={() =>
+      onFilteredExportClick={() =>
         exportPartsAction.mutate({
           search: queryState.query || undefined,
           category: queryState.category || undefined,
@@ -137,6 +138,7 @@ export function PartsListScreen({
       onPageSizeChange={onPageSizeChange}
       onQueryChange={onQueryChange}
       onRowClick={(partId) => navigate(`/parts/${partId}`)}
+      onCreateClick={() => {}}
       onSelectedExportClick={() => exportPartsAction.mutate({ part_ids: selectedPartIds })}
       onSortChange={onSortChange}
       onTemplateAnalysisClick={() => navigate("/parts/templates")}

@@ -13,7 +13,7 @@ import {
   UserPlus,
   XCircle,
 } from "lucide-react";
-import { LabelBadge, UserAvatar } from "@fabbit/ui";
+import { LabelBadge, Tooltip, TooltipContent, TooltipTrigger, UserAvatar } from "@fabbit/ui";
 
 // ── 타입 ──────────────────────────────────────────────────
 
@@ -91,9 +91,21 @@ function TruncatedNames({ items, suffix }: { items: string[]; suffix?: string })
     <>
       <span className="font-medium text-foreground">{items[0]}</span>
       {items.length > 1 && (
-        <span className="cursor-help border-b border-dashed border-muted-foreground/40 font-medium text-foreground">
-          {" "}외 {items.length - 1}개
-        </span>
+        <>
+          {" "}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span className="cursor-help border-b border-dashed border-muted-foreground/40 font-medium text-foreground">
+                외 {items.length - 1}개
+              </span>
+            </TooltipTrigger>
+            <TooltipContent side="top" sideOffset={6} hideArrow>
+              {items.slice(1).map((item) => (
+                <div key={item}>{item}</div>
+              ))}
+            </TooltipContent>
+          </Tooltip>
+        </>
       )}
       {suffix && <> {suffix}</>}
     </>

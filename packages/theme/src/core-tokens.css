@@ -106,6 +106,15 @@
   --status-accent: #7c3aed;
   --status-accent-bg: #f5f3ff;
   --status-accent-border: #ddd6fe;
+
+  /* File Icon Tokens */
+  --file-icon-pdf: #dc2626;
+  --file-icon-document: #2563eb;
+  --file-icon-cad: #0891b2;
+  --file-icon-sheet: #16a34a;
+  --file-icon-image: #7c3aed;
+  --file-icon-archive: #78716c;
+  --file-icon-code: #d97706;
 }
 
 .dark {
@@ -208,4 +217,12 @@
   --status-accent: #a78bfa;
   --status-accent-bg: rgb(91 33 182 / 0.2);
   --status-accent-border: rgb(167 139 250 / 0.45);
+
+  --file-icon-pdf: #f87171;
+  --file-icon-document: #60a5fa;
+  --file-icon-cad: #22d3ee;
+  --file-icon-sheet: #4ade80;
+  --file-icon-image: #a78bfa;
+  --file-icon-archive: #a8a29e;
+  --file-icon-code: #fbbf24;
 }

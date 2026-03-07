@@ -29,9 +29,19 @@ const PROCESSING_LOGS: Array<{ message: string; phase?: ProcessingStep["key"] }>
   { message: "컬럼명 표준화를 진행합니다...", phase: "normalizing" },
   { message: "원본 컬럼 헤더 추출 완료" },
   { message: "속성 후보와 데이터 타입을 추론합니다...", phase: "analyzing" },
-  { message: "관계 매핑 후보를 구성합니다..." },
+  { message: "AI 매핑 분석을 시작합니다..." },
+  { message: "원본 컬럼-대상 속성 매핑 추론 중..." },
+  { message: "관계 매핑 추론 중..." },
   { message: "템플릿 버전을 생성합니다...", phase: "finalizing" },
 ];
+
+const MIN_PROCESSING_ANIMATION_MS = 6_500;
+
+function waitFor(ms: number) {
+  return new Promise<void>((resolve) => {
+    setTimeout(resolve, ms);
+  });
+}
 
 interface PartsTemplateProcessingScreenProps {
   partId?: string;
@@ -83,6 +93,25 @@ export function PartsTemplateProcessingScreen({
     const run = async () => {
       try {
         setLogs([`분석 대상 파일 확인: ${effectiveFileName}`]);
+        updateStep("parsing", "in_progress");
+
+        if (retryToken > 0) {
+          setLogs((previous) => [...previous, "기존 업로드를 재사용해 분석을 다시 시작합니다..."]);
+          updateStep("parsing", "completed");
+          setProgress(20);
+        } else {
+          setLogs((previous) => [...previous, "업로드된 파일을 확인합니다..."]);
+          await waitFor(500);
+          updateStep("parsing", "completed");
+          setProgress(20);
+          setLogs((previous) => [...previous, "파일 업로드 확인 완료"]);
+        }
+
+        const startedAt = Date.now();
+        const processPromise = processAction.mutateAsync({
+          uploadId: primaryUploadId,
+          retryPreviewOnly: retryToken > 0,
+        });
 
         animationInterval = setInterval(() => {
           if (finished || logIndex >= PROCESSING_LOGS.length) {
@@ -102,14 +131,16 @@ export function PartsTemplateProcessingScreen({
           setLogs((previous) => [...previous, entry.message]);
           logIndex += 1;
 
-          const nextProgress = 15 + Math.min(Math.round((logIndex / PROCESSING_LOGS.length) * 75), 75);
+          const nextProgress = 20 + Math.min(Math.round((logIndex / PROCESSING_LOGS.length) * 70), 70);
           setProgress(nextProgress);
-        }, 2000);
+        }, 3000);
 
-        await processAction.mutateAsync({
-          uploadId: primaryUploadId,
-          retryPreviewOnly: retryToken > 0,
-        });
+        await processPromise;
+
+        const elapsed = Date.now() - startedAt;
+        if (elapsed < MIN_PROCESSING_ANIMATION_MS) {
+          await waitFor(MIN_PROCESSING_ANIMATION_MS - elapsed);
+        }
 
         finished = true;
         if (animationInterval) {

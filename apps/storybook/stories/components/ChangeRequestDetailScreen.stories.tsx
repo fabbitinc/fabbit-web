@@ -103,6 +103,7 @@ function ChangeRequestDetailScreenStory() {
           },
           authorId: "user-1",
           body: "<p>핀 간격을 0.8mm에서 1.0mm로 넓히는 안을 제안합니다.</p>",
+          createdAt: "2026-03-06T10:30:00.000Z",
           isModified: false,
           updatedAt: "2026-03-06T10:30:00.000Z",
         },
@@ -116,6 +117,53 @@ function ChangeRequestDetailScreenStory() {
       onBack={() => undefined}
       onRetry={() => undefined}
       onTabChange={setActiveTab}
+      assigneePicker={{
+        availableMembers: [
+          { id: "user-1", name: "문성하", email: "seongha@fabbit.ai" },
+          { id: "user-2", name: "김서윤", email: "seoyun@fabbit.ai" },
+        ],
+        selectedIds: ["user-1"],
+        onRequest: () => undefined,
+        onSync: () => undefined,
+      }}
+      reviewerPicker={{
+        availableMembers: [
+          { id: "user-1", name: "문성하", email: "seongha@fabbit.ai" },
+          { id: "user-2", name: "김서윤", email: "seoyun@fabbit.ai" },
+        ],
+        selectedIds: ["user-2"],
+        onRequest: () => undefined,
+        onSync: () => undefined,
+      }}
+      labelPicker={{
+        availableLabels: [
+          { id: "label-1", name: "배선", colorHex: "#4F46E5" },
+          { id: "label-2", name: "검토 필요", colorHex: "#F97316" },
+        ],
+        selectedIds: ["label-1"],
+        onRequest: () => undefined,
+        onSync: () => undefined,
+      }}
+      partPicker={{
+        searchedParts: [
+          { id: "part-1", partNumber: "PCB-9201", name: "컨트롤 보드" },
+          { id: "part-2", partNumber: "CBL-1022", name: "신호 케이블" },
+        ],
+        selectedIds: ["part-1"],
+        onRequest: () => undefined,
+        onSearchChange: () => undefined,
+        onSync: () => undefined,
+      }}
+      linkedIssuePicker={{
+        availableIssues: [
+          { id: "issue-42", number: 42, title: "센서 모듈 하우징 간섭 이슈", state: "OPEN" },
+          { id: "issue-78", number: 78, title: "브라켓 홀 위치 오차", state: "CLOSED" },
+        ],
+        selectedIds: ["issue-42"],
+        onRequest: () => undefined,
+        onSearchChange: () => undefined,
+        onSync: () => undefined,
+      }}
       onSaveChangeRequest={async () => undefined}
       onCreateComment={async () => undefined}
       onUpdateComment={async () => undefined}
@@ -125,11 +173,6 @@ function ChangeRequestDetailScreenStory() {
       onCloseChangeRequest={() => undefined}
       onReopenChangeRequest={() => undefined}
       onNavigateToIssueMention={() => undefined}
-      onEditAssignees={() => undefined}
-      onEditReviewers={() => undefined}
-      onEditLabels={() => undefined}
-      onEditParts={() => undefined}
-      onEditIssues={() => undefined}
       onNavigateToIssue={() => undefined}
       onAttachFiles={async () => undefined}
       onDeleteFile={async () => undefined}

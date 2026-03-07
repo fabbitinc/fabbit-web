@@ -1,0 +1,29 @@
+{
+  "generatedAt": "2026-03-07T09:42:04.039Z",
+  "webDir": "/Users/seongha.moon/code/projects/fabbit/web/refactor/.captures-stage26/web",
+  "web2Dir": "/Users/seongha.moon/code/projects/fabbit/web/refactor/.captures-stage26/web2",
+  "sharedFiles": [
+    "parts-list.png",
+    "parts-template-analysis.png"
+  ],
+  "results": [
+    {
+      "file": "parts-list.png",
+      "webSize": "1440x1200",
+      "web2Size": "1440x1200",
+      "diffPixels": 3261,
+      "diffPath": "/Users/seongha.moon/code/projects/fabbit/web/refactor/.captures-stage26/compare/diff/parts-list.png",
+      "sideBySidePath": "/Users/seongha.moon/code/projects/fabbit/web/refactor/.captures-stage26/compare/side-by-side/parts-list.png",
+      "status": "different"
+    },
+    {
+      "file": "parts-template-analysis.png",
+      "webSize": "1440x1200",
+      "web2Size": "1440x1200",
+      "diffPixels": 2765,
+      "diffPath": "/Users/seongha.moon/code/projects/fabbit/web/refactor/.captures-stage26/compare/diff/parts-template-analysis.png",
+      "sideBySidePath": "/Users/seongha.moon/code/projects/fabbit/web/refactor/.captures-stage26/compare/side-by-side/parts-template-analysis.png",
+      "status": "different"
+    }
+  ]
+}

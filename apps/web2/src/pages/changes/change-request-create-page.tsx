@@ -15,13 +15,15 @@ export function ChangeRequestCreatePage() {
     <ChangeCreateForm
       backHref="/changes?view=requests"
       backLabel="변경 요청 목록"
-      description="설계 변경 내용을 등록하고 검토자를 지정합니다."
+      description="설계 변경사항을 등록하고 리뷰를 요청합니다."
+      editorPlaceholder="변경 요청 설명을 입력하세요"
       heading="새 변경 요청"
       includeReviewers
       isPending={createChangeRequestAction.isPending}
       linkedIssueNumber={linkedIssueNumber}
       linkedIssueTitle={linkedIssueTitle}
       submitLabel="변경 요청 생성"
+      titlePlaceholder="변경 요청 제목을 입력하세요"
       onSubmit={async (input) => {
         const changeRequest = await createChangeRequestAction.mutateAsync(input);
         navigate(`/changes/requests/${changeRequest.number}`);

@@ -1,12 +1,17 @@
 import { useDeferredValue, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { type TiptapEditorProps } from "@fabbit/ui";
 import {
   ChangeRequestDetailScreen as ChangeRequestDetailScreenView,
   type ChangeRequestDetailScreenProps as ChangeRequestDetailScreenViewProps,
-  type TimelineEventData,
-  type TimelineEventType,
 } from "@fabbit/components";
 import { useAuthStore } from "@/features/auth";
+import type {
+  LookupIssueModel,
+  LookupLabelModel,
+  LookupMemberModel,
+  LookupPartModel,
+} from "@/features/change-shared/types/change-shared-model";
 import { useTiptapMentionFetchers } from "@/features/change-shared/hooks/use-tiptap-mention-fetchers";
 import { useIssueLookupQuery } from "@/features/change-shared/hooks/use-issue-lookup-query";
 import { useLabelLookupQuery } from "@/features/change-shared/hooks/use-label-lookup-query";
@@ -29,120 +34,17 @@ import { useSyncChangeRequestPartsAction } from "@/features/change-request/hooks
 import { useSyncChangeRequestReviewersAction } from "@/features/change-request/hooks/use-sync-change-request-reviewers-action";
 import { useUpdateChangeRequestAction } from "@/features/change-request/hooks/use-update-change-request-action";
 import { useUpdateChangeRequestCommentAction } from "@/features/change-request/hooks/use-update-change-request-comment-action";
+import { mapTimelineActivityToEvent } from "@/features/change-shared/lib/timeline-event";
 import type {
-  ChangeRequestTimelineActivityModel,
   ChangeRequestDetailTab,
+  ChangeRequestTimelineActivityModel,
 } from "@/features/change-request/types/change-request-model";
 import { normalizeRichTextDocument } from "@/lib/rich-text";
-
-type SelectionDialogKind = "assignees" | "reviewers" | "labels" | "parts" | "issues";
 
 const detailTabs: { id: ChangeRequestDetailTab; label: string }[] = [
   { id: "conversation", label: "대화" },
   { id: "changes", label: "변경 내용" },
 ];
-
-function formatDateTime(value: string) {
-  return new Intl.DateTimeFormat("ko-KR", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(new Date(value));
-}
-
-function timeAgo(dateStr: string): string {
-  const diff = Date.now() - new Date(dateStr).getTime();
-  const minutes = Math.floor(diff / 60000);
-
-  if (minutes < 1) {
-    return "방금";
-  }
-
-  if (minutes < 60) {
-    return `${minutes}분 전`;
-  }
-
-  const hours = Math.floor(minutes / 60);
-
-  if (hours < 24) {
-    return `${hours}시간 전`;
-  }
-
-  const days = Math.floor(hours / 24);
-
-  if (days < 30) {
-    return `${days}일 전`;
-  }
-
-  return formatDateTime(dateStr);
-}
-
-function mapCrActivityToTimelineEvent(item: ChangeRequestTimelineActivityModel): TimelineEventData | null {
-  const actionTypeMap: Record<string, TimelineEventType> = {
-    "cr:created": "cr_created",
-    "cr:state_changed": "cr_state_changed",
-    "cr:merged": "cr_merged",
-    "cr:issue_changed": "cr_issue_linked",
-    "issue:reviewer_changed": "reviewer_changed",
-    "issue:assignee_changed": "assigned",
-    "issue:label_changed": "labels_changed",
-    "issue:part_changed": "part_added",
-    "issue:file_attached": "file_attached",
-    "issue:file_detached": "file_detached",
-    "issue:mentioned": "issue_mentioned",
-  };
-
-  const type = actionTypeMap[item.action];
-
-  if (!type) {
-    return null;
-  }
-
-  const detail = (item.detail ?? {}) as Record<string, unknown>;
-
-  const event: TimelineEventData = {
-    id: item.id,
-    type,
-    author: {
-      name: item.actor?.fullName ?? "알 수 없는 사용자",
-      profileImageUrl: item.actor?.profileImageUrl,
-    },
-    createdAtLabel: timeAgo(item.createdAt),
-  };
-
-  if (type === "cr_state_changed") {
-    event.content = detail;
-  }
-
-  if (type === "assigned" || type === "reviewer_changed") {
-    event.addedNames = detail.addedNames as string[] | undefined;
-    event.removedNames = detail.removedNames as string[] | undefined;
-  }
-
-  if (type === "labels_changed") {
-    event.addedLabels = detail.addedLabels as { name: string; color: string }[] | undefined;
-    event.removedLabels = detail.removedLabels as { name: string; color: string }[] | undefined;
-  }
-
-  if (type === "part_added") {
-    event.addedPartCount = detail.addedPartCount as number | undefined;
-    event.addedPartNumbers = detail.addedPartNumbers as string[] | undefined;
-    event.removedPartCount = detail.removedPartCount as number | undefined;
-    event.removedPartNumbers = detail.removedPartNumbers as string[] | undefined;
-  }
-
-  if (type === "file_attached" || type === "file_detached") {
-    event.fileCount = detail.fileCount as number | undefined;
-    event.fileNames = detail.fileNames as string[] | undefined;
-  }
-
-  if (type === "cr_issue_linked" || type === "issue_mentioned") {
-    event.linkedIssues = detail.linkedIssues as TimelineEventData["linkedIssues"];
-    event.linkedIssueCount = detail.linkedIssueCount as number | undefined;
-    event.isComment = detail.isComment as boolean | undefined;
-  }
-
-  return event;
-}
 
 interface ChangeRequestDetailScreenProps {
   activeTab: ChangeRequestDetailTab;
@@ -179,27 +81,25 @@ export function ChangeRequestDetailScreen({
 
   const changeRequest = changeRequestQuery.data;
 
-  const [dialogKind, setDialogKind] = useState<SelectionDialogKind | null>(null);
-  const [dialogSearch, setDialogSearch] = useState("");
-  const [selectedDialogIds, setSelectedDialogIds] = useState<string[]>([]);
+  const [membersEnabled, setMembersEnabled] = useState(false);
+  const [labelsEnabled, setLabelsEnabled] = useState(false);
+  const [partsEnabled, setPartsEnabled] = useState(false);
+  const [issuesEnabled, setIssuesEnabled] = useState(false);
+  const [partsSearch, setPartsSearch] = useState("");
+  const [issuesSearch, setIssuesSearch] = useState("");
 
-  const deferredDialogSearch = useDeferredValue(dialogSearch.trim());
+  const deferredPartsSearch = useDeferredValue(partsSearch.trim());
+  const deferredIssuesSearch = useDeferredValue(issuesSearch.trim());
 
-  const memberLookup = useMemberLookupQuery(
-    { search: deferredDialogSearch || undefined, limit: 20 },
-    dialogKind === "assignees" || dialogKind === "reviewers",
-  );
-  const labelLookup = useLabelLookupQuery(
-    { search: deferredDialogSearch || undefined, limit: 20 },
-    dialogKind === "labels",
-  );
+  const memberLookup = useMemberLookupQuery({ limit: 20 }, membersEnabled);
+  const labelLookup = useLabelLookupQuery({ limit: 20 }, labelsEnabled);
   const partLookup = usePartLookupQuery(
-    { search: deferredDialogSearch || undefined, limit: 20 },
-    dialogKind === "parts",
+    { search: deferredPartsSearch || undefined, limit: 20 },
+    partsEnabled,
   );
   const issueLookup = useIssueLookupQuery(
-    { search: deferredDialogSearch || undefined, limit: 20 },
-    dialogKind === "issues",
+    { search: deferredIssuesSearch || undefined, limit: 20 },
+    issuesEnabled,
   );
 
   const sortedTimeline = useMemo(() => {
@@ -228,13 +128,14 @@ export function ChangeRequestDetailScreen({
             : null,
           authorId: item.authorId,
           body: normalizeRichTextDocument(item.body),
+          createdAt: item.createdAt,
           isModified: item.isModified,
           updatedAt: item.updatedAt,
         });
         return;
       }
 
-      const event = mapCrActivityToTimelineEvent(item);
+      const event = mapTimelineActivityToEvent(item as ChangeRequestTimelineActivityModel);
 
       if (!event) {
         return;
@@ -256,133 +157,6 @@ export function ChangeRequestDetailScreen({
         ? `/changes/requests/${targetIssueNumber}`
         : `/changes/issues/${targetIssueNumber}`,
     );
-
-  const openDialog = (kind: SelectionDialogKind) => {
-    if (!changeRequest) {
-      return;
-    }
-
-    setDialogSearch("");
-    setDialogKind(kind);
-    setSelectedDialogIds(
-      kind === "assignees"
-        ? changeRequest.assignees.map((assignee) => assignee.userId)
-        : kind === "reviewers"
-          ? changeRequest.reviewers.map((reviewer) => reviewer.userId)
-          : kind === "labels"
-            ? changeRequest.labels.map((label) => label.id)
-            : kind === "parts"
-              ? changeRequest.parts.map((part) => part.id)
-              : changeRequest.linkedIssues.map((linkedIssue) => linkedIssue.id),
-    );
-  };
-
-  const closeDialog = () => {
-    setDialogKind(null);
-    setDialogSearch("");
-    setSelectedDialogIds([]);
-  };
-
-  const dialogConfig = useMemo(() => {
-    if (!changeRequest || !dialogKind) {
-      return null;
-    }
-
-    switch (dialogKind) {
-      case "assignees":
-        return {
-          title: "담당자 편집",
-          description: "변경 요청을 담당할 멤버를 선택합니다.",
-          searchPlaceholder: "이름 또는 이메일로 검색",
-          emptyMessage: "검색 조건에 맞는 멤버가 없습니다.",
-          items: (memberLookup.data ?? []).map((member) => ({
-            id: member.userId,
-            title: member.fullName,
-            subtitle: member.email,
-            avatarName: member.fullName,
-            avatarImageUrl: member.profileImageUrl,
-          })),
-          isLoading: memberLookup.isLoading,
-          isPending: syncAssigneesAction.isPending,
-        };
-      case "reviewers":
-        return {
-          title: "검토자 편집",
-          description: "변경 요청을 검토할 멤버를 선택합니다.",
-          searchPlaceholder: "이름 또는 이메일로 검색",
-          emptyMessage: "검색 조건에 맞는 멤버가 없습니다.",
-          items: (memberLookup.data ?? []).map((member) => ({
-            id: member.userId,
-            title: member.fullName,
-            subtitle: member.email,
-            avatarName: member.fullName,
-            avatarImageUrl: member.profileImageUrl,
-          })),
-          isLoading: memberLookup.isLoading,
-          isPending: syncReviewersAction.isPending,
-        };
-      case "labels":
-        return {
-          title: "라벨 편집",
-          description: "변경 요청 분류에 사용할 라벨을 선택합니다.",
-          searchPlaceholder: "라벨 이름으로 검색",
-          emptyMessage: "검색 조건에 맞는 라벨이 없습니다.",
-          items: (labelLookup.data ?? []).map((label) => ({
-            id: label.id,
-            title: label.name,
-            subtitle: label.color,
-          })),
-          isLoading: labelLookup.isLoading,
-          isPending: syncLabelsAction.isPending,
-        };
-      case "parts":
-        return {
-          title: "관련 부품 편집",
-          description: "변경 요청과 연결할 부품을 선택합니다.",
-          searchPlaceholder: "부품 번호 또는 이름으로 검색",
-          emptyMessage: "검색 조건에 맞는 부품이 없습니다.",
-          items: (partLookup.data ?? []).map((part) => ({
-            id: part.id,
-            title: part.partNumber,
-            subtitle: part.name ?? "이름 없음",
-          })),
-          isLoading: partLookup.isLoading,
-          isPending: syncPartsAction.isPending,
-        };
-      case "issues":
-        return {
-          title: "이슈 연결 편집",
-          description: "변경 요청과 연결할 이슈를 선택합니다.",
-          searchPlaceholder: "번호 또는 제목으로 검색",
-          emptyMessage: "검색 조건에 맞는 이슈가 없습니다.",
-          items: (issueLookup.data?.filter((item) => item.type === "issue") ?? []).map((item) => ({
-            id: item.id,
-            title: `#${item.number} ${item.title}`,
-            subtitle: item.state === "CLOSED" ? "닫힘" : "열림",
-          })),
-          isLoading: issueLookup.isLoading,
-          isPending: syncIssuesAction.isPending,
-        };
-      default:
-        return null;
-    }
-  }, [
-    changeRequest,
-    dialogKind,
-    issueLookup.data,
-    issueLookup.isLoading,
-    labelLookup.data,
-    labelLookup.isLoading,
-    memberLookup.data,
-    memberLookup.isLoading,
-    partLookup.data,
-    partLookup.isLoading,
-    syncAssigneesAction.isPending,
-    syncIssuesAction.isPending,
-    syncLabelsAction.isPending,
-    syncPartsAction.isPending,
-    syncReviewersAction.isPending,
-  ]);
 
   const changeRequestViewModel = changeRequest
     ? {
@@ -449,87 +223,106 @@ export function ChangeRequestDetailScreen({
     <ChangeRequestDetailScreenView
       changeRequest={changeRequestViewModel}
       activeTab={activeTab}
-      tabs={detailTabs}
-      timelineItems={timelineItems}
       commentCount={commentCount}
-      isLoading={changeRequestQuery.isLoading}
-      isError={changeRequestQuery.isError || !changeRequest}
-      isTimelineLoading={timelineQuery.isLoading}
-      isSavingChangeRequest={updateChangeRequestAction.isPending}
-      isCreatingComment={createCommentAction.isPending}
-      isSubmittingChangeRequest={submitChangeRequestAction.isPending}
-      isMergingChangeRequest={mergeChangeRequestAction.isPending}
-      isReopeningChangeRequest={reopenChangeRequestAction.isPending}
-      isAttachingFiles={addFilesAction.isPending}
       currentUser={{
         id: currentUser?.id ?? null,
         name: currentUser?.name ?? null,
         profileImageUrl: currentUser?.profileImageUrl ?? null,
       }}
+      isAttachingFiles={addFilesAction.isPending}
+      isCreatingComment={createCommentAction.isPending}
+      isError={changeRequestQuery.isError || timelineQuery.isError}
+      isLoading={changeRequestQuery.isLoading}
+      isMergingChangeRequest={mergeChangeRequestAction.isPending}
+      isNotFound={!changeRequestQuery.isLoading && !changeRequestQuery.isError && !changeRequest}
+      isReopeningChangeRequest={reopenChangeRequestAction.isPending}
+      isSavingChangeRequest={updateChangeRequestAction.isPending}
+      isSubmittingChangeRequest={submitChangeRequestAction.isPending}
+      isTimelineLoading={timelineQuery.isLoading}
       mentionFetchers={{
         user: userMentionFetcher,
         issue: issueMentionFetcher,
       }}
-      dialog={
-        dialogKind && dialogConfig
-          ? {
-              ...dialogConfig,
-              searchValue: dialogSearch,
-              selectedIds: selectedDialogIds,
-              onOpenChange: (open) => {
-                if (!open) {
-                  closeDialog();
-                }
-              },
-              onSearchChange: setDialogSearch,
-              onToggle: (id) =>
-                setSelectedDialogIds((previous) =>
-                  previous.includes(id) ? previous.filter((item) => item !== id) : [...previous, id],
-                ),
-              onConfirm: async () => {
-                if (dialogKind === "assignees") {
-                  await syncAssigneesAction.mutateAsync(selectedDialogIds);
-                }
-
-                if (dialogKind === "reviewers") {
-                  await syncReviewersAction.mutateAsync(selectedDialogIds);
-                }
-
-                if (dialogKind === "labels") {
-                  await syncLabelsAction.mutateAsync(selectedDialogIds);
-                }
-
-                if (dialogKind === "parts") {
-                  await syncPartsAction.mutateAsync(selectedDialogIds);
-                }
-
-                if (dialogKind === "issues") {
-                  await syncIssuesAction.mutateAsync(selectedDialogIds);
-                }
-
-                closeDialog();
-              },
-            }
-          : null
-      }
+      assigneePicker={{
+        availableMembers: (memberLookup.data ?? []).map((member: LookupMemberModel) => ({
+          id: member.userId,
+          name: member.fullName,
+          email: member.email,
+        })),
+        selectedIds: changeRequest?.assignees.map((assignee) => assignee.userId) ?? [],
+        onRequest: () => setMembersEnabled(true),
+        onSync: async (userIds: string[]) => {
+          await syncAssigneesAction.mutateAsync(userIds);
+        },
+        isUpdating: syncAssigneesAction.isPending,
+      }}
+      reviewerPicker={{
+        availableMembers: (memberLookup.data ?? []).map((member: LookupMemberModel) => ({
+          id: member.userId,
+          name: member.fullName,
+          email: member.email,
+        })),
+        selectedIds: changeRequest?.reviewers.map((reviewer) => reviewer.userId) ?? [],
+        onRequest: () => setMembersEnabled(true),
+        onSync: async (userIds: string[]) => {
+          await syncReviewersAction.mutateAsync(userIds);
+        },
+        isUpdating: syncReviewersAction.isPending,
+      }}
+      labelPicker={{
+        availableLabels: (labelLookup.data ?? []).map((label: LookupLabelModel) => ({
+          id: label.id,
+          name: label.name,
+          colorHex: label.color,
+        })),
+        selectedIds: changeRequest?.labels.map((label) => label.id) ?? [],
+        onRequest: () => setLabelsEnabled(true),
+        onSync: async (labelIds: string[]) => {
+          await syncLabelsAction.mutateAsync(labelIds);
+        },
+        isUpdating: syncLabelsAction.isPending,
+      }}
+      partPicker={{
+        searchedParts: (partLookup.data ?? []).map((part: LookupPartModel) => ({
+          id: part.id,
+          partNumber: part.partNumber,
+          name: part.name ?? null,
+        })),
+        selectedIds: changeRequest?.parts.map((part) => part.id) ?? [],
+        onRequest: () => setPartsEnabled(true),
+        onSearchChange: setPartsSearch,
+        onSync: async (partIds: string[]) => {
+          await syncPartsAction.mutateAsync(partIds);
+        },
+        isSearching: partLookup.isFetching,
+        isUpdating: syncPartsAction.isPending,
+      }}
+      linkedIssuePicker={{
+        availableIssues: (issueLookup.data?.filter((item: LookupIssueModel) => item.type === "issue") ?? []).map(
+          (item: LookupIssueModel) => ({
+            id: item.id,
+            number: item.number,
+            title: item.title,
+            state: item.state,
+          }),
+        ),
+        selectedIds: changeRequest?.linkedIssues.map((linkedIssue) => linkedIssue.id) ?? [],
+        onRequest: () => setIssuesEnabled(true),
+        onSearchChange: setIssuesSearch,
+        onSync: async (issueIds: string[]) => {
+          await syncIssuesAction.mutateAsync(issueIds);
+        },
+        isSearching: issueLookup.isFetching,
+        isUpdating: syncIssuesAction.isPending,
+      }}
+      onAttachFiles={async (files: File[]) => {
+        await addFilesAction.mutateAsync(files);
+      }}
       onBack={() => navigate("/changes?view=requests")}
-      onRetry={() => {
-        void changeRequestQuery.refetch();
+      onCloseChangeRequest={() => {
+        closeChangeRequestAction.mutate();
       }}
-      onTabChange={(tab) => onTabChange(tab as ChangeRequestDetailTab)}
-      onSaveChangeRequest={async ({ title, body }) => {
-        const normalizedBody = normalizeRichTextDocument(body);
-
-        if (!normalizedBody) {
-          return;
-        }
-
-        await updateChangeRequestAction.mutateAsync({
-          title,
-          body: normalizedBody,
-        });
-      }}
-      onCreateComment={async (body) => {
+      onCreateComment={async (body: TiptapEditorProps["content"] | null) => {
         const normalizedBody = normalizeRichTextDocument(body);
 
         if (!normalizedBody) {
@@ -538,7 +331,35 @@ export function ChangeRequestDetailScreen({
 
         await createCommentAction.mutateAsync(normalizedBody);
       }}
-      onUpdateComment={async (commentId, body) => {
+      onDeleteComment={async (commentId: string) => {
+        await deleteCommentAction.mutateAsync(commentId);
+      }}
+      onDeleteFile={async (fileId: string) => {
+        await deleteFileAction.mutateAsync(fileId);
+      }}
+      onMergeChangeRequest={() => {
+        mergeChangeRequestAction.mutate();
+      }}
+      onNavigateToIssue={(issueNumber: number) => navigate(`/changes/issues/${issueNumber}`)}
+      onNavigateToIssueMention={navigateToIssueMention}
+      onReopenChangeRequest={() => {
+        reopenChangeRequestAction.mutate();
+      }}
+      onRetry={() => {
+        void changeRequestQuery.refetch();
+        void timelineQuery.refetch();
+      }}
+      onSaveChangeRequest={async ({ title, body }: { title: string; body: TiptapEditorProps["content"] | null }) => {
+        await updateChangeRequestAction.mutateAsync({
+          title,
+          body: normalizeRichTextDocument(body),
+        });
+      }}
+      onSubmitChangeRequest={() => {
+        submitChangeRequestAction.mutate();
+      }}
+      onTabChange={(tab: string) => onTabChange(tab as ChangeRequestDetailTab)}
+      onUpdateComment={async (commentId: string, body: TiptapEditorProps["content"] | null) => {
         const normalizedBody = normalizeRichTextDocument(body);
 
         if (!normalizedBody) {
@@ -550,34 +371,8 @@ export function ChangeRequestDetailScreen({
           body: normalizedBody,
         });
       }}
-      onDeleteComment={async (commentId) => {
-        await deleteCommentAction.mutateAsync(commentId);
-      }}
-      onSubmitChangeRequest={() => {
-        submitChangeRequestAction.mutate();
-      }}
-      onMergeChangeRequest={() => {
-        mergeChangeRequestAction.mutate();
-      }}
-      onCloseChangeRequest={() => {
-        closeChangeRequestAction.mutate();
-      }}
-      onReopenChangeRequest={() => {
-        reopenChangeRequestAction.mutate();
-      }}
-      onNavigateToIssueMention={navigateToIssueMention}
-      onEditAssignees={() => openDialog("assignees")}
-      onEditReviewers={() => openDialog("reviewers")}
-      onEditLabels={() => openDialog("labels")}
-      onEditParts={() => openDialog("parts")}
-      onEditIssues={() => openDialog("issues")}
-      onNavigateToIssue={(issueNumber) => navigate(`/changes/issues/${issueNumber}`)}
-      onAttachFiles={async (files) => {
-        await addFilesAction.mutateAsync(files);
-      }}
-      onDeleteFile={async (fileId) => {
-        await deleteFileAction.mutateAsync(fileId);
-      }}
+      tabs={detailTabs}
+      timelineItems={timelineItems}
     />
   );
 }

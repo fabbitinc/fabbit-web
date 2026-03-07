@@ -203,14 +203,17 @@ export const Default: Story = {
           brand={brand}
           user={mockUser}
           onToggleSidebar={() => {}}
-          onSearchClick={() => {}}
-          searchPlaceholder="품목, 도면, BOM 검색..."
-          onNotificationClick={() => {}}
+          search={{
+            triggerLabel: "검색",
+            dialogPlaceholder: "품목, 도면, BOM 검색...",
+          }}
           menuItems={mockMenuItems}
           onLogout={() => {}}
         />
       }
-      sidebar={<AppSidebar sections={navSections} />}
+      sidebar={<AppSidebar isDesktop sections={navSections} />}
+      isDesktop
+      mainClassName="p-0"
     >
       <ProjectListContent />
     </AppShell>
@@ -225,12 +228,13 @@ export const Empty: Story = {
           brand={brand}
           user={mockUser}
           onToggleSidebar={() => {}}
-          onSearchClick={() => {}}
           menuItems={mockMenuItems}
           onLogout={() => {}}
         />
       }
-      sidebar={<AppSidebar sections={navSections} />}
+      sidebar={<AppSidebar isDesktop sections={navSections} />}
+      isDesktop
+      mainClassName="p-0"
     >
       <div className="p-6">
         <div className="mb-6">

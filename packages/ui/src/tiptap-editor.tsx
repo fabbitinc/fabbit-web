@@ -184,6 +184,12 @@ export function TiptapEditor({
     ],
     content,
     editable,
+    editorProps: {
+      attributes: {
+        class: "tiptap",
+        style: "cursor:text;padding:0.75rem 1rem;font-size:0.875rem;line-height:1.625;color:var(--foreground);outline:none;",
+      },
+    },
     onUpdate: ({ editor: e }) => {
       onChange?.(e.getHTML());
       onChangeJson?.(e.getJSON());

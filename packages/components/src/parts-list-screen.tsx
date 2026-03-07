@@ -1,12 +1,32 @@
-import { useEffect, useState, type ReactNode } from "react";
-import { Download, FolderPlus, Search, Sparkles, Upload } from "lucide-react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
+import {
+  ChevronDown,
+  Download,
+  Link2,
+  Loader2,
+  Plus,
+  Search,
+  Sparkles,
+  Upload,
+  X,
+} from "lucide-react";
+import {
+  Badge,
+  Button,
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+  Input,
+} from "@fabbit/ui";
 import {
   PartsListTable,
   type PartsListTableItem,
   type PartsListTableSortKey,
-  type PartsListTableSortOrder,
 } from "./parts-list-table";
-import { Button, Input, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@fabbit/ui";
 
 export interface PartsListScreenQueryState {
   query: string;
@@ -17,7 +37,7 @@ export interface PartsListScreenQueryState {
   hasDrawing: boolean | null;
   hasChildren: boolean | null;
   sortKey: PartsListTableSortKey;
-  sortOrder: PartsListTableSortOrder;
+  sortOrder: "asc" | "desc";
 }
 
 export interface PartsListScreenFilterOptions {
@@ -27,16 +47,18 @@ export interface PartsListScreenFilterOptions {
 
 export interface PartsListScreenProps {
   filterOptions: PartsListScreenFilterOptions;
+  isExporting: boolean;
+  isLoading: boolean;
   items: PartsListTableItem[];
-  linkDialogContent: ReactNode;
+  linkDialogContent?: ReactNode;
   queryState: PartsListScreenQueryState;
   selectedIds: Set<string>;
   totalCount: number;
-  isExporting?: boolean;
-  isLoading?: boolean;
+  onAllExportClick: () => void;
   onCategoryChange: (category: string | null) => void;
   onClearSelection: () => void;
-  onCurrentExportClick: () => void;
+  onCreateClick: () => void;
+  onFilteredExportClick: () => void;
   onHasChildrenChange: (hasChildren: boolean | null) => void;
   onHasDrawingChange: (hasDrawing: boolean | null) => void;
   onLifecycleStateChange: (lifecycleState: string | null) => void;
@@ -53,55 +75,36 @@ export interface PartsListScreenProps {
   onUploadClick: () => void;
 }
 
-function PartsQueryInput({
-  query,
-  onSubmit,
-}: {
-  query: string;
-  onSubmit: (query: string) => void;
-}) {
-  const [draftQuery, setDraftQuery] = useState(query);
+interface FilterChip {
+  key: string;
+  label: string;
+  onRemove: () => void;
+}
 
-  useEffect(() => {
-    setDraftQuery(query);
-  }, [query]);
-
+function isSameQueryState(left: PartsListScreenQueryState, right: PartsListScreenQueryState) {
   return (
-    <div className="flex flex-1 gap-2">
-      <div className="relative min-w-0 flex-1">
-        <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          className="pl-10"
-          placeholder="품번 또는 품명으로 검색"
-          value={draftQuery}
-          onChange={(event) => setDraftQuery(event.target.value)}
-          onKeyDown={(event) => {
-            if (event.key === "Enter") {
-              onSubmit(draftQuery);
-            }
-          }}
-        />
-      </div>
-      <Button type="button" onClick={() => onSubmit(draftQuery)}>
-        <Search className="size-4" />
-        검색
-      </Button>
-    </div>
+    left.query === right.query &&
+    left.category === right.category &&
+    left.lifecycleState === right.lifecycleState &&
+    left.hasDrawing === right.hasDrawing &&
+    left.hasChildren === right.hasChildren
   );
 }
 
 export function PartsListScreen({
   filterOptions,
+  isExporting,
+  isLoading,
   items,
   linkDialogContent,
   queryState,
   selectedIds,
   totalCount,
-  isExporting = false,
-  isLoading = false,
+  onAllExportClick,
   onCategoryChange,
   onClearSelection,
-  onCurrentExportClick,
+  onCreateClick,
+  onFilteredExportClick,
   onHasChildrenChange,
   onHasDrawingChange,
   onLifecycleStateChange,
@@ -117,8 +120,89 @@ export function PartsListScreen({
   onToggleSelectOne,
   onUploadClick,
 }: PartsListScreenProps) {
+  const [draftState, setDraftState] = useState<PartsListScreenQueryState>(queryState);
+
+  useEffect(() => {
+    setDraftState(queryState);
+  }, [queryState]);
+
+  const hasPendingChanges = useMemo(() => !isSameQueryState(draftState, queryState), [draftState, queryState]);
+  const draftAttributeCount =
+    (draftState.hasDrawing !== null ? 1 : 0) + (draftState.hasChildren !== null ? 1 : 0);
+  const hasAppliedFilters = Boolean(
+    queryState.query.trim() ||
+      queryState.category ||
+      queryState.lifecycleState ||
+      queryState.hasDrawing !== null ||
+      queryState.hasChildren !== null,
+  );
+
+  const activeChips = useMemo<FilterChip[]>(() => {
+    const chips: FilterChip[] = [];
+
+    if (draftState.category) {
+      chips.push({
+        key: "category",
+        label: `카테고리: ${draftState.category}`,
+        onRemove: () => setDraftState((current) => ({ ...current, category: null })),
+      });
+    }
+
+    if (draftState.lifecycleState) {
+      chips.push({
+        key: "lifecycleState",
+        label: `상태: ${draftState.lifecycleState}`,
+        onRemove: () => setDraftState((current) => ({ ...current, lifecycleState: null })),
+      });
+    }
+
+    if (draftState.hasDrawing !== null) {
+      chips.push({
+        key: "hasDrawing",
+        label: `도면 ${draftState.hasDrawing ? "있음" : "없음"}`,
+        onRemove: () => setDraftState((current) => ({ ...current, hasDrawing: null })),
+      });
+    }
+
+    if (draftState.hasChildren !== null) {
+      chips.push({
+        key: "hasChildren",
+        label: `하위 부품 ${draftState.hasChildren ? "있음" : "없음"}`,
+        onRemove: () => setDraftState((current) => ({ ...current, hasChildren: null })),
+      });
+    }
+
+    return chips;
+  }, [draftState]);
+
+  function applyFilters() {
+    if (!hasPendingChanges) {
+      return;
+    }
+
+    onQueryChange(draftState.query);
+    onCategoryChange(draftState.category);
+    onLifecycleStateChange(draftState.lifecycleState);
+    onHasDrawingChange(draftState.hasDrawing);
+    onHasChildrenChange(draftState.hasChildren);
+    onPageChange(1);
+  }
+
+  function clearDraftFilters() {
+    setDraftState((current) => ({
+      ...current,
+      query: "",
+      category: null,
+      lifecycleState: null,
+      hasDrawing: null,
+      hasChildren: null,
+    }));
+  }
+
+  const selectedCount = selectedIds.size;
+
   return (
-    <div className="min-h-full space-y-4">
+    <div className="w-full">
       <div className="mb-6 flex items-start justify-between">
         <div>
           <h1 className="text-xl font-bold text-foreground">부품 관리</h1>
@@ -126,117 +210,283 @@ export function PartsListScreen({
         </div>
 
         <div className="flex items-center gap-2">
-          <Button type="button" variant="outline" onClick={onTemplateAnalysisClick}>
-            <Sparkles className="h-4 w-4" />
+          <Button className="ai-outline-btn ai-theme-1" type="button" variant="outline" onClick={onTemplateAnalysisClick}>
+            <Sparkles className="ai-outline-btn__icon h-4 w-4" />
             속성 분석
           </Button>
           <Button type="button" variant="outline" onClick={onUploadClick}>
             <Upload className="h-4 w-4" />
             부품 업로드
           </Button>
+          <Button type="button" onClick={onCreateClick}>
+            <Plus className="h-4 w-4" />
+            새 부품
+          </Button>
         </div>
       </div>
 
-      <section className="rounded-lg border bg-card p-4 shadow-sm">
-        <div className="flex flex-col gap-3 xl:flex-row xl:items-center">
-          <PartsQueryInput query={queryState.query} onSubmit={onQueryChange} />
-
-          <div className="flex flex-wrap items-center gap-2">
-            <Select
-              value={queryState.category ?? "__all__"}
-              onValueChange={(value) => onCategoryChange(value === "__all__" ? null : value)}
-            >
-              <SelectTrigger className="w-[160px]">
-                <SelectValue placeholder="카테고리" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="__all__">전체 카테고리</SelectItem>
-                {filterOptions.categories.map((category) => (
-                  <SelectItem key={category} value={category}>
-                    {category}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select
-              value={queryState.lifecycleState ?? "__all__"}
-              onValueChange={(value) => onLifecycleStateChange(value === "__all__" ? null : value)}
-            >
-              <SelectTrigger className="w-[160px]">
-                <SelectValue placeholder="상태" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="__all__">전체 상태</SelectItem>
-                {filterOptions.lifecycleStates.map((state) => (
-                  <SelectItem key={state} value={state}>
-                    {state}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            <Select
-              value={
-                queryState.hasDrawing == null ? "__all__" : queryState.hasDrawing ? "with-drawing" : "without-drawing"
+      <div className="mb-2 flex items-center gap-2">
+        <div className="relative flex-1">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            className="pl-10"
+            placeholder="품번, 품명으로 검색..."
+            value={draftState.query}
+            onChange={(event) => setDraftState((current) => ({ ...current, query: event.target.value }))}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                applyFilters();
               }
-              onValueChange={(value) => onHasDrawingChange(value === "__all__" ? null : value === "with-drawing")}
-            >
-              <SelectTrigger className="w-[132px]">
-                <SelectValue placeholder="도면" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="__all__">도면 전체</SelectItem>
-                <SelectItem value="with-drawing">도면 있음</SelectItem>
-                <SelectItem value="without-drawing">도면 없음</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select
-              value={
-                queryState.hasChildren == null ? "__all__" : queryState.hasChildren ? "with-children" : "without-children"
-              }
-              onValueChange={(value) => onHasChildrenChange(value === "__all__" ? null : value === "with-children")}
-            >
-              <SelectTrigger className="w-[148px]">
-                <SelectValue placeholder="하위 부품" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="__all__">하위 부품 전체</SelectItem>
-                <SelectItem value="with-children">하위 부품 있음</SelectItem>
-                <SelectItem value="without-children">하위 부품 없음</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+            }}
+          />
         </div>
+        <Button disabled={!hasPendingChanges} type="button" variant={hasPendingChanges ? "default" : "outline"} onClick={applyFilters}>
+          <Search className="h-4 w-4" />
+          검색
+        </Button>
+        <span className="shrink-0 text-sm text-muted-foreground">
+          {isLoading ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <>
+              <span className="font-semibold text-foreground">{totalCount}</span>건
+            </>
+          )}
+        </span>
+      </div>
 
-        <div className="mt-4 flex flex-col gap-3 border-t border-border/60 pt-4 xl:flex-row xl:items-center xl:justify-between">
-          <div className="text-sm text-muted-foreground">
-            {isLoading ? "불러오는 중..." : `${totalCount.toLocaleString()}개의 부품`}
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            {selectedIds.size > 0 ? (
-              <>
-                <Button type="button" variant="outline" onClick={onLinkClick}>
-                  <FolderPlus className="size-4" />
-                  프로젝트 연결
-                </Button>
-                <Button disabled={isExporting} type="button" variant="outline" onClick={onSelectedExportClick}>
-                  <Download className="size-4" />
-                  선택 내보내기
-                </Button>
-                <Button type="button" variant="ghost" onClick={onClearSelection}>
-                  선택 해제
-                </Button>
-              </>
-            ) : null}
-            <Button disabled={isExporting} type="button" variant="outline" onClick={onCurrentExportClick}>
-              <Download className="size-4" />
-              현재 조건 내보내기
+      <div className="mb-2 flex flex-wrap items-center gap-2">
+        {selectedCount > 0 ? (
+          <>
+            <div className="ml-2 flex items-center gap-2">
+              <span className="text-sm font-medium text-foreground">{selectedCount}건 선택</span>
+              <button
+                className="cursor-pointer text-xs text-muted-foreground transition-colors hover:text-foreground"
+                type="button"
+                onClick={onClearSelection}
+              >
+                선택 해제
+              </button>
+            </div>
+            <div className="flex-1" />
+            <Button size="sm" type="button" variant="outline" onClick={onLinkClick}>
+              <Link2 className="h-3.5 w-3.5" />
+              프로젝트 연결
             </Button>
-          </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button disabled={isExporting} size="sm" type="button" variant="outline">
+                  {isExporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                  내려받기
+                  <ChevronDown className="h-3.5 w-3.5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={onSelectedExportClick}>선택 내려받기 ({selectedCount}건)</DropdownMenuItem>
+                <DropdownMenuItem onClick={onAllExportClick}>전체 내려받기</DropdownMenuItem>
+                {hasAppliedFilters ? (
+                  <DropdownMenuItem onClick={onFilteredExportClick}>검색 결과 내려받기</DropdownMenuItem>
+                ) : null}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </>
+        ) : (
+          <>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  className={draftState.category ? "border-primary/50 text-primary" : undefined}
+                  size="sm"
+                  type="button"
+                  variant="outline"
+                >
+                  카테고리
+                  <ChevronDown className="h-3.5 w-3.5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-44">
+                <DropdownMenuLabel>카테고리</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {filterOptions.categories.map((category) => (
+                  <DropdownMenuCheckboxItem
+                    key={category}
+                    checked={draftState.category === category}
+                    onCheckedChange={() =>
+                      setDraftState((current) => ({
+                        ...current,
+                        category: current.category === category ? null : category,
+                      }))
+                    }
+                    onSelect={(event) => event.preventDefault()}
+                  >
+                    {category}
+                  </DropdownMenuCheckboxItem>
+                ))}
+                {draftState.category ? (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => setDraftState((current) => ({ ...current, category: null }))}>
+                      선택 해제
+                    </DropdownMenuItem>
+                  </>
+                ) : null}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  className={draftState.lifecycleState ? "border-primary/50 text-primary" : undefined}
+                  size="sm"
+                  type="button"
+                  variant="outline"
+                >
+                  상태
+                  <ChevronDown className="h-3.5 w-3.5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-44">
+                <DropdownMenuLabel>상태</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {filterOptions.lifecycleStates.map((lifecycleState) => (
+                  <DropdownMenuCheckboxItem
+                    key={lifecycleState}
+                    checked={draftState.lifecycleState === lifecycleState}
+                    onCheckedChange={() =>
+                      setDraftState((current) => ({
+                        ...current,
+                        lifecycleState: current.lifecycleState === lifecycleState ? null : lifecycleState,
+                      }))
+                    }
+                    onSelect={(event) => event.preventDefault()}
+                  >
+                    {lifecycleState}
+                  </DropdownMenuCheckboxItem>
+                ))}
+                {draftState.lifecycleState ? (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={() => setDraftState((current) => ({ ...current, lifecycleState: null }))}
+                    >
+                      선택 해제
+                    </DropdownMenuItem>
+                  </>
+                ) : null}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  className={draftAttributeCount > 0 ? "border-primary/50 text-primary" : undefined}
+                  size="sm"
+                  type="button"
+                  variant="outline"
+                >
+                  속성
+                  <ChevronDown className="h-3.5 w-3.5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-44">
+                <DropdownMenuLabel>도면</DropdownMenuLabel>
+                <DropdownMenuCheckboxItem
+                  checked={draftState.hasDrawing === true}
+                  onCheckedChange={() =>
+                    setDraftState((current) => ({
+                      ...current,
+                      hasDrawing: current.hasDrawing === true ? null : true,
+                    }))
+                  }
+                  onSelect={(event) => event.preventDefault()}
+                >
+                  도면 있음
+                </DropdownMenuCheckboxItem>
+                <DropdownMenuCheckboxItem
+                  checked={draftState.hasDrawing === false}
+                  onCheckedChange={() =>
+                    setDraftState((current) => ({
+                      ...current,
+                      hasDrawing: current.hasDrawing === false ? null : false,
+                    }))
+                  }
+                  onSelect={(event) => event.preventDefault()}
+                >
+                  도면 없음
+                </DropdownMenuCheckboxItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuLabel>하위 부품</DropdownMenuLabel>
+                <DropdownMenuCheckboxItem
+                  checked={draftState.hasChildren === true}
+                  onCheckedChange={() =>
+                    setDraftState((current) => ({
+                      ...current,
+                      hasChildren: current.hasChildren === true ? null : true,
+                    }))
+                  }
+                  onSelect={(event) => event.preventDefault()}
+                >
+                  하위 부품 있음
+                </DropdownMenuCheckboxItem>
+                <DropdownMenuCheckboxItem
+                  checked={draftState.hasChildren === false}
+                  onCheckedChange={() =>
+                    setDraftState((current) => ({
+                      ...current,
+                      hasChildren: current.hasChildren === false ? null : false,
+                    }))
+                  }
+                  onSelect={(event) => event.preventDefault()}
+                >
+                  하위 부품 없음
+                </DropdownMenuCheckboxItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            <div className="flex-1" />
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button disabled={isExporting} size="sm" type="button" variant="outline">
+                  {isExporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                  내려받기
+                  <ChevronDown className="h-3.5 w-3.5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={onAllExportClick}>전체 내려받기</DropdownMenuItem>
+                {hasAppliedFilters ? (
+                  <DropdownMenuItem onClick={onFilteredExportClick}>검색 결과 내려받기</DropdownMenuItem>
+                ) : null}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </>
+        )}
+      </div>
+
+      {activeChips.length > 0 ? (
+        <div className="mb-4 flex flex-wrap items-center gap-1.5">
+          {activeChips.map((chip) => (
+            <Badge key={chip.key} className="gap-1 pr-1" variant="secondary">
+              {chip.label}
+              <button
+                className="cursor-pointer rounded-full p-0.5 transition-colors hover:bg-foreground/10"
+                type="button"
+                onClick={chip.onRemove}
+              >
+                <X className="size-3" />
+              </button>
+            </Badge>
+          ))}
+          <button
+            className="ml-1 cursor-pointer text-xs text-muted-foreground transition-colors hover:text-foreground"
+            type="button"
+            onClick={clearDraftFilters}
+          >
+            모두 지우기
+          </button>
         </div>
-      </section>
+      ) : null}
 
       <PartsListTable
         isLoading={isLoading}

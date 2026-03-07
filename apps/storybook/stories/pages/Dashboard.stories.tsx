@@ -133,15 +133,17 @@ export const Default: Story = {
           brand={brand}
           user={mockUser}
           onToggleSidebar={() => {}}
-          onSearchClick={() => {}}
-          searchPlaceholder="품목, 도면, BOM 검색..."
-          onNotificationClick={() => {}}
-          notificationCount={3}
+          search={{
+            triggerLabel: "검색",
+            dialogPlaceholder: "품목, 도면, BOM 검색...",
+          }}
           menuItems={mockMenuItems}
           onLogout={() => {}}
         />
       }
-      sidebar={<AppSidebar sections={navSections} />}
+      sidebar={<AppSidebar isDesktop sections={navSections} />}
+      isDesktop
+      mainClassName="p-0"
     >
       <DashboardContent />
     </AppShell>

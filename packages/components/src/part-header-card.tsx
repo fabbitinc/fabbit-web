@@ -1,4 +1,6 @@
-import { Badge } from "@fabbit/ui";
+import type { ReactNode } from "react";
+import { MoreHorizontal, Pencil } from "lucide-react";
+import { Badge, Button } from "@fabbit/ui";
 
 export interface PartHeaderCardPart {
   partNumber: string;
@@ -18,29 +20,52 @@ export interface PartHeaderCardPart {
 
 export interface PartHeaderCardProps {
   part: PartHeaderCardPart;
+  actions?: ReactNode;
 }
 
-function getLifecycleVariant(lifecycleState: string | null): "outline" | "neutral" | "accent" | "success" {
-  if (lifecycleState === "양산") {
-    return "success";
+function LifecycleBadge({ state }: { state: string | null }) {
+  if (!state) {
+    return <span className="text-muted-foreground/40">—</span>;
   }
 
-  if (lifecycleState === "중단") {
-    return "neutral";
-  }
+  const className =
+    state === "양산"
+      ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+      : state === "개발"
+        ? "border-blue-200 bg-blue-50 text-blue-700"
+        : "border-muted bg-muted/50 text-muted-foreground";
 
-  return "outline";
+  return (
+    <Badge className={className} variant="outline">
+      {state}
+    </Badge>
+  );
 }
 
-export function PartHeaderCard({ part }: PartHeaderCardProps) {
+function DefaultActions() {
+  return (
+    <div className="flex items-center gap-1.5">
+      <Button size="sm" type="button" variant="outline">
+        <Pencil className="h-3.5 w-3.5" />
+        편집
+      </Button>
+      <Button size="icon-sm" type="button" variant="outline">
+        <MoreHorizontal className="h-4 w-4" />
+      </Button>
+    </div>
+  );
+}
+
+export function PartHeaderCard({ part, actions }: PartHeaderCardProps) {
   return (
     <div className="rounded-lg border bg-card">
       <div className="p-5">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-2.5">
             <h1 className="font-mono text-xl font-bold text-foreground">{part.partNumber}</h1>
-            {part.lifecycleState ? <Badge variant={getLifecycleVariant(part.lifecycleState)}>{part.lifecycleState}</Badge> : null}
+            <LifecycleBadge state={part.lifecycleState} />
           </div>
+          {actions ?? <DefaultActions />}
         </div>
 
         {part.name ? <p className="mt-1 text-base text-foreground">{part.name}</p> : null}

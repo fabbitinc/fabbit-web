@@ -6,7 +6,7 @@ import {
   type ProjectSettingsTab,
 } from "@/features/project-detail";
 
-const validViews = new Set<ProjectDetailView>(["overview", "parts", "activity", "settings"]);
+const validViews = new Set<ProjectDetailView>(["overview", "parts", "issues", "change", "activity", "settings"]);
 const validSettingsTabs = new Set<ProjectSettingsTab>(["general", "members", "labels", "danger"]);
 
 export function ProjectDetailPage() {

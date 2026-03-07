@@ -22,12 +22,36 @@ function panel(title: string, description: string) {
 }
 
 const sampleProject = {
+  changeCount: 3,
   createdAt: "2026-02-10T09:00:00.000Z",
   description: "모터 제어기와 연계되는 전장/기구 부품을 묶어 관리하는 프로젝트입니다.",
   id: "project-1",
   isArchived: false,
+  issueCount: 7,
+  overviewChangeCount: 5,
+  overviewIssueCount: 8,
+  overviewMergedChangeCount: 12,
+  mergedChangeCount: 12,
   name: "EV 모터 컨트롤러",
   partCount: 128,
+  recentActivities: [
+    {
+      actorName: "김도윤",
+      createdAt: "2026-03-07T02:10:00Z",
+      id: "activity-1",
+      scope: "part",
+      state: "추가",
+      summary: "부품 연결",
+    },
+  ],
+  recentParts: [
+    {
+      category: "기구",
+      id: "part-1",
+      name: "드라이브 유닛 베이스 플레이트",
+      partNumber: "DRV-PLATE-0142",
+    },
+  ],
   updatedAt: "2026-03-05T14:20:00.000Z",
 } satisfies ProjectDetailScreenProject;
 
@@ -48,14 +72,19 @@ function ProjectDetailScreenStory({
     <ProjectDetailScreen
       activeView={activeView}
       activityContent={panel("프로젝트 활동", "멤버 추가, 부품 연결, 상태 변경 이력이 표시됩니다.")}
+      changeContent={panel("변경 요청", "프로젝트 범위의 변경 요청 목록이 표시됩니다.")}
       isError={isError}
+      issuesContent={panel("이슈", "프로젝트 범위의 이슈 목록이 표시됩니다.")}
       isLoading={isLoading}
       partsContent={panel("연결된 부품", "프로젝트에 포함된 핵심 부품과 연결 현황을 관리합니다.")}
       project={project}
       settingsContent={panel("프로젝트 설정", "일반 정보, 멤버, 라벨, 위험 영역 설정을 제어합니다.")}
+      onDangerClick={() => undefined}
+      onEditClick={() => undefined}
       onActiveViewChange={setActiveView}
       onBackClick={() => undefined}
       onRetry={() => undefined}
+      onSettingsClick={() => undefined}
     />
   );
 }
@@ -79,6 +108,14 @@ export const Overview: Story = {
 
 export const Parts: Story = {
   render: () => <ProjectDetailScreenStory initialView="parts" />,
+};
+
+export const Issues: Story = {
+  render: () => <ProjectDetailScreenStory initialView="issues" />,
+};
+
+export const Change: Story = {
+  render: () => <ProjectDetailScreenStory initialView="change" />,
 };
 
 export const Settings: Story = {

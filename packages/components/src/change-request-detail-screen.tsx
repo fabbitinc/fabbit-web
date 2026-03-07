@@ -1,16 +1,18 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import {
   AlertCircle,
   ArrowLeft,
   CheckCircle2,
   FileCheck,
   FilePen,
-  GitMerge,
   Loader2,
   MessageSquare,
+  Pencil,
   XCircle,
 } from "lucide-react";
 import {
+  Avatar,
+  AvatarFallback,
   Badge,
   Button,
   ConfirmDialog,
@@ -24,14 +26,8 @@ import { ChangeRequestDiffTab } from "./change-request-diff-tab";
 import {
   ChangeRequestSidebar,
   type ChangeRequestSidebarChangeRequest,
+  type ChangeRequestSidebarProps,
 } from "./change-request-sidebar";
-import { CommentInput } from "./comment-input";
-import {
-  DetailSelectionDialog,
-  type DetailSelectionDialogProps as DetailSelectionDialogConfig,
-} from "./detail-selection-dialog";
-import { EditableTimelineComment } from "./editable-timeline-comment";
-import { TimelineComment } from "./timeline-comment";
 import { TimelineEventItem, type TimelineEventData } from "./timeline-event";
 
 export interface ChangeRequestDetailTabItem {
@@ -59,8 +55,9 @@ export interface ChangeRequestDetailScreenCommentItem {
   author: ChangeRequestDetailScreenAuthor | null;
   authorId?: string | null;
   body: TiptapEditorProps["content"] | null;
+  createdAt?: string;
   isModified?: boolean;
-  updatedAt: string;
+  updatedAt?: string;
 }
 
 export interface ChangeRequestDetailScreenEventItem {
@@ -79,24 +76,26 @@ export interface ChangeRequestDetailScreenCurrentUser {
   profileImageUrl?: string | null;
 }
 
-export interface ChangeRequestDetailScreenDialog extends Omit<DetailSelectionDialogConfig, "open"> {}
-
 export interface ChangeRequestDetailScreenProps {
   activeTab: string;
+  assigneePicker?: ChangeRequestSidebarProps["assigneePicker"];
   changeRequest?: ChangeRequestDetailScreenChangeRequest;
   changesContent?: ReactNode;
   commentCount: number;
   currentUser?: ChangeRequestDetailScreenCurrentUser | null;
-  dialog?: ChangeRequestDetailScreenDialog | null;
+  dialog?: unknown | null;
   isAttachingFiles?: boolean;
   isCreatingComment?: boolean;
   isError?: boolean;
   isLoading?: boolean;
   isMergingChangeRequest?: boolean;
+  isNotFound?: boolean;
   isReopeningChangeRequest?: boolean;
   isSavingChangeRequest?: boolean;
   isSubmittingChangeRequest?: boolean;
   isTimelineLoading?: boolean;
+  labelPicker?: ChangeRequestSidebarProps["labelPicker"];
+  linkedIssuePicker?: ChangeRequestSidebarProps["linkedIssuePicker"];
   mentionFetchers?: {
     issue?: TiptapMentionFetcher;
     user?: TiptapMentionFetcher;
@@ -107,11 +106,11 @@ export interface ChangeRequestDetailScreenProps {
   onCreateComment: (body: TiptapEditorProps["content"] | null) => Promise<void>;
   onDeleteComment: (commentId: string) => Promise<void>;
   onDeleteFile: (fileId: string) => Promise<void>;
-  onEditAssignees: () => void;
-  onEditIssues: () => void;
-  onEditLabels: () => void;
-  onEditParts: () => void;
-  onEditReviewers: () => void;
+  onEditAssignees?: () => void;
+  onEditIssues?: () => void;
+  onEditLabels?: () => void;
+  onEditParts?: () => void;
+  onEditReviewers?: () => void;
   onMergeChangeRequest: () => Promise<void> | void;
   onNavigateToIssue: (issueNumber: number) => void;
   onNavigateToIssueMention: (issueNumber: number, issueType: "issue" | "change_request") => void;
@@ -121,15 +120,10 @@ export interface ChangeRequestDetailScreenProps {
   onSubmitChangeRequest: () => Promise<void> | void;
   onTabChange: (tab: string) => void;
   onUpdateComment: (commentId: string, body: TiptapEditorProps["content"] | null) => Promise<void>;
+  partPicker?: ChangeRequestSidebarProps["partPicker"];
+  reviewerPicker?: ChangeRequestSidebarProps["reviewerPicker"];
   tabs: readonly ChangeRequestDetailTabItem[];
   timelineItems: ChangeRequestDetailScreenTimelineItem[];
-}
-
-function formatDateTime(value: string) {
-  return new Intl.DateTimeFormat("ko-KR", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(new Date(value));
 }
 
 function timeAgo(dateStr: string): string {
@@ -156,7 +150,8 @@ function timeAgo(dateStr: string): string {
     return `${days}일 전`;
   }
 
-  return formatDateTime(dateStr);
+  const date = new Date(dateStr);
+  return `${date.getMonth() + 1}/${date.getDate()}`;
 }
 
 function formatFullDate(iso: string) {
@@ -208,28 +203,149 @@ function ChangeRequestStatusIcon({ state }: { state: string }) {
   return <AlertCircle className={`${className} text-emerald-600 dark:text-emerald-400`} />;
 }
 
+function ChangeTimelineCommentItem({
+  comment,
+  canEdit,
+  issueMentionFetcher,
+  onNavigateToIssueMention,
+  onUpdate,
+  userMentionFetcher,
+}: {
+  comment: ChangeRequestDetailScreenCommentItem;
+  canEdit: boolean;
+  issueMentionFetcher?: TiptapMentionFetcher;
+  onNavigateToIssueMention: (issueNumber: number, issueType: "issue" | "change_request") => void;
+  onUpdate: (commentId: string, body: TiptapEditorProps["content"] | null) => Promise<void>;
+  userMentionFetcher?: TiptapMentionFetcher;
+}) {
+  const [bodyDraft, setBodyDraft] = useState<TiptapEditorProps["content"] | null>(comment.body);
+  const [editorKey, setEditorKey] = useState(0);
+  const [isEditing, setIsEditing] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+
+  if (isEditing) {
+    return (
+      <div>
+        <TiptapEditor
+          key={editorKey}
+          content={bodyDraft ?? undefined}
+          editable
+          minHeight={80}
+          userMentionFetcher={userMentionFetcher}
+          issueMentionFetcher={issueMentionFetcher}
+          onChangeJson={(content) => setBodyDraft(content)}
+        />
+        <div className="mt-3 flex justify-end gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setBodyDraft(comment.body);
+              setIsEditing(false);
+            }}
+            disabled={isSaving}
+          >
+            취소
+          </Button>
+          <Button
+            size="sm"
+            disabled={!bodyDraft || isSaving}
+            onClick={async () => {
+              if (!bodyDraft) {
+                return;
+              }
+
+              setIsSaving(true);
+
+              try {
+                await onUpdate(comment.id, bodyDraft);
+                setIsEditing(false);
+              } finally {
+                setIsSaving(false);
+              }
+            }}
+          >
+            {isSaving ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : null}
+            저장
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex gap-3">
+      <div className="flex flex-col items-center">
+        <UserAvatar
+          name={comment.author?.fullName ?? "알 수 없는 사용자"}
+          imageUrl={comment.author?.profileImageUrl}
+          className="h-8 w-8 shrink-0"
+        />
+      </div>
+      <div className="min-w-0 flex-1 rounded-lg border bg-card">
+        <div className="flex items-center gap-2 border-b bg-muted/30 px-4 py-2">
+          <span className="text-sm font-medium text-foreground">
+            {comment.author?.fullName ?? "알 수 없는 사용자"}
+          </span>
+          <span className="text-xs text-muted-foreground">
+            {timeAgo(comment.createdAt ?? comment.updatedAt ?? new Date().toISOString())}
+          </span>
+          {comment.isModified ? <span className="text-xs text-muted-foreground">· 수정됨</span> : null}
+          {canEdit ? (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="ml-auto h-6 w-6 shrink-0"
+              onClick={() => {
+                setBodyDraft(comment.body);
+                setEditorKey((previous) => previous + 1);
+                setIsEditing(true);
+              }}
+            >
+              <Pencil className="h-3 w-3" />
+            </Button>
+          ) : null}
+        </div>
+        <div className="px-4 py-3">
+          <TiptapEditor
+            content={comment.body ?? undefined}
+            editable={false}
+            hideToolbar
+            minHeight={0}
+            className="border-0 bg-transparent"
+            onIssueMentionClick={onNavigateToIssueMention}
+          />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function ChangeRequestDetailScreen({
   activeTab,
+  assigneePicker,
   changeRequest,
   changesContent,
   commentCount,
   currentUser,
-  dialog,
   isAttachingFiles = false,
   isCreatingComment = false,
   isError = false,
   isLoading = false,
   isMergingChangeRequest = false,
+  isNotFound = false,
   isReopeningChangeRequest = false,
   isSavingChangeRequest = false,
   isSubmittingChangeRequest = false,
   isTimelineLoading = false,
+  labelPicker,
+  linkedIssuePicker,
   mentionFetchers,
   onAttachFiles,
   onBack,
   onCloseChangeRequest,
   onCreateComment,
-  onDeleteComment,
+  onDeleteComment: _onDeleteComment,
   onDeleteFile,
   onEditAssignees,
   onEditIssues,
@@ -245,15 +361,24 @@ export function ChangeRequestDetailScreen({
   onSubmitChangeRequest,
   onTabChange,
   onUpdateComment,
+  partPicker,
+  reviewerPicker,
   tabs,
   timelineItems,
 }: ChangeRequestDetailScreenProps) {
   const [bodyDraft, setBodyDraft] = useState<TiptapEditorProps["content"] | null>(changeRequest?.body ?? null);
   const [commentBody, setCommentBody] = useState<TiptapEditorProps["content"] | null>(null);
   const [commentEditorKey, setCommentEditorKey] = useState(0);
+  const [commentText, setCommentText] = useState("");
   const [isCloseConfirmOpen, setIsCloseConfirmOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [titleDraft, setTitleDraft] = useState(changeRequest?.title ?? "");
+
+  useEffect(() => {
+    setBodyDraft(changeRequest?.body ?? null);
+    setTitleDraft(changeRequest?.title ?? "");
+    setIsEditing(false);
+  }, [changeRequest?.number, changeRequest?.updatedAt]);
 
   if (isLoading) {
     return (
@@ -263,7 +388,7 @@ export function ChangeRequestDetailScreen({
     );
   }
 
-  if (isError || !changeRequest) {
+  if (isError) {
     return (
       <div className="flex min-h-[50vh] items-center justify-center">
         <div className="flex flex-col items-center gap-3 text-center">
@@ -281,6 +406,23 @@ export function ChangeRequestDetailScreen({
         </div>
       </div>
     );
+  }
+
+  if (isNotFound) {
+    return (
+      <div className="flex min-h-[50vh] items-center justify-center">
+        <div className="flex flex-col items-center gap-3 text-center">
+          <p className="text-sm text-muted-foreground">변경 요청을 찾을 수 없습니다.</p>
+          <Button type="button" variant="outline" onClick={onBack}>
+            목록으로
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (!changeRequest) {
+    return null;
   }
 
   const canSubmit = changeRequest.crState === "DRAFT";
@@ -306,7 +448,7 @@ export function ChangeRequestDetailScreen({
   };
 
   return (
-    <div className="mx-auto max-w-[1160px] px-6 py-6">
+    <div className="mx-auto max-w-[1160px]">
       <button
         type="button"
         className="mb-4 inline-flex cursor-pointer items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
@@ -317,10 +459,20 @@ export function ChangeRequestDetailScreen({
       </button>
 
       <div>
-        <h2 className="text-xl font-bold text-foreground">
-          {changeRequest.title}
-          <span className="ml-2 font-normal text-muted-foreground">#{changeRequest.number}</span>
-        </h2>
+        {isEditing ? (
+          <Input
+            value={titleDraft}
+            onChange={(event) => setTitleDraft(event.target.value)}
+            maxLength={500}
+            className="h-auto border-0 px-0 text-xl font-bold shadow-none focus-visible:ring-0"
+            autoFocus
+          />
+        ) : (
+          <h2 className="text-xl font-bold text-foreground">
+            {changeRequest.title}
+            <span className="ml-2 font-normal text-muted-foreground">#{changeRequest.number}</span>
+          </h2>
+        )}
         <div className="mt-2 flex flex-wrap items-center gap-2">
           <Badge variant="outline" className={STATE_BADGE_STYLE[changeRequest.crState] ?? ""}>
             <ChangeRequestStatusIcon state={changeRequest.crState} />
@@ -337,48 +489,23 @@ export function ChangeRequestDetailScreen({
             <MessageSquare className="h-3.5 w-3.5" />
             댓글 {commentCount}개
           </span>
-          <div className="ml-auto flex items-center gap-2">
-            {canSubmit ? (
-              <Button
-                size="sm"
-                disabled={isSubmittingChangeRequest}
-                onClick={() => {
-                  void onSubmitChangeRequest();
-                }}
-              >
-                {isSubmittingChangeRequest ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <FileCheck className="h-3.5 w-3.5" />}
-                제출
-              </Button>
-            ) : null}
-            {canMerge ? (
-              <Button
-                size="sm"
-                disabled={isMergingChangeRequest}
-                onClick={() => {
-                  void onMergeChangeRequest();
-                }}
-              >
-                {isMergingChangeRequest ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <GitMerge className="h-3.5 w-3.5" />}
-                변경 반영
-              </Button>
-            ) : null}
-          </div>
         </div>
       </div>
 
-      <div className="mt-4 flex gap-1 border-b">
+      <div className="mt-5 flex gap-1 border-b">
         {tabs.map((tab) => (
           <button
             key={tab.id}
             type="button"
-            className={`cursor-pointer border-b-2 px-4 py-2 text-sm font-medium transition-colors ${
+            className={`relative cursor-pointer px-3 py-2 text-sm font-medium transition-colors ${
               activeTab === tab.id
-                ? "border-primary text-foreground"
-                : "border-transparent text-muted-foreground hover:text-foreground"
+                ? "text-foreground"
+                : "text-muted-foreground hover:text-foreground"
             }`}
             onClick={() => onTabChange(tab.id)}
           >
             {tab.label}
+            {activeTab === tab.id ? <span className="absolute inset-x-0 -bottom-px h-0.5 rounded-full bg-foreground" /> : null}
           </button>
         ))}
       </div>
@@ -387,78 +514,75 @@ export function ChangeRequestDetailScreen({
         <div className="mt-6 flex gap-6">
           <div className="min-w-0 flex-1 space-y-4">
             {isEditing ? (
-              <div className="flex gap-3">
-                <UserAvatar
-                  imageUrl={changeRequest.createdBy?.profileImageUrl ?? null}
-                  name={createdByName}
-                  className="h-8 w-8 shrink-0"
+              <div>
+                <TiptapEditor
+                  content={bodyDraft ?? undefined}
+                  placeholder="변경 요청 본문을 입력하세요"
+                  minHeight={100}
+                  userMentionFetcher={mentionFetchers?.user}
+                  issueMentionFetcher={mentionFetchers?.issue}
+                  onChangeJson={(content) => setBodyDraft(content)}
                 />
-                <div className="min-w-0 flex-1 space-y-4">
-                  <div className="space-y-2">
-                    <label htmlFor="cr-detail-title" className="text-sm font-medium text-foreground">
-                      제목
-                    </label>
-                    <Input id="cr-detail-title" value={titleDraft} onChange={(event) => setTitleDraft(event.target.value)} />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-foreground">본문</label>
-                    <TiptapEditor
-                      content={bodyDraft ?? undefined}
-                      placeholder="변경 요청 본문을 입력하세요"
-                      minHeight={220}
-                      userMentionFetcher={mentionFetchers?.user}
-                      issueMentionFetcher={mentionFetchers?.issue}
-                      onChangeJson={(content) => setBodyDraft(content)}
-                    />
-                  </div>
-                  <div className="flex justify-end gap-2">
-                    <Button type="button" variant="outline" onClick={cancelEditing}>
-                      취소
-                    </Button>
-                    <Button
-                      disabled={!titleDraft.trim() || isSavingChangeRequest}
-                      type="button"
-                      onClick={async () => {
-                        try {
-                          await onSaveChangeRequest({ title: titleDraft, body: bodyDraft });
-                          setIsEditing(false);
-                        } catch {
-                          return;
-                        }
-                      }}
-                    >
-                      {isSavingChangeRequest ? <Loader2 className="size-4 animate-spin" /> : null}
-                      저장
-                    </Button>
-                  </div>
+                <div className="mt-3 flex justify-end gap-2">
+                  <Button type="button" variant="outline" onClick={cancelEditing} disabled={isSavingChangeRequest}>
+                    취소
+                  </Button>
+                  <Button
+                    disabled={!titleDraft.trim() || isSavingChangeRequest}
+                    type="button"
+                    onClick={async () => {
+                      try {
+                        await onSaveChangeRequest({ title: titleDraft.trim(), body: bodyDraft });
+                        setIsEditing(false);
+                      } catch {
+                        return;
+                      }
+                    }}
+                  >
+                    {isSavingChangeRequest ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : null}
+                    저장
+                  </Button>
                 </div>
               </div>
             ) : (
-              <TimelineComment
-                author={{
-                  name: createdByName,
-                  profileImageUrl: changeRequest.createdBy?.profileImageUrl,
-                }}
-                createdAtLabel={timeAgo(changeRequest.createdAt)}
-                isModified={changeRequest.isModified}
-                showAuthorBadge
-                onEdit={isEditable ? startEditing : undefined}
-              >
-                {changeRequest.body ? (
-                  <div className="-mx-4 -my-3">
-                    <TiptapEditor
-                      editable={false}
-                      hideToolbar
-                      className="border-0 bg-transparent"
-                      content={changeRequest.body ?? undefined}
-                      minHeight={0}
-                      onIssueMentionClick={onNavigateToIssueMention}
-                    />
+              <div className="flex gap-3">
+                <UserAvatar
+                  name={createdByName}
+                  imageUrl={changeRequest.createdBy?.profileImageUrl}
+                  className="h-8 w-8 shrink-0"
+                />
+                <div className="min-w-0 flex-1 rounded-lg border bg-card">
+                  <div className="flex items-center gap-2 border-b bg-muted/30 px-4 py-2">
+                    <span className="text-sm font-medium text-foreground">{createdByName}</span>
+                    <span className="text-xs text-muted-foreground">{timeAgo(changeRequest.createdAt)}</span>
+                    {changeRequest.isModified ? (
+                      <span className="text-xs text-muted-foreground">· 수정됨</span>
+                    ) : null}
+                    <Badge variant="outline" className="ml-auto text-[10px]">
+                      작성자
+                    </Badge>
+                    {isEditable ? (
+                      <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0" onClick={startEditing}>
+                        <Pencil className="h-3 w-3" />
+                      </Button>
+                    ) : null}
                   </div>
-                ) : (
-                  <p className="text-sm text-muted-foreground">아직 입력된 본문이 없습니다.</p>
-                )}
-              </TimelineComment>
+                  <div className="px-4 py-3">
+                    {changeRequest.body ? (
+                      <TiptapEditor
+                        editable={false}
+                        hideToolbar
+                        className="border-0 bg-transparent"
+                        content={changeRequest.body ?? undefined}
+                        minHeight={0}
+                        onIssueMentionClick={onNavigateToIssueMention}
+                      />
+                    ) : (
+                      <p className="text-sm text-muted-foreground">아직 입력된 본문이 없습니다.</p>
+                    )}
+                  </div>
+                </div>
+              </div>
             )}
 
             {isTimelineLoading ? (
@@ -466,21 +590,13 @@ export function ChangeRequestDetailScreen({
             ) : (
               timelineItems.map((item) =>
                 item.kind === "comment" ? (
-                  <EditableTimelineComment
+                  <ChangeTimelineCommentItem
                     key={item.id}
-                    author={{
-                      name: item.author?.fullName ?? "알 수 없는 사용자",
-                      profileImageUrl: item.author?.profileImageUrl,
-                    }}
-                    authorId={item.authorId}
-                    body={item.body}
-                    createdAtLabel={timeAgo(item.updatedAt)}
-                    currentUserId={currentUser?.id ?? null}
-                    isModified={item.isModified}
+                    comment={item}
+                    canEdit={Boolean(currentUser?.id && item.authorId && currentUser.id === item.authorId)}
                     issueMentionFetcher={mentionFetchers?.issue}
-                    onDelete={() => onDeleteComment(item.id)}
                     onNavigateToIssueMention={onNavigateToIssueMention}
-                    onUpdate={(nextBody) => onUpdateComment(item.id, nextBody)}
+                    onUpdate={onUpdateComment}
                     userMentionFetcher={mentionFetchers?.user}
                   />
                 ) : (
@@ -491,64 +607,110 @@ export function ChangeRequestDetailScreen({
 
             <div className="border-t" />
 
-            <CommentInput
-              userName={currentUser?.name ?? undefined}
-              userImageUrl={currentUser?.profileImageUrl ?? null}
-              editor={
+            <div className="flex gap-3">
+              <Avatar className="h-8 w-8 shrink-0">
+                <AvatarFallback className="text-xs">나</AvatarFallback>
+              </Avatar>
+              <div className="min-w-0 flex-1">
                 <TiptapEditor
                   key={commentEditorKey}
-                  placeholder="댓글을 작성하세요... @로 멤버, #로 이슈를 멘션할 수 있습니다."
+                  placeholder="댓글을 작성하세요..."
                   minHeight={100}
                   userMentionFetcher={mentionFetchers?.user}
                   issueMentionFetcher={mentionFetchers?.issue}
                   onChangeJson={(content) => setCommentBody(content)}
+                  onChangeText={setCommentText}
                 />
-              }
-              actions={
-                <>
-                  {canClose ? (
-                    <Button size="sm" variant="outline" onClick={() => setIsCloseConfirmOpen(true)}>
-                      <XCircle className="mr-1.5 h-3.5 w-3.5" />
-                      닫기
-                    </Button>
-                  ) : null}
-                  {canReopen ? (
+                <div className="mt-3 flex items-center justify-between">
+                  <div />
+                  <div className="flex gap-2">
+                    {canClose ? (
+                      <Button size="sm" variant="outline" onClick={() => setIsCloseConfirmOpen(true)}>
+                        <XCircle className="mr-1.5 h-3.5 w-3.5" />
+                        변경 요청 닫기
+                      </Button>
+                    ) : null}
+                    {canSubmit ? (
+                      <Button
+                        size="sm"
+                        disabled={isSubmittingChangeRequest}
+                        onClick={() => {
+                          void onSubmitChangeRequest();
+                        }}
+                      >
+                        {isSubmittingChangeRequest ? (
+                          <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <FileCheck className="mr-1.5 h-3.5 w-3.5" />
+                        )}
+                        제출
+                      </Button>
+                    ) : null}
+                    {canMerge ? (
+                      <Button
+                        size="sm"
+                        className="bg-green-600 text-white hover:bg-green-700"
+                        disabled={isMergingChangeRequest}
+                        onClick={() => {
+                          void onMergeChangeRequest();
+                        }}
+                      >
+                        {isMergingChangeRequest ? (
+                          <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" />
+                        )}
+                        변경 반영
+                      </Button>
+                    ) : null}
+                    {canReopen ? (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={isReopeningChangeRequest}
+                        onClick={() => {
+                          void onReopenChangeRequest();
+                        }}
+                      >
+                        {isReopeningChangeRequest ? (
+                          <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <AlertCircle className="mr-1.5 h-3.5 w-3.5" />
+                        )}
+                        다시 제출
+                      </Button>
+                    ) : null}
                     <Button
                       size="sm"
-                      variant="outline"
-                      disabled={isReopeningChangeRequest}
-                      onClick={() => {
-                        void onReopenChangeRequest();
+                      disabled={isCreatingComment}
+                      onClick={async () => {
+                        if (!commentBody || !commentText.trim()) {
+                          return;
+                        }
+
+                        await onCreateComment(commentBody);
+                        setCommentBody(null);
+                        setCommentText("");
+                        setCommentEditorKey((previous) => previous + 1);
                       }}
                     >
-                      {isReopeningChangeRequest ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
-                      다시 제출
+                      {isCreatingComment ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : null}
+                      댓글
                     </Button>
-                  ) : null}
-                  <Button
-                    size="sm"
-                    disabled={!commentBody || isCreatingComment}
-                    onClick={async () => {
-                      if (!commentBody) {
-                        return;
-                      }
-
-                      await onCreateComment(commentBody);
-                      setCommentBody(null);
-                      setCommentEditorKey((previous) => previous + 1);
-                    }}
-                  >
-                    {isCreatingComment ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
-                    댓글
-                  </Button>
-                </>
-              }
-            />
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
           <div className="hidden w-70 shrink-0 lg:block">
             <ChangeRequestSidebar
               changeRequest={changeRequest}
+              assigneePicker={assigneePicker}
+              reviewerPicker={reviewerPicker}
+              labelPicker={labelPicker}
+              partPicker={partPicker}
+              linkedIssuePicker={linkedIssuePicker}
               isAttachingFiles={isAttachingFiles}
               onAttachFiles={onAttachFiles}
               onDeleteFile={onDeleteFile}
@@ -564,8 +726,6 @@ export function ChangeRequestDetailScreen({
       ) : (
         <div className="mt-6">{changesContent ?? <ChangeRequestDiffTab />}</div>
       )}
-
-      {dialog ? <DetailSelectionDialog open {...dialog} /> : null}
 
       <ConfirmDialog
         open={isCloseConfirmOpen}

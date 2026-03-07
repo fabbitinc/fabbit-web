@@ -1,5 +1,6 @@
 import { useRef, useState } from "react";
-import { Download, FileArchive, FileAudio, FileCode, FileImage, FileSpreadsheet, FileText, FileVideo, Trash2, Upload } from "lucide-react";
+import { FileIcon } from "@fabbit/components";
+import { Download, Trash2, Upload } from "lucide-react";
 import { Button, ConfirmDialog } from "@fabbit/ui";
 import { useAttachPartFilesAction } from "@/features/parts/hooks/use-attach-part-files-action";
 import { useDetachPartFileAction } from "@/features/parts/hooks/use-detach-part-file-action";
@@ -22,34 +23,6 @@ function formatFileSize(bytes: number) {
   }
 
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-}
-
-function FileIcon({ contentType, originalName }: { contentType: string; originalName: string }) {
-  if (contentType.includes("image")) {
-    return <FileImage className="size-4 text-emerald-500" />;
-  }
-
-  if (contentType.includes("spreadsheet") || originalName.endsWith(".csv") || originalName.endsWith(".xlsx")) {
-    return <FileSpreadsheet className="size-4 text-emerald-600" />;
-  }
-
-  if (contentType.includes("audio")) {
-    return <FileAudio className="size-4 text-amber-500" />;
-  }
-
-  if (contentType.includes("video")) {
-    return <FileVideo className="size-4 text-pink-500" />;
-  }
-
-  if (contentType.includes("zip") || contentType.includes("archive")) {
-    return <FileArchive className="size-4 text-yellow-500" />;
-  }
-
-  if (contentType.includes("json") || contentType.includes("xml")) {
-    return <FileCode className="size-4 text-slate-500" />;
-  }
-
-  return <FileText className="size-4 text-muted-foreground" />;
 }
 
 interface PartAttachmentsTabProps {
@@ -112,7 +85,7 @@ export function PartAttachmentsTab({ partId }: PartAttachmentsTabProps) {
             <div key={file.fileId} className="flex items-center justify-between gap-3 rounded-md border border-border/70 bg-card px-4 py-3">
               <div className="flex min-w-0 items-center gap-3">
                 <div className="rounded-full bg-muted/70 p-2">
-                  <FileIcon contentType={file.contentType} originalName={file.originalName} />
+                  <FileIcon contentType={file.contentType} name={file.originalName} />
                 </div>
                 <div className="min-w-0">
                   <p className="truncate text-sm font-medium text-foreground">{file.originalName}</p>

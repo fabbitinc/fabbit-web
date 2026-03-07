@@ -1,17 +1,13 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import {
-  LayoutDashboard,
   FolderKanban,
   GitPullRequestArrow,
+  LayoutDashboard,
   Package,
   User,
   Building2,
-  AlertTriangle,
-  X,
 } from "lucide-react";
-
-import { AppShell, AppHeader, AppSidebar, StatGroup, KpiCard } from "@fabbit/components";
-import { Button } from "@fabbit/ui";
+import { AppHeader, AppShell, AppSidebar, KpiCard, StatGroup } from "@fabbit/components";
 
 const meta = {
   title: "Components/AppShell",
@@ -26,7 +22,7 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-const navSections = [
+const sections = [
   {
     id: "main",
     items: [
@@ -38,48 +34,46 @@ const navSections = [
   },
 ];
 
-const mockUser = {
-  name: "문성하",
-  email: "seongha@fabbit.io",
-};
-
-const mockMenuItems = [
-  { id: "profile", label: "개인 설정", icon: User, onClick: () => {} },
-  { id: "org", label: "조직 설정", icon: Building2, onClick: () => {} },
-];
-
-const brand = (
-  <div className="flex items-center gap-2">
-    <div className="flex size-7 items-center justify-center rounded-md bg-primary text-primary-foreground">
-      <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-        <path d="M12 2L2 7l10 5 10-5-10-5z" />
-        <path d="M2 17l10 5 10-5" />
-        <path d="M2 12l10 5 10-5" />
-      </svg>
-    </div>
-    <span className="text-sm font-semibold">Fabbit</span>
-  </div>
-);
-
-export const Default: Story = {
-  render: () => (
+function ShellFrame({ collapsed = false }: { collapsed?: boolean }) {
+  return (
     <AppShell
       header={
         <AppHeader
-          brand={brand}
-          user={mockUser}
           onToggleSidebar={() => {}}
-          onSearchClick={() => {}}
-          searchPlaceholder="품목, 도면, BOM 검색..."
-          onNotificationClick={() => {}}
-          notificationCount={2}
-          menuItems={mockMenuItems}
+          primaryAction={{ label: "생성" }}
+          organizationMenu={{
+            current: {
+              id: "org-1",
+              slug: "fabbit",
+              name: "Fabbit",
+              roleLabel: "소유자",
+            },
+            items: [
+              { id: "org-1", slug: "fabbit", name: "Fabbit", roleLabel: "소유자" },
+              { id: "org-2", slug: "factory-lab", name: "Factory Lab", roleLabel: "관리자" },
+            ],
+            onSelect: () => {},
+          }}
+          user={{ name: "문성하", email: "seongha@fabbit.io" }}
+          menuItems={[
+            { id: "profile", label: "개인 설정", icon: User, onClick: () => {} },
+            { id: "organization", label: "조직 설정", icon: Building2, onClick: () => {} },
+          ]}
           onLogout={() => {}}
         />
       }
-      sidebar={<AppSidebar sections={navSections} />}
+      sidebar={
+        <AppSidebar
+          isDesktop
+          collapsed={collapsed}
+          sections={sections}
+          statusIndicator={{ count: 2 }}
+        />
+      }
+      isDesktop
+      isSidebarCollapsed={collapsed}
     >
-      <div className="p-6">
+      <div>
         <h1 className="mb-6 text-2xl font-semibold">대시보드</h1>
         <StatGroup>
           <KpiCard label="가동률" value="94.2%" change="+2.1%" changePositive />
@@ -89,31 +83,15 @@ export const Default: Story = {
         </StatGroup>
       </div>
     </AppShell>
-  ),
+  );
+}
+
+export const Default: Story = {
+  render: () => <ShellFrame />,
 };
 
 export const CollapsedSidebar: Story = {
-  render: () => (
-    <AppShell
-      header={
-        <AppHeader
-          brand={brand}
-          user={mockUser}
-          onToggleSidebar={() => {}}
-          onSearchClick={() => {}}
-          menuItems={mockMenuItems}
-          onLogout={() => {}}
-        />
-      }
-      sidebar={<AppSidebar sections={navSections} collapsed />}
-      sidebarCollapsed
-    >
-      <div className="p-6">
-        <h1 className="text-2xl font-semibold">대시보드</h1>
-        <p className="mt-2 text-muted-foreground">사이드바가 접힌 상태입니다.</p>
-      </div>
-    </AppShell>
-  ),
+  render: () => <ShellFrame collapsed />,
 };
 
 export const WithBanner: Story = {
@@ -121,52 +99,27 @@ export const WithBanner: Story = {
     <AppShell
       header={
         <AppHeader
-          brand={brand}
-          user={mockUser}
           onToggleSidebar={() => {}}
-          onSearchClick={() => {}}
-          menuItems={mockMenuItems}
+          primaryAction={{ label: "생성" }}
+          user={{ name: "문성하", email: "seongha@fabbit.io" }}
+          menuItems={[
+            { id: "profile", label: "개인 설정", icon: User, onClick: () => {} },
+            { id: "organization", label: "조직 설정", icon: Building2, onClick: () => {} },
+          ]}
           onLogout={() => {}}
         />
       }
-      sidebar={<AppSidebar sections={navSections} />}
+      sidebar={<AppSidebar isDesktop sections={sections} />}
       banner={
-        <div className="flex items-center justify-between border-b bg-warning/10 px-4 py-2">
-          <div className="flex items-center gap-2 text-sm text-warning">
-            <AlertTriangle className="size-4" />
-            시스템 점검 예정: 03/10(월) 02:00~06:00 서비스 일시 중단
-          </div>
-          <Button variant="ghost" size="icon" className="size-6">
-            <X className="size-3" />
-          </Button>
+        <div className="flex items-center justify-between border-b border-blue-200 bg-blue-50 px-4">
+          <p className="truncate text-sm text-blue-900">
+            임시 배너입니다. 공지/안내 용도로 사용하고 나중에 삭제할 수 있습니다.
+          </p>
         </div>
       }
+      isDesktop
     >
-      <div className="p-6">
-        <h1 className="text-2xl font-semibold">대시보드</h1>
-      </div>
-    </AppShell>
-  ),
-};
-
-export const NoSidebar: Story = {
-  render: () => (
-    <AppShell
-      header={
-        <AppHeader
-          brand={brand}
-          user={mockUser}
-          menuItems={mockMenuItems}
-          onLogout={() => {}}
-        />
-      }
-    >
-      <div className="mx-auto max-w-3xl p-6">
-        <h1 className="text-2xl font-semibold">온보딩</h1>
-        <p className="mt-2 text-muted-foreground">
-          사이드바 없는 전체 너비 레이아웃입니다.
-        </p>
-      </div>
+      <div className="text-sm text-muted-foreground">배너가 포함된 앱 셸입니다.</div>
     </AppShell>
   ),
 };

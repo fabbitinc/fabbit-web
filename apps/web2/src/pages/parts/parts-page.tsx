@@ -9,14 +9,14 @@ const defaultQueryState: PartsListQueryState = {
   hasDrawing: null,
   hasChildren: null,
   page: 1,
-  pageSize: 20,
+  pageSize: 15,
   sortKey: "partNumber",
   sortOrder: "asc",
 };
 
 const validSortKeys = new Set<PartListSortKey>(["partNumber", "name", "category", "revision", "lifecycleState"]);
 const validSortOrders = new Set<PartListSortOrder>(["asc", "desc"]);
-const validPageSizes = new Set([20, 40, 80]);
+const validPageSizes = new Set([15, 30, 50]);
 
 function parsePositiveInteger(value: string | null, fallback: number) {
   if (!value) {

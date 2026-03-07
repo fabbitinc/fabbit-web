@@ -7,6 +7,26 @@ type ResponseOf<
 
 export type ProjectDetailResponseDto = ResponseOf<"/api/v1/projects/{project_id}", "get">;
 export type UpdateProjectRequestDto = ApiRequestBody<"/api/v1/projects/{project_id}", "patch">;
+type IssueListItemResponseDto = ResponseOf<"/api/v1/issues", "get">["items"][number];
+type ChangeRequestListItemResponseDto = ResponseOf<"/api/v1/changes", "get">["items"][number];
+
+export interface ProjectIssueListResponseDto {
+  open_count?: number | null;
+  closed_count?: number | null;
+  total?: number | null;
+  offset?: number | null;
+  limit?: number | null;
+  items: IssueListItemResponseDto[];
+}
+
+export interface ProjectChangeListResponseDto {
+  open_count?: number | null;
+  closed_count?: number | null;
+  total?: number | null;
+  offset?: number | null;
+  limit?: number | null;
+  items: ChangeRequestListItemResponseDto[];
+}
 
 export type ProjectActivitiesQueryDto = NonNullable<
   ApiParameters<"/api/v1/projects/{project_id}/activities", "get">["query"]

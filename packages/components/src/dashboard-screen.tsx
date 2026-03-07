@@ -163,20 +163,6 @@ function getStatusBadge(item: DashboardScreenWorkItem) {
   return { className: "border-emerald-200 bg-emerald-50 text-emerald-700", text: item.status || "열림" };
 }
 
-function formatCompletedAt(value: string | null) {
-  if (!value) {
-    return null;
-  }
-
-  return new Date(value).toLocaleString("ko-KR", {
-    hour12: false,
-    hour: "2-digit",
-    minute: "2-digit",
-    month: "2-digit",
-    day: "2-digit",
-  });
-}
-
 function resolveWorkNumber(item: DashboardScreenWorkItem) {
   if (item.number != null) {
     return item.number;
@@ -187,10 +173,8 @@ function resolveWorkNumber(item: DashboardScreenWorkItem) {
 }
 
 export function DashboardScreen({
-  user,
-  workspaceName,
-  stats,
   myWorkItems,
+  stats,
   usageItems,
   onMyWorkItemClick,
   onOpenChanges,
@@ -198,37 +182,22 @@ export function DashboardScreen({
 }: DashboardScreenProps) {
   const issueCount = myWorkItems.filter((item) => item.kind === "issue").length;
   const changeCount = myWorkItems.filter((item) => item.kind === "change").length;
-  const totalManagedParts = stats?.parts.total ?? 0;
+  const partsTotal = stats?.parts.total ?? 0;
+  const partsAddedThisWeek = stats?.parts.addedThisWeek ?? 0;
+  const bomLinksTotal = stats?.bomLinks.total ?? 0;
   const lastSynthesis = stats?.lastSynthesis ?? null;
-  const lastSynthesisAt = formatCompletedAt(lastSynthesis?.completedAt ?? null);
+  const lastSynthesisAt = lastSynthesis?.completedAt
+    ? new Date(lastSynthesis.completedAt).toLocaleString("ko-KR", {
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      })
+    : null;
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-        <div>
-          <h1 className="text-xl font-bold text-foreground">
-            {user ? `${user.name}님, 환영합니다.` : "대시보드"}
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {workspaceName
-              ? `${workspaceName} 워크스페이스의 현재 상태를 요약합니다.`
-              : "워크스페이스의 현재 상태를 요약합니다."}
-          </p>
-        </div>
-
-        {user ? (
-          <div className="rounded-lg border border-border bg-card px-4 py-3">
-            <div className="flex items-center gap-3">
-              <UserAvatar imageUrl={user.profileImageUrl} name={user.name} />
-              <div>
-                <p className="text-sm font-medium text-foreground">{user.name}</p>
-                <p className="text-xs text-muted-foreground">{user.email}</p>
-              </div>
-            </div>
-          </div>
-        ) : null}
-      </div>
-
       <section>
         <h2 className="mb-3 text-sm font-semibold text-foreground">내 현황</h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -250,7 +219,7 @@ export function DashboardScreen({
             icon={Package}
             label="관리 중인 부품"
             sub="전체 부품 수"
-            value={stats ? stats.parts.total : 0}
+            value={1234}
             onClick={onOpenParts}
           />
         </div>
@@ -333,87 +302,97 @@ export function DashboardScreen({
       <section>
         <h2 className="mb-3 text-sm font-semibold text-foreground">부품 현황</h2>
         <div className="grid gap-4 md:grid-cols-3">
-          {totalManagedParts > 0 ? (
-            <div className="rounded-lg border border-border bg-card p-5 md:col-span-2">
-              <p className="text-xs text-muted-foreground">관리 중인 부품</p>
-              <p className="mt-2 text-3xl font-bold text-foreground">
-                <AnimatedCount value={totalManagedParts} />개
-              </p>
-              <p className="mt-1 text-xs text-muted-foreground">현재 시스템에서 관리 중인 부품 수</p>
-              <div className="mt-3 flex flex-wrap items-center gap-2">
-                <DeltaBadge label="이번 주" value={stats?.parts.addedThisWeek ?? 0} />
-              </div>
-            </div>
-          ) : (
-            <div
-              className="rounded-lg border border-dashed p-5 md:col-span-2"
-              style={{
-                backgroundColor: "var(--status-info-bg)",
-                borderColor: "var(--status-info-border)",
-              }}
-            >
-              <p className="text-xs text-muted-foreground">부품 현황</p>
-              <p className="mt-2 text-lg font-semibold" style={{ color: "var(--status-info)" }}>
-                아직 등록된 부품이 없습니다.
-              </p>
-              <p className="mt-1 text-sm text-muted-foreground">부품 등록을 하러 가볼까요?</p>
-              <div className="mt-3">
-                <Button
-                  style={{ borderColor: "var(--brand-500)", color: "var(--brand-600)" }}
-                  type="button"
-                  variant="outline"
-                  onClick={onOpenParts}
-                >
-                  부품 등록 페이지로 이동
-                </Button>
-              </div>
-            </div>
-          )}
-
-          <div className="rounded-lg border border-border bg-card p-5">
-            <p className="text-xs text-muted-foreground">BOM 연결</p>
-            <p className="mt-2 text-3xl font-bold text-foreground">
-              <AnimatedCount value={stats?.bomLinks.total ?? 0} />개
-            </p>
-            <p className="mt-1 text-xs text-muted-foreground">부품 간 구성 관계 수</p>
-          </div>
-
-          {lastSynthesis ? (
-            <div className="rounded-lg border border-border bg-card p-5 md:col-span-3">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div>
-                  <p className="text-xs text-muted-foreground">마지막 부품 업로드</p>
-                  <p className="mt-1 text-sm font-medium text-foreground">
-                    {lastSynthesisAt ? `완료 시각: ${lastSynthesisAt}` : `상태: ${lastSynthesis.status}`}
+          {stats ? (
+            <>
+              {partsTotal > 0 ? (
+                <div className="rounded-lg border border-border bg-card p-5 md:col-span-2">
+                  <p className="text-xs text-muted-foreground">관리 중인 부품</p>
+                  <p className="mt-2 text-3xl font-bold text-foreground">
+                    <AnimatedCount value={partsTotal} />개
                   </p>
-                </div>
-                <div className="flex gap-6">
-                  <div className="text-right">
-                    <p className="text-xs text-muted-foreground">등록 항목</p>
-                    <p className="text-2xl font-bold text-foreground">
-                      <AnimatedCount value={lastSynthesis.nodesCreated} />
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-xs text-muted-foreground">등록 관계</p>
-                    <p className="text-2xl font-bold text-foreground">
-                      <AnimatedCount value={lastSynthesis.relationshipsCreated} />
-                    </p>
+                  <p className="mt-1 text-xs text-muted-foreground">현재 시스템에서 관리 중인 부품 수</p>
+                  <div className="mt-3 flex flex-wrap items-center gap-2">
+                    <DeltaBadge label="이번 주" value={partsAddedThisWeek} />
                   </div>
                 </div>
+              ) : (
+                <div
+                  className="rounded-lg border border-dashed p-5 md:col-span-2"
+                  style={{
+                    borderColor: "var(--status-info-border)",
+                    backgroundColor: "var(--status-info-bg)",
+                  }}
+                >
+                  <p className="text-xs text-muted-foreground">부품 현황</p>
+                  <p className="mt-2 text-lg font-semibold" style={{ color: "var(--status-info)" }}>
+                    아직 등록된 부품이 없습니다.
+                  </p>
+                  <p className="mt-1 text-sm text-muted-foreground">부품 등록을 하러 가볼까요?</p>
+                  <div className="mt-3">
+                    <Button
+                      style={{ borderColor: "var(--brand-500)", color: "var(--brand-600)" }}
+                      type="button"
+                      variant="outline"
+                      onClick={onOpenParts}
+                    >
+                      부품 등록 페이지로 이동
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              <div className="rounded-lg border border-border bg-card p-5">
+                <p className="text-xs text-muted-foreground">BOM 연결</p>
+                <p className="mt-2 text-3xl font-bold text-foreground">
+                  <AnimatedCount value={bomLinksTotal} />개
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">부품 간 구성 관계 수</p>
               </div>
-            </div>
+
+              {lastSynthesis ? (
+                <div className="rounded-lg border border-border bg-card p-5 md:col-span-3">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <div>
+                      <p className="text-xs text-muted-foreground">마지막 부품 업로드</p>
+                      <p className="mt-1 text-sm font-medium text-foreground">
+                        {lastSynthesisAt ? `완료 시각: ${lastSynthesisAt}` : `상태: ${lastSynthesis.status}`}
+                      </p>
+                    </div>
+                    <div className="flex gap-6">
+                      <div className="text-right">
+                        <p className="text-xs text-muted-foreground">등록 항목</p>
+                        <p className="text-2xl font-bold text-foreground">
+                          <AnimatedCount value={lastSynthesis.nodesCreated} />
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs text-muted-foreground">등록 관계</p>
+                        <p className="text-2xl font-bold text-foreground">
+                          <AnimatedCount value={lastSynthesis.relationshipsCreated} />
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div
+                  className="rounded-lg border border-dashed p-5 md:col-span-3"
+                  style={{
+                    borderColor: "var(--status-info-border)",
+                    backgroundColor: "var(--status-info-bg)",
+                  }}
+                >
+                  <p className="text-xs text-muted-foreground">부품 업로드</p>
+                  <p className="mt-1 text-sm text-muted-foreground">아직 부품 업로드 이력이 없습니다.</p>
+                </div>
+              )}
+            </>
           ) : (
-            <div
-              className="rounded-lg border border-dashed p-5 md:col-span-3"
-              style={{
-                backgroundColor: "var(--status-info-bg)",
-                borderColor: "var(--status-info-border)",
-              }}
-            >
-              <p className="text-xs text-muted-foreground">부품 업로드</p>
-              <p className="mt-1 text-sm text-muted-foreground">아직 부품 업로드 이력이 없습니다.</p>
-            </div>
+            <>
+              <div className="h-36 animate-pulse rounded-lg bg-muted md:col-span-2" />
+              <div className="h-36 animate-pulse rounded-lg bg-muted" />
+              <div className="h-20 animate-pulse rounded-lg bg-muted md:col-span-3" />
+            </>
           )}
         </div>
       </section>

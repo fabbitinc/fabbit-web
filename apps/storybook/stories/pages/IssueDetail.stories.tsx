@@ -67,7 +67,7 @@ interface ChangeRequest {
   description: string;
   isModified?: boolean;
   timeline: TimelineEventData[];
-  attachments: { id: string; name: string; size: string; type: "pdf" | "step" | "dwg" | "xlsx" | "image" | "other"; uploadedBy: string; uploadedAt: string }[];
+  attachments: { id: string; name: string; size: string; type: "pdf" | "document" | "step" | "dwg" | "xlsx" | "image" | "other"; uploadedBy: string; uploadedAt: string }[];
   relatedParts: CRRelatedPart[];
   commentsCount: number;
   linkedChanges: LinkedChangeBadge[];

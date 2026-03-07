@@ -87,6 +87,14 @@
   --status-accent: #9333ea;
   --status-accent-bg: #faf5ff;
   --status-accent-border: #d8b4fe;
+
+  --file-icon-pdf: #b91c1c;
+  --file-icon-document: #1d4ed8;
+  --file-icon-cad: #0e7490;
+  --file-icon-sheet: #15803d;
+  --file-icon-image: #9333ea;
+  --file-icon-archive: #64748b;
+  --file-icon-code: #b45309;
 }
 
 /* 2. High-Tech Precision — 정밀 기기 · 반도체 */
@@ -178,6 +186,14 @@
   --status-accent: #3f6212;
   --status-accent-bg: #f7fee7;
   --status-accent-border: #bef264;
+
+  --file-icon-pdf: #991b1b;
+  --file-icon-document: #1e40af;
+  --file-icon-cad: #0e7490;
+  --file-icon-sheet: #166534;
+  --file-icon-image: #7c3aed;
+  --file-icon-archive: #64748b;
+  --file-icon-code: #92400e;
 }
 
 /* 3. Mossy Production — 지속 가능 경영 */
@@ -269,6 +285,14 @@
   --status-accent: #855c22;
   --status-accent-bg: #fdf8ee;
   --status-accent-border: #e8d4a8;
+
+  --file-icon-pdf: #991b1b;
+  --file-icon-document: #1e40af;
+  --file-icon-cad: #155e75;
+  --file-icon-sheet: #166534;
+  --file-icon-image: #7c3aed;
+  --file-icon-archive: #57534e;
+  --file-icon-code: #92400e;
 }
 
 /* 4. Cobalt Trust — 스마트 팩토리 통합 인프라 / ERP */
@@ -360,6 +384,14 @@
   --status-accent: #b45309;
   --status-accent-bg: #fffbeb;
   --status-accent-border: #fde68a;
+
+  --file-icon-pdf: #b91c1c;
+  --file-icon-document: #1e40af;
+  --file-icon-cad: #0e7490;
+  --file-icon-sheet: #15803d;
+  --file-icon-image: #7c3aed;
+  --file-icon-archive: #64748b;
+  --file-icon-code: #b45309;
 }
 
 /* 5. Slate Innovation — 반도체 · 정밀 기기 공정 관리 */
@@ -451,6 +483,14 @@
   --status-accent: #6b21a8;
   --status-accent-bg: #faf5ff;
   --status-accent-border: #d8b4fe;
+
+  --file-icon-pdf: #991b1b;
+  --file-icon-document: #1e40af;
+  --file-icon-cad: #0e7490;
+  --file-icon-sheet: #166534;
+  --file-icon-image: #6b21a8;
+  --file-icon-archive: #52525b;
+  --file-icon-code: #92400e;
 }
 
 /* 6. Emerald ESG — 신재생 에너지 · 화학물질 안전 관리 */
@@ -542,6 +582,14 @@
   --status-accent: #c2410c;
   --status-accent-bg: #fff7ed;
   --status-accent-border: #fed7aa;
+
+  --file-icon-pdf: #b91c1c;
+  --file-icon-document: #1d4ed8;
+  --file-icon-cad: #0c8599;
+  --file-icon-sheet: #087f5b;
+  --file-icon-image: #7c3aed;
+  --file-icon-archive: #495057;
+  --file-icon-code: #b45309;
 }
 
 /* 7. Safety Industrial — 중장비 · 현장 안전 모니터링 */
@@ -633,6 +681,14 @@
   --status-accent: #c2410c;
   --status-accent-bg: #fff7ed;
   --status-accent-border: #fdba74;
+
+  --file-icon-pdf: #b91c1c;
+  --file-icon-document: #1d4ed8;
+  --file-icon-cad: #0e7490;
+  --file-icon-sheet: #15803d;
+  --file-icon-image: #7c3aed;
+  --file-icon-archive: #525252;
+  --file-icon-code: #b45309;
 }
 
 /* 8. Intelligence Violet — AI 예지 보전 · 디지털 트윈 */
@@ -724,6 +780,14 @@
   --status-accent: #6b21a8;
   --status-accent-bg: #faf5ff;
   --status-accent-border: #d8b4fe;
+
+  --file-icon-pdf: #b91c1c;
+  --file-icon-document: #1d4ed8;
+  --file-icon-cad: #0e7490;
+  --file-icon-sheet: #15803d;
+  --file-icon-image: #6b21a8;
+  --file-icon-archive: #64748b;
+  --file-icon-code: #92400e;
 }
 
 /* 9. Graphite Precision — 금속 가공 · 자동차 부품 PLM */
@@ -815,6 +879,14 @@
   --status-accent: #0550ae;
   --status-accent-bg: #ddf4ff;
   --status-accent-border: #80ccff;
+
+  --file-icon-pdf: #b91c1c;
+  --file-icon-document: #0550ae;
+  --file-icon-cad: #0e7490;
+  --file-icon-sheet: #15803d;
+  --file-icon-image: #7c3aed;
+  --file-icon-archive: #57606a;
+  --file-icon-code: #92400e;
 }
 
 /* 10. Bronze Premium — 럭셔리 · 항공우주 특수 부품 */
@@ -906,6 +978,14 @@
   --status-accent: #a16207;
   --status-accent-bg: #fefce8;
   --status-accent-border: #fde047;
+
+  --file-icon-pdf: #991b1b;
+  --file-icon-document: #1e40af;
+  --file-icon-cad: #0e7490;
+  --file-icon-sheet: #166534;
+  --file-icon-image: #7c3aed;
+  --file-icon-archive: #57534e;
+  --file-icon-code: #92400e;
 }
 
 /* 11. Fabbit Core — 설계 협업 · PLM 기본 테마 */
@@ -997,4 +1077,12 @@
   --status-accent: #7c3aed;
   --status-accent-bg: #f5f3ff;
   --status-accent-border: #ddd6fe;
+
+  --file-icon-pdf: #dc2626;
+  --file-icon-document: #2563eb;
+  --file-icon-cad: #0891b2;
+  --file-icon-sheet: #16a34a;
+  --file-icon-image: #7c3aed;
+  --file-icon-archive: #64748b;
+  --file-icon-code: #d97706;
 }

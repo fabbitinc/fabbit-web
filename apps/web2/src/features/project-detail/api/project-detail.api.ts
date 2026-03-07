@@ -18,12 +18,15 @@ import {
   unarchiveProjectApiV1ProjectsProjectIdUnarchivePost,
   updateProjectApiV1ProjectsProjectIdPatch,
 } from "@/api/generated/orval/projects/projects";
+import { apiClient } from "@/api/client";
 import type {
   AddProjectMembersRequestDto,
   AddProjectMembersResponseDto,
+  ProjectChangeListResponseDto,
   ProjectActivitiesQueryDto,
   ProjectActivitiesResponseDto,
   ProjectDetailResponseDto,
+  ProjectIssueListResponseDto,
   ProjectMemberListResponseDto,
   ProjectMemberLookupQueryDto,
   ProjectMemberLookupResponseDto,
@@ -41,10 +44,16 @@ import type {
   ProjectActivitiesResultModel,
   ProjectActivityActorModel,
   ProjectActivityItemModel,
+  ProjectChangeListItemModel,
+  ProjectChangeListResultModel,
   ProjectDetailModel,
+  ProjectIssueListItemModel,
+  ProjectIssueListResultModel,
   ProjectMemberModel,
   ProjectPartModel,
   ProjectPartsResultModel,
+  ProjectWorkItemLabelModel,
+  ProjectWorkItemUserModel,
   ProjectUserLookupModel,
 } from "@/features/project-detail/types/project-detail-model";
 
@@ -80,6 +89,30 @@ export async function fetchProjectActivities(
   return {
     items: activities.items.map((item) => toProjectActivityItemModel(item, activities.users)),
     nextCursor: activities.next_cursor ?? null,
+  };
+}
+
+export async function fetchProjectIssues(projectId: string): Promise<ProjectIssueListResultModel> {
+  const response = await apiClient.get<ProjectIssueListResponseDto>(`/api/v1/projects/${projectId}/issues`);
+  const payload = response.data;
+
+  return {
+    openCount: payload.open_count ?? 0,
+    closedCount: payload.closed_count ?? 0,
+    total: payload.total ?? payload.items.length,
+    items: payload.items.map(toProjectIssueListItemModel),
+  };
+}
+
+export async function fetchProjectChanges(projectId: string): Promise<ProjectChangeListResultModel> {
+  const response = await apiClient.get<ProjectChangeListResponseDto>(`/api/v1/projects/${projectId}/changes`);
+  const payload = response.data;
+
+  return {
+    openCount: payload.open_count ?? 0,
+    closedCount: payload.closed_count ?? 0,
+    total: payload.total ?? payload.items.length,
+    items: payload.items.map(toProjectChangeListItemModel),
   };
 }
 
@@ -180,6 +213,58 @@ function toProjectPartModel(
     id: part.id,
     partNumber: part.part_number,
     name: part.name ?? null,
+  };
+}
+
+function toProjectWorkItemLabelModel(label: { id: string; name: string; color: string }): ProjectWorkItemLabelModel {
+  return {
+    id: label.id,
+    name: label.name,
+    color: label.color,
+  };
+}
+
+function toProjectWorkItemUserModel(user: {
+  user_id: string;
+  full_name: string;
+  profile_image_url?: string | null;
+}): ProjectWorkItemUserModel {
+  return {
+    userId: user.user_id,
+    fullName: user.full_name,
+    profileImageUrl: user.profile_image_url ?? null,
+  };
+}
+
+function toProjectIssueListItemModel(item: ProjectIssueListResponseDto["items"][number]): ProjectIssueListItemModel {
+  return {
+    id: item.id,
+    number: item.number,
+    title: item.title,
+    state: item.state,
+    createdAt: item.created_at,
+    commentsCount: item.comments_count,
+    createdByName: item.created_by?.full_name ?? "삭제된 사용자",
+    createdByProfileImageUrl: item.created_by?.profile_image_url ?? null,
+    labels: item.labels.map(toProjectWorkItemLabelModel),
+    assignees: item.assignees.map(toProjectWorkItemUserModel),
+  };
+}
+
+function toProjectChangeListItemModel(
+  item: ProjectChangeListResponseDto["items"][number],
+): ProjectChangeListItemModel {
+  return {
+    id: item.id,
+    number: item.number,
+    title: item.title,
+    crState: item.cr_state,
+    createdAt: item.created_at,
+    commentsCount: item.comments_count,
+    createdByName: item.created_by?.full_name ?? "삭제된 사용자",
+    createdByProfileImageUrl: item.created_by?.profile_image_url ?? null,
+    labels: item.labels.map(toProjectWorkItemLabelModel),
+    assignees: item.assignees.map(toProjectWorkItemUserModel),
   };
 }
 

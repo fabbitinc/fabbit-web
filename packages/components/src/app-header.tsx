@@ -1,142 +1,346 @@
-import type { ComponentType, ReactNode } from "react";
-import { PanelLeft, Search, Bell } from "lucide-react";
+import { useEffect, useState, type ComponentType, type ReactNode } from "react";
+import {
+  Bell,
+  Check,
+  ChevronDown,
+  CircleHelp,
+  LogOut,
+  PanelLeft,
+  Plus,
+  Search,
+} from "lucide-react";
 import {
   Button,
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
+  Dialog,
+  DialogContent,
+  DialogTitle,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  UserAvatar,
+  cn,
 } from "@fabbit/ui";
 
 export interface AppHeaderUser {
-  name: string;
   email: string;
-  avatarUrl?: string;
+  name: string;
+  profileImageUrl?: string | null;
 }
 
 export interface AppHeaderMenuItem {
+  icon: ComponentType<{ className?: string }>;
   id: string;
   label: string;
-  icon?: ComponentType<{ className?: string }>;
   onClick: () => void;
 }
 
-export interface AppHeaderProps {
-  /** 브랜드 로고 영역. ReactNode로 자유롭게 구성 */
-  brand?: ReactNode;
-  /** 현재 로그인 사용자 */
-  user?: AppHeaderUser;
-  /** 사이드바 토글 콜백. 생략 시 토글 버튼 미표시 */
-  onToggleSidebar?: () => void;
-  /** 검색 클릭 콜백. 생략 시 검색 버튼 미표시 */
-  onSearchClick?: () => void;
-  /** 검색 placeholder */
-  searchPlaceholder?: string;
-  /** 알림 클릭 콜백. 생략 시 알림 버튼 미표시 */
-  onNotificationClick?: () => void;
-  /** 읽지 않은 알림 수 */
-  notificationCount?: number;
-  /** 프로필 드롭다운 메뉴 항목 */
-  menuItems?: AppHeaderMenuItem[];
-  /** 로그아웃 콜백. 생략 시 로그아웃 항목 미표시 */
-  onLogout?: () => void;
-  /** 우측 추가 액션 영역 */
-  actions?: ReactNode;
-  className?: string;
+export interface AppHeaderOrganizationItem {
+  id: string;
+  name: string;
+  profileImageUrl?: string | null;
+  roleLabel?: string;
+  slug: string;
 }
 
-function getInitials(name: string) {
-  return name.charAt(0);
+export interface AppHeaderOrganizationMenu {
+  current: AppHeaderOrganizationItem | null;
+  items: AppHeaderOrganizationItem[];
+  onSelect: (slug: string) => void;
+  switchingSlug?: string | null;
+}
+
+export interface AppHeaderPrimaryAction {
+  icon?: ComponentType<{ className?: string }>;
+  label: string;
+  onClick?: () => void;
+}
+
+export interface AppHeaderSearchConfig {
+  dialogDescription?: string;
+  dialogPlaceholder?: string;
+  triggerLabel?: string;
+}
+
+export interface AppHeaderProps {
+  actions?: ReactNode;
+  brand?: ReactNode;
+  className?: string;
+  menuItems?: AppHeaderMenuItem[];
+  onHelpClick?: () => void;
+  onLogout?: () => void;
+  onNotificationClick?: () => void;
+  onSearchClick?: () => void;
+  onToggleSidebar?: () => void;
+  organizationMenu?: AppHeaderOrganizationMenu | null;
+  primaryAction?: AppHeaderPrimaryAction | null;
+  search?: AppHeaderSearchConfig;
+  searchPlaceholder?: string;
+  user?: AppHeaderUser | null;
+}
+
+function DefaultBrand() {
+  return (
+    <div className="flex items-center gap-2">
+      <div
+        className="flex size-7 items-center justify-center rounded-md"
+        style={{
+          backgroundColor: "var(--brand-500)",
+          color: "var(--nav-topbar-avatar-text)",
+        }}
+      >
+        <svg
+          className="size-4"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        >
+          <path d="M12 2L2 7l10 5 10-5-10-5z" />
+          <path d="M2 17l10 5 10-5" />
+          <path d="M2 12l10 5 10-5" />
+        </svg>
+      </div>
+      <span className="text-sm font-semibold leading-none text-foreground">Fabbit</span>
+    </div>
+  );
 }
 
 export function AppHeader({
-  brand,
-  user,
-  onToggleSidebar,
-  onSearchClick,
-  searchPlaceholder = "검색",
-  onNotificationClick,
-  notificationCount = 0,
-  menuItems = [],
-  onLogout,
   actions,
+  brand,
   className,
+  menuItems = [],
+  onHelpClick,
+  onLogout,
+  onNotificationClick,
+  onSearchClick,
+  onToggleSidebar,
+  organizationMenu,
+  primaryAction,
+  search,
+  searchPlaceholder,
+  user,
 }: AppHeaderProps) {
+  const [searchOpen, setSearchOpen] = useState(false);
+
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      if (
+        event.key === "/" &&
+        !event.ctrlKey &&
+        !event.metaKey &&
+        !event.altKey
+      ) {
+        const target = event.target as HTMLElement;
+        const tagName = target?.tagName;
+
+        if (
+          tagName === "INPUT" ||
+          tagName === "TEXTAREA" ||
+          target?.isContentEditable
+        ) {
+          return;
+        }
+
+        event.preventDefault();
+        setSearchOpen(true);
+        onSearchClick?.();
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [onSearchClick]);
+
+  const resolvedSearch = search ?? (searchPlaceholder ? { triggerLabel: searchPlaceholder } : undefined);
+  const resolvedPrimaryAction = actions
+    ? null
+    : primaryAction;
+
   return (
     <header
-      className={`flex h-12 shrink-0 items-center gap-4 border-b bg-background px-3 lg:px-6 ${className ?? ""}`}
+      className={cn(
+        "topbar-shell topbar-divider grid h-12 shrink-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-6 border-b px-3 lg:px-6",
+        className,
+      )}
     >
-      {/* 좌측: 토글 + 브랜드 */}
       <div className="flex shrink-0 items-center gap-2">
-        {onToggleSidebar && (
+        {onToggleSidebar ? (
           <Button
             variant="ghost"
             size="icon"
-            className="size-8"
-            aria-label="사이드바 토글"
+            className="topbar-icon-btn size-8"
+            aria-label="사이드 내비게이션 토글"
+            style={{ color: "var(--nav-topbar-icon)" }}
             onClick={onToggleSidebar}
           >
             <PanelLeft className="size-5" />
           </Button>
-        )}
-        {brand}
+        ) : null}
+
+        {brand ?? <DefaultBrand />}
       </div>
 
-      {/* 중앙: 검색 */}
-      <div className="flex min-w-0 flex-1 items-center gap-2">
-        {onSearchClick && (
-          <button
-            type="button"
-            onClick={onSearchClick}
-            className="flex h-9 min-w-[200px] flex-1 items-center gap-2 rounded-md border border-input bg-transparent px-3 text-sm text-muted-foreground transition-colors hover:bg-accent"
-          >
-            <Search className="size-4 shrink-0" />
-            <span>{searchPlaceholder}</span>
-            <kbd className="ml-auto hidden rounded border px-1.5 py-0.5 text-xs font-medium opacity-60 sm:inline-block">
-              /
-            </kbd>
-          </button>
-        )}
+      <div className="flex w-full min-w-0 items-center gap-2">
+        <button
+          type="button"
+          onClick={() => {
+            setSearchOpen(true);
+            onSearchClick?.();
+          }}
+          className="topbar-icon-btn flex h-9 min-w-[240px] flex-1 items-center gap-2 rounded-md border border-transparent px-3 text-sm"
+          style={{ color: "var(--nav-topbar-icon)" }}
+        >
+          <Search className="size-4 shrink-0" />
+          <span>{resolvedSearch?.triggerLabel ?? "검색"}</span>
+          <kbd className="ml-auto hidden rounded border px-1.5 py-0.5 text-xs font-medium opacity-60 sm:inline-block">
+            /
+          </kbd>
+        </button>
+
         {actions}
+
+        {resolvedPrimaryAction ? (
+          <Button
+            variant="outline"
+            className="h-9 shrink-0 gap-1.5"
+            onClick={resolvedPrimaryAction.onClick}
+          >
+            {resolvedPrimaryAction.icon ? (
+              <resolvedPrimaryAction.icon className="size-4" />
+            ) : (
+              <Plus className="size-4" />
+            )}
+            {resolvedPrimaryAction.label}
+          </Button>
+        ) : null}
       </div>
 
-      {/* 우측: 알림 + 프로필 */}
-      <div className="flex shrink-0 items-center gap-1">
-        {onNotificationClick && (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="relative size-8"
-            aria-label="알림"
-            onClick={onNotificationClick}
-          >
-            <Bell className="size-5" />
-            {notificationCount > 0 && (
-              <span className="absolute -right-0.5 -top-0.5 flex size-4 items-center justify-center rounded-full bg-destructive text-[10px] font-bold text-destructive-foreground">
-                {notificationCount > 9 ? "9+" : notificationCount}
-              </span>
-            )}
-          </Button>
-        )}
+      <Dialog open={searchOpen} onOpenChange={setSearchOpen}>
+        <DialogContent
+          showCloseButton={false}
+          className="top-[20%] translate-y-0 sm:max-w-lg"
+        >
+          <DialogTitle className="sr-only">검색</DialogTitle>
+          <div className="flex items-center gap-2">
+            <Search className="size-5 shrink-0 text-muted-foreground" />
+            <input
+              autoFocus
+              type="text"
+              aria-label="검색"
+              placeholder={resolvedSearch?.dialogPlaceholder ?? "검색어를 입력하세요..."}
+              className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+            />
+          </div>
+          <p className="text-xs text-muted-foreground">
+            {resolvedSearch?.dialogDescription ?? "품목, 도면, BOM 등을 검색할 수 있습니다."}
+          </p>
+        </DialogContent>
+      </Dialog>
 
-        {user && (
+      <div className="flex shrink-0 items-center gap-0.5">
+        {organizationMenu?.current ? (
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                className="h-9 gap-2 rounded-lg px-2"
+                style={{ color: "var(--nav-topbar-icon-hover)" }}
+              >
+                <UserAvatar
+                  name={organizationMenu.current.name}
+                  imageUrl={organizationMenu.current.profileImageUrl}
+                  className="size-7"
+                  variant="rounded"
+                />
+                <div className="text-left">
+                  <p className="max-w-[120px] truncate text-sm font-medium leading-none text-foreground">
+                    {organizationMenu.current.name}
+                  </p>
+                </div>
+                <ChevronDown className="size-4 text-muted-foreground" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-64">
+              <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
+                조직 전환
+              </DropdownMenuLabel>
+              {organizationMenu.items.map((item) => {
+                const isCurrent = organizationMenu.current?.id === item.id;
+                const isSwitching = organizationMenu.switchingSlug === item.slug;
+
+                return (
+                  <DropdownMenuItem
+                    key={item.id}
+                    className={cn("flex items-center gap-3 py-2", isCurrent && "opacity-60")}
+                    disabled={isCurrent || Boolean(organizationMenu.switchingSlug)}
+                    onClick={() => organizationMenu.onSelect(item.slug)}
+                  >
+                    <UserAvatar
+                      name={item.name}
+                      imageUrl={item.profileImageUrl}
+                      className="size-9"
+                      variant="rounded"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-medium text-foreground">
+                        {item.name}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {isSwitching ? "전환 중..." : item.roleLabel ?? "사용자"}
+                      </p>
+                    </div>
+                    {isCurrent ? (
+                      <Check className="size-4" style={{ color: "var(--brand-500)" }} />
+                    ) : null}
+                  </DropdownMenuItem>
+                );
+              })}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        ) : null}
+
+        <Button
+          variant="ghost"
+          size="icon"
+          className="topbar-icon-btn size-8"
+          aria-label="도움말"
+          style={{ color: "var(--nav-topbar-icon)" }}
+          onClick={onHelpClick}
+        >
+          <CircleHelp className="size-5" />
+        </Button>
+
+        <Button
+          variant="ghost"
+          size="icon"
+          className="topbar-icon-btn size-8"
+          aria-label="알림"
+          style={{ color: "var(--nav-topbar-icon)" }}
+          onClick={onNotificationClick}
+        >
+          <Bell className="size-5" />
+        </Button>
+
+        {user ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button
                 variant="ghost"
                 size="icon"
-                className="size-8"
+                className="topbar-icon-btn size-8"
                 aria-label="프로필 메뉴"
+                style={{ color: "var(--nav-topbar-icon)" }}
               >
-                <Avatar className="size-7">
-                  {user.avatarUrl && <AvatarImage src={user.avatarUrl} alt={user.name} />}
-                  <AvatarFallback>{getInitials(user.name)}</AvatarFallback>
-                </Avatar>
+                <UserAvatar
+                  name={user.name}
+                  imageUrl={user.profileImageUrl}
+                  className="size-7"
+                  variant="circle"
+                />
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56">
@@ -144,34 +348,36 @@ export function AppHeader({
                 <p className="text-sm font-medium text-foreground">{user.name}</p>
                 <p className="text-xs text-muted-foreground">{user.email}</p>
               </div>
-              {menuItems.length > 0 && (
+              {menuItems.length > 0 ? (
                 <>
                   <DropdownMenuSeparator />
-                  <DropdownMenuLabel className="text-xs font-normal text-muted-foreground">
-                    메뉴
-                  </DropdownMenuLabel>
                   {menuItems.map((item) => (
-                    <DropdownMenuItem key={item.id} className="gap-2" onClick={item.onClick}>
-                      {item.icon && <item.icon className="size-4" />}
+                    <DropdownMenuItem
+                      key={item.id}
+                      className="gap-2"
+                      onClick={item.onClick}
+                    >
+                      <item.icon className="size-4" />
                       {item.label}
                     </DropdownMenuItem>
                   ))}
                 </>
-              )}
-              {onLogout && (
+              ) : null}
+              {onLogout ? (
                 <>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
                     onClick={onLogout}
                     className="gap-2 text-destructive focus:bg-destructive/10 focus:text-destructive"
                   >
+                    <LogOut className="size-4" />
                     로그아웃
                   </DropdownMenuItem>
                 </>
-              )}
+              ) : null}
             </DropdownMenuContent>
           </DropdownMenu>
-        )}
+        ) : null}
       </div>
     </header>
   );

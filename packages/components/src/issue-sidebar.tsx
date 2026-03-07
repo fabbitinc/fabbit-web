@@ -1,18 +1,26 @@
 import { useRef, useState } from "react";
 import {
-  File,
+  FileCheck,
   FilePen,
-  FileSpreadsheet,
-  FileText,
-  Image,
-  Box,
-  Package,
+  FileX,
+  Loader2,
   Plus,
   Settings,
+  X,
 } from "lucide-react";
-import { Badge, Button, Checkbox, ConfirmDialog, Input, LabelBadge, Popover, PopoverContent, PopoverTrigger, UserAvatar } from "@fabbit/ui";
-
-// ── 타입 ──────────────────────────────────────────────────
+import {
+  Button,
+  Checkbox,
+  ConfirmDialog,
+  Input,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@fabbit/ui";
+import { FileIcon, type FileIconKind } from "./file-icon";
+import { LabelPickerSection } from "./label-picker-section";
+import { MemberPickerSection } from "./member-picker-section";
+import { PartPickerSection } from "./part-picker-section";
 
 export interface IssueSidebarUser {
   id?: string;
@@ -41,120 +49,200 @@ export interface IssueSidebarLinkedChange {
   state: string;
 }
 
+export interface IssueSidebarLinkedIssue {
+  id: string;
+  number: number;
+  title: string;
+  state: string;
+}
+
 export interface IssueSidebarFile {
   id: string;
   name: string;
   size: string;
-  type: "pdf" | "step" | "dwg" | "xlsx" | "image" | "other";
+  type: FileIconKind;
   uploadedBy: string;
   uploadedAt: string;
   url?: string | null;
 }
 
+export interface IssueSidebarChangeLookupItem {
+  id: string;
+  number: number;
+  title: string;
+  state: string;
+}
+
 export interface IssueSidebarProps {
   assignees: IssueSidebarUser[];
+  attachments: IssueSidebarFile[];
   labels: IssueSidebarLabel[];
   linkedChanges: IssueSidebarLinkedChange[];
-  linkedIssues: { id: string; number: number; title: string; state: string }[];
+  linkedIssues?: IssueSidebarLinkedIssue[];
   relatedParts: IssueSidebarPart[];
-  attachments: IssueSidebarFile[];
-  /** 담당자 피커 */
   assigneePicker?: {
     availableMembers: { id: string; name: string; email: string }[];
     selectedIds: string[];
-    onSync: (userIds: string[]) => void;
     onRequest: () => void;
+    onSync: (userIds: string[]) => void;
     isUpdating?: boolean;
   };
-  /** 라벨 피커 */
   labelPicker?: {
     availableLabels: { id: string; name: string; colorHex: string }[];
     selectedIds: string[];
-    onSync: (labelIds: string[]) => void;
     onRequest: () => void;
+    onSync: (labelIds: string[]) => void;
     isUpdating?: boolean;
   };
-  /** 연결된 변경 요청 피커 */
   linkedChangePicker?: {
-    onSync: (ids: string[]) => void;
+    availableChanges: IssueSidebarChangeLookupItem[];
+    selectedIds: string[];
     onRequest: () => void;
-  };
-  /** 연결된 이슈 피커 */
-  linkedIssuePicker?: {
+    onSearchChange?: (search: string) => void;
     onSync: (ids: string[]) => void;
-    onRequest: () => void;
+    isSearching?: boolean;
+    isUpdating?: boolean;
   };
-  /** 외부 다이얼로그 방식 편집 콜백 (inline picker 대신 사용) */
+  partPicker?: {
+    searchedParts: { id: string; partNumber: string; name: string | null }[];
+    selectedIds: string[];
+    onRequest: () => void;
+    onSearchChange?: (search: string) => void;
+    onSync: (partIds: string[]) => void;
+    isSearching?: boolean;
+    isUpdating?: boolean;
+  };
+  onAttachFiles?: (files: File[]) => void;
+  onCreateLinkedChange?: () => void;
+  onDeleteFile?: (fileId: string) => void;
   onEditAssignees?: () => void;
   onEditLabels?: () => void;
-  onEditParts?: () => void;
   onEditLinkedChanges?: () => void;
+  onEditParts?: () => void;
   onNavigateToChange?: (changeNumber: number) => void;
-  onCreateLinkedChange?: () => void;
-  onAttachFiles?: (files: File[]) => void;
-  onDeleteFile?: (fileId: string) => void;
+  onNavigateToPart?: (partId: string) => void;
   isAttachingFiles?: boolean;
 }
 
-// ── 파일 아이콘 ──────────────────────────────────────────
+async function downloadAttachment(file: IssueSidebarFile) {
+  if (!file.url) {
+    return;
+  }
 
-function AttachmentIcon({ type }: { type: IssueSidebarFile["type"] }) {
-  const cls = "h-4 w-4 shrink-0";
-  switch (type) {
-    case "pdf": return <FileText className={`${cls} text-red-500`} />;
-    case "step": return <Box className={`${cls} text-blue-500`} />;
-    case "dwg": return <FilePen className={`${cls} text-amber-500`} />;
-    case "xlsx": return <FileSpreadsheet className={`${cls} text-emerald-500`} />;
-    case "image": return <Image className={`${cls} text-purple-500`} />;
-    default: return <File className={`${cls} text-muted-foreground`} />;
+  try {
+    const pathname = new URL(file.url, window.location.origin).pathname;
+    const filename = decodeURIComponent(pathname.split("/").pop() || file.name);
+    const response = await fetch(file.url);
+
+    if (!response.ok) {
+      throw new Error("첨부파일 다운로드에 실패했습니다.");
+    }
+
+    const blob = await response.blob();
+    const blobUrl = URL.createObjectURL(blob);
+    const anchor = document.createElement("a");
+    anchor.href = blobUrl;
+    anchor.download = filename;
+    anchor.click();
+    window.setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
+  } catch {
+    const anchor = document.createElement("a");
+    anchor.href = file.url;
+    anchor.download = file.name;
+    anchor.target = "_blank";
+    anchor.rel = "noopener noreferrer";
+    anchor.click();
   }
 }
 
-// ── 섹션 헤더 버튼 ────────────────────────────────────────
+function ChangeStateIcon({ state }: { state: string }) {
+  const normalized = state.toLowerCase();
+  const className = "h-3.5 w-3.5 shrink-0";
+
+  if (normalized === "merged") {
+    return <FileCheck className={`${className} text-purple-600 dark:text-purple-400`} />;
+  }
+
+  if (normalized === "closed") {
+    return <FileX className={`${className} text-red-500 dark:text-red-400`} />;
+  }
+
+  return (
+    <FilePen
+      className={`${className} ${
+        normalized === "draft"
+          ? "text-gray-500 dark:text-gray-400"
+          : "text-emerald-600 dark:text-emerald-400"
+      }`}
+    />
+  );
+}
+
+function getChangeStateLabel(state: string) {
+  const normalized = state.toLowerCase();
+
+  if (normalized === "draft") return "초안";
+  if (normalized === "submitted" || normalized === "open") return "제출";
+  if (normalized === "merged") return "반영";
+  return "닫힘";
+}
 
 function SectionSettingsButton({ onClick }: { onClick?: () => void }) {
-  if (!onClick) return null;
+  if (!onClick) {
+    return null;
+  }
+
   return (
     <button
       type="button"
+      className="inline-flex h-5 w-5 cursor-pointer items-center justify-center rounded text-muted-foreground/50 transition-colors hover:bg-muted hover:text-foreground"
       onClick={onClick}
-      className="inline-flex h-5 w-5 items-center justify-center rounded text-muted-foreground/50 hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
     >
       <Settings className="h-3 w-3" />
     </button>
   );
 }
 
-// ── 담당자 피커 인라인 ────────────────────────────────────
-
-function AssigneePickerInline({
-  assignees,
+function LinkedChangesSection({
+  linkedChanges,
   picker,
+  onCreateLinkedChange,
+  onEdit,
+  onNavigateToChange,
 }: {
-  assignees: IssueSidebarUser[];
-  picker?: IssueSidebarProps["assigneePicker"];
+  linkedChanges: IssueSidebarLinkedChange[];
+  picker?: IssueSidebarProps["linkedChangePicker"];
+  onCreateLinkedChange?: () => void;
+  onEdit?: () => void;
+  onNavigateToChange?: (changeNumber: number) => void;
 }) {
   const [popoverOpen, setPopoverOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [draftIds, setDraftIds] = useState<string[]>([]);
 
-  const filtered = (picker?.availableMembers ?? []).filter((m) => {
+  const filteredChanges = (picker?.availableChanges ?? []).filter((change) => {
     if (!query.trim()) return true;
-    const q = query.toLowerCase();
-    return m.name.toLowerCase().includes(q) || m.email.toLowerCase().includes(q);
+
+    const normalizedQuery = query.toLowerCase();
+    return (
+      change.title.toLowerCase().includes(normalizedQuery) ||
+      String(change.number).includes(normalizedQuery)
+    );
   });
 
   return (
     <div>
       <div className="flex items-center justify-between">
-        <h3 className="text-xs font-medium text-muted-foreground">담당자</h3>
-        {picker && (
+        <h3 className="text-xs font-medium text-muted-foreground">연결된 변경 요청</h3>
+        {picker ? (
           <Popover
             open={popoverOpen}
             onOpenChange={(open) => {
               setPopoverOpen(open);
+
               if (open) {
                 picker.onRequest();
+                picker.onSearchChange?.("");
                 setDraftIds(picker.selectedIds);
               } else {
                 setQuery("");
@@ -164,40 +252,57 @@ function AssigneePickerInline({
             <PopoverTrigger asChild>
               <button
                 type="button"
-                className="inline-flex h-5 w-5 items-center justify-center rounded text-muted-foreground/50 hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
+                className="inline-flex h-5 w-5 cursor-pointer items-center justify-center rounded text-muted-foreground/50 transition-colors hover:bg-muted hover:text-foreground"
               >
                 <Settings className="h-3 w-3" />
               </button>
             </PopoverTrigger>
-            <PopoverContent className="w-72 p-3" align="end">
+            <PopoverContent className="w-80 p-3" align="end">
               <div className="space-y-2">
-                <p className="text-xs font-medium text-foreground">담당자 추가</p>
-                <Input
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder="멤버 검색"
-                />
+                <p className="text-xs font-medium text-foreground">변경 요청 연결</p>
+                <div className="relative">
+                  <Input
+                    value={query}
+                    onChange={(event) => {
+                      const nextQuery = event.target.value;
+                      setQuery(nextQuery);
+                      picker.onSearchChange?.(nextQuery);
+                    }}
+                    placeholder="번호 또는 제목으로 검색"
+                  />
+                  {picker.isSearching ? (
+                    <div className="absolute right-2 top-1/2 -translate-y-1/2">
+                      <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
+                    </div>
+                  ) : null}
+                </div>
                 <div className="max-h-48 space-y-1 overflow-auto">
-                  {filtered.length === 0 ? (
-                    <p className="px-1 py-2 text-xs text-muted-foreground">추가 가능한 멤버가 없습니다.</p>
+                  {filteredChanges.length === 0 ? (
+                    <p className="px-1 py-2 text-xs text-muted-foreground">
+                      {query.trim() ? "검색 결과가 없습니다." : "연결 가능한 변경 요청이 없습니다."}
+                    </p>
                   ) : (
-                    filtered.map((member) => (
+                    filteredChanges.map((change) => (
                       <label
-                        key={member.id}
+                        key={change.id}
                         className="flex w-full cursor-pointer items-center gap-2 rounded-md px-1 py-1.5 hover:bg-muted"
                       >
                         <Checkbox
-                          checked={draftIds.includes(member.id)}
+                          checked={draftIds.includes(change.id)}
                           onCheckedChange={(checked) => {
-                            setDraftIds((prev) =>
-                              checked ? [...prev, member.id] : prev.filter((id) => id !== member.id),
+                            setDraftIds((previous) =>
+                              checked
+                                ? [...previous, change.id]
+                                : previous.filter((id) => id !== change.id),
                             );
                           }}
                         />
-                        <UserAvatar name={member.name} className="h-5 w-5 text-[10px]" />
+                        <ChangeStateIcon state={change.state} />
                         <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm text-foreground">{member.name}</p>
-                          <p className="truncate text-xs text-muted-foreground">{member.email}</p>
+                          <p className="truncate text-xs font-medium text-foreground">
+                            #{change.number} {change.title}
+                          </p>
+                          <p className="text-[11px] text-muted-foreground">{getChangeStateLabel(change.state)}</p>
                         </div>
                       </label>
                     ))
@@ -214,320 +319,244 @@ function AssigneePickerInline({
                     setQuery("");
                   }}
                 >
-                  담당자 적용
+                  변경 요청 적용
                 </Button>
               </div>
             </PopoverContent>
           </Popover>
+        ) : (
+          <SectionSettingsButton onClick={onEdit} />
         )}
-        {!picker && <SectionSettingsButton />}
       </div>
-      <div className="mt-2 space-y-1.5">
-        {assignees.map((a) => (
-          <div key={a.id ?? a.name} className="flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-muted">
-            <UserAvatar name={a.name} imageUrl={a.profileImageUrl} className="h-5 w-5 text-[9px]" />
-            <span className="text-xs font-medium text-foreground">{a.name}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
 
-// ── 라벨 피커 인라인 ─────────────────────────────────────
-
-function LabelPickerInline({
-  labels,
-  picker,
-}: {
-  labels: IssueSidebarLabel[];
-  picker?: IssueSidebarProps["labelPicker"];
-}) {
-  const [popoverOpen, setPopoverOpen] = useState(false);
-  const [query, setQuery] = useState("");
-  const [draftIds, setDraftIds] = useState<string[]>([]);
-
-  const filtered = (picker?.availableLabels ?? []).filter((label) => {
-    if (!query.trim()) return true;
-    return label.name.toLowerCase().includes(query.toLowerCase());
-  });
-
-  return (
-    <div>
-      <div className="flex items-center justify-between">
-        <h3 className="text-xs font-medium text-muted-foreground">라벨</h3>
-        {picker && (
-          <Popover
-            open={popoverOpen}
-            onOpenChange={(open) => {
-              setPopoverOpen(open);
-              if (open) {
-                picker.onRequest();
-                setDraftIds(picker.selectedIds);
-              } else {
-                setQuery("");
-              }
-            }}
-          >
-            <PopoverTrigger asChild>
+      {linkedChanges.length > 0 ? (
+        <div className="mt-2 space-y-1.5">
+          {linkedChanges.map((change) => (
+            <div
+              key={change.id}
+              className="group flex w-full items-center gap-2 rounded-md px-2 py-1.5 transition-colors hover:bg-muted"
+            >
+              <ChangeStateIcon state={change.state} />
               <button
                 type="button"
-                className="inline-flex h-5 w-5 items-center justify-center rounded text-muted-foreground/50 hover:bg-muted hover:text-foreground transition-colors cursor-pointer"
+                className="min-w-0 flex-1 cursor-pointer text-left"
+                onClick={() => onNavigateToChange?.(change.number)}
               >
-                <Settings className="h-3 w-3" />
+                <p className="truncate text-xs font-medium text-foreground">
+                  #{change.number} {change.title}
+                </p>
+                <p className="text-[11px] text-muted-foreground">{getChangeStateLabel(change.state)}</p>
               </button>
-            </PopoverTrigger>
-            <PopoverContent className="w-72 p-3" align="end">
-              <div className="space-y-2">
-                <p className="text-xs font-medium text-foreground">라벨 추가</p>
-                <Input
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder="라벨 검색"
-                />
-                <div className="max-h-48 space-y-1 overflow-auto">
-                  {filtered.length === 0 ? (
-                    <p className="px-1 py-2 text-xs text-muted-foreground">추가 가능한 라벨이 없습니다.</p>
-                  ) : (
-                    filtered.map((label) => (
-                      <label
-                        key={label.id}
-                        className="flex w-full cursor-pointer items-center gap-2 rounded-md px-1 py-1.5 hover:bg-muted"
-                      >
-                        <Checkbox
-                          checked={draftIds.includes(label.id)}
-                          onCheckedChange={(checked) => {
-                            setDraftIds((prev) =>
-                              checked ? [...prev, label.id] : prev.filter((id) => id !== label.id),
-                            );
-                          }}
-                        />
-                        <LabelBadge label={label.name} colorHex={label.colorHex} size="sm" />
-                      </label>
-                    ))
-                  )}
-                </div>
-                <Button
+              {picker ? (
+                <button
                   type="button"
-                  size="sm"
-                  className="w-full"
-                  disabled={picker.isUpdating}
-                  onClick={() => {
-                    picker.onSync(draftIds);
-                    setPopoverOpen(false);
-                    setQuery("");
+                  className="hidden shrink-0 cursor-pointer rounded p-0.5 text-muted-foreground/50 transition-colors hover:bg-destructive/10 hover:text-destructive group-hover:inline-flex"
+                  onClick={(event) => {
+                    event.stopPropagation();
+                    picker.onSync((picker.selectedIds ?? linkedChanges.map((item) => item.id)).filter((id) => id !== change.id));
                   }}
                 >
-                  라벨 적용
-                </Button>
-              </div>
-            </PopoverContent>
-          </Popover>
-        )}
-        {!picker && <SectionSettingsButton />}
-      </div>
-      <div className="mt-2 flex flex-wrap gap-1.5">
-        {labels.map((l) => (
-          <LabelBadge key={l.id ?? l.name} label={l.name} colorHex={l.colorHex} />
-        ))}
-      </div>
+                  <X className="h-3 w-3" />
+                </button>
+              ) : null}
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p className="mt-2 text-xs text-muted-foreground/50">연결된 변경 요청 없음</p>
+      )}
+
+      {onCreateLinkedChange ? (
+        <button
+          type="button"
+          className="mt-2 cursor-pointer text-xs text-primary hover:underline"
+          onClick={onCreateLinkedChange}
+        >
+          변경 요청 생성
+        </button>
+      ) : null}
     </div>
   );
 }
-
-// ── 메인 컴포넌트 ────────────────────────────────────────
 
 export function IssueSidebar({
   assignees,
+  attachments,
   labels,
   linkedChanges,
-  linkedIssues,
+  partPicker,
   relatedParts,
-  attachments,
   assigneePicker,
   labelPicker,
+  linkedChangePicker,
+  onAttachFiles,
+  onCreateLinkedChange,
+  onDeleteFile,
   onEditAssignees,
   onEditLabels,
-  onEditParts,
   onEditLinkedChanges,
+  onEditParts,
   onNavigateToChange,
-  onCreateLinkedChange,
-  onAttachFiles,
-  onDeleteFile,
-  isAttachingFiles,
+  onNavigateToPart,
+  isAttachingFiles = false,
 }: IssueSidebarProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [deletingFileId, setDeletingFileId] = useState<string | null>(null);
-  const deletingFile = attachments.find((f) => f.id === deletingFileId) ?? null;
+  const deletingFile = attachments.find((file) => file.id === deletingFileId) ?? null;
 
   return (
     <div className="space-y-5">
-      {/* 담당자 */}
       {assigneePicker ? (
-        <AssigneePickerInline assignees={assignees} picker={assigneePicker} />
+        <MemberPickerSection
+          label="담당자"
+          applyLabel="담당자 적용"
+          availableMembers={assigneePicker.availableMembers}
+          selectedIds={assigneePicker.selectedIds}
+          displayItems={assignees}
+          onSync={assigneePicker.onSync}
+          onRequestMembers={assigneePicker.onRequest}
+          isUpdating={assigneePicker.isUpdating}
+        />
       ) : (
         <div>
           <div className="flex items-center justify-between">
             <h3 className="text-xs font-medium text-muted-foreground">담당자</h3>
             <SectionSettingsButton onClick={onEditAssignees} />
           </div>
-          <div className="mt-2 space-y-1.5">
-            {assignees.map((a) => (
-              <div key={a.id ?? a.name} className="flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-muted">
-                <UserAvatar name={a.name} imageUrl={a.profileImageUrl} className="h-5 w-5 text-[9px]" />
-                <span className="text-xs font-medium text-foreground">{a.name}</span>
+          <div className="mt-2 space-y-2">
+            {assignees.map((assignee) => (
+              <div key={assignee.id ?? assignee.name} className="text-sm text-foreground">
+                {assignee.name}
               </div>
             ))}
           </div>
         </div>
       )}
 
-      {/* 라벨 */}
       {labelPicker ? (
-        <LabelPickerInline labels={labels} picker={labelPicker} />
+        <LabelPickerSection
+          availableLabels={labelPicker.availableLabels}
+          selectedIds={labelPicker.selectedIds}
+          displayLabels={labels}
+          onSync={labelPicker.onSync}
+          onRequestLabels={labelPicker.onRequest}
+          isUpdating={labelPicker.isUpdating}
+        />
       ) : (
         <div>
           <div className="flex items-center justify-between">
             <h3 className="text-xs font-medium text-muted-foreground">라벨</h3>
             <SectionSettingsButton onClick={onEditLabels} />
           </div>
-          <div className="mt-2 flex flex-wrap gap-1.5">
-            {labels.map((l) => (
-              <LabelBadge key={l.id ?? l.name} label={l.name} colorHex={l.colorHex} />
-            ))}
-          </div>
         </div>
       )}
 
-      {/* 연결된 변경 요청 */}
-      <div>
-        <div className="flex items-center justify-between">
-          <h3 className="text-xs font-medium text-muted-foreground">연결된 변경 요청</h3>
-          <SectionSettingsButton onClick={onEditLinkedChanges} />
-        </div>
-        {linkedChanges.length > 0 ? (
-          <div className="mt-2 space-y-1.5">
-            {linkedChanges.map((lc) => {
-              const s = lc.state.toLowerCase();
-              return (
-                <button
-                  key={lc.id}
-                  type="button"
-                  onClick={() => onNavigateToChange?.(lc.number)}
-                  className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-muted cursor-pointer"
-                >
-                  <FilePen className={`h-3.5 w-3.5 shrink-0 ${s === "draft" ? "text-gray-500 dark:text-gray-400" : "text-emerald-600 dark:text-emerald-400"}`} />
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-xs font-medium text-foreground">#{lc.number} {lc.title}</p>
-                    <p className="text-[11px] text-muted-foreground">
-                      {s === "draft" ? "초안" : s === "submitted" || s === "open" ? "제출" : s === "merged" ? "반영" : "닫힘"}
-                    </p>
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-        ) : (
-          <p className="mt-2 text-xs text-muted-foreground/50">연결된 변경 요청 없음</p>
-        )}
-        {onCreateLinkedChange && (
-          <button type="button" onClick={onCreateLinkedChange} className="mt-2 text-xs text-primary hover:underline cursor-pointer">
-            변경 요청 생성
-          </button>
-        )}
-      </div>
+      <LinkedChangesSection
+        linkedChanges={linkedChanges}
+        picker={linkedChangePicker}
+        onCreateLinkedChange={onCreateLinkedChange}
+        onEdit={onEditLinkedChanges}
+        onNavigateToChange={onNavigateToChange}
+      />
 
-      {/* 연결된 이슈 (PR 화면용) */}
-      {linkedIssues.length > 0 && (
+      {partPicker ? (
+        <PartPickerSection
+          searchedParts={partPicker.searchedParts}
+          selectedIds={partPicker.selectedIds}
+          displayParts={relatedParts}
+          onSync={partPicker.onSync}
+          onRequestParts={partPicker.onRequest}
+          onNavigateToPart={onNavigateToPart}
+          onSearchChange={partPicker.onSearchChange}
+          isSearching={partPicker.isSearching}
+          isUpdating={partPicker.isUpdating}
+        />
+      ) : (
         <div>
           <div className="flex items-center justify-between">
-            <h3 className="text-xs font-medium text-muted-foreground">연결된 이슈</h3>
-          </div>
-          <div className="mt-2 space-y-1.5">
-            {linkedIssues.map((li) => (
-              <div key={li.id} className="flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-muted">
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-xs font-medium text-foreground">#{li.number} {li.title}</p>
-                  <p className="text-[11px] text-muted-foreground">{li.state}</p>
-                </div>
-              </div>
-            ))}
+            <h3 className="text-xs font-medium text-muted-foreground">관련 부품</h3>
+            <SectionSettingsButton onClick={onEditParts} />
           </div>
         </div>
       )}
 
-      {/* 관련 부품 */}
-      <div>
-        <div className="flex items-center justify-between">
-          <h3 className="text-xs font-medium text-muted-foreground">관련 부품</h3>
-          <SectionSettingsButton onClick={onEditParts} />
-        </div>
-        {relatedParts.length > 0 ? (
-          <div className="mt-2 space-y-1.5">
-            {relatedParts.map((p) => (
-              <div key={p.id} className="flex items-center gap-2 rounded-md px-2 py-1.5 hover:bg-muted">
-                <Package className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-xs font-medium text-foreground">{p.partNumber}</p>
-                  <p className="truncate text-[11px] text-muted-foreground">{p.name}</p>
-                </div>
-                {p.category && (
-                  <Badge variant="secondary" className="shrink-0 text-[10px] py-0 px-1.5">
-                    {p.category}
-                  </Badge>
-                )}
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="mt-2 text-xs text-muted-foreground/50">연결된 부품 없음</p>
-        )}
-      </div>
-
-      {/* 첨부파일 */}
       <div>
         <div className="flex items-center justify-between">
           <h3 className="text-xs font-medium text-muted-foreground">
             첨부파일
-            {attachments.length > 0 && (
-              <span className="ml-1 text-muted-foreground/50">({attachments.length})</span>
-            )}
+            {attachments.length > 0 ? <span className="ml-1 text-muted-foreground/50">({attachments.length})</span> : null}
           </h3>
-          {onAttachFiles && (
-            <button
-              type="button"
-              disabled={isAttachingFiles}
-              onClick={() => fileInputRef.current?.click()}
-              className="inline-flex h-5 w-5 items-center justify-center rounded text-muted-foreground/50 transition-colors cursor-pointer disabled:pointer-events-none disabled:opacity-50 hover:bg-muted hover:text-foreground"
-            >
-              <Plus className="h-3 w-3" />
-            </button>
-          )}
+          {onAttachFiles ? (
+            <>
+              <input
+                ref={fileInputRef}
+                aria-label="첨부 파일 업로드"
+                type="file"
+                multiple
+                disabled={isAttachingFiles}
+                className="hidden"
+                onChange={(event) => {
+                  const files = Array.from(event.target.files ?? []);
+
+                  if (files.length > 0) {
+                    onAttachFiles(files);
+                  }
+
+                  event.target.value = "";
+                }}
+              />
+              <button
+                type="button"
+                disabled={isAttachingFiles}
+                className="inline-flex h-5 w-5 cursor-pointer items-center justify-center rounded text-muted-foreground/50 transition-colors hover:bg-muted hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                {isAttachingFiles ? <Loader2 className="h-3 w-3 animate-spin" /> : <Plus className="h-3 w-3" />}
+              </button>
+            </>
+          ) : null}
         </div>
-        {onAttachFiles && (
-          <input
-            ref={fileInputRef}
-            aria-label="첨부 파일 업로드"
-            type="file"
-            multiple
-            disabled={isAttachingFiles}
-            className="hidden"
-            onChange={(event) => {
-              const files = Array.from(event.target.files ?? []);
-              if (files.length > 0) onAttachFiles(files);
-              event.target.value = "";
-            }}
-          />
-        )}
+
         {attachments.length > 0 ? (
           <div className="mt-2 space-y-1">
             {attachments.map((file) => (
-              <div key={file.id} className="group flex w-full items-center gap-2 rounded-md px-2 py-1.5 transition-colors hover:bg-muted">
-                <AttachmentIcon type={file.type} />
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-xs text-foreground">{file.name}</p>
-                  <p className="text-[11px] text-muted-foreground">{file.size}</p>
-                </div>
+              <div
+                key={file.id}
+                className="group flex w-full items-center gap-2 rounded-md px-2 py-1.5 transition-colors hover:bg-muted"
+              >
+                {file.url ? (
+                  <button
+                    type="button"
+                    className="flex min-w-0 flex-1 cursor-pointer items-center gap-2 rounded-sm text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    aria-label={`${file.name} 다운로드`}
+                    onClick={() => {
+                      void downloadAttachment(file);
+                    }}
+                  >
+                    <FileIcon kind={file.type} />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-xs text-foreground">{file.name}</p>
+                      <p className="text-[11px] text-muted-foreground">{file.size}</p>
+                    </div>
+                  </button>
+                ) : (
+                  <>
+                    <FileIcon kind={file.type} />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-xs text-foreground">{file.name}</p>
+                      <p className="text-[11px] text-muted-foreground">{file.size}</p>
+                    </div>
+                  </>
+                )}
+                {onDeleteFile ? (
+                  <button
+                    type="button"
+                    className="hidden shrink-0 cursor-pointer rounded p-0.5 text-muted-foreground/50 transition-colors hover:bg-destructive/10 hover:text-destructive group-hover:inline-flex"
+                    onClick={() => setDeletingFileId(file.id)}
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                ) : null}
               </div>
             ))}
           </div>
@@ -536,8 +565,7 @@ export function IssueSidebar({
         )}
       </div>
 
-      {/* 파일 삭제 확인 */}
-      {onDeleteFile && (
+      {onDeleteFile ? (
         <ConfirmDialog
           open={Boolean(deletingFileId)}
           title="첨부파일을 삭제할까요?"
@@ -547,14 +575,18 @@ export function IssueSidebar({
           variant="destructive"
           onCancel={() => setDeletingFileId(null)}
           onConfirm={() => {
-            if (deletingFileId) onDeleteFile(deletingFileId);
+            if (deletingFileId) {
+              onDeleteFile(deletingFileId);
+            }
             setDeletingFileId(null);
           }}
           onOpenChange={(open) => {
-            if (!open) setDeletingFileId(null);
+            if (!open) {
+              setDeletingFileId(null);
+            }
           }}
         />
-      )}
+      ) : null}
     </div>
   );
 }

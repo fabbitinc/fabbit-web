@@ -2,6 +2,7 @@
 @import "tw-animate-css";
 @import "@fabbit/ui/styles.css";
 @source "../../../packages/ui/src/**/*.{ts,tsx}";
+@source "../../../packages/components/src/**/*.{ts,tsx}";
 @source "../stories/**/*.{ts,tsx,mdx}";
 
 @layer components {
@@ -9,6 +10,71 @@
     border: 1px solid var(--border);
     background-color: var(--card);
     box-shadow: 0 1px 2px 0 color-mix(in srgb, var(--foreground) 8%, transparent);
+  }
+
+  .sidebar-shell {
+    background-color: var(--nav-sidebar-bg);
+  }
+
+  .sidebar-divider {
+    border-color: var(--nav-sidebar-border);
+  }
+
+  .sidebar-nav-item {
+    color: var(--nav-sidebar-text);
+  }
+
+  .sidebar-nav-item:hover {
+    background-color: var(--nav-sidebar-hover-bg);
+    color: var(--nav-sidebar-hover-text);
+  }
+
+  .sidebar-nav-item--active {
+    background-color: var(--nav-sidebar-active-bg);
+    color: var(--nav-sidebar-active-text);
+    box-shadow: none;
+  }
+
+  .sidebar-nav-item--active::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 4px;
+    bottom: 4px;
+    width: 3px;
+    border-radius: 0 2px 2px 0;
+    background-color: var(--nav-sidebar-active-notch);
+  }
+
+  .sidebar-tooltip {
+    border-color: transparent;
+    background-color: #1e293b;
+    color: white;
+    border-radius: 0.375rem;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+
+  .sidebar-ai-indicator {
+    background-color: var(--nav-sidebar-ai-bg);
+  }
+
+  .topbar-shell {
+    background-color: var(--nav-topbar-bg);
+  }
+
+  .topbar-divider {
+    border-color: var(--nav-topbar-border);
+  }
+
+  .topbar-icon-btn {
+    color: var(--nav-topbar-icon);
+  }
+
+  .topbar-icon-btn:hover {
+    background-color: var(--nav-topbar-hover-bg);
+    color: var(--nav-topbar-icon-hover);
   }
 
   /* ── Tiptap 에디터 ── */

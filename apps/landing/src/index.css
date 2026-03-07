@@ -1,0 +1,365 @@
+@import "tailwindcss";
+@import "@fabbit/theme/styles.css";
+
+@theme {
+  --font-display: "Plus Jakarta Sans", "Noto Sans KR", sans-serif;
+  --font-body: "Noto Sans KR", sans-serif;
+
+  --color-brand-50: var(--brand-50);
+  --color-brand-500: var(--brand-500);
+  --color-brand-600: var(--brand-600);
+  --color-accent-500: var(--accent-500);
+
+  --color-surface: var(--theme-surface);
+  --color-background: var(--theme-background);
+  --color-text-primary: var(--theme-text-primary);
+  --color-text-secondary: var(--theme-text-secondary);
+  --color-border: var(--theme-border);
+
+  --color-status-success: var(--status-success);
+  --color-status-warning: var(--status-warning);
+  --color-status-danger: var(--status-danger);
+  --color-status-info: var(--status-info);
+
+  --animate-fade-up: fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-fade-in: fade-in 0.6s ease both;
+  --animate-slide-left: slide-left 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-slide-right: slide-right 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-scale-in: scale-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-draw-line: draw-line 1.2s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(32px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slide-left {
+  from {
+    opacity: 0;
+    transform: translateX(40px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slide-right {
+  from {
+    opacity: 0;
+    transform: translateX(-40px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes draw-line {
+  from {
+    stroke-dashoffset: 100;
+  }
+
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 6.5rem;
+}
+
+section[id],
+div[id] {
+  scroll-margin-top: 6.5rem;
+}
+
+@media (min-width: 1024px) {
+  html {
+    scroll-padding-top: 7.25rem;
+  }
+
+  section[id],
+  div[id] {
+    scroll-margin-top: 7.25rem;
+  }
+}
+
+body {
+  font-family: "Noto Sans KR", sans-serif;
+  color: var(--theme-text-primary);
+  background:
+    radial-gradient(circle at top, color-mix(in srgb, var(--brand-500) 5%, transparent), transparent 42%),
+    radial-gradient(circle at 82% 18%, color-mix(in srgb, var(--accent-500) 5%, transparent), transparent 28%),
+    var(--theme-background);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--theme-border) 55%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--theme-border) 55%, transparent) 1px, transparent 1px);
+  background-size: 56px 56px;
+  opacity: 0.18;
+  mask-image: linear-gradient(to bottom, black 0%, black 24%, transparent 72%);
+}
+
+.landing-shell::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 18% 10%, color-mix(in srgb, var(--brand-500) 10%, transparent), transparent 30%),
+    radial-gradient(circle at 78% 22%, color-mix(in srgb, var(--accent-500) 8%, transparent), transparent 26%),
+    radial-gradient(circle at 50% 60%, color-mix(in srgb, var(--status-info) 6%, transparent), transparent 34%);
+  opacity: 0.52;
+}
+
+.blueprint-grid {
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--theme-border) 70%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--theme-border) 70%, transparent) 1px, transparent 1px);
+  background-size: 40px 40px;
+  opacity: 0.34;
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, var(--brand-500), var(--accent-500));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.section-board {
+  border: 1px solid color-mix(in srgb, var(--theme-border) 86%, transparent);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--theme-surface) 94%, var(--theme-background)),
+      color-mix(in srgb, var(--theme-background) 96%, var(--brand-50))
+    );
+  box-shadow:
+    0 32px 90px color-mix(in srgb, var(--theme-text-primary) 8%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--theme-background) 70%, transparent);
+  backdrop-filter: blur(18px);
+}
+
+.ink-board {
+  border: 1px solid color-mix(in srgb, var(--theme-text-primary) 10%, transparent);
+  background:
+    linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--theme-text-primary) 96%, var(--brand-600)),
+      color-mix(in srgb, var(--theme-text-primary) 88%, var(--brand-500))
+    );
+  box-shadow: 0 36px 90px color-mix(in srgb, var(--theme-text-primary) 20%, transparent);
+}
+
+.midnight-board {
+  border: 1px solid color-mix(in srgb, var(--theme-text-primary) 10%, transparent);
+  background:
+    radial-gradient(circle at top right, color-mix(in srgb, var(--brand-500) 18%, transparent), transparent 32%),
+    radial-gradient(circle at bottom left, color-mix(in srgb, var(--accent-500) 16%, transparent), transparent 30%),
+    linear-gradient(
+      160deg,
+      color-mix(in srgb, var(--theme-text-primary) 98%, var(--brand-600)),
+      color-mix(in srgb, var(--theme-text-primary) 94%, var(--brand-500))
+    );
+  box-shadow:
+    0 40px 110px color-mix(in srgb, var(--theme-text-primary) 20%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--theme-background) 14%, transparent);
+}
+
+.midnight-panel {
+  border: 1px solid color-mix(in srgb, var(--theme-background) 10%, transparent);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--theme-background) 10%, transparent),
+      color-mix(in srgb, var(--theme-background) 6%, transparent)
+    );
+  backdrop-filter: blur(16px);
+}
+
+.floating-panel {
+  border: 1px solid color-mix(in srgb, var(--theme-border) 82%, transparent);
+  background: color-mix(in srgb, var(--theme-background) 84%, transparent);
+  box-shadow: 0 24px 60px color-mix(in srgb, var(--theme-text-primary) 10%, transparent);
+  backdrop-filter: blur(18px);
+}
+
+.workspace-shell {
+  border: 1px solid color-mix(in srgb, var(--theme-text-primary) 10%, transparent);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--theme-text-primary) 97%, var(--brand-600)),
+      color-mix(in srgb, var(--theme-text-primary) 92%, var(--brand-500))
+    );
+  box-shadow:
+    0 40px 100px color-mix(in srgb, var(--theme-text-primary) 18%, transparent),
+    inset 0 1px 0 color-mix(in srgb, var(--theme-background) 12%, transparent);
+}
+
+.workspace-panel {
+  border: 1px solid color-mix(in srgb, var(--theme-background) 10%, transparent);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--theme-background) 12%, transparent),
+      color-mix(in srgb, var(--theme-background) 6%, transparent)
+    );
+  backdrop-filter: blur(14px);
+}
+
+.workspace-soft {
+  border: 1px solid color-mix(in srgb, var(--theme-background) 10%, transparent);
+  background: color-mix(in srgb, var(--theme-background) 7%, transparent);
+}
+
+.workspace-divider {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--theme-background) 18%, transparent),
+    transparent
+  );
+}
+
+.mock-block {
+  border: 1px solid color-mix(in srgb, var(--theme-border) 82%, transparent);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--theme-surface) 88%, var(--theme-background)),
+      color-mix(in srgb, var(--theme-background) 94%, var(--brand-50))
+    );
+  border-radius: 1.2rem;
+}
+
+.mock-row,
+.mock-pill,
+.mock-field {
+  background:
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--theme-text-primary) 12%, transparent),
+      color-mix(in srgb, var(--brand-500) 18%, transparent),
+      color-mix(in srgb, var(--theme-text-primary) 10%, transparent)
+    );
+}
+
+.sample-tag {
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--theme-border) 78%, transparent);
+  background: color-mix(in srgb, var(--theme-surface) 88%, var(--theme-background));
+  padding: 0.375rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--theme-text-secondary);
+}
+
+.status-chip {
+  border-radius: 999px;
+  padding: 0.3rem 0.65rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.status-chip[data-tone="success"] {
+  background: color-mix(in srgb, var(--status-success) 10%, transparent);
+  color: var(--status-success);
+}
+
+.status-chip[data-tone="info"] {
+  background: color-mix(in srgb, var(--status-info) 10%, transparent);
+  color: var(--status-info);
+}
+
+.status-chip[data-tone="warning"] {
+  background: color-mix(in srgb, var(--status-warning) 10%, transparent);
+  color: var(--status-warning);
+}
+
+.mock-row {
+  border-radius: 999px;
+}
+
+.mock-pill {
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--theme-border) 82%, transparent);
+}
+
+.mock-field {
+  border-radius: 1rem;
+  border: 1px solid color-mix(in srgb, var(--theme-border) 82%, transparent);
+}
+
+.dash-panel {
+  border: 1px dashed color-mix(in srgb, var(--theme-border) 88%, transparent);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--theme-background) 98%, var(--theme-surface)),
+      color-mix(in srgb, var(--theme-background) 94%, var(--theme-border))
+    );
+}
+
+.section-divider {
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--theme-border) 80%, transparent),
+    transparent
+  );
+}
+
+.field-label {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--theme-text-secondary) 84%, transparent);
+}

@@ -26,6 +26,7 @@ const sampleProps: IssueSidebarProps = {
       type: "image",
       uploadedBy: "문서연",
       uploadedAt: "2026-03-06T09:10:00Z",
+      url: "https://example.com/issue-evidence.png",
     },
   ],
   onCreateLinkedChange: () => undefined,

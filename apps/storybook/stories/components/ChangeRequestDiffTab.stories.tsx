@@ -18,25 +18,54 @@ export const Default: Story = {};
 
 export const CustomItems: Story = {
   args: {
-    notice: "서버 diff 계약이 연결되면 이 영역을 실제 비교 데이터로 교체합니다.",
-    items: [
-      {
-        id: "custom-1",
-        type: "modified",
-        partNumber: "CTRL-PCB-0207",
-        name: "모터 제어 PCB",
-        fields: [
-          { label: "Revision", before: "E", after: "F" },
-          { label: "부품명", before: "제어 PCB", after: "모터 제어 PCB" },
-        ],
-      },
-      {
-        id: "custom-2",
-        type: "added",
-        partNumber: "CBL-019",
-        name: "센서 하네스",
-        fields: [{ label: "수량", after: "2" }],
-      },
-    ],
+    changes: {
+      items: [
+        {
+          id: "custom-1",
+          type: "modified",
+          before: {
+            part_number: "CTRL-PCB-0207",
+            name: "제어 PCB",
+            revision: "E",
+            category: "전자부품",
+            lifecycle_state: "production",
+            material: "FR-4",
+            unit: "EA",
+            description: "메인 제어 보드",
+            is_phantom: false,
+            lead_time_days: 12,
+          },
+          after: {
+            part_number: "CTRL-PCB-0207",
+            name: "모터 제어 PCB",
+            revision: "F",
+            category: "전자부품",
+            lifecycle_state: "production",
+            material: "FR-4",
+            unit: "EA",
+            description: "모터 제어용 메인 보드",
+            is_phantom: false,
+            lead_time_days: 14,
+          },
+        },
+        {
+          id: "custom-2",
+          type: "added",
+          before: null,
+          after: {
+            part_number: "CBL-019",
+            name: "센서 하네스",
+            revision: "A",
+            category: "배선",
+            lifecycle_state: "prototype",
+            material: "PVC",
+            unit: "EA",
+            description: "센서 연결 하네스",
+            is_phantom: false,
+            lead_time_days: 5,
+          },
+        },
+      ],
+    },
   },
 };

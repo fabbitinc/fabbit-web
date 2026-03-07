@@ -1,6 +1,26 @@
-import { useRef, useState, type ReactNode } from "react";
-import { Eye, GitPullRequestArrow, Package, Paperclip, Plus, Tag, Trash2, UserRoundCheck, Users } from "lucide-react";
-import { Badge, Button, ConfirmDialog, LabelBadge, UserAvatar } from "@fabbit/ui";
+import { useMemo, useRef, useState } from "react";
+import {
+  AlertCircle,
+  Loader2,
+  Plus,
+  Settings,
+  X,
+} from "lucide-react";
+import {
+  Button,
+  Checkbox,
+  ConfirmDialog,
+  Input,
+  LabelBadge,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+  UserAvatar,
+} from "@fabbit/ui";
+import { FileIcon } from "./file-icon";
+import { LabelPickerSection } from "./label-picker-section";
+import { MemberPickerSection } from "./member-picker-section";
+import { PartPickerSection } from "./part-picker-section";
 
 export interface ChangeRequestSidebarUser {
   userId: string;
@@ -63,88 +83,83 @@ export interface ChangeRequestSidebarProps {
   isAttachingFiles: boolean;
   onAttachFiles: (files: File[]) => Promise<void>;
   onDeleteFile: (fileId: string) => Promise<void>;
-  onEditAssignees: () => void;
-  onEditIssues: () => void;
-  onEditLabels: () => void;
-  onEditParts: () => void;
-  onEditReviewers: () => void;
+  assigneePicker?: {
+    availableMembers: { id: string; name: string; email: string }[];
+    selectedIds: string[];
+    onSync: (userIds: string[]) => void;
+    onRequest: () => void;
+    isUpdating?: boolean;
+  };
+  reviewerPicker?: {
+    availableMembers: { id: string; name: string; email: string }[];
+    selectedIds: string[];
+    onSync: (userIds: string[]) => void;
+    onRequest: () => void;
+    isUpdating?: boolean;
+  };
+  labelPicker?: {
+    availableLabels: { id: string; name: string; colorHex: string }[];
+    selectedIds: string[];
+    onSync: (labelIds: string[]) => void;
+    onRequest: () => void;
+    isUpdating?: boolean;
+  };
+  partPicker?: {
+    searchedParts: { id: string; partNumber: string; name: string | null }[];
+    selectedIds: string[];
+    onSync: (partIds: string[]) => void;
+    onRequest: () => void;
+    onSearchChange?: (search: string) => void;
+    isSearching?: boolean;
+    isUpdating?: boolean;
+  };
+  linkedIssuePicker?: {
+    availableIssues: { id: string; number: number; title: string; state: string }[];
+    selectedIds: string[];
+    onSync: (issueIds: string[]) => void;
+    onRequest: () => void;
+    onSearchChange?: (search: string) => void;
+    isSearching?: boolean;
+    isUpdating?: boolean;
+  };
+  onEditAssignees?: () => void;
+  onEditIssues?: () => void;
+  onEditLabels?: () => void;
+  onEditParts?: () => void;
+  onEditReviewers?: () => void;
   onNavigateToIssue: (issueNumber: number) => void;
 }
 
-function formatDateTime(value: string) {
-  return new Intl.DateTimeFormat("ko-KR", {
-    dateStyle: "medium",
-    timeStyle: "short",
-  }).format(new Date(value));
-}
-
-function getChangeRequestStateLabel(state: string) {
-  const stateLabelMap: Record<string, string> = {
-    DRAFT: "초안",
-    OPEN: "열림",
-    SUBMITTED: "제출됨",
-    MERGED: "반영됨",
-    CLOSED: "닫힘",
-  };
-
-  return stateLabelMap[state] ?? state;
-}
-
-function getReviewStatusLabel(status: string) {
-  const reviewStatusMap: Record<string, string> = {
-    PENDING: "대기",
-    COMMENTED: "의견 남김",
-    APPROVED: "승인",
-    CHANGES_REQUESTED: "수정 요청",
-  };
-
-  return reviewStatusMap[status] ?? status;
-}
-
-function getReviewStatusVariant(status: string): "outline" | "neutral" | "accent" | "success" {
-  if (status === "APPROVED") {
-    return "success";
+function SectionSettingsButton({ onClick }: { onClick?: () => void }) {
+  if (!onClick) {
+    return null;
   }
 
-  if (status === "CHANGES_REQUESTED") {
-    return "neutral";
-  }
-
-  if (status === "PENDING") {
-    return "outline";
-  }
-
-  return "accent";
-}
-
-function SidebarSection({
-  title,
-  description,
-  icon,
-  action,
-  children,
-}: {
-  title: string;
-  description: string;
-  icon: ReactNode;
-  action?: ReactNode;
-  children: ReactNode;
-}) {
   return (
-    <section className="app-panel rounded-lg p-4">
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-start gap-3">
-          <div className="rounded-full bg-muted/70 p-2 text-muted-foreground">{icon}</div>
-          <div>
-            <p className="font-medium text-foreground">{title}</p>
-            <p className="mt-1 text-sm leading-6 text-muted-foreground">{description}</p>
-          </div>
-        </div>
-        {action}
-      </div>
-      <div className="mt-4 space-y-3">{children}</div>
-    </section>
+    <button
+      type="button"
+      onClick={onClick}
+      className="inline-flex h-5 w-5 cursor-pointer items-center justify-center rounded text-muted-foreground/50 transition-colors hover:bg-muted hover:text-foreground"
+    >
+      <Settings className="h-3 w-3" />
+    </button>
   );
+}
+
+function getIssueStateLabel(state: string) {
+  return state.toUpperCase() === "OPEN" ? "열림" : "닫힘";
+}
+
+function formatFileSize(size: number) {
+  if (size >= 1024 * 1024) {
+    return `${(size / (1024 * 1024)).toFixed(1)}MB`;
+  }
+
+  if (size >= 1024) {
+    return `${Math.round(size / 1024)}KB`;
+  }
+
+  return `${size}B`;
 }
 
 export function ChangeRequestSidebar({
@@ -152,6 +167,11 @@ export function ChangeRequestSidebar({
   isAttachingFiles,
   onAttachFiles,
   onDeleteFile,
+  assigneePicker,
+  reviewerPicker,
+  labelPicker,
+  partPicker,
+  linkedIssuePicker,
   onEditAssignees,
   onEditIssues,
   onEditLabels,
@@ -161,259 +181,384 @@ export function ChangeRequestSidebar({
 }: ChangeRequestSidebarProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [deletingFileId, setDeletingFileId] = useState<string | null>(null);
+  const [issuePopoverOpen, setIssuePopoverOpen] = useState(false);
+  const [issueQuery, setIssueQuery] = useState("");
+  const [draftIssueIds, setDraftIssueIds] = useState<string[]>([]);
 
   const deletingFile = changeRequest.files.find((file) => file.fileId === deletingFileId) ?? null;
 
+  const filteredIssues = useMemo(() => {
+    const items = linkedIssuePicker?.availableIssues ?? [];
+
+    if (!issueQuery.trim()) {
+      return items;
+    }
+
+    const query = issueQuery.toLowerCase();
+    return items.filter((issue) => issue.title.toLowerCase().includes(query) || String(issue.number).includes(query));
+  }, [issueQuery, linkedIssuePicker?.availableIssues]);
+
   return (
-    <div className="space-y-4">
-      <SidebarSection
-        title="개요"
-        description="변경 요청의 상태와 주요 메타데이터를 확인합니다."
-        icon={<Eye className="size-4" />}
-      >
-        <div className="grid gap-3 rounded-md border border-border/70 bg-muted/20 px-4 py-4 text-sm">
-          <div>
-            <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">State</p>
-            <div className="mt-2">
-              <Badge
-                variant={
-                  changeRequest.crState === "MERGED"
-                    ? "success"
-                    : changeRequest.crState === "CLOSED"
-                      ? "neutral"
-                      : "accent"
-                }
-              >
-                {getChangeRequestStateLabel(changeRequest.crState)}
-              </Badge>
-            </div>
-          </div>
-          <div>
-            <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Comments</p>
-            <p className="mt-2 font-medium text-foreground">{changeRequest.commentsCount}개</p>
-          </div>
-          <div>
-            <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Created</p>
-            <p className="mt-2 font-medium text-foreground">{formatDateTime(changeRequest.createdAt)}</p>
-          </div>
-          <div>
-            <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Updated</p>
-            <p className="mt-2 font-medium text-foreground">{formatDateTime(changeRequest.updatedAt)}</p>
-          </div>
-          {changeRequest.mergedAt ? (
-            <div>
-              <p className="text-xs uppercase tracking-[0.18em] text-muted-foreground">Merged</p>
-              <p className="mt-2 font-medium text-foreground">
-                {formatDateTime(changeRequest.mergedAt)}
-                {changeRequest.mergedBy ? ` · ${changeRequest.mergedBy}` : ""}
-              </p>
-            </div>
-          ) : null}
-        </div>
-      </SidebarSection>
-
-      <SidebarSection
-        title="담당자"
-        description="변경 요청 실행을 담당하는 멤버입니다."
-        icon={<Users className="size-4" />}
-        action={
-          <Button size="sm" type="button" variant="outline" onClick={onEditAssignees}>
-            편집
-          </Button>
-        }
-      >
-        {changeRequest.assignees.length === 0 ? (
-          <p className="rounded-[18px] border border-border/70 bg-muted/20 px-3 py-3 text-sm text-muted-foreground">
-            아직 지정된 담당자가 없습니다.
-          </p>
+    <div className="space-y-5">
+      <div>
+        {reviewerPicker ? (
+          <MemberPickerSection
+            label="검토자"
+            applyLabel="검토자 적용"
+            availableMembers={reviewerPicker.availableMembers}
+            selectedIds={reviewerPicker.selectedIds}
+            displayItems={changeRequest.reviewers.map((reviewer) => ({
+              id: reviewer.userId,
+              name: reviewer.fullName,
+              profileImageUrl: reviewer.profileImageUrl,
+            }))}
+            onSync={reviewerPicker.onSync}
+            onRequestMembers={reviewerPicker.onRequest}
+            isUpdating={reviewerPicker.isUpdating}
+          />
         ) : (
-          changeRequest.assignees.map((assignee) => (
-            <div key={assignee.userId} className="flex items-center gap-3 rounded-[18px] border border-border/70 bg-card px-3 py-3">
-              <UserAvatar imageUrl={assignee.profileImageUrl} name={assignee.fullName} />
-              <div className="min-w-0">
-                <p className="truncate text-sm font-medium text-foreground">{assignee.fullName}</p>
-                <p className="truncate text-xs text-muted-foreground">{assignee.email}</p>
-              </div>
+          <div>
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-medium text-muted-foreground">검토자</h3>
+              <SectionSettingsButton onClick={onEditReviewers} />
             </div>
-          ))
-        )}
-      </SidebarSection>
-
-      <SidebarSection
-        title="검토자"
-        description="제출된 변경을 검토하는 멤버입니다."
-        icon={<UserRoundCheck className="size-4" />}
-        action={
-          <Button size="sm" type="button" variant="outline" onClick={onEditReviewers}>
-            편집
-          </Button>
-        }
-      >
-        {changeRequest.reviewers.length === 0 ? (
-          <p className="rounded-[18px] border border-border/70 bg-muted/20 px-3 py-3 text-sm text-muted-foreground">
-            아직 지정된 검토자가 없습니다.
-          </p>
-        ) : (
-          changeRequest.reviewers.map((reviewer) => (
-            <div key={reviewer.userId} className="rounded-[18px] border border-border/70 bg-card px-3 py-3">
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex min-w-0 items-center gap-3">
-                  <UserAvatar imageUrl={reviewer.profileImageUrl} name={reviewer.fullName} />
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-medium text-foreground">{reviewer.fullName}</p>
-                    <p className="truncate text-xs text-muted-foreground">{reviewer.email}</p>
+            {changeRequest.reviewers.length > 0 ? (
+              <div className="mt-2 space-y-2">
+                {changeRequest.reviewers.map((reviewer) => (
+                  <div key={reviewer.userId} className="flex items-center gap-2">
+                    <UserAvatar
+                      name={reviewer.fullName}
+                      imageUrl={reviewer.profileImageUrl}
+                      className="h-6 w-6 text-[10px]"
+                    />
+                    <span className="text-sm text-foreground">{reviewer.fullName}</span>
                   </div>
-                </div>
-                <Badge variant={getReviewStatusVariant(reviewer.reviewStatus)}>
-                  {getReviewStatusLabel(reviewer.reviewStatus)}
-                </Badge>
+                ))}
               </div>
-              {reviewer.reviewedAt ? (
-                <p className="mt-2 text-xs text-muted-foreground">{formatDateTime(reviewer.reviewedAt)}</p>
-              ) : null}
-            </div>
-          ))
+            ) : (
+              <p className="mt-2 text-xs text-muted-foreground/50">지정된 검토자 없음</p>
+            )}
+          </div>
         )}
-      </SidebarSection>
+      </div>
 
-      <SidebarSection
-        title="라벨"
-        description="변경 요청 분류와 우선순위를 표시합니다."
-        icon={<Tag className="size-4" />}
-        action={
-          <Button size="sm" type="button" variant="outline" onClick={onEditLabels}>
-            편집
-          </Button>
-        }
-      >
-        {changeRequest.labels.length === 0 ? (
-          <p className="rounded-[18px] border border-border/70 bg-muted/20 px-3 py-3 text-sm text-muted-foreground">
-            연결된 라벨이 없습니다.
-          </p>
+      <div>
+        {assigneePicker ? (
+          <MemberPickerSection
+            label="담당자"
+            applyLabel="담당자 적용"
+            availableMembers={assigneePicker.availableMembers}
+            selectedIds={assigneePicker.selectedIds}
+            displayItems={changeRequest.assignees.map((assignee) => ({
+              id: assignee.userId,
+              name: assignee.fullName,
+              profileImageUrl: assignee.profileImageUrl,
+            }))}
+            onSync={assigneePicker.onSync}
+            onRequestMembers={assigneePicker.onRequest}
+            isUpdating={assigneePicker.isUpdating}
+          />
         ) : (
-          <div className="flex flex-wrap gap-2">
-            {changeRequest.labels.map((label) => (
-              <LabelBadge key={label.id} colorHex={label.color} label={label.name} size="sm" />
+          <div>
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-medium text-muted-foreground">담당자</h3>
+              <SectionSettingsButton onClick={onEditAssignees} />
+            </div>
+            {changeRequest.assignees.length > 0 ? (
+              <div className="mt-2 space-y-2">
+                {changeRequest.assignees.map((assignee) => (
+                  <div key={assignee.userId} className="flex items-center gap-2">
+                    <UserAvatar
+                      name={assignee.fullName}
+                      imageUrl={assignee.profileImageUrl}
+                      className="h-6 w-6 text-[10px]"
+                    />
+                    <span className="text-sm text-foreground">{assignee.fullName}</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="mt-2 text-xs text-muted-foreground/50">지정된 담당자 없음</p>
+            )}
+          </div>
+        )}
+      </div>
+
+      <div>
+        {labelPicker ? (
+          <LabelPickerSection
+            availableLabels={labelPicker.availableLabels}
+            selectedIds={labelPicker.selectedIds}
+            displayLabels={changeRequest.labels.map((label) => ({
+              id: label.id,
+              name: label.name,
+              colorHex: label.color,
+            }))}
+            onSync={labelPicker.onSync}
+            onRequestLabels={labelPicker.onRequest}
+            isUpdating={labelPicker.isUpdating}
+          />
+        ) : (
+          <div>
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-medium text-muted-foreground">라벨</h3>
+              <SectionSettingsButton onClick={onEditLabels} />
+            </div>
+            {changeRequest.labels.length > 0 ? (
+              <div className="mt-2 flex flex-wrap gap-1.5">
+                {changeRequest.labels.map((label) => (
+                  <LabelBadge key={label.id} label={label.name} colorHex={label.color} />
+                ))}
+              </div>
+            ) : (
+              <p className="mt-2 text-xs text-muted-foreground/50">연결된 라벨 없음</p>
+            )}
+          </div>
+        )}
+      </div>
+
+      <div>
+        <div className="flex items-center justify-between">
+          <h3 className="text-xs font-medium text-muted-foreground">연결된 이슈</h3>
+          {linkedIssuePicker ? (
+            <Popover
+              open={issuePopoverOpen}
+              onOpenChange={(open) => {
+                setIssuePopoverOpen(open);
+
+                if (open) {
+                  linkedIssuePicker.onRequest();
+                  linkedIssuePicker.onSearchChange?.("");
+                  setDraftIssueIds(linkedIssuePicker.selectedIds);
+                  setIssueQuery("");
+                } else {
+                  setIssueQuery("");
+                }
+              }}
+            >
+              <PopoverTrigger asChild>
+                <button
+                  type="button"
+                  className="inline-flex h-5 w-5 cursor-pointer items-center justify-center rounded text-muted-foreground/50 transition-colors hover:bg-muted hover:text-foreground"
+                >
+                  <Settings className="h-3 w-3" />
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="w-80 p-3" align="end">
+                <div className="space-y-2">
+                  <p className="text-xs font-medium text-foreground">이슈 연결</p>
+                  <div className="relative">
+                    <Input
+                      value={issueQuery}
+                      onChange={(event) => {
+                        const nextQuery = event.target.value;
+                        setIssueQuery(nextQuery);
+                        linkedIssuePicker.onSearchChange?.(nextQuery);
+                      }}
+                      placeholder="번호 또는 제목으로 검색"
+                    />
+                    {linkedIssuePicker.isSearching ? (
+                      <div className="absolute right-2 top-1/2 -translate-y-1/2">
+                        <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
+                      </div>
+                    ) : null}
+                  </div>
+                  <div className="max-h-48 space-y-1 overflow-auto">
+                    {filteredIssues.length === 0 ? (
+                      <p className="px-1 py-2 text-xs text-muted-foreground">
+                        {issueQuery.trim() ? "검색 결과가 없습니다." : "연결 가능한 이슈가 없습니다."}
+                      </p>
+                    ) : (
+                      filteredIssues.map((issue) => (
+                        <label
+                          key={issue.id}
+                          className="flex w-full cursor-pointer items-center gap-2 rounded-md px-1 py-1.5 hover:bg-muted"
+                        >
+                          <Checkbox
+                            checked={draftIssueIds.includes(issue.id)}
+                            onCheckedChange={(checked) => {
+                              setDraftIssueIds((previous) =>
+                                checked ? [...previous, issue.id] : previous.filter((id) => id !== issue.id),
+                              );
+                            }}
+                          />
+                          {issue.state.toUpperCase() === "OPEN" ? (
+                            <AlertCircle className="h-3.5 w-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                          ) : (
+                            <X className="h-3.5 w-3.5 shrink-0 text-red-500 dark:text-red-400" />
+                          )}
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-xs font-medium text-foreground">
+                              #{issue.number} {issue.title}
+                            </p>
+                            <p className="text-[11px] text-muted-foreground">{getIssueStateLabel(issue.state)}</p>
+                          </div>
+                        </label>
+                      ))
+                    )}
+                  </div>
+                  <Button
+                    type="button"
+                    size="sm"
+                    className="w-full"
+                    disabled={linkedIssuePicker.isUpdating}
+                    onClick={() => {
+                      linkedIssuePicker.onSync(draftIssueIds);
+                      setIssuePopoverOpen(false);
+                      setIssueQuery("");
+                    }}
+                  >
+                    이슈 적용
+                  </Button>
+                </div>
+              </PopoverContent>
+            </Popover>
+          ) : (
+            <SectionSettingsButton onClick={onEditIssues} />
+          )}
+        </div>
+        {changeRequest.linkedIssues.length > 0 ? (
+          <div className="mt-2 space-y-1.5">
+            {changeRequest.linkedIssues.map((issue) => (
+              <div
+                key={issue.id}
+                className="group flex w-full items-center gap-2 rounded-md px-2 py-1.5 transition-colors hover:bg-muted"
+              >
+                {issue.state.toUpperCase() === "OPEN" ? (
+                  <AlertCircle className="h-3.5 w-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
+                ) : (
+                  <X className="h-3.5 w-3.5 shrink-0 text-red-500 dark:text-red-400" />
+                )}
+                <button
+                  type="button"
+                  className="min-w-0 flex-1 cursor-pointer text-left"
+                  onClick={() => onNavigateToIssue(issue.number)}
+                >
+                  <p className="truncate text-xs font-medium text-foreground">
+                    #{issue.number} {issue.title}
+                  </p>
+                  <p className="text-[11px] text-muted-foreground">{getIssueStateLabel(issue.state)}</p>
+                </button>
+                {linkedIssuePicker ? (
+                  <button
+                    type="button"
+                    className="hidden shrink-0 rounded p-0.5 text-muted-foreground/50 hover:bg-destructive/10 hover:text-destructive group-hover:inline-flex"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      linkedIssuePicker.onSync(
+                        linkedIssuePicker.selectedIds.filter((linkedIssueId) => linkedIssueId !== issue.id),
+                      );
+                    }}
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                ) : null}
+              </div>
             ))}
           </div>
-        )}
-      </SidebarSection>
-
-      <SidebarSection
-        title="관련 부품"
-        description="변경 요청과 연관된 부품 목록입니다."
-        icon={<Package className="size-4" />}
-        action={
-          <Button size="sm" type="button" variant="outline" onClick={onEditParts}>
-            편집
-          </Button>
-        }
-      >
-        {changeRequest.parts.length === 0 ? (
-          <p className="rounded-[18px] border border-border/70 bg-muted/20 px-3 py-3 text-sm text-muted-foreground">
-            연결된 부품이 없습니다.
-          </p>
         ) : (
-          changeRequest.parts.map((part) => (
-            <div key={part.id} className="rounded-[18px] border border-border/70 bg-card px-3 py-3">
-              <p className="truncate text-sm font-medium text-foreground">{part.partNumber}</p>
-              <p className="truncate text-xs text-muted-foreground">{part.name ?? "이름 없음"}</p>
+          <p className="mt-2 text-xs text-muted-foreground/50">연결된 이슈 없음</p>
+        )}
+      </div>
+
+      <div>
+        {partPicker ? (
+          <PartPickerSection
+            searchedParts={partPicker.searchedParts}
+            selectedIds={partPicker.selectedIds}
+            displayParts={changeRequest.parts.map((part) => ({
+              id: part.id,
+              partNumber: part.partNumber,
+              name: part.name ?? "이름 없음",
+            }))}
+            onSync={partPicker.onSync}
+            onRequestParts={partPicker.onRequest}
+            onSearchChange={partPicker.onSearchChange}
+            isSearching={partPicker.isSearching}
+            isUpdating={partPicker.isUpdating}
+          />
+        ) : (
+          <div>
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-medium text-muted-foreground">관련 부품</h3>
+              <SectionSettingsButton onClick={onEditParts} />
             </div>
-          ))
+            {changeRequest.parts.length > 0 ? (
+              <div className="mt-2 space-y-1.5">
+                {changeRequest.parts.map((part) => (
+                  <div key={part.id} className="rounded-md px-2 py-1.5">
+                    <p className="truncate text-xs font-medium text-foreground">{part.partNumber}</p>
+                    <p className="truncate text-[11px] text-muted-foreground">{part.name ?? "이름 없음"}</p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="mt-2 text-xs text-muted-foreground/50">연결된 부품 없음</p>
+            )}
+          </div>
         )}
-      </SidebarSection>
+      </div>
 
-      <SidebarSection
-        title="연결된 이슈"
-        description="변경 요청과 연결된 이슈를 관리합니다."
-        icon={<GitPullRequestArrow className="size-4" />}
-        action={
-          <Button size="sm" type="button" variant="outline" onClick={onEditIssues}>
-            편집
-          </Button>
-        }
-      >
-        {changeRequest.linkedIssues.length === 0 ? (
-          <p className="rounded-[18px] border border-border/70 bg-muted/20 px-3 py-3 text-sm text-muted-foreground">
-            연결된 이슈가 없습니다.
-          </p>
-        ) : (
-          changeRequest.linkedIssues.map((issue) => (
+      <div>
+        <div className="flex items-center justify-between">
+          <h3 className="text-xs font-medium text-muted-foreground">
+            첨부파일
+            {changeRequest.files.length > 0 ? (
+              <span className="ml-1 text-muted-foreground/50">({changeRequest.files.length})</span>
+            ) : null}
+          </h3>
+          <>
+            <input
+              ref={fileInputRef}
+              aria-label="변경 요청 첨부 파일 업로드"
+              type="file"
+              multiple
+              className="hidden"
+              disabled={isAttachingFiles}
+              onChange={(event) => {
+                const files = Array.from(event.target.files ?? []);
+                if (files.length > 0) {
+                  void onAttachFiles(files);
+                }
+                event.target.value = "";
+              }}
+            />
             <button
-              key={issue.id}
               type="button"
-              className="flex w-full cursor-pointer items-center justify-between rounded-[18px] border border-border/70 bg-card px-3 py-3 text-left"
-              onClick={() => onNavigateToIssue(issue.number)}
+              className="inline-flex h-5 w-5 cursor-pointer items-center justify-center rounded text-muted-foreground/50 transition-colors hover:bg-muted hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
+              disabled={isAttachingFiles}
+              onClick={() => fileInputRef.current?.click()}
             >
-              <div className="min-w-0">
-                <p className="truncate text-sm font-medium text-foreground">#{issue.number} {issue.title}</p>
-                <p className="truncate text-xs text-muted-foreground">
-                  {issue.state === "CLOSED" ? "닫힘" : "열림"}
-                </p>
-              </div>
-              <Badge variant={issue.state === "CLOSED" ? "neutral" : "accent"}>
-                {issue.state === "CLOSED" ? "닫힘" : "열림"}
-              </Badge>
+              {isAttachingFiles ? <Loader2 className="h-3 w-3 animate-spin" /> : <Plus className="h-3 w-3" />}
             </button>
-          ))
-        )}
-      </SidebarSection>
-
-      <SidebarSection
-        title="첨부파일"
-        description="업로드한 파일을 연결하거나 제거합니다."
-        icon={<Paperclip className="size-4" />}
-        action={
-          <Button disabled={isAttachingFiles} size="sm" type="button" onClick={() => fileInputRef.current?.click()}>
-            <Plus className="size-4" />
-            추가
-          </Button>
-        }
-      >
-        <input
-          ref={fileInputRef}
-          aria-label="변경 요청 첨부 파일 업로드"
-          type="file"
-          multiple
-          className="hidden"
-          onChange={(event) => {
-            const files = Array.from(event.target.files ?? []);
-            if (files.length > 0) {
-              void onAttachFiles(files);
-            }
-            event.target.value = "";
-          }}
-        />
-
-        {changeRequest.files.length === 0 ? (
-          <p className="rounded-[18px] border border-border/70 bg-muted/20 px-3 py-3 text-sm text-muted-foreground">
-            연결된 첨부파일이 없습니다.
-          </p>
-        ) : (
-          changeRequest.files.map((file) => (
-            <div key={file.fileId} className="flex items-center justify-between gap-3 rounded-[18px] border border-border/70 bg-card px-3 py-3">
-              <div className="min-w-0">
-                {file.fileUrl ? (
-                  <a
-                    href={file.fileUrl}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="truncate text-sm font-medium text-foreground hover:underline"
-                  >
-                    {file.originalName}
-                  </a>
-                ) : (
-                  <p className="truncate text-sm font-medium text-foreground">{file.originalName}</p>
-                )}
-                <p className="truncate text-xs text-muted-foreground">{formatDateTime(file.createdAt)}</p>
+          </>
+        </div>
+        {changeRequest.files.length > 0 ? (
+          <div className="mt-2 space-y-1">
+            {changeRequest.files.map((file) => (
+              <div
+                key={file.fileId}
+                className="group flex w-full items-center gap-2 rounded-md px-2 py-1.5 transition-colors hover:bg-muted"
+              >
+                <FileIcon name={file.originalName} contentType={file.contentType} />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-xs text-foreground">{file.originalName}</p>
+                  <p className="text-[11px] text-muted-foreground">{formatFileSize(file.fileSize)}</p>
+                </div>
+                <button
+                  type="button"
+                  className="hidden shrink-0 rounded p-0.5 text-muted-foreground/50 hover:bg-destructive/10 hover:text-destructive group-hover:inline-flex"
+                  onClick={() => setDeletingFileId(file.fileId)}
+                >
+                  <X className="h-3 w-3" />
+                </button>
               </div>
-              <Button size="icon-sm" type="button" variant="ghost" onClick={() => setDeletingFileId(file.fileId)}>
-                <Trash2 className="size-4" />
-              </Button>
-            </div>
-          ))
+            ))}
+          </div>
+        ) : (
+          <p className="mt-2 text-xs text-muted-foreground/50">첨부된 파일 없음</p>
         )}
-      </SidebarSection>
+      </div>
 
       <ConfirmDialog
         open={Boolean(deletingFileId)}
@@ -429,6 +574,7 @@ export function ChangeRequestSidebar({
           }
 
           void onDeleteFile(deletingFileId);
+          setDeletingFileId(null);
         }}
         onOpenChange={(open) => {
           if (!open) {

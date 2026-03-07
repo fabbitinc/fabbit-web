@@ -72,7 +72,7 @@ const myWorkItems: MyWorkItem[] = [
   },
   {
     id: "3",
-    title: "방열판 재질 전환 검토",
+    title: "방열판 재질 SUS304 → AL6061 검토",
     href: "/changes/issues/78",
     kind: "issue",
     labels: [{ name: "검토필요", color: "#f59e0b" }],
@@ -82,6 +82,30 @@ const myWorkItems: MyWorkItem[] = [
     projectName: "배터리 팩 v2",
     updatedAt: "1일 전",
   },
+  {
+    id: "4",
+    title: "메인 하우징 도면 Rev.C 반영",
+    href: "/changes/requests/8",
+    kind: "change",
+    labels: [],
+    number: 8,
+    status: "초안",
+    ownerName: "최민정",
+    projectName: "배터리 팩 v2",
+    updatedAt: "2일 전",
+  },
+  {
+    id: "5",
+    title: "볼트 체결 토크 규격 정의",
+    href: "/changes/issues/103",
+    kind: "issue",
+    labels: [{ name: "규격", color: "#8b5cf6" }],
+    number: 103,
+    status: "열림",
+    ownerName: "정하은",
+    projectName: "EV 모터 컨트롤러",
+    updatedAt: "3일 전",
+  },
 ];
 
 export function DashboardScreen() {
@@ -89,13 +113,16 @@ export function DashboardScreen() {
   const user = useAuthStore((state) => state.user);
   const currentMembership = useAuthStore((state) => state.currentMembership);
   const dashboardQuery = useDashboardQuery();
+  const canViewUsage =
+    currentMembership?.role?.toUpperCase() === "ADMIN" ||
+    currentMembership?.role?.toUpperCase() === "OWNER";
 
   return (
     <DashboardScreenView
       myWorkItems={myWorkItems}
       quickActions={quickActions}
       stats={dashboardQuery.data}
-      usageItems={[
+      usageItems={canViewUsage ? [
         {
           color: "var(--brand-500)",
           icon: HardDrive,
@@ -113,7 +140,7 @@ export function DashboardScreen() {
           unit: "크레딧",
           used: 620,
         },
-      ]}
+      ] : undefined}
       user={user ? {
         email: user.email,
         name: user.name,

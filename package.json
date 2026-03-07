@@ -16,6 +16,9 @@
     "dev:web2": "turbo run dev --filter=@fabbit/web2",
     "build:web2": "turbo run build --filter=@fabbit/web2",
     "lint:web2": "turbo run lint --filter=@fabbit/web2",
+    "parity:web2": "node refactor/scripts/run-parity-threshold-check.mjs",
+    "dev:landing": "turbo run dev --filter=@fabbit/landing",
+    "build:landing": "turbo run build --filter=@fabbit/landing",
     "storybook": "turbo run storybook --filter=@fabbit/storybook",
     "build-storybook": "turbo run build-storybook --filter=@fabbit/storybook"
   },

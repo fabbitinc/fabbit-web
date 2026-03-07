@@ -1,0 +1,141 @@
+{
+  "generatedAt": "2026-03-07T10:56:10.660Z",
+  "webDir": "/Users/seongha.moon/code/projects/fabbit/web/refactor/.captures/web",
+  "web2Dir": "/Users/seongha.moon/code/projects/fabbit/web/refactor/.captures/web2",
+  "metric": "AE",
+  "fuzz": "1%",
+  "sharedFiles": [
+    "app-shell.png",
+    "change-create.png",
+    "change-detail-changes.png",
+    "change-detail.png",
+    "issue-create.png",
+    "issue-detail.png",
+    "part-detail.png",
+    "parts-list.png",
+    "parts-template-analysis.png",
+    "parts-template-mapping.png",
+    "parts-template-processing.png",
+    "project-detail.png",
+    "project-list.png"
+  ],
+  "results": [
+    {
+      "file": "parts-list.png",
+      "webSize": "1440x1200",
+      "web2Size": "1440x1200",
+      "diffPixels": 3231,
+      "diffPath": "/Users/seongha.moon/code/projects/fabbit/web/refactor/.captures/compare/diff/parts-list.png",
+      "sideBySidePath": "/Users/seongha.moon/code/projects/fabbit/web/refactor/.captures/compare/side-by-side/parts-list.png",
+      "status": "different"
+    },
+    {
+      "file": "issue-detail.png",
+      "webSize": "1440x1200",
+      "web2Size": "1440x1200",
+      "diffPixels": 3151,
+      "diffPath": "/Users/seongha.moon/code/projects/fabbit/web/refactor/.captures/compare/diff/issue-detail.png",
+      "sideBySidePath": "/Users/seongha.moon/code/projects/fabbit/web/refactor/.captures/compare/side-by-side/issue-detail.png",
+      "status": "different"
+    },
+    {
+      "file": "app-shell.png",
+      "webSize": "1440x1200",
+      "web2Size": "1440x1200",
+      "diffPixels": 3113,
+      "diffPath": "/Users/seongha.moon/code/projects/fabbit/web/refactor/.captures/compare/diff/app-shell.png",
+      "sideBySidePath": "/Users/seongha.moon/code/projects/fabbit/web/refactor/.captures/compare/side-by-side/app-shell.png",
+      "status": "different"
+    },
+    {
+      "file": "change-detail.png",
+      "webSize": "1440x1200",
+      "web2Size": "1440x1200",
+      "diffPixels": 3049,
+      "diffPath": "/Users/seongha.moon/code/projects/fabbit/web/refactor/.captures/compare/diff/change-detail.png",
+      "sideBySidePath": "/Users/seongha.moon/code/projects/fabbit/web/refactor/.captures/compare/side-by-side/change-detail.png",
+      "status": "different"
+    },
+    {
+      "file": "project-list.png",
+      "webSize": "1440x1200",
+      "web2Size": "1440x1200",
+      "diffPixels": 3035,
+      "diffPath": "/Users/seongha.moon/code/projects/fabbit/web/refactor/.captures/compare/diff/project-list.png",
+      "sideBySidePath": "/Users/seongha.moon/code/projects/fabbit/web/refactor/.captures/compare/side-by-side/project-list.png",
+      "status": "different"
+    },
+    {
+      "file": "change-detail-changes.png",
+      "webSize": "1440x1200",
+      "web2Size": "1440x1200",
+      "diffPixels": 2815,
+      "diffPath": "/Users/seongha.moon/code/projects/fabbit/web/refactor/.captures/compare/diff/change-detail-changes.png",
+      "sideBySidePath": "/Users/seongha.moon/code/projects/fabbit/web/refactor/.captures/compare/side-by-side/change-detail-changes.png",
+      "status": "different"
+    },
+    {
+      "file": "project-detail.png",
+      "webSize": "1440x1200",
+      "web2Size": "1440x1200",
+      "diffPixels": 2801,
+      "diffPath": "/Users/seongha.moon/code/projects/fabbit/web/refactor/.captures/compare/diff/project-detail.png",
+      "sideBySidePath": "/Users/seongha.moon/code/projects/fabbit/web/refactor/.captures/compare/side-by-side/project-detail.png",
+      "status": "different"
+    },
+    {
+      "file": "parts-template-analysis.png",
+      "webSize": "1440x1200",
+      "web2Size": "1440x1200",
+      "diffPixels": 2733,
+      "diffPath": "/Users/seongha.moon/code/projects/fabbit/web/refactor/.captures/compare/diff/parts-template-analysis.png",
+      "sideBySidePath": "/Users/seongha.moon/code/projects/fabbit/web/refactor/.captures/compare/side-by-side/parts-template-analysis.png",
+      "status": "different"
+    },
+    {
+      "file": "part-detail.png",
+      "webSize": "1440x1200",
+      "web2Size": "1440x1200",
+      "diffPixels": 2638,
+      "diffPath": "/Users/seongha.moon/code/projects/fabbit/web/refactor/.captures/compare/diff/part-detail.png",
+      "sideBySidePath": "/Users/seongha.moon/code/projects/fabbit/web/refactor/.captures/compare/side-by-side/part-detail.png",
+      "status": "different"
+    },
+    {
+      "file": "parts-template-processing.png",
+      "webSize": "1440x1200",
+      "web2Size": "1440x1200",
+      "diffPixels": 2596,
+      "diffPath": "/Users/seongha.moon/code/projects/fabbit/web/refactor/.captures/compare/diff/parts-template-processing.png",
+      "sideBySidePath": "/Users/seongha.moon/code/projects/fabbit/web/refactor/.captures/compare/side-by-side/parts-template-processing.png",
+      "status": "different"
+    },
+    {
+      "file": "change-create.png",
+      "webSize": "1440x1200",
+      "web2Size": "1440x1200",
+      "diffPixels": 2592,
+      "diffPath": "/Users/seongha.moon/code/projects/fabbit/web/refactor/.captures/compare/diff/change-create.png",
+      "sideBySidePath": "/Users/seongha.moon/code/projects/fabbit/web/refactor/.captures/compare/side-by-side/change-create.png",
+      "status": "different"
+    },
+    {
+      "file": "issue-create.png",
+      "webSize": "1440x1200",
+      "web2Size": "1440x1200",
+      "diffPixels": 2592,
+      "diffPath": "/Users/seongha.moon/code/projects/fabbit/web/refactor/.captures/compare/diff/issue-create.png",
+      "sideBySidePath": "/Users/seongha.moon/code/projects/fabbit/web/refactor/.captures/compare/side-by-side/issue-create.png",
+      "status": "different"
+    },
+    {
+      "file": "parts-template-mapping.png",
+      "webSize": "1440x1200",
+      "web2Size": "1440x1200",
+      "diffPixels": 2592,
+      "diffPath": "/Users/seongha.moon/code/projects/fabbit/web/refactor/.captures/compare/diff/parts-template-mapping.png",
+      "sideBySidePath": "/Users/seongha.moon/code/projects/fabbit/web/refactor/.captures/compare/side-by-side/parts-template-mapping.png",
+      "status": "different"
+    }
+  ]
+}

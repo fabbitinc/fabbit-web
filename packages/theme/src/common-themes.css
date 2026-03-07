@@ -17,4 +17,12 @@
   --status-accent: #7c3aed;
   --status-accent-bg: #f5f3ff;
   --status-accent-border: #ddd6fe;
+
+  --file-icon-pdf: #b91c1c;
+  --file-icon-document: #1d4ed8;
+  --file-icon-cad: #0e7490;
+  --file-icon-sheet: #15803d;
+  --file-icon-image: #7c3aed;
+  --file-icon-archive: #78716c;
+  --file-icon-code: #b45309;
 }

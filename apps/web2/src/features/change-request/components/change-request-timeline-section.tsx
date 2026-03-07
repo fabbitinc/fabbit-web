@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { History, Loader2, MessageSquare, Pencil, Trash2 } from "lucide-react";
-import { Badge, Button, ConfirmDialog, UserAvatar } from "@fabbit/ui";
-import { ChangeRichTextEditor } from "@/features/change-shared";
+import { Badge, Button, ConfirmDialog, TiptapEditor, type TiptapMentionFetcher, UserAvatar } from "@fabbit/ui";
+import { useTiptapMentionFetchers } from "@/features/change-shared/hooks/use-tiptap-mention-fetchers";
 import type {
   ChangeRequestTimelineCommentModel,
   ChangeRequestTimelineItemModel,
@@ -36,17 +36,21 @@ function getActivityLabel(action: string) {
 interface TimelineCommentItemProps {
   item: ChangeRequestTimelineCommentModel;
   currentUserId: string | null;
+  issueMentionFetcher: TiptapMentionFetcher;
   onDeleteComment: (commentId: string) => Promise<void>;
   onNavigateToIssueMention: (issueNumber: number, issueType: "issue" | "change_request") => void;
   onUpdateComment: (commentId: string, body: RichTextDocument) => Promise<void>;
+  userMentionFetcher: TiptapMentionFetcher;
 }
 
 function TimelineCommentItem({
   item,
   currentUserId,
+  issueMentionFetcher,
   onDeleteComment,
   onNavigateToIssueMention,
   onUpdateComment,
+  userMentionFetcher,
 }: TimelineCommentItemProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [body, setBody] = useState<RichTextDocument | null>(normalizeRichTextDocument(item.body));
@@ -84,11 +88,13 @@ function TimelineCommentItem({
 
         {isEditing ? (
           <div className="mt-4 space-y-3">
-            <ChangeRichTextEditor
+            <TiptapEditor
               content={body ?? undefined}
               placeholder="댓글을 수정하세요"
               minHeight={120}
+              issueMentionFetcher={issueMentionFetcher}
               onChangeJson={(content) => setBody(normalizeRichTextDocument(content))}
+              userMentionFetcher={userMentionFetcher}
             />
             <div className="flex justify-end gap-2">
               <Button
@@ -126,7 +132,7 @@ function TimelineCommentItem({
           </div>
         ) : (
           <div className="mt-4">
-            <ChangeRichTextEditor
+            <TiptapEditor
               editable={false}
               hideToolbar
               className="border-0 bg-transparent"
@@ -180,6 +186,7 @@ export function ChangeRequestTimelineSection({
 }: ChangeRequestTimelineSectionProps) {
   const [body, setBody] = useState<RichTextDocument | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { userMentionFetcher, issueMentionFetcher } = useTiptapMentionFetchers();
   const sortedItems = useMemo(
     () => [...items].sort((left, right) => new Date(right.createdAt).getTime() - new Date(left.createdAt).getTime()),
     [items],
@@ -197,11 +204,13 @@ export function ChangeRequestTimelineSection({
 
       <section className="app-panel rounded-lg p-5">
         <div className="space-y-3">
-          <ChangeRichTextEditor
+          <TiptapEditor
             content={body ?? undefined}
             placeholder="댓글을 입력하세요. @로 멤버, #로 이슈/변경 요청을 멘션할 수 있습니다."
             minHeight={140}
+            issueMentionFetcher={issueMentionFetcher}
             onChangeJson={(content) => setBody(normalizeRichTextDocument(content))}
+            userMentionFetcher={userMentionFetcher}
           />
           <div className="flex justify-end">
             <Button
@@ -248,9 +257,11 @@ export function ChangeRequestTimelineSection({
               key={item.id}
               item={item}
               currentUserId={currentUserId}
+              issueMentionFetcher={issueMentionFetcher}
               onDeleteComment={onDeleteComment}
               onNavigateToIssueMention={onNavigateToIssueMention}
               onUpdateComment={onUpdateComment}
+              userMentionFetcher={userMentionFetcher}
             />
           ) : (
             <div key={item.id} className="rounded-lg border border-border/70 bg-card px-4 py-4">

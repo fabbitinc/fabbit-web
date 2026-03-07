@@ -90,7 +90,7 @@ function PartsListScreenStory({
     hasDrawing: null,
     lifecycleState: null,
     page: 1,
-    pageSize: 20,
+    pageSize: 15,
     query: "",
     sortKey: "partNumber",
     sortOrder: "asc",
@@ -124,9 +124,10 @@ function PartsListScreenStory({
       queryState={queryState}
       selectedIds={selectedIds}
       totalCount={items.length}
+      onAllExportClick={() => undefined}
       onCategoryChange={(category) => setQueryState((current) => ({ ...current, category }))}
       onClearSelection={() => setSelectedIds(new Set())}
-      onCurrentExportClick={() => undefined}
+      onFilteredExportClick={() => undefined}
       onHasChildrenChange={(hasChildren) => setQueryState((current) => ({ ...current, hasChildren }))}
       onHasDrawingChange={(hasDrawing) => setQueryState((current) => ({ ...current, hasDrawing }))}
       onLifecycleStateChange={(lifecycleState) => setQueryState((current) => ({ ...current, lifecycleState }))}
@@ -135,6 +136,7 @@ function PartsListScreenStory({
       onPageSizeChange={(pageSize) => setQueryState((current) => ({ ...current, pageSize }))}
       onQueryChange={(query) => setQueryState((current) => ({ ...current, page: 1, query }))}
       onRowClick={() => undefined}
+      onCreateClick={() => undefined}
       onSelectedExportClick={() => undefined}
       onSortChange={(sortKey) =>
         setQueryState((current) => ({

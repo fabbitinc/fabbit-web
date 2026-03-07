@@ -40,7 +40,7 @@ export function ProjectListScreen({
   onSortChange,
 }: ProjectListScreenProps) {
   return (
-    <div className="min-h-full space-y-4">
+    <div className="min-h-full">
       <div className="mb-6 flex items-start justify-between">
         <div>
           <h1 className="text-xl font-bold text-foreground">프로젝트</h1>

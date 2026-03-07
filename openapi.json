@@ -12836,6 +12836,11 @@
                         "description": "\ub300\uc0c1 \uc18d\uc131\uba85",
                         "example": "part_number"
                     },
+                    "suggestedExtendedProperty": {
+                        "type": "string",
+                        "description": "\ub3d9\uc77c \uceec\ub7fc\uc758 \ud655\uc7a5 \uc18d\uc131 \ub300\uc548 \ud0a4",
+                        "example": "_ext_number"
+                    },
                     "dataType": {
                         "type": "string",
                         "description": "\ub370\uc774\ud130 \ud0c0\uc785",
@@ -13995,31 +14000,16 @@
             "JsonNode": {
                 "type": "object",
                 "properties": {
-                    "array": {
-                        "type": "boolean"
-                    },
-                    "empty": {
-                        "type": "boolean"
-                    },
-                    "null": {
-                        "type": "boolean"
-                    },
-                    "float": {
-                        "type": "boolean"
-                    },
                     "number": {
                         "type": "boolean"
                     },
-                    "container": {
+                    "pojo": {
                         "type": "boolean"
                     },
-                    "valueNode": {
+                    "int": {
                         "type": "boolean"
                     },
-                    "missingNode": {
-                        "type": "boolean"
-                    },
-                    "object": {
+                    "long": {
                         "type": "boolean"
                     },
                     "nodeType": {
@@ -14037,6 +14027,18 @@
                         ]
                     },
                     "string": {
+                        "type": "boolean"
+                    },
+                    "valueNode": {
+                        "type": "boolean"
+                    },
+                    "container": {
+                        "type": "boolean"
+                    },
+                    "missingNode": {
+                        "type": "boolean"
+                    },
+                    "object": {
                         "type": "boolean"
                     },
                     "short": {
@@ -14067,13 +14069,16 @@
                     "floatingPointNumber": {
                         "type": "boolean"
                     },
-                    "pojo": {
+                    "array": {
                         "type": "boolean"
                     },
-                    "int": {
+                    "empty": {
                         "type": "boolean"
                     },
-                    "long": {
+                    "null": {
+                        "type": "boolean"
+                    },
+                    "float": {
                         "type": "boolean"
                     },
                     "embeddedValue": {

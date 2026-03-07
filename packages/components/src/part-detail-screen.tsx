@@ -17,6 +17,7 @@ export interface PartDetailScreenProps {
   isError?: boolean;
   isLoading?: boolean;
   part?: PartHeaderCardPart;
+  headerActions?: ReactNode;
   onBackClick: () => void;
   onRetry?: () => void;
   onTabChange: (tab: PartDetailScreenTab) => void;
@@ -29,11 +30,11 @@ const detailTabs: Array<{
   count?: (part: PartHeaderCardPart) => number;
 }> = [
   { id: "properties", label: "속성", icon: Package },
-  { id: "bom", label: "BOM", icon: Network, count: (part) => part.childrenCount },
+  { id: "bom", label: "BOM", icon: Network, count: (part) => part.childrenCount + part.parentsCount },
   { id: "attachments", label: "첨부 파일", icon: Paperclip, count: (part) => part.filesCount },
+  { id: "owner", label: "담당", icon: User },
   { id: "suppliers", label: "공급사", icon: Building2, count: (part) => part.suppliersCount },
   { id: "projects", label: "프로젝트", icon: FolderKanban, count: (part) => part.projectsCount },
-  { id: "owner", label: "담당", icon: User },
   { id: "history", label: "이력", icon: Clock },
 ];
 
@@ -49,6 +50,7 @@ export function PartDetailScreen({
   isError = false,
   isLoading = false,
   part,
+  headerActions,
   onBackClick,
   onRetry,
   onTabChange,
@@ -96,7 +98,7 @@ export function PartDetailScreen({
       </div>
 
       <div className="mb-5">
-        <PartHeaderCard part={part} />
+        <PartHeaderCard actions={headerActions} part={part} />
       </div>
 
       <div className="mb-5 border-b">

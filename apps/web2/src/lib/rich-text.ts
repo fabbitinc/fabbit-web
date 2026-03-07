@@ -34,20 +34,46 @@ export function toRichTextDocument(text: string): RichTextDocument | null {
   };
 }
 
+function collectPlainText(node: unknown): string[] {
+  if (!node || typeof node !== "object") {
+    return [];
+  }
+
+  const result: string[] = [];
+
+  if ("text" in node && typeof node.text === "string") {
+    result.push(node.text);
+  }
+
+  if ("content" in node && Array.isArray(node.content)) {
+    node.content.forEach((child) => {
+      result.push(...collectPlainText(child));
+    });
+  }
+
+  return result;
+}
+
 export function getPlainTextFromRichText(value: unknown): string {
+  if (typeof value === "string") {
+    return value.trim();
+  }
+
   if (!value || typeof value !== "object") {
     return "";
   }
 
-  const nodes = "content" in value && Array.isArray(value.content) ? (value.content as RichTextNode[]) : [];
-  return nodes
-    .flatMap((node) => ("content" in node && Array.isArray(node.content) ? node.content : []))
-    .map((node) => node.text ?? "")
+  return collectPlainText(value)
     .join(" ")
+    .replace(/\s+/g, " ")
     .trim();
 }
 
 export function normalizeRichTextDocument(value: unknown): RichTextDocument | null {
+  if (typeof value === "string") {
+    return toRichTextDocument(value);
+  }
+
   if (!value || typeof value !== "object") {
     return null;
   }

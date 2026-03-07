@@ -1,16 +1,10 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import {
-  LayoutDashboard,
   FolderKanban,
   GitPullRequestArrow,
+  LayoutDashboard,
   Package,
-  Settings,
-  BarChart3,
-  ClipboardCheck,
-  Wrench,
-  Loader2,
 } from "lucide-react";
-
 import { AppSidebar } from "@fabbit/components";
 
 const meta = {
@@ -26,7 +20,7 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-const mainSections = [
+const sections = [
   {
     id: "main",
     items: [
@@ -38,70 +32,29 @@ const mainSections = [
   },
 ];
 
-const mesSections = [
-  {
-    id: "production",
-    label: "생산",
-    items: [
-      { id: "dashboard", label: "대시보드", icon: LayoutDashboard, active: true, onClick: () => {} },
-      { id: "work-orders", label: "작업지시", icon: ClipboardCheck, onClick: () => {} },
-      { id: "monitoring", label: "실시간 모니터링", icon: BarChart3, onClick: () => {} },
-    ],
-  },
-  {
-    id: "quality",
-    label: "품질",
-    items: [
-      { id: "inspection", label: "검사 관리", icon: ClipboardCheck, onClick: () => {} },
-      { id: "equipment", label: "설비 관리", icon: Wrench, onClick: () => {} },
-    ],
-  },
-  {
-    id: "system",
-    label: "시스템",
-    items: [
-      { id: "settings", label: "설정", icon: Settings, onClick: () => {} },
-    ],
-  },
-];
-
 export const Default: Story = {
   render: () => (
-    <div className="h-[500px]">
-      <AppSidebar sections={mainSections} />
+    <div className="h-[520px]">
+      <AppSidebar isDesktop sections={sections} />
     </div>
   ),
 };
 
 export const Collapsed: Story = {
   render: () => (
-    <div className="h-[500px]">
-      <AppSidebar sections={mainSections} collapsed />
+    <div className="h-[520px]">
+      <AppSidebar isDesktop collapsed sections={sections} />
     </div>
   ),
 };
 
-export const WithSections: Story = {
+export const WithStatus: Story = {
   render: () => (
-    <div className="h-[600px]">
-      <AppSidebar sections={mesSections} />
-    </div>
-  ),
-};
-
-export const WithFooter: Story = {
-  render: () => (
-    <div className="h-[500px]">
+    <div className="h-[520px]">
       <AppSidebar
-        sections={mainSections}
-        footer={
-          <div className="flex items-center gap-2 rounded-lg bg-sidebar-accent px-3 py-2">
-            <Loader2 className="size-4 animate-spin text-sidebar-foreground/70" />
-            <span className="text-xs font-medium text-sidebar-foreground/70">
-              3개 파일 처리 중
-            </span>
-          </div>
-        }
+        isDesktop
+        sections={sections}
+        statusIndicator={{ count: 3 }}
       />
     </div>
   ),

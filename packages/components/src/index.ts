@@ -42,11 +42,20 @@ export type {
 } from "./card-management-panel";
 export { ChangeRequestDiffTab } from "./change-request-diff-tab";
 export type {
-  ChangeRequestDiffField,
+  ChangeRequestDiffChanges,
   ChangeRequestDiffItem,
+  ChangeRequestDiffPartSnapshot,
   ChangeRequestDiffItemType,
   ChangeRequestDiffTabProps,
 } from "./change-request-diff-tab";
+export { ChangeCreateScreen } from "./change-create-screen";
+export type {
+  ChangeCreateScreenLabelOption,
+  ChangeCreateScreenMemberOption,
+  ChangeCreateScreenPartOption,
+  ChangeCreateScreenProps,
+  ChangeCreateScreenSubmitInput,
+} from "./change-create-screen";
 export { ChangeRequestSidebar } from "./change-request-sidebar";
 export type {
   AIUsagePanelData,
@@ -68,6 +77,8 @@ export { DescriptionList } from "./description-list";
 export type { DescriptionItem, DescriptionListProps } from "./description-list";
 export { EmptyState } from "./empty-state";
 export type { EmptyStateProps } from "./empty-state";
+export { FileIcon, resolveFileIconKind } from "./file-icon";
+export type { FileIconKind, FileIconProps, ResolveFileIconKindOptions } from "./file-icon";
 export { FilterBar } from "./filter-bar";
 export type { FilterBarProps, FilterChip } from "./filter-bar";
 export { FormSection } from "./form-section";
@@ -131,11 +142,24 @@ export type {
 export { ProjectCreateDialog } from "./project-create-dialog";
 export type { ProjectCreateDialogProps } from "./project-create-dialog";
 export { ProjectOverviewTab } from "./project-overview-tab";
-export type { ProjectOverviewTabProject, ProjectOverviewTabProps } from "./project-overview-tab";
+export type {
+  ProjectOverviewTabProject,
+  ProjectOverviewTabProps,
+  ProjectOverviewTabRecentActivity,
+  ProjectOverviewTabRecentPart,
+} from "./project-overview-tab";
 export { ProjectSettingsScreen } from "./project-settings-screen";
 export type { ProjectSettingsScreenProps } from "./project-settings-screen";
 export { ProjectSettingsLabelsTab } from "./project-settings-labels-tab";
 export type { ProjectSettingsLabelsTabProps } from "./project-settings-labels-tab";
+export { ProjectWorkItemsPanel } from "./project-work-items-panel";
+export type {
+  ProjectWorkItemsPanelAssignee,
+  ProjectWorkItemsPanelItem,
+  ProjectWorkItemsPanelKind,
+  ProjectWorkItemsPanelLabel,
+  ProjectWorkItemsPanelProps,
+} from "./project-work-items-panel";
 export { PlanSelectionScreen } from "./plan-selection-screen";
 export type {
   PlanSelectionScreenPlanOption,
@@ -246,10 +270,7 @@ export type {
   PartDetailScreenTab,
 } from "./part-detail-screen";
 export { PartsTemplateAnalysisScreen } from "./parts-template-analysis-screen";
-export type {
-  PartsTemplateAnalysisExample,
-  PartsTemplateAnalysisScreenProps,
-} from "./parts-template-analysis-screen";
+export type { PartsTemplateAnalysisScreenProps } from "./parts-template-analysis-screen";
 export { PartsTemplateProcessingScreen } from "./parts-template-processing-screen";
 export type {
   PartsTemplateProcessingScreenProps,
@@ -261,6 +282,17 @@ export type {
   PartsTemplateMappingEmptyStateProps,
   PartsTemplateMappingScreenProps,
 } from "./parts-template-mapping-screen";
+export { PartsTemplateMappingBoard } from "./parts-template-mapping-board";
+export type {
+  PartsTemplateMappingBoardCard,
+  PartsTemplateMappingBoardColumn,
+  PartsTemplateMappingBoardColumnId,
+  PartsTemplateMappingBoardColumnMapping,
+  PartsTemplateMappingBoardProps,
+  PartsTemplateMappingBoardRelationMapping,
+  PartsTemplateMappingBoardRelationTargetInfo,
+  PartsTemplateMappingBoardTargetPropertyOption,
+} from "./parts-template-mapping-board";
 export { IssueDetailScreen } from "./issue-detail-screen";
 export type { IssueDetailScreenProps } from "./issue-detail-screen";
 export { ChangeRequestDetailScreen } from "./change-request-detail-screen";
@@ -268,3 +300,45 @@ export type {
   ChangeRequestDetailScreenProps,
   ChangeRequestDetailTabItem,
 } from "./change-request-detail-screen";
+export { WorkOrderListScreen } from "./work-order-list-screen";
+export type {
+  WorkOrderListItem,
+  WorkOrderListScreenProps,
+  WorkOrderListScreenQueryState,
+  WorkOrderStatus,
+} from "./work-order-list-screen";
+export { WorkOrderDetailScreen } from "./work-order-detail-screen";
+export type {
+  WorkOrderDetail,
+  WorkOrderDetailBom,
+  WorkOrderDetailLink,
+  WorkOrderDetailProgress,
+  WorkOrderDetailScreenProps,
+  WorkOrderDetailStatus,
+  WorkOrderDetailTab,
+} from "./work-order-detail-screen";
+export { WorkOrderCreateScreen } from "./work-order-create-screen";
+export type {
+  WorkOrderCreateBomOption,
+  WorkOrderCreateFormValues,
+  WorkOrderCreateScreenProps,
+  WorkOrderCreateTeamOption,
+} from "./work-order-create-screen";
+export { ProductionResultListScreen } from "./production-result-list-screen";
+export type {
+  ProductionResultListItem,
+  ProductionResultListQueryState,
+  ProductionResultListScreenProps,
+} from "./production-result-list-screen";
+export { ProductionResultCreateScreen } from "./production-result-create-screen";
+export type {
+  ProductionResultCreateFormValues,
+  ProductionResultCreateScreenProps,
+  ProductionResultCreateWorkOrder,
+} from "./production-result-create-screen";
+export { ProductionResultDetailScreen } from "./production-result-detail-screen";
+export type {
+  ProductionResultDetailData,
+  ProductionResultDetailScreenProps,
+  ProductionResultDetailTab,
+} from "./production-result-detail-screen";

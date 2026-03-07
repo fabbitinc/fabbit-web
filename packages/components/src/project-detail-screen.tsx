@@ -1,46 +1,80 @@
 import type { ReactNode } from "react";
-import { Activity, LayoutDashboard, Package, Settings } from "lucide-react";
-import { Badge, Button, cn } from "@fabbit/ui";
+import {
+  Activity,
+  AlertCircle,
+  FilePen,
+  LayoutDashboard,
+  MoreHorizontal,
+  Package,
+  Pencil,
+  Settings,
+} from "lucide-react";
+import {
+  Button,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  cn,
+} from "@fabbit/ui";
 import { ProjectOverviewTab, type ProjectOverviewTabProject } from "./project-overview-tab";
 
-export type ProjectDetailScreenView = "overview" | "parts" | "activity" | "settings";
+export type ProjectDetailScreenView = "overview" | "parts" | "issues" | "change" | "activity" | "settings";
 
 export interface ProjectDetailScreenProject extends ProjectOverviewTabProject {
   id: string;
   name: string;
+  issueCount: number;
+  changeCount: number;
 }
 
 export interface ProjectDetailScreenProps {
   activeView: ProjectDetailScreenView;
   activityContent: ReactNode;
+  changeContent: ReactNode;
+  issuesContent: ReactNode;
   partsContent: ReactNode;
   settingsContent: ReactNode;
   isError?: boolean;
   isLoading?: boolean;
+  onDangerClick?: () => void;
+  onEditClick?: () => void;
   project?: ProjectDetailScreenProject;
   onActiveViewChange: (view: ProjectDetailScreenView) => void;
   onBackClick: () => void;
   onRetry?: () => void;
+  onSettingsClick?: () => void;
 }
 
-const views: Array<{ id: ProjectDetailScreenView; label: string; count?: (project: ProjectDetailScreenProject) => number; icon: typeof LayoutDashboard }> = [
+const views: Array<{
+  id: ProjectDetailScreenView;
+  label: string;
+  count?: (project: ProjectDetailScreenProject) => number;
+  icon: typeof LayoutDashboard;
+}> = [
   { id: "overview", label: "개요", icon: LayoutDashboard },
   { id: "parts", label: "부품", count: (project) => project.partCount, icon: Package },
+  { id: "issues", label: "이슈", count: (project) => project.issueCount, icon: AlertCircle },
+  { id: "change", label: "변경 요청", count: (project) => project.changeCount, icon: FilePen },
   { id: "activity", label: "활동", icon: Activity },
-  { id: "settings", label: "설정", icon: Settings },
 ];
 
 export function ProjectDetailScreen({
   activeView,
   activityContent,
+  changeContent,
+  issuesContent,
   partsContent,
   settingsContent,
   isError = false,
   isLoading = false,
+  onDangerClick,
+  onEditClick,
   project,
   onActiveViewChange,
   onBackClick,
   onRetry,
+  onSettingsClick,
 }: ProjectDetailScreenProps) {
   if (isLoading) {
     return (
@@ -74,7 +108,7 @@ export function ProjectDetailScreen({
 
   return (
     <div className="min-h-full">
-      <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+      <div className="flex items-center justify-between">
         <div>
           <div className="flex items-center gap-1.5 text-sm">
             <button
@@ -86,20 +120,28 @@ export function ProjectDetailScreen({
             </button>
             <span className="text-muted-foreground/40">/</span>
             <h1 className="font-semibold text-foreground">{project.name}</h1>
-            {project.isArchived ? <Badge variant="outline">보관됨</Badge> : null}
           </div>
-          {project.description ? <p className="mt-1 text-sm text-muted-foreground">{project.description}</p> : null}
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground">
-            부품 {project.partCount.toLocaleString()}개
-          </span>
-          <span className="rounded-full bg-muted px-3 py-1 text-xs text-muted-foreground">
-            최근 수정 {new Intl.DateTimeFormat("ko-KR", { dateStyle: "medium" }).format(new Date(project.updatedAt))}
-          </span>
+        <div className="flex items-center gap-1.5">
+          <Button size="sm" type="button" variant="outline" onClick={onEditClick}>
+            <Pencil className="size-3.5" />
+            편집
+          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button size="icon-sm" type="button" variant="outline">
+                <MoreHorizontal className="size-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={onSettingsClick}>프로젝트 설정</DropdownMenuItem>
+              <DropdownMenuItem onClick={onDangerClick}>위험 영역</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </div>
+      {project.description ? <p className="mt-1 text-sm text-muted-foreground">{project.description}</p> : null}
 
       <nav className="mt-4 flex items-center gap-1 border-b">
         {views.map((view) => {
@@ -124,18 +166,26 @@ export function ProjectDetailScreen({
             </button>
           );
         })}
+        <button
+          className={cn(
+            "relative ml-auto inline-flex cursor-pointer items-center gap-1.5 px-4 py-2.5 text-sm font-medium transition-colors",
+            activeView === "settings"
+              ? "text-foreground after:absolute after:inset-x-0 after:bottom-[-1px] after:h-0.5 after:bg-foreground"
+              : "text-muted-foreground hover:text-foreground",
+          )}
+          type="button"
+          onClick={() => onActiveViewChange("settings")}
+        >
+          <Settings className="size-3.5" />
+          설정
+        </button>
       </nav>
 
       <div className="mt-4">
-        {activeView === "overview" ? (
-          <ProjectOverviewTab
-            project={project}
-            onActivityClick={() => onActiveViewChange("activity")}
-            onPartsClick={() => onActiveViewChange("parts")}
-            onSettingsClick={() => onActiveViewChange("settings")}
-          />
-        ) : null}
+        {activeView === "overview" ? <ProjectOverviewTab project={project} /> : null}
         {activeView === "parts" ? partsContent : null}
+        {activeView === "issues" ? issuesContent : null}
+        {activeView === "change" ? changeContent : null}
         {activeView === "activity" ? activityContent : null}
         {activeView === "settings" ? settingsContent : null}
       </div>

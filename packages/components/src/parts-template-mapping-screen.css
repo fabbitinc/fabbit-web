@@ -1,12 +1,12 @@
 @layer components {
   .parts-template-mapping-theme {
     --mapping-part-text: var(--brand-600);
-    --mapping-part-bg: color-mix(in srgb, var(--brand-50) 82%, var(--theme-surface));
-    --mapping-part-border: color-mix(in srgb, var(--brand-500) 28%, var(--theme-border));
+    --mapping-part-bg: color-mix(in srgb, var(--brand-50) 78%, white);
+    --mapping-part-border: color-mix(in srgb, var(--brand-500) 34%, white);
 
-    --mapping-parent-part-text: color-mix(in srgb, var(--theme-text-primary) 88%, var(--theme-text-secondary));
-    --mapping-parent-part-bg: color-mix(in srgb, var(--theme-surface) 86%, var(--theme-border));
-    --mapping-parent-part-border: color-mix(in srgb, var(--theme-border) 70%, transparent);
+    --mapping-parent-part-text: color-mix(in srgb, var(--theme-text-primary) 88%, #1f2937);
+    --mapping-parent-part-bg: color-mix(in srgb, var(--theme-background) 70%, #e2e8f0);
+    --mapping-parent-part-border: color-mix(in srgb, var(--theme-border) 60%, #64748b);
 
     --mapping-supplier-text: var(--status-success);
     --mapping-supplier-bg: var(--status-success-bg);
@@ -118,5 +118,80 @@
 
   .parts-template-mapping-theme .mapping-excel-row-hover:hover {
     background-color: var(--mapping-excel-row-hover-bg);
+  }
+
+  .parts-template-mapping-theme .text-blue-600 {
+    color: var(--brand-600) !important;
+  }
+
+  .parts-template-mapping-theme .text-violet-600,
+  .parts-template-mapping-theme .text-violet-500 {
+    color: var(--status-info) !important;
+  }
+
+  .parts-template-mapping-theme .text-indigo-600,
+  .parts-template-mapping-theme .text-indigo-700 {
+    color: var(--mapping-parent-part-text) !important;
+  }
+
+  .parts-template-mapping-theme .text-amber-600 {
+    color: var(--status-warning) !important;
+  }
+
+  .parts-template-mapping-theme .text-red-600 {
+    color: var(--status-danger) !important;
+  }
+
+  .parts-template-mapping-theme .text-emerald-600 {
+    color: var(--status-success) !important;
+  }
+
+  .parts-template-mapping-theme .border-violet-200,
+  .parts-template-mapping-theme .hover\:border-violet-300:hover {
+    border-color: var(--status-info-border) !important;
+  }
+
+  .parts-template-mapping-theme .border-indigo-200,
+  .parts-template-mapping-theme .hover\:border-indigo-300:hover {
+    border-color: var(--mapping-parent-part-border) !important;
+  }
+
+  .parts-template-mapping-theme .hover\:bg-violet-50\/50:hover {
+    background-color: var(--status-info-bg) !important;
+  }
+
+  .parts-template-mapping-theme .bg-indigo-50,
+  .parts-template-mapping-theme .hover\:bg-indigo-50\/50:hover,
+  .parts-template-mapping-theme .bg-indigo-100 {
+    background-color: var(--mapping-parent-part-bg) !important;
+  }
+
+  .parts-template-mapping-theme .bg-blue-600 {
+    background-color: var(--brand-600) !important;
+  }
+
+  .parts-template-mapping-theme .hover\:bg-blue-700:hover {
+    background-color: var(--brand-500) !important;
+  }
+
+  .parts-template-mapping-theme .border-gray-200 {
+    border-color: var(--theme-border) !important;
+  }
+
+  .parts-template-mapping-theme .bg-gray-50\/40,
+  .parts-template-mapping-theme .bg-white {
+    background-color: var(--theme-surface) !important;
+  }
+
+  .parts-template-mapping-theme .text-gray-900,
+  .parts-template-mapping-theme .text-gray-800,
+  .parts-template-mapping-theme .text-gray-700 {
+    color: var(--theme-text-primary) !important;
+  }
+
+  .parts-template-mapping-theme .text-gray-600,
+  .parts-template-mapping-theme .text-gray-500,
+  .parts-template-mapping-theme .text-gray-400 {
+    color: var(--theme-text-secondary) !important;
   }
 }

@@ -15,6 +15,7 @@ export interface PartPickerSectionProps {
   /** 없으면 + 버튼 숨김 (읽기 전용 표시) */
   onSync?: (partIds: string[]) => void;
   onRequestParts?: () => void;
+  onNavigateToPart?: (partId: string) => void;
   onSearchChange?: (search: string) => void;
   isSearching?: boolean;
   isUpdating?: boolean;
@@ -26,6 +27,7 @@ export function PartPickerSection({
   displayParts,
   onSync,
   onRequestParts,
+  onNavigateToPart,
   onSearchChange,
   isSearching,
   isUpdating,
@@ -144,23 +146,45 @@ export function PartPickerSection({
       {displayParts.length > 0 ? (
         <div className="mt-2 space-y-1.5">
           {displayParts.map((part) => (
-            <div
-              key={part.id}
-              className="flex w-full items-center gap-2 rounded-md px-2 py-1.5"
-            >
-              <Package className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-              <div className="min-w-0 flex-1">
-                <p className="truncate text-xs font-medium text-foreground">
-                  {part.partNumber}
-                </p>
-                <p className="truncate text-[11px] text-muted-foreground">{part.name}</p>
+            onNavigateToPart ? (
+              <button
+                key={part.id}
+                type="button"
+                className="flex w-full cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                onClick={() => onNavigateToPart(part.id)}
+              >
+                <Package className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-xs font-medium text-foreground">
+                    {part.partNumber}
+                  </p>
+                  <p className="truncate text-[11px] text-muted-foreground">{part.name}</p>
+                </div>
+                {part.category && (
+                  <Badge variant="secondary" className="shrink-0 text-[10px] py-0 px-1.5">
+                    {part.category}
+                  </Badge>
+                )}
+              </button>
+            ) : (
+              <div
+                key={part.id}
+                className="flex w-full items-center gap-2 rounded-md px-2 py-1.5"
+              >
+                <Package className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-xs font-medium text-foreground">
+                    {part.partNumber}
+                  </p>
+                  <p className="truncate text-[11px] text-muted-foreground">{part.name}</p>
+                </div>
+                {part.category && (
+                  <Badge variant="secondary" className="shrink-0 text-[10px] py-0 px-1.5">
+                    {part.category}
+                  </Badge>
+                )}
               </div>
-              {part.category && (
-                <Badge variant="secondary" className="shrink-0 text-[10px] py-0 px-1.5">
-                  {part.category}
-                </Badge>
-              )}
-            </div>
+            )
           ))}
         </div>
       ) : (

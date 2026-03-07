@@ -18,13 +18,15 @@ export function SummaryCard({
   onClick,
   className,
 }: SummaryCardProps) {
+  const displayValue = typeof value === "number" ? value.toLocaleString() : value;
+
   const content = (
     <>
       <div className="flex items-center gap-2 text-xs text-muted-foreground">
         <Icon className="size-3.5" />
         {label}
       </div>
-      <p className="mt-1 text-2xl font-bold text-foreground">{value}</p>
+      <p className="text-2xl font-bold text-foreground">{displayValue}</p>
       {sub ? <p className="text-xs text-muted-foreground">{sub}</p> : null}
     </>
   );
