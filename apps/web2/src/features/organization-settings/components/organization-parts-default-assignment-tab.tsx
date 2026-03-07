@@ -35,7 +35,7 @@ export function OrganizationPartsDefaultAssignmentTab() {
   const deleteDefaultOwnerAction = useDeleteOrganizationDefaultOwnerAction();
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [nextCategory, setNextCategory] = useState("");
-  const [deleteTarget, setDeleteTarget] = useState<{ category?: string | null } | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{ category?: string } | null>(null);
 
   const entries = useMemo(() => defaultOwnersQuery.data ?? [], [defaultOwnersQuery.data]);
   const usedCategories = useMemo(
@@ -92,9 +92,9 @@ export function OrganizationPartsDefaultAssignmentTab() {
                     selectedTeamName={fallbackEntry.defaultOwnerTeamName ?? null}
                     onSelect={(teamId) =>
                       upsertDefaultOwnerAction.mutate({
-                        category: null,
-                        default_owner_team_id: teamId,
-                        default_owner_id: fallbackEntry.defaultOwnerId ?? null,
+                        category: undefined,
+                        default_owner_team_id: teamId ?? undefined,
+                        default_owner_id: fallbackEntry.defaultOwnerId ?? undefined,
                       })
                     }
                   />
@@ -105,9 +105,9 @@ export function OrganizationPartsDefaultAssignmentTab() {
                     selectedMemberName={fallbackEntry.defaultOwner?.fullName}
                     onSelect={(memberId) =>
                       upsertDefaultOwnerAction.mutate({
-                        category: null,
-                        default_owner_id: memberId,
-                        default_owner_team_id: fallbackEntry.defaultOwnerTeamId ?? null,
+                        category: undefined,
+                        default_owner_id: memberId ?? undefined,
+                        default_owner_team_id: fallbackEntry.defaultOwnerTeamId ?? undefined,
                       })
                     }
                   />
@@ -143,9 +143,9 @@ export function OrganizationPartsDefaultAssignmentTab() {
                       selectedTeamName={entry.defaultOwnerTeamName ?? null}
                       onSelect={(teamId) =>
                         upsertDefaultOwnerAction.mutate({
-                          category: entry.category,
-                          default_owner_team_id: teamId,
-                          default_owner_id: entry.defaultOwnerId ?? null,
+                          category: entry.category ?? undefined,
+                          default_owner_team_id: teamId ?? undefined,
+                          default_owner_id: entry.defaultOwnerId ?? undefined,
                         })
                       }
                     />
@@ -156,9 +156,9 @@ export function OrganizationPartsDefaultAssignmentTab() {
                       selectedMemberName={entry.defaultOwner?.fullName}
                       onSelect={(memberId) =>
                         upsertDefaultOwnerAction.mutate({
-                          category: entry.category,
-                          default_owner_id: memberId,
-                          default_owner_team_id: entry.defaultOwnerTeamId ?? null,
+                          category: entry.category ?? undefined,
+                          default_owner_id: memberId ?? undefined,
+                          default_owner_team_id: entry.defaultOwnerTeamId ?? undefined,
                         })
                       }
                     />
@@ -168,7 +168,7 @@ export function OrganizationPartsDefaultAssignmentTab() {
                       aria-label={`${entry.category} 기본 담당 설정 삭제`}
                       size="icon"
                       variant="ghost"
-                      onClick={() => setDeleteTarget({ category: entry.category })}
+                      onClick={() => setDeleteTarget({ category: entry.category ?? undefined })}
                     >
                       <Trash2 className="size-3.5" />
                     </Button>
@@ -262,7 +262,7 @@ export function OrganizationPartsDefaultAssignmentTab() {
             <AlertDialogAction
               disabled={deleteDefaultOwnerAction.isPending}
               onClick={() =>
-                deleteDefaultOwnerAction.mutate(deleteTarget?.category ?? null, {
+                deleteDefaultOwnerAction.mutate(deleteTarget?.category ?? undefined, {
                   onSuccess: () => setDeleteTarget(null),
                 })
               }

@@ -1,9 +1,10 @@
+import type { DeepDefined } from "@/api/types";
 import type { components } from "@/api/generated/schema";
 
 export type BatchCreateFileRequestDto = components["schemas"]["BatchCreateFileRequest"];
-export type BatchCreateFileResponseDto = components["schemas"]["BatchCreateFileResponse"];
+export type BatchCreateFileResponseDto = DeepDefined<components["schemas"]["BatchCreateFileResponse"]>;
 export type BatchCompleteFileRequestDto = components["schemas"]["BatchCompleteRequest"];
-export type BatchCompleteFileResponseDto = components["schemas"]["BatchCompleteResponse"];
+export type BatchCompleteFileResponseDto = DeepDefined<components["schemas"]["BatchCompleteResponse"]>;
 export type CreateFileRequestDto = components["schemas"]["CreateFileRequest"];
-export type CreateFileResponseDto = components["schemas"]["CreateFileResponse"];
-export type FileCompleteResponseDto = components["schemas"]["FileCompleteResponse"];
+export type CreateFileResponseDto = DeepDefined<components["schemas"]["CreateFileResponse"]>;
+export type FileCompleteResponseDto = DeepDefined<components["schemas"]["FileCompleteResponse"]>;

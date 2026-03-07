@@ -1,8 +1,8 @@
 import {
-  changePasswordApiV1UsersMePasswordPut,
-  deleteProfileImageApiV1UsersMeProfileImageDelete,
-  setProfileImageApiV1UsersMeProfileImagePut,
-  updateProfileApiV1UsersMePatch,
+  changePassword as changePasswordApiV1UsersMePasswordPut,
+  deleteProfileImage as deleteProfileImageApiV1UsersMeProfileImageDelete,
+  setProfileImage as setProfileImageApiV1UsersMeProfileImagePut,
+  updateProfile as updateProfileApiV1UsersMePatch,
 } from "@/api/generated/orval/users/users";
 import type {
   ChangePasswordRequestDto,

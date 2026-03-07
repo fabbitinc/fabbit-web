@@ -12,7 +12,7 @@ export type OrganizationSettingsTab =
 export type OrganizationMembersSubTab = "users" | "teams";
 export type OrganizationPartsSubTab = "categories" | "assignment";
 export type OrganizationChangeSubTab = "labels";
-export type MemberRoleModel = "MEMBER" | "ADMIN" | "OWNER" | string;
+export type MemberRoleModel = "MEMBER" | "ADMIN" | "OWNER";
 
 export interface OrganizationUserSummaryModel {
   userId: string;

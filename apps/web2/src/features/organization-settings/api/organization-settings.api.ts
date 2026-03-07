@@ -1,46 +1,60 @@
 import {
-  createInvitationApiV1OrganizationsInvitationsPost,
-  deleteProfileImageApiV1OrganizationsProfileImageDelete,
-  listInvitationsApiV1OrganizationsInvitationsGet,
-  setProfileImageApiV1OrganizationsProfileImagePut,
-  cancelInvitationApiV1OrganizationsInvitationsInvitationIdDelete,
+  cancelInvitation as cancelInvitationApiV1OrganizationsInvitationsInvitationIdDelete,
+  createInvitation as createInvitationApiV1OrganizationsInvitationsPost,
+  deleteProfileImage1 as deleteProfileImageApiV1OrganizationsProfileImageDelete,
+  listInvitations as listInvitationsApiV1OrganizationsInvitationsGet,
+  setProfileImage1 as setProfileImageApiV1OrganizationsProfileImagePut,
 } from "@/api/generated/orval/organizations/organizations";
 import {
-  createLabelApiV1LabelsPost,
-  deleteLabelApiV1LabelsLabelIdDelete,
-  listLabelsApiV1LabelsGet,
+  createLabel as createLabelApiV1LabelsPost,
+  deleteLabel as deleteLabelApiV1LabelsLabelIdDelete,
+  listLabels as listLabelsApiV1LabelsGet,
 } from "@/api/generated/orval/labels/labels";
 import {
-  changeMemberRoleApiV1MembersUserIdRolePatch,
-  listOrgMembersApiV1MembersGet,
-  removeMemberApiV1MembersUserIdDelete,
+  changeMemberRole as changeMemberRoleApiV1MembersUserIdRolePatch,
+  listMembers as listOrgMembersApiV1MembersGet,
+  removeMember as removeMemberApiV1MembersUserIdDelete,
 } from "@/api/generated/orval/members/members";
 import {
-  deleteDefaultOwnerApiV1PartsOwnerDefaultsDelete,
-  listDefaultOwnersApiV1PartsOwnerDefaultsGet,
-  upsertDefaultOwnerApiV1PartsOwnerDefaultsPut,
+  deleteDefaultOwner as deleteDefaultOwnerApiV1PartsOwnerDefaultsDelete,
+  listDefaultOwners as listDefaultOwnersApiV1PartsOwnerDefaultsGet,
+  upsertDefaultOwner as upsertDefaultOwnerApiV1PartsOwnerDefaultsPut,
 } from "@/api/generated/orval/part-owner/part-owner";
-import { listCategoriesApiV1PartsCategoriesGet, renameCategoryApiV1PartsCategoriesCategoryPatch } from "@/api/generated/orval/parts/parts";
 import {
-  addTeamMembersApiV1TeamsTeamIdMembersPost,
-  listTeamMembersApiV1TeamsTeamIdMembersGet,
-  removeTeamMembersApiV1TeamsTeamIdMembersDelete,
+  listCategories as listCategoriesApiV1PartsCategoriesGet,
+  renameCategory as renameCategoryApiV1PartsCategoriesCategoryPatch,
+} from "@/api/generated/orval/parts/parts";
+import {
+  addTeamMembers as addTeamMembersApiV1TeamsTeamIdMembersPost,
+  listTeamMembers as listTeamMembersApiV1TeamsTeamIdMembersGet,
+  removeTeamMembers as removeTeamMembersApiV1TeamsTeamIdMembersDelete,
 } from "@/api/generated/orval/team-members/team-members";
-import { createTeamApiV1TeamsPost, deleteTeamApiV1TeamsTeamIdDelete, listTeamsApiV1TeamsGet } from "@/api/generated/orval/teams/teams";
+import {
+  createTeam as createTeamApiV1TeamsPost,
+  deleteTeam as deleteTeamApiV1TeamsTeamIdDelete,
+  listTeams as listTeamsApiV1TeamsGet,
+} from "@/api/generated/orval/teams/teams";
 import type {
   AddTeamMembersRequestDto,
+  CategoryStatsResponseDto,
   ChangeMemberRoleRequestDto,
   CreateInvitationRequestDto,
   CreateLabelRequestDto,
   CreateTeamRequestDto,
+  InvitationListResponseDto,
   InvitationResponseDto,
+  LabelListResponseDto,
   LabelResponseDto,
+  MemberListResponseDto,
   MemberSummaryDto,
   PartDefaultOwnerItemDto,
+  PartDefaultOwnerListResponseDto,
   PartDefaultOwnerRequestDto,
   RemoveTeamMembersRequestDto,
   RenameCategoryRequestDto,
   SetProfileImageRequestDto,
+  TeamListResponseDto,
+  TeamMemberListResponseDto,
   TeamMemberSummaryDto,
   TeamSummaryDto,
   UserSummaryDto,
@@ -57,20 +71,22 @@ import type {
 
 export async function fetchOrganizationMembers() {
   const response = await listOrgMembersApiV1MembersGet();
+  const members = response as MemberListResponseDto;
+
   return {
-    items: response.items.map(toOrganizationMemberModel),
-    maxMembers: response.max_members,
+    items: members.items.map(toOrganizationMemberModel),
+    maxMembers: members.max_members,
   };
 }
 
 export async function fetchOrganizationInvitations() {
   const response = await listInvitationsApiV1OrganizationsInvitationsGet();
-  return response.invitations.map(toOrganizationInvitationModel);
+  return (response as InvitationListResponseDto).invitations.map(toOrganizationInvitationModel);
 }
 
 export async function createOrganizationInvitation(request: CreateInvitationRequestDto) {
   const response = await createInvitationApiV1OrganizationsInvitationsPost(request);
-  return toOrganizationInvitationModel(response);
+  return toOrganizationInvitationModel(response as InvitationResponseDto);
 }
 
 export async function cancelOrganizationInvitation(invitationId: string) {
@@ -95,7 +111,7 @@ export async function deleteOrganizationProfileImage() {
 
 export async function fetchOrganizationTeams() {
   const response = await listTeamsApiV1TeamsGet();
-  return response.items.map(toOrganizationTeamModel);
+  return (response as TeamListResponseDto).items.map(toOrganizationTeamModel);
 }
 
 export async function createOrganizationTeam(request: CreateTeamRequestDto) {
@@ -108,7 +124,7 @@ export async function deleteOrganizationTeam(teamId: string) {
 
 export async function fetchOrganizationTeamMembers(teamId: string) {
   const response = await listTeamMembersApiV1TeamsTeamIdMembersGet(teamId);
-  return response.items.map(toOrganizationUserSummaryModel);
+  return (response as TeamMemberListResponseDto).items.map(toOrganizationUserSummaryModel);
 }
 
 export async function addOrganizationTeamMembers(teamId: string, request: AddTeamMembersRequestDto) {
@@ -121,7 +137,7 @@ export async function removeOrganizationTeamMembers(teamId: string, request: Rem
 
 export async function fetchOrganizationCategories() {
   const response = await listCategoriesApiV1PartsCategoriesGet();
-  return response.items.map((item) => ({
+  return (response as CategoryStatsResponseDto).items.map((item) => ({
     category: item.category,
     partCount: item.part_count,
   } satisfies OrganizationCategoryModel));
@@ -133,26 +149,26 @@ export async function renameOrganizationCategory(category: string, request: Rena
 
 export async function fetchOrganizationDefaultOwners() {
   const response = await listDefaultOwnersApiV1PartsOwnerDefaultsGet();
-  return response.items.map(toOrganizationDefaultOwnerModel);
+  return (response as PartDefaultOwnerListResponseDto).items.map(toOrganizationDefaultOwnerModel);
 }
 
 export async function upsertOrganizationDefaultOwner(request: PartDefaultOwnerRequestDto) {
   const response = await upsertDefaultOwnerApiV1PartsOwnerDefaultsPut(request);
-  return toOrganizationDefaultOwnerModel(response);
+  return toOrganizationDefaultOwnerModel(response as PartDefaultOwnerItemDto);
 }
 
-export async function deleteOrganizationDefaultOwner(category?: string | null) {
-  await deleteDefaultOwnerApiV1PartsOwnerDefaultsDelete(category != null ? { category } : undefined);
+export async function deleteOrganizationDefaultOwner(category?: string) {
+  await deleteDefaultOwnerApiV1PartsOwnerDefaultsDelete(category ? { category } : undefined);
 }
 
 export async function fetchOrganizationLabels() {
   const response = await listLabelsApiV1LabelsGet();
-  return response.items.map(toOrganizationLabelModel);
+  return (response as LabelListResponseDto).items.map(toOrganizationLabelModel);
 }
 
 export async function createOrganizationLabel(request: CreateLabelRequestDto) {
   const response = await createLabelApiV1LabelsPost(request);
-  return toOrganizationLabelModel(response);
+  return toOrganizationLabelModel(response as LabelResponseDto);
 }
 
 export async function deleteOrganizationLabel(labelId: string) {

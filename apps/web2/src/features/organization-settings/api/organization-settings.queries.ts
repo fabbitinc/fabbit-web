@@ -156,7 +156,7 @@ export const organizationSettingsMutations = {
   deleteDefaultOwner: () =>
     mutationOptions({
       mutationKey: ["organization-settings", "delete-default-owner"],
-      mutationFn: (category?: string | null) => deleteOrganizationDefaultOwner(category),
+      mutationFn: (category?: string) => deleteOrganizationDefaultOwner(category),
     }),
   createLabel: () =>
     mutationOptions({

@@ -1,29 +1,29 @@
-import { listOrgMembersApiV1MembersGet } from "@/api/generated/orval/members/members";
+import { listMembers as listOrgMembersApiV1MembersGet } from "@/api/generated/orval/members/members";
 import {
-  getPartOwnerApiV1PartsPartIdOwnerGet,
-  updatePartOwnerApiV1PartsPartIdOwnerPatch,
+  getPartOwner as getPartOwnerApiV1PartsPartIdOwnerGet,
+  updatePartOwner as updatePartOwnerApiV1PartsPartIdOwnerPatch,
 } from "@/api/generated/orval/part-owner/part-owner";
 import {
-  linkPartsToProjectApiV1ProjectsProjectIdPartsPost,
+  linkParts as linkPartsToProjectApiV1ProjectsProjectIdPartsPost,
 } from "@/api/generated/orval/project-parts/project-parts";
-import { listProjectsApiV1ProjectsGet } from "@/api/generated/orval/projects/projects";
+import { listProjects as listProjectsApiV1ProjectsGet } from "@/api/generated/orval/projects/projects";
 import {
-  attachFilesApiV1PartsPartIdFilesPost,
-  deleteDrawingFromPartApiV1PartsPartIdDrawingsDelete,
-  detachFileApiV1PartsPartIdFilesFileIdDelete,
-  exportBomApiV1PartsPartIdBomTreeExportGet,
-  exportPartsApiV1PartsExportGet,
-  getBomTreeApiV1PartsPartIdBomTreeGet,
-  getFilterOptionsApiV1PartsFilterOptionsGet,
-  getPartApiV1PartsPartIdGet,
-  getPartBomApiV1PartsPartIdBomGet,
-  getPartFilesApiV1PartsPartIdFilesGet,
-  getPartProjectsApiV1PartsPartIdProjectsGet,
-  getPartSuppliersApiV1PartsPartIdSuppliersGet,
-  listPartsApiV1PartsGet,
-  registerDrawingForPartApiV1PartsPartIdDrawingsPost,
+  attachFiles as attachFilesApiV1PartsPartIdFilesPost,
+  deleteDrawingFromPart as deleteDrawingFromPartApiV1PartsPartIdDrawingsDelete,
+  detachFile as detachFileApiV1PartsPartIdFilesFileIdDelete,
+  exportBomTree as exportBomApiV1PartsPartIdBomTreeExportGet,
+  exportParts as exportPartsApiV1PartsExportGet,
+  getBomTree as getBomTreeApiV1PartsPartIdBomTreeGet,
+  getFilterOptions as getFilterOptionsApiV1PartsFilterOptionsGet,
+  getPart as getPartApiV1PartsPartIdGet,
+  getPartBom as getPartBomApiV1PartsPartIdBomGet,
+  getPartFiles as getPartFilesApiV1PartsPartIdFilesGet,
+  getPartProjects as getPartProjectsApiV1PartsPartIdProjectsGet,
+  getPartSuppliers as getPartSuppliersApiV1PartsPartIdSuppliersGet,
+  listParts as listPartsApiV1PartsGet,
+  registerDrawingForPart as registerDrawingForPartApiV1PartsPartIdDrawingsPost,
 } from "@/api/generated/orval/parts/parts";
-import { listTeamsApiV1TeamsGet } from "@/api/generated/orval/teams/teams";
+import { listTeams as listTeamsApiV1TeamsGet } from "@/api/generated/orval/teams/teams";
 import type {
   AttachPartFilesRequestDto,
   AttachPartFilesResponseDto,
@@ -112,7 +112,7 @@ export async function fetchPartBomTree(
 
   return {
     root: toPartBomTreeNodeModel(tree.root),
-    direction: tree.direction === "reverse" ? "reverse" : "forward",
+    direction: tree.direction === "REVERSE" ? "reverse" : "forward",
     totalCount: tree.total_count,
   };
 }

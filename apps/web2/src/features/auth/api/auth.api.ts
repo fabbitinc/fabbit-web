@@ -1,21 +1,21 @@
 import {
-  acceptInvitationApiV1AuthAcceptInvitationPost,
-  checkEmailApiV1AuthCheckEmailGet,
-  checkSlugApiV1AuthCheckSlugGet,
-  getSiteApiV1AuthSiteGet,
-  loginApiV1AuthLoginPost,
-  logoutApiV1AuthLogoutPost,
-  refreshApiV1AuthRefreshPost,
-  registerApiV1AuthRegisterPost,
-  sendVerificationApiV1AuthSendVerificationPost,
-  verifyEmailApiV1AuthVerifyEmailPost,
-  verifyInvitationApiV1AuthInvitationsVerifyGet,
+  acceptInvitation as acceptInvitationApiV1AuthAcceptInvitationPost,
+  checkEmail as checkEmailApiV1AuthCheckEmailGet,
+  checkSlug as checkSlugApiV1AuthCheckSlugGet,
+  getSite as getSiteApiV1AuthSiteGet,
+  login as loginApiV1AuthLoginPost,
+  logout as logoutApiV1AuthLogoutPost,
+  refresh as refreshApiV1AuthRefreshPost,
+  register as registerApiV1AuthRegisterPost,
+  sendVerification as sendVerificationApiV1AuthSendVerificationPost,
+  verifyEmail as verifyEmailApiV1AuthVerifyEmailPost,
+  verifyInvitation as verifyInvitationApiV1AuthInvitationsVerifyGet,
 } from "@/api/generated/orval/auth/auth";
 import {
-  createOrganizationApiV1OrganizationsPost,
-  switchOrgApiV1OrganizationsSwitchPost,
+  createOrganization as createOrganizationApiV1OrganizationsPost,
+  switchOrganization as switchOrgApiV1OrganizationsSwitchPost,
 } from "@/api/generated/orval/organizations/organizations";
-import { meApiV1UsersMeGet } from "@/api/generated/orval/users/users";
+import { getMe as meApiV1UsersMeGet } from "@/api/generated/orval/users/users";
 import { getSubdomain } from "@/lib/subdomain";
 import type {
   AcceptInvitationRequestDto,

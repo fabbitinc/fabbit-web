@@ -15,8 +15,8 @@ export function useUpdatePartOwnerAction(partId: string) {
   return useMutation({
     mutationFn: (input: UpdatePartOwnerActionInput) =>
       updatePartOwner(partId, {
-        owner_id: input.ownerId,
-        owner_team_id: input.ownerTeamId,
+        owner_id: input.ownerId ?? undefined,
+        owner_team_id: input.ownerTeamId ?? undefined,
       }),
     onSuccess: async () => {
       toast.success("담당자 설정을 저장했습니다.");

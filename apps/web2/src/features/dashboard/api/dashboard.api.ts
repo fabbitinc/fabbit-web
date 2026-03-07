@@ -1,4 +1,4 @@
-import { getDashboardStatsApiV1DashboardStatsGet } from "@/api/generated/orval/dashboard/dashboard";
+import { getStats as getDashboardStatsApiV1DashboardStatsGet } from "@/api/generated/orval/dashboard/dashboard";
 import type { DashboardStatsResponseDto } from "@/features/dashboard/api/dashboard.types";
 import type { DashboardStatsModel } from "@/features/dashboard/types/dashboard-model";
 

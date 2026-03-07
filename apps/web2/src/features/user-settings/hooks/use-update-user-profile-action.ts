@@ -17,8 +17,8 @@ export function useUpdateUserProfileAction() {
     mutationKey: ["user-settings", "update-user-profile-action"],
     mutationFn: async ({ name, phone }: UpdateUserProfileActionInput) =>
       updateUserProfile({
-        full_name: name || null,
-        phone: phone || null,
+        full_name: name || undefined,
+        phone: phone || undefined,
       }),
     onSuccess: async () => {
       const session = await refreshAuthSession(queryClient);

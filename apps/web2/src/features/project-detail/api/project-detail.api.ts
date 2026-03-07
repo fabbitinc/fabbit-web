@@ -1,22 +1,22 @@
 import {
-  addProjectMembersApiV1ProjectsProjectIdMembersPost,
-  listProjectMembersApiV1ProjectsProjectIdMembersGet,
-  lookupMembersApiV1ProjectsProjectIdMembersLookupGet,
-  removeProjectMembersApiV1ProjectsProjectIdMembersDelete,
+  addProjectMembers as addProjectMembersApiV1ProjectsProjectIdMembersPost,
+  listProjectMembers as listProjectMembersApiV1ProjectsProjectIdMembersGet,
+  lookupMembers as lookupMembersApiV1ProjectsProjectIdMembersLookupGet,
+  removeProjectMembers as removeProjectMembersApiV1ProjectsProjectIdMembersDelete,
 } from "@/api/generated/orval/project-members/project-members";
 import {
-  getProjectPartsApiV1ProjectsProjectIdPartsGet,
-  linkPartsToProjectApiV1ProjectsProjectIdPartsPost,
-  lookupPartsApiV1ProjectsProjectIdPartsLookupGet,
-  unlinkPartsFromProjectApiV1ProjectsProjectIdPartsDelete,
+  getProjectParts as getProjectPartsApiV1ProjectsProjectIdPartsGet,
+  linkParts as linkPartsToProjectApiV1ProjectsProjectIdPartsPost,
+  lookupParts as lookupPartsApiV1ProjectsProjectIdPartsLookupGet,
+  unlinkParts as unlinkPartsFromProjectApiV1ProjectsProjectIdPartsDelete,
 } from "@/api/generated/orval/project-parts/project-parts";
 import {
-  archiveProjectApiV1ProjectsProjectIdArchivePost,
-  deleteProjectApiV1ProjectsProjectIdDelete,
-  getProjectActivitiesApiV1ProjectsProjectIdActivitiesGet,
-  getProjectApiV1ProjectsProjectIdGet,
-  unarchiveProjectApiV1ProjectsProjectIdUnarchivePost,
-  updateProjectApiV1ProjectsProjectIdPatch,
+  archiveProject as archiveProjectApiV1ProjectsProjectIdArchivePost,
+  deleteProject as deleteProjectApiV1ProjectsProjectIdDelete,
+  getProject as getProjectApiV1ProjectsProjectIdGet,
+  getProjectActivities as getProjectActivitiesApiV1ProjectsProjectIdActivitiesGet,
+  unarchiveProject as unarchiveProjectApiV1ProjectsProjectIdUnarchivePost,
+  updateProject as updateProjectApiV1ProjectsProjectIdPatch,
 } from "@/api/generated/orval/projects/projects";
 import { apiClient } from "@/api/client";
 import type {

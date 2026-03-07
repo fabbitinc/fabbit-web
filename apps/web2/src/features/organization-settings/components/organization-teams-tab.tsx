@@ -239,7 +239,7 @@ function CreateTeamDialog({
               createTeamAction.mutate(
                 {
                   name: name.trim(),
-                  description: description.trim() || null,
+                  description: description.trim() || undefined,
                 },
                 {
                   onSuccess: () => {

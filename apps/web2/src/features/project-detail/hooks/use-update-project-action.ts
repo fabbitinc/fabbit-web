@@ -21,7 +21,7 @@ export function useUpdateProjectAction() {
     mutationFn: async ({ projectId, name, description }: UpdateProjectActionInput) =>
       updateProject(projectId, {
         name: name.trim(),
-        description: description.trim() || null,
+        description: description.trim() || undefined,
       }),
     onSuccess: async (project) => {
       toast.success("프로젝트 정보를 저장했습니다.");

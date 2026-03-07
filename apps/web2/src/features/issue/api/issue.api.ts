@@ -1,19 +1,19 @@
 import {
-  addFilesApiV1IssuesIssueNumberFilesPost,
-  closeIssueApiV1IssuesIssueNumberClosePost,
-  createCommentApiV1IssuesIssueNumberCommentsPost,
-  createIssueApiV1IssuesPost,
-  deleteCommentApiV1IssuesIssueNumberCommentsCommentIdDelete,
-  deleteFileApiV1IssuesIssueNumberFilesFileIdDelete,
-  getIssueApiV1IssuesIssueNumberGet,
-  getTimelineApiV1IssuesIssueNumberTimelineGet,
-  reopenIssueApiV1IssuesIssueNumberReopenPost,
-  syncAssigneesApiV1IssuesIssueNumberAssigneesPut,
-  syncChangesApiV1IssuesIssueNumberChangesPut,
-  syncLabelsApiV1IssuesIssueNumberLabelsPut,
-  syncPartsApiV1IssuesIssueNumberPartsPut,
-  updateCommentApiV1IssuesIssueNumberCommentsCommentIdPatch,
-  updateIssueApiV1IssuesIssueNumberPatch,
+  addFiles as addFilesApiV1IssuesIssueNumberFilesPost,
+  closeIssue as closeIssueApiV1IssuesIssueNumberClosePost,
+  createComment as createCommentApiV1IssuesIssueNumberCommentsPost,
+  createIssue as createIssueApiV1IssuesPost,
+  deleteComment as deleteCommentApiV1IssuesIssueNumberCommentsCommentIdDelete,
+  deleteFile as deleteFileApiV1IssuesIssueNumberFilesFileIdDelete,
+  getIssue as getIssueApiV1IssuesIssueNumberGet,
+  getTimeline as getTimelineApiV1IssuesIssueNumberTimelineGet,
+  reopenIssue as reopenIssueApiV1IssuesIssueNumberReopenPost,
+  syncAssignees as syncAssigneesApiV1IssuesIssueNumberAssigneesPut,
+  syncChanges as syncChangesApiV1IssuesIssueNumberChangesPut,
+  syncLabels as syncLabelsApiV1IssuesIssueNumberLabelsPut,
+  syncParts as syncPartsApiV1IssuesIssueNumberPartsPut,
+  updateComment as updateCommentApiV1IssuesIssueNumberCommentsCommentIdPatch,
+  updateIssue as updateIssueApiV1IssuesIssueNumberPatch,
 } from "@/api/generated/orval/issues/issues";
 import type {
   AddIssueFilesRequestDto,
@@ -48,7 +48,7 @@ import type {
 import { getPlainTextFromRichText } from "@/lib/rich-text";
 
 export async function createIssue(request: CreateIssueRequestDto) {
-  return createIssueApiV1IssuesPost(request);
+  return createIssueApiV1IssuesPost(request as Parameters<typeof createIssueApiV1IssuesPost>[0]);
 }
 
 export async function fetchIssueDetail(issueNumber: number): Promise<IssueDetailModel> {
@@ -57,7 +57,10 @@ export async function fetchIssueDetail(issueNumber: number): Promise<IssueDetail
 }
 
 export async function updateIssue(issueNumber: number, request: UpdateIssueRequestDto): Promise<IssueDetailModel> {
-  const response = await updateIssueApiV1IssuesIssueNumberPatch(issueNumber, request);
+  const response = await updateIssueApiV1IssuesIssueNumberPatch(
+    issueNumber,
+    request as Parameters<typeof updateIssueApiV1IssuesIssueNumberPatch>[1],
+  );
   return toIssueDetailModel(response as IssueDetailResponseDto);
 }
 
@@ -103,18 +106,27 @@ export async function fetchIssueTimeline(issueNumber: number): Promise<IssueTime
   const response = await getTimelineApiV1IssuesIssueNumberTimelineGet(issueNumber);
   const timeline = response as IssueTimelineResponseDto;
 
-  return timeline.items.map((item) =>
-    item.type === "comment"
-      ? toIssueTimelineCommentModel(item, timeline.users)
-      : toIssueTimelineActivityModel(item, timeline.users),
-  );
+  return timeline.items.map((item) => {
+    if (isIssueTimelineCommentItem(item)) {
+      return toIssueTimelineCommentModel(item, timeline.users);
+    }
+
+    if (isIssueTimelineActivityItem(item)) {
+      return toIssueTimelineActivityModel(item, timeline.users);
+    }
+
+    throw new Error(`알 수 없는 타임라인 아이템 타입입니다: ${String(item.type)}`);
+  });
 }
 
 export async function createIssueComment(
   issueNumber: number,
   request: CreateIssueCommentRequestDto,
 ): Promise<IssueTimelineCommentModel> {
-  const response = await createCommentApiV1IssuesIssueNumberCommentsPost(issueNumber, request);
+  const response = await createCommentApiV1IssuesIssueNumberCommentsPost(
+    issueNumber,
+    request as Parameters<typeof createCommentApiV1IssuesIssueNumberCommentsPost>[1],
+  );
   return toIssueCommentModel(response as CreateIssueCommentResponseDto);
 }
 
@@ -123,7 +135,11 @@ export async function updateIssueComment(
   commentId: string,
   request: UpdateIssueCommentRequestDto,
 ): Promise<IssueTimelineCommentModel> {
-  const response = await updateCommentApiV1IssuesIssueNumberCommentsCommentIdPatch(issueNumber, commentId, request);
+  const response = await updateCommentApiV1IssuesIssueNumberCommentsCommentIdPatch(
+    issueNumber,
+    commentId,
+    request as Parameters<typeof updateCommentApiV1IssuesIssueNumberCommentsCommentIdPatch>[2],
+  );
   return toIssueCommentModel(response as UpdateIssueCommentResponseDto);
 }
 
@@ -276,6 +292,18 @@ function toIssueTimelineUserModel(user: IssueTimelineResponseDto["users"][string
     phone: user.phone ?? null,
     profileImageUrl: user.profile_image_url ?? null,
   };
+}
+
+function isIssueTimelineCommentItem(
+  item: IssueTimelineResponseDto["items"][number],
+): item is IssueTimelineResponseDto["items"][number] & { type: "comment" } {
+  return item.type === "comment";
+}
+
+function isIssueTimelineActivityItem(
+  item: IssueTimelineResponseDto["items"][number],
+): item is IssueTimelineResponseDto["items"][number] & { type: "activity" } {
+  return item.type === "activity";
 }
 
 function isObjectLike(value: unknown): value is Record<string, unknown> {

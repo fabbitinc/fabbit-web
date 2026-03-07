@@ -1,8 +1,8 @@
-import { lookupChangeRequestsApiV1ChangesLookupGet } from "@/api/generated/orval/changes/changes";
-import { lookupIssuesApiV1IssuesLookupGet } from "@/api/generated/orval/issues/issues";
-import { lookupLabelsApiV1LabelsLookupGet } from "@/api/generated/orval/labels/labels";
-import { lookupMembersApiV1MembersLookupGet } from "@/api/generated/orval/members/members";
-import { lookupPartsApiV1PartsLookupGet } from "@/api/generated/orval/parts/parts";
+import { lookupChangeRequests as lookupChangeRequestsApiV1ChangesLookupGet } from "@/api/generated/orval/changes/changes";
+import { lookupIssues as lookupIssuesApiV1IssuesLookupGet } from "@/api/generated/orval/issues/issues";
+import { lookupLabels as lookupLabelsApiV1LabelsLookupGet } from "@/api/generated/orval/labels/labels";
+import { lookupMembers1 as lookupMembersApiV1MembersLookupGet } from "@/api/generated/orval/members/members";
+import { lookupParts1 as lookupPartsApiV1PartsLookupGet } from "@/api/generated/orval/parts/parts";
 import type {
   ChangeLookupQueryDto,
   IssueLookupQueryDto,

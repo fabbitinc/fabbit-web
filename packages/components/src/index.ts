@@ -282,13 +282,21 @@ export type {
   PartsTemplateMappingEmptyStateProps,
   PartsTemplateMappingScreenProps,
 } from "./parts-template-mapping-screen";
-export { PartsTemplateMappingCanvasScreen } from "./parts-template-mapping-canvas-screen";
+export {
+  PartsTemplateMappingCanvasScreen,
+  resolvePartsTemplateMappingCanvasRelationLabel,
+} from "./parts-template-mapping-canvas-screen";
 export type {
+  PartsTemplateMappingCanvasConnectCreatedResult,
+  PartsTemplateMappingCanvasConnectRejectedResult,
+  PartsTemplateMappingCanvasConnectResult,
   PartsTemplateMappingCanvasEdge,
   PartsTemplateMappingCanvasEmptyState,
   PartsTemplateMappingCanvasField,
   PartsTemplateMappingCanvasNode,
   PartsTemplateMappingCanvasNodeTone,
+  PartsTemplateMappingCanvasPropertyMoveRequest,
+  PartsTemplateMappingCanvasPropertyOwner,
   PartsTemplateMappingCanvasScreenProps,
 } from "./parts-template-mapping-canvas-screen";
 export { PartsTemplateMappingBoard } from "./parts-template-mapping-board";

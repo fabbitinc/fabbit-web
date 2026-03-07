@@ -1,5 +1,5 @@
-import { listChangeRequestsApiV1ChangesGet } from "@/api/generated/orval/changes/changes";
-import { listIssuesApiV1IssuesGet } from "@/api/generated/orval/issues/issues";
+import { listChangeRequests as listChangeRequestsApiV1ChangesGet } from "@/api/generated/orval/changes/changes";
+import { listIssues as listIssuesApiV1IssuesGet } from "@/api/generated/orval/issues/issues";
 import type {
   ChangeRequestListQueryDto,
   IssueListQueryDto,

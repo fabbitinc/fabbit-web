@@ -259,7 +259,7 @@ export function OrganizationMembersUsersTab() {
                         onValueChange={(value) =>
                           changeMemberRoleAction.mutate({
                             userId: member.userId,
-                            request: { role: value },
+                            request: { role: value as MemberRoleModel },
                           })
                         }
                       >

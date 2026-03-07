@@ -75,7 +75,7 @@ async function uploadSourceFiles(files: PartsUploadFileModel[]): Promise<Synthes
     return [
       {
         file_id: created.file_id,
-        root_context: file.rootContext ?? null,
+        root_context: file.rootContext ?? undefined,
       },
     ];
   }
@@ -103,6 +103,6 @@ async function uploadSourceFiles(files: PartsUploadFileModel[]): Promise<Synthes
 
   return created.items.map((item, index) => ({
     file_id: item.file_id,
-    root_context: files[index].rootContext ?? null,
+    root_context: files[index].rootContext ?? undefined,
   }));
 }

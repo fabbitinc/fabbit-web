@@ -10,6 +10,14 @@ type Operation<
 > = NonNullable<ApiPaths[Path][Method]>;
 
 type JsonContent<T> = T extends { "application/json": infer Json } ? Json : never;
+type Defined<T> = Exclude<T, undefined>;
+export type DeepDefined<T> = T extends Blob
+  ? T
+  : T extends readonly (infer Item)[]
+  ? DeepDefined<Defined<Item>>[]
+  : T extends object
+    ? { [Key in keyof T]-?: DeepDefined<Defined<T[Key]>> }
+    : T;
 
 type OperationRequestBody<
   Path extends ApiPath,
@@ -46,8 +54,9 @@ export type ApiParameters<
 export type ApiSuccessResponse<
   Path extends ApiPath,
   Method extends HttpMethod,
-> =
+> = DeepDefined<
   | OperationResponseByStatus<Path, Method, 200>
   | OperationResponseByStatus<Path, Method, 201>
   | OperationResponseByStatus<Path, Method, 202>
-  | OperationResponseByStatus<Path, Method, 204>;
+  | OperationResponseByStatus<Path, Method, 204>
+>;

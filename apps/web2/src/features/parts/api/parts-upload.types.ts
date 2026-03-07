@@ -7,6 +7,6 @@ type ResponseOf<
 
 export type SynthesisStartRequestDto = ApiRequestBody<"/api/v1/synthesis", "post">;
 export type SynthesisBatchStartResponseDto = ResponseOf<"/api/v1/synthesis", "post">;
-export type SynthesisBatchStatusResponseDto = ResponseOf<"/api/v1/synthesis/batches/{batch_id}", "get">;
+export type SynthesisBatchStatusResponseDto = ResponseOf<"/api/v1/synthesis/batches/{batchId}", "get">;
 export type NodeSearchQueryDto = NonNullable<ApiParameters<"/api/v1/ontology/nodes/search", "get">["query"]>;
 export type NodeSearchResponseDto = ResponseOf<"/api/v1/ontology/nodes/search", "get">;

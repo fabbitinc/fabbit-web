@@ -1,22 +1,22 @@
 import {
-  addFilesApiV1ChangesIssueNumberFilesPost,
-  closeCrApiV1ChangesIssueNumberClosePost,
-  createChangeRequestApiV1ChangesPost,
-  createCommentApiV1ChangesIssueNumberCommentsPost,
-  deleteCommentApiV1ChangesIssueNumberCommentsCommentIdDelete,
-  deleteFileApiV1ChangesIssueNumberFilesFileIdDelete,
-  getChangeRequestApiV1ChangesIssueNumberGet,
-  getTimelineApiV1ChangesIssueNumberTimelineGet,
-  mergeCrApiV1ChangesIssueNumberMergePost,
-  reopenCrApiV1ChangesIssueNumberReopenPost,
-  submitCrApiV1ChangesIssueNumberSubmitPost,
-  syncAssigneesApiV1ChangesIssueNumberAssigneesPut,
-  syncIssuesApiV1ChangesIssueNumberIssuesPut,
-  syncLabelsApiV1ChangesIssueNumberLabelsPut,
-  syncPartsApiV1ChangesIssueNumberPartsPut,
-  syncReviewersApiV1ChangesIssueNumberReviewersPut,
-  updateChangeRequestApiV1ChangesIssueNumberPatch,
-  updateCommentApiV1ChangesIssueNumberCommentsCommentIdPatch,
+  addFiles1 as addFilesApiV1ChangesIssueNumberFilesPost,
+  close as closeCrApiV1ChangesIssueNumberClosePost,
+  createChangeRequest as createChangeRequestApiV1ChangesPost,
+  createComment1 as createCommentApiV1ChangesIssueNumberCommentsPost,
+  deleteComment1 as deleteCommentApiV1ChangesIssueNumberCommentsCommentIdDelete,
+  deleteFile1 as deleteFileApiV1ChangesIssueNumberFilesFileIdDelete,
+  getChangeRequest as getChangeRequestApiV1ChangesIssueNumberGet,
+  getTimeline1 as getTimelineApiV1ChangesIssueNumberTimelineGet,
+  merge as mergeCrApiV1ChangesIssueNumberMergePost,
+  reopen as reopenCrApiV1ChangesIssueNumberReopenPost,
+  submit as submitCrApiV1ChangesIssueNumberSubmitPost,
+  syncAssignees1 as syncAssigneesApiV1ChangesIssueNumberAssigneesPut,
+  syncIssues as syncIssuesApiV1ChangesIssueNumberIssuesPut,
+  syncLabels1 as syncLabelsApiV1ChangesIssueNumberLabelsPut,
+  syncParts1 as syncPartsApiV1ChangesIssueNumberPartsPut,
+  syncReviewers as syncReviewersApiV1ChangesIssueNumberReviewersPut,
+  updateChangeRequest as updateChangeRequestApiV1ChangesIssueNumberPatch,
+  updateComment1 as updateCommentApiV1ChangesIssueNumberCommentsCommentIdPatch,
 } from "@/api/generated/orval/changes/changes";
 import type {
   AddChangeRequestFilesRequestDto,
@@ -54,7 +54,9 @@ import type {
 import { getPlainTextFromRichText } from "@/lib/rich-text";
 
 export async function createChangeRequest(request: CreateChangeRequestDto) {
-  return createChangeRequestApiV1ChangesPost(request);
+  return createChangeRequestApiV1ChangesPost(
+    request as Parameters<typeof createChangeRequestApiV1ChangesPost>[0],
+  );
 }
 
 export async function fetchChangeRequestDetail(changeNumber: number): Promise<ChangeRequestDetailModel> {
@@ -66,7 +68,10 @@ export async function updateChangeRequest(
   changeNumber: number,
   request: UpdateChangeRequestDto,
 ): Promise<ChangeRequestDetailModel> {
-  const response = await updateChangeRequestApiV1ChangesIssueNumberPatch(changeNumber, request);
+  const response = await updateChangeRequestApiV1ChangesIssueNumberPatch(
+    changeNumber,
+    request as Parameters<typeof updateChangeRequestApiV1ChangesIssueNumberPatch>[1],
+  );
   return toChangeRequestDetailModel(response as ChangeRequestDetailResponseDto);
 }
 
@@ -129,18 +134,27 @@ export async function fetchChangeRequestTimeline(changeNumber: number): Promise<
   const response = await getTimelineApiV1ChangesIssueNumberTimelineGet(changeNumber);
   const timeline = response as ChangeRequestTimelineResponseDto;
 
-  return timeline.items.map((item) =>
-    item.type === "comment"
-      ? toChangeRequestTimelineCommentModel(item, timeline.users)
-      : toChangeRequestTimelineActivityModel(item, timeline.users),
-  );
+  return timeline.items.map((item) => {
+    if (isChangeRequestTimelineCommentItem(item)) {
+      return toChangeRequestTimelineCommentModel(item, timeline.users);
+    }
+
+    if (isChangeRequestTimelineActivityItem(item)) {
+      return toChangeRequestTimelineActivityModel(item, timeline.users);
+    }
+
+    throw new Error(`알 수 없는 타임라인 아이템 타입입니다: ${String(item.type)}`);
+  });
 }
 
 export async function createChangeRequestComment(
   changeNumber: number,
   request: CreateChangeRequestCommentRequestDto,
 ): Promise<ChangeRequestTimelineCommentModel> {
-  const response = await createCommentApiV1ChangesIssueNumberCommentsPost(changeNumber, request);
+  const response = await createCommentApiV1ChangesIssueNumberCommentsPost(
+    changeNumber,
+    request as Parameters<typeof createCommentApiV1ChangesIssueNumberCommentsPost>[1],
+  );
   return toChangeRequestCommentModel(response as CreateChangeRequestCommentResponseDto);
 }
 
@@ -149,7 +163,11 @@ export async function updateChangeRequestComment(
   commentId: string,
   request: UpdateChangeRequestCommentRequestDto,
 ): Promise<ChangeRequestTimelineCommentModel> {
-  const response = await updateCommentApiV1ChangesIssueNumberCommentsCommentIdPatch(changeNumber, commentId, request);
+  const response = await updateCommentApiV1ChangesIssueNumberCommentsCommentIdPatch(
+    changeNumber,
+    commentId,
+    request as Parameters<typeof updateCommentApiV1ChangesIssueNumberCommentsCommentIdPatch>[2],
+  );
   return toChangeRequestCommentModel(response as UpdateChangeRequestCommentResponseDto);
 }
 
@@ -323,6 +341,18 @@ function toChangeRequestTimelineUserModel(
     phone: user.phone ?? null,
     profileImageUrl: user.profile_image_url ?? null,
   };
+}
+
+function isChangeRequestTimelineCommentItem(
+  item: ChangeRequestTimelineResponseDto["items"][number],
+): item is ChangeRequestTimelineResponseDto["items"][number] & { type: "comment" } {
+  return item.type === "comment";
+}
+
+function isChangeRequestTimelineActivityItem(
+  item: ChangeRequestTimelineResponseDto["items"][number],
+): item is ChangeRequestTimelineResponseDto["items"][number] & { type: "activity" } {
+  return item.type === "activity";
 }
 
 function isObjectLike(value: unknown): value is Record<string, unknown> {

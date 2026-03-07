@@ -11,10 +11,20 @@ interface CustomInstanceOptions {
   signal?: AbortSignal;
 }
 
+type Defined<T> = Exclude<T, undefined>;
+type DeepDefined<T> = T extends Blob
+  ? T
+  : T extends readonly (infer Item)[]
+    ? DeepDefined<Defined<Item>>[]
+    : T extends object
+      ? { [Key in keyof T]-?: DeepDefined<Defined<T[Key]>> }
+      : T;
+type NormalizedResponse<T> = [Exclude<T, Blob>] extends [never] ? T : DeepDefined<Exclude<T, Blob>>;
+
 export async function customInstance<T>(
   { url, method, params, data, headers, responseType, signal }: CustomInstanceOptions,
   options?: AxiosRequestConfig,
-): Promise<T> {
+): Promise<NormalizedResponse<T>> {
   const response = await apiClient.request<T>({
     url,
     method,
@@ -26,7 +36,7 @@ export async function customInstance<T>(
     ...options,
   });
 
-  return response.data;
+  return response.data as NormalizedResponse<T>;
 }
 
 export type ErrorType<Error> = AxiosError<Error>;

@@ -13,8 +13,15 @@ interface CreateWorkspaceActionResult {
   redirectUrl: string;
 }
 
-function toApiPlanType(planTier: PlanTier) {
-  return planTier.toUpperCase();
+function toApiPlanType(planTier: PlanTier): "STARTER" | "TEAM" | "ENTERPRISE" {
+  switch (planTier) {
+    case "starter":
+      return "STARTER";
+    case "team":
+      return "TEAM";
+    case "enterprise":
+      return "ENTERPRISE";
+  }
 }
 
 function buildSubdomainUrl(slug: string, path: string) {
@@ -36,9 +43,9 @@ export function useCreateWorkspaceAction() {
         const response = await createOrganization(
           {
             org_name: workspaceData.organizationName,
-            slug: workspaceData.slug || null,
-            industry: workspaceData.industry || null,
-            team_size: workspaceData.teamSize || null,
+            slug: workspaceData.slug || undefined,
+            industry: workspaceData.industry || undefined,
+            team_size: workspaceData.teamSize || undefined,
             plan_type: toApiPlanType(selectedPlan),
           },
           scopedToken,
@@ -59,12 +66,11 @@ export function useCreateWorkspaceAction() {
         password: signupData.password,
         full_name: signupData.name,
         org_name: workspaceData.organizationName,
-        slug: workspaceData.slug || null,
-        industry: workspaceData.industry || null,
-        team_size: workspaceData.teamSize || null,
-        job_role: workspaceData.role || null,
+        slug: workspaceData.slug || undefined,
+        industry: workspaceData.industry || undefined,
+        team_size: workspaceData.teamSize || undefined,
         plan_type: toApiPlanType(selectedPlan),
-        turnstile_token: null,
+        turnstile_token: undefined,
       });
 
       resetRegistration();

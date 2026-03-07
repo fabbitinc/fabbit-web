@@ -202,7 +202,7 @@ function CreateOrganizationLabelDialog({
                 {
                   name: normalizedName,
                   color,
-                  description: description.trim() || null,
+                  description: description.trim() || undefined,
                 },
                 {
                   onSuccess: () => handleClose(false),

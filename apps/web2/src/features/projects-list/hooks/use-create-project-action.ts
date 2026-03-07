@@ -28,7 +28,7 @@ export function useCreateProjectAction(options?: UseCreateProjectActionOptions) 
     mutationFn: async ({ name, description }: CreateProjectActionInput) =>
       createProject({
         name: name.trim(),
-        description: description.trim() || null,
+        description: description.trim() || undefined,
       }),
     onSuccess: async (project) => {
       resetCreateDraft();
