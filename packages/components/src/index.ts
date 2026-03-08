@@ -106,6 +106,7 @@ export type {
   MappingSaveDialogProps,
   MappingSaveDialogRecord,
 } from "./mapping-save-dialog";
+export { PARTS_TEMPLATE_MAPPING_PROPERTY_LABELS } from "./parts-template-mapping-property-labels";
 export { OrganizationAdvancedTab } from "./organization-advanced-tab";
 export type { OrganizationAdvancedPolicyCard, OrganizationAdvancedTabProps } from "./organization-advanced-tab";
 export { OrganizationLogsTab } from "./organization-logs-tab";
@@ -282,6 +283,8 @@ export type {
   PartsTemplateMappingEmptyStateProps,
   PartsTemplateMappingScreenProps,
 } from "./parts-template-mapping-screen";
+export { PartsTemplateMappingWorkspace } from "./parts-template-mapping-workspace";
+export type { PartsTemplateMappingWorkspaceProps } from "./parts-template-mapping-workspace";
 export {
   PartsTemplateMappingCanvasScreen,
   resolvePartsTemplateMappingCanvasRelationLabel,
@@ -293,6 +296,9 @@ export type {
   PartsTemplateMappingCanvasEdge,
   PartsTemplateMappingCanvasEmptyState,
   PartsTemplateMappingCanvasField,
+  PartsTemplateMappingCanvasFieldMappingChangeRequest,
+  PartsTemplateMappingCanvasFieldOption,
+  PartsTemplateMappingCanvasFieldOwner,
   PartsTemplateMappingCanvasNode,
   PartsTemplateMappingCanvasNodeTone,
   PartsTemplateMappingCanvasPropertyMoveRequest,
@@ -359,3 +365,5 @@ export type {
   ProductionResultDetailScreenProps,
   ProductionResultDetailTab,
 } from "./production-result-detail-screen";
+export { GltfViewer } from "./gltf-viewer";
+export type { GltfViewerProps } from "./gltf-viewer";

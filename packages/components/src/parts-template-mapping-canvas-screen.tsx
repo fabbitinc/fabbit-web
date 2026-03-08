@@ -7,7 +7,7 @@ import {
   type ReactNode,
   type PointerEvent as ReactPointerEvent,
 } from "react";
-import { Grip, Link2, Plus, ScanSearch, Trash2, ZoomIn, ZoomOut } from "lucide-react";
+import { AlertTriangle, ChevronDown, Grip, Link2, Plus, ScanSearch, Trash2, X, ZoomIn, ZoomOut } from "lucide-react";
 import {
   Badge,
   Button,
@@ -19,6 +19,11 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@fabbit/ui";
 import "./parts-template-mapping-canvas-screen.css";
 
@@ -34,6 +39,13 @@ const WORKAREA_HEIGHT = CANVAS_HEIGHT - CANVAS_SAFE_MARGIN * 2;
 const FIT_VIEW_PADDING = 120;
 const MIN_VIEWPORT_SCALE = 0.45;
 const MAX_VIEWPORT_SCALE = 1.9;
+const NODE_HEADER_HEIGHT = 72;
+const NODE_FOOTER_HEIGHT = 68;
+const NODE_PROPERTY_SECTION_PADDING = 32;
+const NODE_PROPERTY_EMPTY_HEIGHT = 56;
+const PROPERTY_ROW_HEIGHT = 56;
+const PROPERTY_ROW_GAP = 8;
+const FIELD_UNMAPPED_SELECT_VALUE = "__unmapped__";
 const DEFAULT_VIEWPORT = {
   x: 140,
   y: 100,
@@ -46,10 +58,17 @@ export type PartsTemplateMappingCanvasNodeTone =
   | "drawing"
   | "project";
 
+export interface PartsTemplateMappingCanvasFieldOption {
+  value: string;
+  label: string;
+}
+
 export interface PartsTemplateMappingCanvasField {
   id: string;
   label: string;
   hint?: string;
+  mappedValue?: string | null;
+  mappingOptions?: PartsTemplateMappingCanvasFieldOption[];
 }
 
 export type PartsTemplateMappingCanvasPropertyOwner =
@@ -57,10 +76,21 @@ export type PartsTemplateMappingCanvasPropertyOwner =
   | { kind: "edge"; id: string }
   | { kind: "unassigned" };
 
+export type PartsTemplateMappingCanvasFieldOwner = Exclude<
+  PartsTemplateMappingCanvasPropertyOwner,
+  { kind: "unassigned" }
+>;
+
 export interface PartsTemplateMappingCanvasPropertyMoveRequest {
   property: PartsTemplateMappingCanvasField;
   source: PartsTemplateMappingCanvasPropertyOwner;
   target: PartsTemplateMappingCanvasPropertyOwner;
+}
+
+export interface PartsTemplateMappingCanvasFieldMappingChangeRequest {
+  owner: PartsTemplateMappingCanvasFieldOwner;
+  fieldId: string;
+  value: string | null;
 }
 
 export interface PartsTemplateMappingCanvasNode {
@@ -148,6 +178,7 @@ export interface PartsTemplateMappingCanvasScreenProps {
   onDeleteEdge?: (edgeId: string) => void;
   onDeleteNode?: (nodeId: string) => void;
   onEdgePositionChange?: (edgeId: string, position: { x: number; y: number }) => void;
+  onFieldMappingChange?: (request: PartsTemplateMappingCanvasFieldMappingChangeRequest) => void;
   onMoveProperty?: (request: PartsTemplateMappingCanvasPropertyMoveRequest) => void;
   onNodePositionChange?: (nodeId: string, position: { x: number; y: number }) => void;
   onResetNodes?: () => void;
@@ -193,8 +224,17 @@ function clamp(value: number, min: number, max: number) {
 }
 
 function getNodeHeight(node: PartsTemplateMappingCanvasNode) {
-  const fieldHeight = (node.fields?.length ?? 0) * 28;
-  return 96 + fieldHeight;
+  const fieldCount = node.fields?.length ?? 0;
+
+  if (fieldCount === 0) {
+    return NODE_HEADER_HEIGHT + NODE_PROPERTY_SECTION_PADDING + NODE_PROPERTY_EMPTY_HEIGHT + NODE_FOOTER_HEIGHT;
+  }
+
+  return NODE_HEADER_HEIGHT
+    + NODE_PROPERTY_SECTION_PADDING
+    + fieldCount * PROPERTY_ROW_HEIGHT
+    + (fieldCount - 1) * PROPERTY_ROW_GAP
+    + NODE_FOOTER_HEIGHT;
 }
 
 function getNodeCenterPoint(node: PartsTemplateMappingCanvasNode) {
@@ -286,6 +326,14 @@ function canMovePropertyBetweenOwners(
   return target.kind === "node" || target.kind === "unassigned";
 }
 
+function resolveCanvasFieldMappedLabel(field: PartsTemplateMappingCanvasField) {
+  if (!field.mappedValue) {
+    return null;
+  }
+
+  return field.mappingOptions?.find((option) => option.value === field.mappedValue)?.label ?? field.mappedValue;
+}
+
 interface DragStatePan {
   mode: "pan";
   originClientX: number;
@@ -344,6 +392,7 @@ export function PartsTemplateMappingCanvasScreen({
   onDeleteEdge,
   onDeleteNode,
   onEdgePositionChange,
+  onFieldMappingChange,
   onMoveProperty,
   onNodePositionChange,
   onResetNodes,
@@ -363,7 +412,44 @@ export function PartsTemplateMappingCanvasScreen({
   const [propertyDragState, setPropertyDragState] = useState<PropertyDragState | null>(null);
   const [propertyDropTarget, setPropertyDropTarget] = useState<PartsTemplateMappingCanvasPropertyOwner | null>(null);
   const [pointerWorld, setPointerWorld] = useState<{ x: number; y: number } | null>(null);
-  const showPropertySidebar = Boolean(onMoveProperty || unassignedProperties.length > 0);
+  const [isSelectedEditorCollapsed, setIsSelectedEditorCollapsed] = useState(false);
+  const [isUnassignedCollapsed, setIsUnassignedCollapsed] = useState(false);
+  const showPropertySidebar = Boolean(onMoveProperty || onFieldMappingChange || unassignedProperties.length > 0);
+  const hasUnassignedProperties = unassignedProperties.length > 0;
+  const selectedNode = selectedNodeId ? nodes.find((node) => node.id === selectedNodeId) ?? null : null;
+  const selectedEdge = selectedEdgeId ? edges.find((edge) => edge.id === selectedEdgeId) ?? null : null;
+  const selectedEdgeSource = selectedEdge ? nodes.find((node) => node.id === selectedEdge.sourceId) ?? null : null;
+  const selectedEdgeTarget = selectedEdge ? nodes.find((node) => node.id === selectedEdge.targetId) ?? null : null;
+  const selectedEditor =
+    selectedNode
+      ? {
+          owner: { kind: "node", id: selectedNode.id } as const,
+          badge: selectedNode.title,
+          title: `${selectedNode.title} 편집`,
+          description: "카드 안 항목의 연결값을 편집할 수 있습니다.",
+          fields: selectedNode.fields ?? [],
+        }
+      : selectedEdge
+        ? {
+            owner: { kind: "edge", id: selectedEdge.id } as const,
+            badge: "연결",
+            title: `${resolvePartsTemplateMappingCanvasRelationLabel(
+              selectedEdgeSource?.tone,
+              selectedEdgeTarget?.tone,
+            )} 편집`,
+            description: "관계 항목의 연결값을 편집할 수 있습니다.",
+            fields: selectedEdge.properties ?? [],
+          }
+        : null;
+  const selectedEditorKey = selectedEditor
+    ? `${selectedEditor.owner.kind}:${selectedEditor.owner.id}`
+    : null;
+
+  useEffect(() => {
+    if (selectedEditorKey) {
+      setIsSelectedEditorCollapsed(false);
+    }
+  }, [selectedEditorKey]);
 
   function resolveEdgeCardPosition(edge: PartsTemplateMappingCanvasEdge) {
     if (typeof edge.x === "number" && typeof edge.y === "number") {
@@ -830,6 +916,8 @@ export function PartsTemplateMappingCanvasScreen({
     const isDragging = propertyDragState?.property.id === property.id;
     const disableInteraction = options?.disableInteraction ?? false;
     const isDraggable = Boolean(onMoveProperty) && !connectingNodeId && !disableInteraction;
+    const mappedLabel = resolveCanvasFieldMappedLabel(property);
+    const supportingText = tone === "shelf" ? property.hint : (mappedLabel ?? "미매핑");
 
     return (
       <div
@@ -848,14 +936,92 @@ export function PartsTemplateMappingCanvasScreen({
       >
         <div className="parts-template-mapping-canvas-property-item-copy">
           <p className="truncate text-sm font-medium text-foreground">{property.label}</p>
-          {property.hint ? (
-            <p className="truncate text-xs text-muted-foreground">{property.hint}</p>
+          {supportingText ? (
+            <p
+              className={cn(
+                "truncate text-xs",
+                tone === "shelf"
+                  ? "text-muted-foreground"
+                  : mappedLabel
+                    ? "text-muted-foreground"
+                    : "text-[color:var(--brand-600)]",
+              )}
+            >
+              {supportingText}
+            </p>
           ) : null}
         </div>
         <div className="parts-template-mapping-canvas-property-item-meta">
           <Grip className="size-3.5" />
         </div>
       </div>
+    );
+  }
+
+  function renderFieldEditor(
+    field: PartsTemplateMappingCanvasField,
+    owner: PartsTemplateMappingCanvasFieldOwner,
+  ) {
+    const mappedLabel = resolveCanvasFieldMappedLabel(field);
+    const selectValue = field.mappedValue ?? FIELD_UNMAPPED_SELECT_VALUE;
+    const mappingOptions = field.mappingOptions ?? [];
+    const isEditable = Boolean(onFieldMappingChange) && !connectingNodeId;
+
+    return (
+      <article
+        key={field.id}
+        className="parts-template-mapping-canvas-field-editor"
+      >
+        <div className="parts-template-mapping-canvas-field-editor-header">
+          <div className="parts-template-mapping-canvas-field-editor-copy">
+            <p className="truncate text-sm font-semibold text-foreground">{field.label}</p>
+            <p
+              className={cn(
+                "mt-1 text-xs",
+                mappedLabel ? "text-muted-foreground" : "text-[color:var(--brand-600)]",
+              )}
+            >
+              {mappedLabel ?? "아직 연결되지 않았습니다."}
+            </p>
+          </div>
+          {field.mappedValue ? (
+            <Button
+              aria-label={`${field.label} 연결 해제`}
+              size="icon-xs"
+              variant="ghost"
+              onClick={() => onFieldMappingChange?.({ owner, fieldId: field.id, value: null })}
+            >
+              <X className="size-3.5" />
+            </Button>
+          ) : null}
+        </div>
+
+        <div className="parts-template-mapping-canvas-field-editor-control">
+          <Select
+            disabled={!isEditable || mappingOptions.length === 0}
+            value={selectValue}
+            onValueChange={(value) =>
+              onFieldMappingChange?.({
+                owner,
+                fieldId: field.id,
+                value: value === FIELD_UNMAPPED_SELECT_VALUE ? null : value,
+              })
+            }
+          >
+            <SelectTrigger className="h-9 rounded-xl border-border/70 bg-background/70 text-sm shadow-none">
+              <SelectValue placeholder={mappingOptions.length ? "항목을 선택하세요" : "선택 항목이 없습니다"} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value={FIELD_UNMAPPED_SELECT_VALUE}>미매핑</SelectItem>
+              {mappingOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </article>
     );
   }
 
@@ -1311,40 +1477,126 @@ export function PartsTemplateMappingCanvasScreen({
             <aside className="parts-template-mapping-canvas-sidebar w-full shrink-0 overflow-hidden rounded-[28px] border bg-card shadow-sm lg:h-full lg:w-[340px] lg:max-w-[340px]">
               <div className="flex h-full min-h-0 flex-col">
                 <div className="border-b border-border/70 px-5 py-4">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Badge variant="outline">미배치 항목</Badge>
-                    <Badge variant="secondary">{unassignedProperties.length}개</Badge>
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Badge variant="outline">선택한 카드</Badge>
+                        {selectedEditor ? <Badge variant="secondary">{selectedEditor.fields.length}개</Badge> : null}
+                      </div>
+                      {selectedEditor ? (
+                        <>
+                          <h2 className="mt-3 text-base font-semibold text-foreground">{selectedEditor.title}</h2>
+                          <p className="mt-1 text-sm text-muted-foreground">{selectedEditor.description}</p>
+                        </>
+                      ) : (
+                        <p className="mt-3 text-sm text-muted-foreground">
+                          카드나 연결을 선택하면 여기서 항목을 편집할 수 있습니다.
+                        </p>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      aria-expanded={!isSelectedEditorCollapsed}
+                      aria-label={isSelectedEditorCollapsed ? "참조 편집 펼치기" : "참조 편집 접기"}
+                      className="mt-0.5 inline-flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                      onClick={() => setIsSelectedEditorCollapsed((prev) => !prev)}
+                    >
+                      <ChevronDown
+                        className={cn(
+                          "size-4 transition-transform duration-200",
+                          isSelectedEditorCollapsed ? "-rotate-90" : "rotate-0",
+                        )}
+                      />
+                    </button>
                   </div>
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    카드에서 꺼낸 항목을 잠시 보관하거나, 여기서 다시 카드나 연결에 배치할 수 있습니다.
-                  </p>
                 </div>
 
-                <div className="min-h-[260px] flex-1 overflow-y-auto px-5 py-5 lg:min-h-0">
-                  <div
-                    className="parts-template-mapping-canvas-shelf"
-                    data-drop-active={
-                      propertyDropTarget && isSamePropertyOwner(propertyDropTarget, { kind: "unassigned" })
-                        ? "true"
-                        : "false"
-                    }
-                    onDragOver={(event) => handlePropertyDropTargetDragOver(event, { kind: "unassigned" })}
-                    onDragLeave={(event) => handlePropertyDropTargetDragLeave(event, { kind: "unassigned" })}
-                    onDrop={(event) => handlePropertyDrop(event, { kind: "unassigned" })}
-                  >
-                    {unassignedProperties.length ? (
-                      <div className="parts-template-mapping-canvas-shelf-grid">
-                        {unassignedProperties.map((property) =>
-                          renderPropertyItem(property, { kind: "unassigned" }, "shelf"),
-                        )}
-                      </div>
+                {!isSelectedEditorCollapsed ? (
+                  <div className="max-h-[42%] shrink-0 overflow-y-auto border-b border-border/70 lg:min-h-0">
+                    {selectedEditor ? (
+                      selectedEditor.fields.length ? (
+                        <div className="parts-template-mapping-canvas-field-editor-list">
+                          {selectedEditor.fields.map((field) => renderFieldEditor(field, selectedEditor.owner))}
+                        </div>
+                      ) : (
+                        <div className="parts-template-mapping-canvas-shelf-empty mx-5 my-5 min-h-[180px] rounded-[20px] border border-dashed border-border/70 bg-background/70">
+                          아직 배치된 항목이 없습니다.
+                        </div>
+                      )
                     ) : (
-                      <div className="parts-template-mapping-canvas-shelf-empty">
-                        아직 미배치 항목이 없습니다.
+                      <div className="parts-template-mapping-canvas-shelf-empty mx-5 my-5 min-h-[180px] rounded-[20px] border border-dashed border-border/70 bg-background/70">
+                        편집할 카드를 선택해 주세요.
                       </div>
                     )}
                   </div>
+                ) : null}
+
+                <div
+                  className="parts-template-mapping-canvas-unassigned-header border-b border-border/70 px-5 py-4"
+                  data-has-warning={hasUnassignedProperties ? "true" : "false"}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Badge variant="outline">미배치 항목</Badge>
+                        <Badge variant="secondary">
+                          {hasUnassignedProperties ? (
+                            <AlertTriangle className="size-3 text-[var(--status-warning)]" aria-hidden="true" />
+                          ) : null}
+                          {unassignedProperties.length}개
+                        </Badge>
+                      </div>
+                      <p
+                        className="mt-2 text-sm text-muted-foreground"
+                        style={hasUnassignedProperties ? { color: "var(--status-warning)" } : undefined}
+                      >
+                        카드에서 꺼낸 항목을 잠시 보관하거나, 여기서 다시 카드나 연결에 배치할 수 있습니다.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      aria-expanded={!isUnassignedCollapsed}
+                      aria-label={isUnassignedCollapsed ? "미배치 항목 펼치기" : "미배치 항목 접기"}
+                      className="mt-0.5 inline-flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                      onClick={() => setIsUnassignedCollapsed((prev) => !prev)}
+                    >
+                      <ChevronDown
+                        className={cn(
+                          "size-4 transition-transform duration-200",
+                          isUnassignedCollapsed ? "-rotate-90" : "rotate-0",
+                        )}
+                      />
+                    </button>
+                  </div>
                 </div>
+
+                {!isUnassignedCollapsed ? (
+                  <div className="min-h-[260px] flex-1 overflow-y-auto lg:min-h-0">
+                    <div
+                      className="parts-template-mapping-canvas-shelf"
+                      data-drop-active={
+                        propertyDropTarget && isSamePropertyOwner(propertyDropTarget, { kind: "unassigned" })
+                          ? "true"
+                          : "false"
+                      }
+                      onDragOver={(event) => handlePropertyDropTargetDragOver(event, { kind: "unassigned" })}
+                      onDragLeave={(event) => handlePropertyDropTargetDragLeave(event, { kind: "unassigned" })}
+                      onDrop={(event) => handlePropertyDrop(event, { kind: "unassigned" })}
+                    >
+                      {unassignedProperties.length ? (
+                        <div className="parts-template-mapping-canvas-shelf-grid">
+                          {unassignedProperties.map((property) =>
+                            renderPropertyItem(property, { kind: "unassigned" }, "shelf"),
+                          )}
+                        </div>
+                      ) : (
+                        <div className="parts-template-mapping-canvas-shelf-empty">
+                          아직 미배치 항목이 없습니다.
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ) : null}
               </div>
             </aside>
           ) : null}

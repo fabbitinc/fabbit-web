@@ -145,6 +145,18 @@ const brandThemes: Record<string, BrandThemeDef> = {
       <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01z" />
     ),
   },
+  /* 11. Fabbit Core — Inter */
+  "theme-primary-11": {
+    name: "Fabbit",
+    fontFamily: "'Inter', sans-serif",
+    icon: (
+      <>
+        <path d="M12 2L2 7l10 5 10-5-10-5z" />
+        <path d="M2 17l10 5 10-5" />
+        <path d="M2 12l10 5 10-5" />
+      </>
+    ),
+  },
 };
 
 const defaultThemeKey = "theme-primary-1";

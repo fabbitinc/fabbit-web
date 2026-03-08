@@ -4,6 +4,8 @@ import {
   PartsTemplateMappingCanvasScreen,
   resolvePartsTemplateMappingCanvasRelationLabel,
   type PartsTemplateMappingCanvasEdge,
+  type PartsTemplateMappingCanvasFieldMappingChangeRequest,
+  type PartsTemplateMappingCanvasFieldOption,
   type PartsTemplateMappingCanvasNode,
   type PartsTemplateMappingCanvasNodeTone,
   type PartsTemplateMappingCanvasField,
@@ -26,6 +28,12 @@ const MULTI_COLUMN_GAP_Y = 56;
 const EDGE_CARD_WIDTH = 196;
 const EDGE_CARD_OFFSET_Y = 54;
 const DEFAULT_DATASET_ID = "multi";
+const NODE_HEADER_HEIGHT = 72;
+const NODE_FOOTER_HEIGHT = 68;
+const NODE_PROPERTY_SECTION_PADDING = 32;
+const NODE_PROPERTY_EMPTY_HEIGHT = 56;
+const PROPERTY_ROW_HEIGHT = 56;
+const PROPERTY_ROW_GAP = 8;
 const PROPERTY_LABEL_ORDER = [
   "품번",
   "품명",
@@ -70,21 +78,99 @@ interface CanvasDatasetGraph {
   unassignedProperties: PartsTemplateMappingCanvasField[];
 }
 
+const PART_FIELD_OPTIONS: PartsTemplateMappingCanvasFieldOption[] = [
+  { value: "part-number", label: "품번" },
+  { value: "part-name", label: "부품명" },
+  { value: "part-category", label: "분류" },
+  { value: "part-spec", label: "규격" },
+  { value: "part-unit", label: "단위" },
+  { value: "part-material", label: "재질" },
+];
+
+const DRAWING_FIELD_OPTIONS: PartsTemplateMappingCanvasFieldOption[] = [
+  { value: "drawing-number", label: "도면 번호" },
+  { value: "drawing-revision", label: "개정" },
+];
+
+const SUPPLIER_FIELD_OPTIONS: PartsTemplateMappingCanvasFieldOption[] = [
+  { value: "supplier-code", label: "공급사 코드" },
+  { value: "supplier-name", label: "공급사명" },
+];
+
+const PROJECT_FIELD_OPTIONS: PartsTemplateMappingCanvasFieldOption[] = [
+  { value: "project-code", label: "프로젝트 코드" },
+  { value: "project-name", label: "프로젝트명" },
+];
+
+const RELATION_FIELD_OPTIONS: PartsTemplateMappingCanvasFieldOption[] = [
+  { value: "relation-key", label: "연결 키" },
+  { value: "relation-rule", label: "적용 규칙" },
+  { value: "relation-note", label: "비고" },
+];
+
+function cloneFieldOptions(options?: PartsTemplateMappingCanvasFieldOption[]) {
+  return options?.map((option) => ({ ...option })) ?? [];
+}
+
+function getNodeFieldOptions(tone: PartsTemplateMappingCanvasNodeTone) {
+  switch (tone) {
+    case "supplier":
+      return cloneFieldOptions(SUPPLIER_FIELD_OPTIONS);
+    case "drawing":
+      return cloneFieldOptions(DRAWING_FIELD_OPTIONS);
+    case "project":
+      return cloneFieldOptions(PROJECT_FIELD_OPTIONS);
+    default:
+      return cloneFieldOptions(PART_FIELD_OPTIONS);
+  }
+}
+
+function getRelationFieldOptions() {
+  return cloneFieldOptions(RELATION_FIELD_OPTIONS);
+}
+
+function applyFieldMappingOptions(
+  field: PartsTemplateMappingCanvasField,
+  options?: PartsTemplateMappingCanvasFieldOption[],
+) {
+  const nextOptions = cloneFieldOptions(options);
+  const nextMappedValue = nextOptions.some((option) => option.value === field.mappedValue)
+    ? field.mappedValue ?? null
+    : null;
+
+  return {
+    ...field,
+    mappedValue: nextMappedValue,
+    mappingOptions: nextOptions.length ? nextOptions : undefined,
+  };
+}
+
+function clearFieldMappingContext(field: PartsTemplateMappingCanvasField) {
+  return {
+    ...field,
+    mappedValue: null,
+    mappingOptions: undefined,
+  };
+}
+
 function cloneNodes(nodes: PartsTemplateMappingCanvasNode[]) {
   return nodes.map((node) => ({
     ...node,
-    fields: node.fields?.map((field) => ({ ...field })),
+    fields: cloneFields(node.fields ?? []),
   }));
 }
 
 function cloneFields(fields: PartsTemplateMappingCanvasField[]) {
-  return fields.map((field) => ({ ...field }));
+  return fields.map((field) => ({
+    ...field,
+    mappingOptions: cloneFieldOptions(field.mappingOptions),
+  }));
 }
 
 function cloneEdges(edges: PartsTemplateMappingCanvasEdge[]) {
   return edges.map((edge) => ({
     ...edge,
-    properties: edge.properties?.map((property) => ({ ...property })),
+    properties: cloneFields(edge.properties ?? []),
   }));
 }
 
@@ -108,9 +194,17 @@ function sortCanvasProperties(properties: PartsTemplateMappingCanvasField[]) {
 function getNodeHeight(
   node: Pick<PartsTemplateMappingCanvasNode, "fields" | "description">,
 ) {
-  const descriptionHeight = node.description ? 48 : 0;
-  const fieldHeight = (node.fields?.length ?? 0) * 28;
-  return 108 + descriptionHeight + fieldHeight;
+  const fieldCount = node.fields?.length ?? 0;
+
+  if (fieldCount === 0) {
+    return NODE_HEADER_HEIGHT + NODE_PROPERTY_SECTION_PADDING + NODE_PROPERTY_EMPTY_HEIGHT + NODE_FOOTER_HEIGHT;
+  }
+
+  return NODE_HEADER_HEIGHT
+    + NODE_PROPERTY_SECTION_PADDING
+    + fieldCount * PROPERTY_ROW_HEIGHT
+    + (fieldCount - 1) * PROPERTY_ROW_GAP
+    + NODE_FOOTER_HEIGHT;
 }
 
 function getEdgeCardHeight(edge: Pick<PartsTemplateMappingCanvasEdge, "properties">) {
@@ -134,7 +228,7 @@ function buildDatasetNode({
   tone: PartsTemplateMappingCanvasNodeTone;
   subtitle?: string;
   description?: string;
-  fields: Array<{ label: string; hint: string }>;
+  fields: Array<{ label: string; hint: string; mappedValue?: string | null }>;
 }): PartsTemplateMappingCanvasNode {
   const titleByTone: Record<PartsTemplateMappingCanvasNodeTone, string> = {
     supplier: "공급사",
@@ -151,11 +245,17 @@ function buildDatasetNode({
     tone,
     x: WORKAREA_CENTER_X - NODE_WIDTH / 2,
     y: WORKAREA_CENTER_Y,
-    fields: fields.map((field, index) => ({
-      id: `${id}-field-${index + 1}`,
-      label: field.label,
-      hint: field.hint,
-    })),
+    fields: fields.map((field, index) =>
+      applyFieldMappingOptions(
+        {
+          id: `${id}-field-${index + 1}`,
+          label: field.label,
+          hint: field.hint,
+          mappedValue: field.mappedValue ?? null,
+        },
+        getNodeFieldOptions(tone),
+      ),
+    ),
   };
 }
 
@@ -165,16 +265,24 @@ function buildRelationProperties(
   targetTitle: string,
 ): PartsTemplateMappingCanvasEdge["properties"] {
   return [
-    {
-      id: `${edgeId}-key`,
-      label: "연결 키",
-      hint: `${sourceTitle} -> ${targetTitle}`,
-    },
-    {
-      id: `${edgeId}-rule`,
-      label: "적용 규칙",
-      hint: "관계 조건 설정",
-    },
+    applyFieldMappingOptions(
+      {
+        id: `${edgeId}-key`,
+        label: "연결 키",
+        hint: `${sourceTitle} -> ${targetTitle}`,
+        mappedValue: "relation-key",
+      },
+      getRelationFieldOptions(),
+    ),
+    applyFieldMappingOptions(
+      {
+        id: `${edgeId}-rule`,
+        label: "적용 규칙",
+        hint: "관계 조건 설정",
+        mappedValue: "relation-rule",
+      },
+      getRelationFieldOptions(),
+    ),
   ];
 }
 
@@ -246,10 +354,10 @@ const DATASET_DEFINITIONS: CanvasDatasetDefinition[] = [
         subtitle: "핵심",
         description: "부품 기본 정보",
         fields: [
-          { label: "품번", hint: "식별 키" },
-          { label: "품명", hint: "대표 이름" },
-          { label: "규격", hint: "기본 규격" },
-          { label: "재질", hint: "소재 정보" },
+          { label: "품번", hint: "식별 키", mappedValue: "part-number" },
+          { label: "품명", hint: "대표 이름", mappedValue: "part-name" },
+          { label: "규격", hint: "기본 규격", mappedValue: "part-spec" },
+          { label: "재질", hint: "소재 정보", mappedValue: "part-material" },
         ],
       }),
     ],
@@ -271,17 +379,17 @@ const DATASET_DEFINITIONS: CanvasDatasetDefinition[] = [
         subtitle: "기준",
         description: "부품 정보",
         fields: [
-          { label: "품번", hint: "식별 키" },
-          { label: "품명", hint: "대표 이름" },
-          { label: "분류", hint: "카테고리" },
+          { label: "품번", hint: "식별 키", mappedValue: "part-number" },
+          { label: "품명", hint: "대표 이름", mappedValue: "part-name" },
+          { label: "분류", hint: "카테고리", mappedValue: "part-category" },
         ],
       }),
       buildDatasetNode({
         id: "pair-drawing",
         tone: "drawing",
         fields: [
-          { label: "도면 번호", hint: "문서 키" },
-          { label: "개정", hint: "버전 정보" },
+          { label: "도면 번호", hint: "문서 키", mappedValue: "drawing-number" },
+          { label: "개정", hint: "버전 정보", mappedValue: "drawing-revision" },
         ],
       }),
     ],
@@ -311,26 +419,26 @@ const DATASET_DEFINITIONS: CanvasDatasetDefinition[] = [
         subtitle: "핵심",
         description: "부품 기본 정보",
         fields: [
-          { label: "품번", hint: "식별 키" },
-          { label: "품명", hint: "대표 이름" },
-          { label: "규격", hint: "기본 규격" },
-          { label: "재질", hint: "소재 정보" },
+          { label: "품번", hint: "식별 키", mappedValue: "part-number" },
+          { label: "품명", hint: "대표 이름", mappedValue: "part-name" },
+          { label: "규격", hint: "기본 규격", mappedValue: "part-spec" },
+          { label: "재질", hint: "소재 정보", mappedValue: "part-material" },
         ],
       }),
       buildDatasetNode({
         id: "multi-drawing",
         tone: "drawing",
         fields: [
-          { label: "도면 번호", hint: "문서 키" },
-          { label: "개정", hint: "버전 정보" },
+          { label: "도면 번호", hint: "문서 키", mappedValue: "drawing-number" },
+          { label: "개정", hint: "버전 정보", mappedValue: "drawing-revision" },
         ],
       }),
       buildDatasetNode({
         id: "multi-supplier",
         tone: "supplier",
         fields: [
-          { label: "공급사 코드", hint: "거래처 식별" },
-          { label: "공급사명", hint: "표시 이름" },
+          { label: "공급사 코드", hint: "거래처 식별", mappedValue: "supplier-code" },
+          { label: "공급사명", hint: "표시 이름", mappedValue: "supplier-name" },
         ],
       }),
       buildDatasetNode({
@@ -339,8 +447,8 @@ const DATASET_DEFINITIONS: CanvasDatasetDefinition[] = [
         subtitle: "컨텍스트",
         description: "프로젝트 정보",
         fields: [
-          { label: "프로젝트 코드", hint: "관리 코드" },
-          { label: "프로젝트명", hint: "대표 이름" },
+          { label: "프로젝트 코드", hint: "관리 코드", mappedValue: "project-code" },
+          { label: "프로젝트명", hint: "대표 이름", mappedValue: "project-name" },
         ],
       }),
     ],
@@ -558,6 +666,17 @@ function normalizeGraphProperties(graph: CanvasDatasetGraph) {
   };
 }
 
+function applyFieldToNode(
+  field: PartsTemplateMappingCanvasField,
+  node: Pick<PartsTemplateMappingCanvasNode, "tone">,
+) {
+  return applyFieldMappingOptions(field, getNodeFieldOptions(node.tone ?? "part"));
+}
+
+function applyFieldToEdge(field: PartsTemplateMappingCanvasField) {
+  return applyFieldMappingOptions(field, getRelationFieldOptions());
+}
+
 function getDatasetDefinition(datasetId: CanvasDatasetId) {
   return DATASET_DEFINITIONS.find((dataset) => dataset.id === datasetId) ?? DATASET_DEFINITIONS[0];
 }
@@ -590,13 +709,15 @@ function movePropertyInGraph(
 
   if (request.target.kind === "node") {
     const targetId = request.target.id;
+    const targetNode = nextNodes.find((node) => node.id === targetId);
+    const nextProperty = targetNode ? applyFieldToNode(property, targetNode) : property;
 
     return normalizeGraphProperties({
       nodes: nextNodes.map((node) =>
         node.id === targetId
           ? {
               ...node,
-              fields: [...(node.fields ?? []), property],
+              fields: [...(node.fields ?? []), nextProperty],
             }
           : node,
       ),
@@ -607,6 +728,7 @@ function movePropertyInGraph(
 
   if (request.target.kind === "edge") {
     const targetId = request.target.id;
+    const nextProperty = applyFieldToEdge(property);
 
     return normalizeGraphProperties({
       nodes: nextNodes,
@@ -614,7 +736,7 @@ function movePropertyInGraph(
         edge.id === targetId
           ? {
               ...edge,
-              properties: [...(edge.properties ?? []), property],
+              properties: [...(edge.properties ?? []), nextProperty],
             }
           : edge,
       ),
@@ -622,12 +744,57 @@ function movePropertyInGraph(
     });
   }
 
-  nextUnassigned = [...nextUnassigned, property];
+  nextUnassigned = [...nextUnassigned, clearFieldMappingContext(property)];
 
   return normalizeGraphProperties({
     nodes: nextNodes,
     edges: nextEdges,
     unassignedProperties: nextUnassigned,
+  });
+}
+
+function updateFieldMappingInGraph(
+  graph: CanvasDatasetGraph,
+  request: PartsTemplateMappingCanvasFieldMappingChangeRequest,
+) {
+  if (request.owner.kind === "node") {
+    return normalizeGraphProperties({
+      ...graph,
+      nodes: graph.nodes.map((node) =>
+        node.id === request.owner.id
+          ? {
+              ...node,
+              fields: (node.fields ?? []).map((field) =>
+                field.id === request.fieldId
+                  ? {
+                      ...field,
+                      mappedValue: request.value,
+                    }
+                  : field,
+              ),
+            }
+          : node,
+      ),
+    });
+  }
+
+  return normalizeGraphProperties({
+    ...graph,
+    edges: graph.edges.map((edge) =>
+      edge.id === request.owner.id
+        ? {
+            ...edge,
+            properties: (edge.properties ?? []).map((field) =>
+              field.id === request.fieldId
+                ? {
+                    ...field,
+                    mappedValue: request.value,
+                  }
+                : field,
+            ),
+          }
+        : edge,
+    ),
   });
 }
 
@@ -767,7 +934,7 @@ function PartsTemplateMappingCanvasScreenStory({
             edges: current.edges.filter((edge) => edge.id !== edgeId),
             unassignedProperties: [
               ...current.unassignedProperties,
-              ...(removedEdge?.properties ?? []),
+              ...(removedEdge?.properties ?? []).map((field) => clearFieldMappingContext(field)),
             ],
           });
         });
@@ -786,8 +953,8 @@ function PartsTemplateMappingCanvasScreenStory({
             ),
             unassignedProperties: [
               ...current.unassignedProperties,
-              ...(removedNode?.fields ?? []),
-              ...removedEdges.flatMap((edge) => edge.properties ?? []),
+              ...(removedNode?.fields ?? []).map((field) => clearFieldMappingContext(field)),
+              ...removedEdges.flatMap((edge) => (edge.properties ?? []).map((field) => clearFieldMappingContext(field))),
             ],
           });
         });
@@ -797,6 +964,9 @@ function PartsTemplateMappingCanvasScreenStory({
           ...current,
           edges: current.edges.map((edge) => (edge.id === edgeId ? { ...edge, ...position } : edge)),
         }));
+      }}
+      onFieldMappingChange={(request) => {
+        setGraph((current) => updateFieldMappingInGraph(current, request));
       }}
       onMoveProperty={(request) => {
         setGraph((current) => movePropertyInGraph(current, request));

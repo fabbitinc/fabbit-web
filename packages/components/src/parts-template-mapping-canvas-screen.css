@@ -188,15 +188,18 @@
   }
 
   .parts-template-mapping-canvas-property-item[data-property-tone="shelf"] {
-    min-height: 64px;
+    min-height: 0;
     align-items: center;
-    border-radius: 18px;
-    background:
-      linear-gradient(
-        180deg,
-        color-mix(in srgb, var(--theme-surface) 92%, transparent),
-        color-mix(in srgb, var(--theme-background) 72%, transparent)
-      );
+    gap: 10px;
+    padding: 9px 2px;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+  }
+
+  .parts-template-mapping-canvas-property-item[data-property-tone="shelf"]:hover {
+    background: color-mix(in srgb, var(--brand-500) 4%, transparent);
   }
 
   .parts-template-mapping-canvas-property-item[data-property-dragging="true"] {
@@ -216,6 +219,15 @@
     color: var(--theme-text-secondary);
   }
 
+  .parts-template-mapping-canvas-property-item[data-property-tone="shelf"] .parts-template-mapping-canvas-property-item-meta {
+    opacity: 0.58;
+    transition: opacity 160ms ease;
+  }
+
+  .parts-template-mapping-canvas-property-item[data-property-tone="shelf"]:hover .parts-template-mapping-canvas-property-item-meta {
+    opacity: 0.88;
+  }
+
   .parts-template-mapping-canvas-sidebar {
     background:
       linear-gradient(
@@ -225,17 +237,64 @@
       );
   }
 
-  .parts-template-mapping-canvas-shelf {
-    min-height: 100%;
-    border: 1px dashed color-mix(in srgb, var(--theme-border) 74%, transparent);
-    border-radius: 24px;
+  .parts-template-mapping-canvas-field-editor-list {
+    display: flex;
+    flex-direction: column;
+    padding: 16px 0;
+  }
+
+  .parts-template-mapping-canvas-field-editor {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 0;
+    padding: 12px 20px;
+    border-bottom: 1px solid color-mix(in srgb, var(--theme-border) 58%, transparent);
+  }
+
+  .parts-template-mapping-canvas-field-editor:first-child {
+    padding-top: 0;
+  }
+
+  .parts-template-mapping-canvas-field-editor:last-child {
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+
+  .parts-template-mapping-canvas-field-editor-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  .parts-template-mapping-canvas-field-editor-copy {
+    min-width: 0;
+    flex: 1;
+  }
+
+  .parts-template-mapping-canvas-field-editor-control {
+    width: 100%;
+  }
+
+  .parts-template-mapping-canvas-unassigned-header[data-has-warning="true"] {
     background:
       linear-gradient(
         180deg,
-        color-mix(in srgb, var(--theme-surface) 94%, transparent),
-        color-mix(in srgb, var(--theme-background) 72%, transparent)
+        color-mix(in srgb, var(--status-warning-bg) 86%, transparent),
+        color-mix(in srgb, var(--theme-surface) 96%, transparent)
       );
-    padding: 16px;
+    box-shadow:
+      inset 0 -1px 0 color-mix(in srgb, var(--status-warning-border) 72%, transparent),
+      inset 0 1px 0 color-mix(in srgb, var(--status-warning-border) 20%, transparent);
+  }
+
+  .parts-template-mapping-canvas-shelf {
+    min-height: 100%;
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    padding: 16px 0;
     transition:
       box-shadow 160ms ease,
       border-color 160ms ease,
@@ -243,22 +302,17 @@
   }
 
   .parts-template-mapping-canvas-shelf[data-drop-active="true"] {
-    border-color: color-mix(in srgb, var(--brand-500) 34%, transparent);
     box-shadow:
       inset 0 0 0 1px color-mix(in srgb, var(--brand-500) 20%, transparent),
-      0 16px 32px color-mix(in srgb, var(--brand-500) 8%, transparent);
-    background:
-      linear-gradient(
-        180deg,
-        color-mix(in srgb, var(--brand-500) 8%, var(--theme-surface)),
-        color-mix(in srgb, var(--theme-background) 72%, transparent)
-      );
+      0 0 0 6px color-mix(in srgb, var(--brand-500) 6%, transparent);
+    border-radius: 18px;
+    background: color-mix(in srgb, var(--brand-500) 4%, transparent);
   }
 
   .parts-template-mapping-canvas-shelf-grid {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 0;
   }
 
   .parts-template-mapping-canvas-shelf-empty {
@@ -270,6 +324,16 @@
     font-size: 13px;
     text-align: center;
     padding: 16px;
+  }
+
+  .parts-template-mapping-canvas-shelf-grid > .parts-template-mapping-canvas-property-item[data-property-tone="shelf"] {
+    margin: 0;
+    padding: 12px 20px;
+    border-bottom: 1px solid color-mix(in srgb, var(--theme-border) 54%, transparent);
+  }
+
+  .parts-template-mapping-canvas-shelf-grid > .parts-template-mapping-canvas-property-item[data-property-tone="shelf"]:last-child {
+    border-bottom: none;
   }
 
   .parts-template-mapping-canvas-boundary {

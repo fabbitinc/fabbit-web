@@ -1,4 +1,4 @@
-export function removeExistingMapping(
+export function removeExistingTemplateMapping(
   sourceColumn: string,
   fromColumnId: string,
   columnMappings: Array<{ id: string; sourceColumn: string; isExtended: boolean }>,

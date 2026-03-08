@@ -1,12 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  MappingSaveDialog,
-  PartsTemplateMappingScreen as PartsTemplateMappingScreenView,
-} from "@fabbit/components";
-import { KanbanBoard } from "@/features/part-template-mapping/components/kanban/kanban-board";
+import { PartsTemplateMappingWorkspace } from "@fabbit/components";
 import { resetTemplateMappingFlow } from "@/features/part-template-mapping/lib/reset-template-mapping-flow";
 import { useTemplateMappingDerivedState } from "@/features/part-template-mapping/hooks/use-template-mapping-derived-state";
+import { useTemplateMappingBoardLogic } from "@/features/part-template-mapping/hooks/use-template-mapping-board-logic";
 import { useTemplateMappingListQuery } from "@/features/part-template-mapping/hooks/use-template-mapping-list-query";
 import { useTemplateOntologySchemaQuery } from "@/features/part-template-mapping/hooks/use-template-ontology-schema-query";
 import { useSaveTemplateMappingAction } from "@/features/part-template-mapping/hooks/use-save-template-mapping-action";
@@ -29,6 +26,7 @@ export function PartsTemplateMappingScreen({
   const primaryUploadId = useTemplateUploadStore((state) => state.primaryUploadId);
   const uploadedFiles = useTemplateUploadStore((state) => state.uploadedFiles);
   const ontologyQuery = useTemplateOntologySchemaQuery(mappingHeaders.length > 0);
+  const boardProps = useTemplateMappingBoardLogic({ ontologySchema: ontologyQuery.data });
   const derived = useTemplateMappingDerivedState(ontologyQuery.data);
   const mappingActions = useTemplateMappingActions(derived.relationTargetInfoByType);
   const mappingListQuery = useTemplateMappingListQuery(isSaveDialogOpen);
@@ -96,8 +94,8 @@ export function PartsTemplateMappingScreen({
             : "";
 
   return (
-    <PartsTemplateMappingScreenView
-      boardContent={mappingHeaders.length > 0 ? <KanbanBoard ontologySchema={ontologyQuery.data} /> : null}
+    <PartsTemplateMappingWorkspace
+      boardProps={mappingHeaders.length > 0 ? boardProps : undefined}
       confirmDisabledReason={confirmDisabledReason || undefined}
       emptyState={mappingHeaders.length === 0
         ? {
@@ -111,19 +109,17 @@ export function PartsTemplateMappingScreen({
       isLoadingBoard={ontologyQuery.isLoading}
       isSaveDialogOpen={isSaveDialogOpen}
       isSaving={saveAction.isPending}
-      saveDialogContent={(
-        <MappingSaveDialog
-          key={`${defaultMappingName}:${mappingListQuery.data?.[0]?.id ?? "new"}:${mappingListQuery.data?.length ?? 0}:${isSaveDialogOpen ? "open" : "closed"}`}
-          defaultMappingName={defaultMappingName}
-          isLoadingMappings={mappingListQuery.isLoading}
-          isSubmitting={saveAction.isPending}
-          mappings={mappingListQuery.data ?? []}
-          onOpenChange={setIsSaveDialogOpen}
-          onConfirm={(payload) => {
-            void handleConfirm(payload);
-          }}
-        />
-      )}
+      saveDialogKey={`${defaultMappingName}:${mappingListQuery.data?.[0]?.id ?? "new"}:${mappingListQuery.data?.length ?? 0}:${isSaveDialogOpen ? "open" : "closed"}`}
+      saveDialogProps={{
+        defaultMappingName,
+        isLoadingMappings: mappingListQuery.isLoading,
+        isSubmitting: saveAction.isPending,
+        mappings: mappingListQuery.data ?? [],
+        onOpenChange: setIsSaveDialogOpen,
+        onConfirm: (payload) => {
+          void handleConfirm(payload);
+        },
+      }}
       onCancelClick={handleExit}
       onConfirmClick={handleOpenSaveDialog}
       onResetClick={mappingActions.handleResetMappings}

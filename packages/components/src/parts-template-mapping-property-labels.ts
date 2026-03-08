@@ -1,4 +1,4 @@
-export const TEMPLATE_MAPPING_PROPERTY_LABELS: Record<string, string> = {
+export const PARTS_TEMPLATE_MAPPING_PROPERTY_LABELS: Record<string, string> = {
   part_number: "품번",
   name: "부품명",
   revision: "리비전",

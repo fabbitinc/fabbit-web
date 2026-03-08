@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
@@ -29,7 +29,15 @@ import {
   completeFileUpload,
   uploadFiles,
 } from "../file";
-import type { ListPartsParams, LookupPartsParams, UpdatePartOwnerRequest, RenameCategoryRequest, PartDefaultOwnerRequest } from "../types/parts";
+import type {
+  ListPartsParams,
+  LookupPartsParams,
+  UpdatePartOwnerRequest,
+  RenameCategoryRequest,
+  PartDefaultOwnerRequest,
+  PartDetailResponse,
+  RegisterDrawingResponse,
+} from "../types/parts";
 
 export const CATEGORIES_QUERY_KEY = ["categories"] as const;
 export const DEFAULT_OWNERS_QUERY_KEY = ["defaultOwners"] as const;
@@ -138,9 +146,66 @@ export function useLookupParts(params: LookupPartsParams, options?: { enabled?: 
 const CONVERSION_POLL_INTERVAL = 1_000;
 const CONVERSION_POLL_TIMEOUT = 1 * 60 * 1000;
 
+interface PendingDrawingTracker {
+  drawingId: string;
+  drawingNumber: string;
+  name: string;
+  startedAt: number;
+}
+
+const pendingDrawingTrackerByPart = new Map<string, PendingDrawingTracker>();
+
+function getPendingDrawingTracker(partId: string | undefined) {
+  if (!partId) return null;
+  return pendingDrawingTrackerByPart.get(partId) ?? null;
+}
+
+function clearPendingDrawingTracker(partId: string | undefined) {
+  if (!partId) return;
+  pendingDrawingTrackerByPart.delete(partId);
+}
+
+function trackPendingDrawing(
+  partId: string | undefined,
+  drawing: RegisterDrawingResponse,
+) {
+  if (!partId) return;
+  pendingDrawingTrackerByPart.set(partId, {
+    drawingId: drawing.drawing_id,
+    drawingNumber: drawing.drawing_number,
+    name: drawing.name,
+    startedAt: Date.now(),
+  });
+}
+
+function createPendingDrawing(
+  tracker: PendingDrawingTracker,
+  currentDrawing: PartDetailResponse["drawing"],
+) {
+  if (currentDrawing?.id === tracker.drawingId) {
+    return {
+      ...currentDrawing,
+      conversion_status: "PENDING",
+    };
+  }
+
+  return {
+    id: tracker.drawingId,
+    drawing_number: tracker.drawingNumber,
+    name: tracker.name,
+    version: null,
+    status: null,
+    conversion_status: "PENDING",
+    thumbnail_url: null,
+    pdf_url: null,
+    original_file_url: null,
+  };
+}
+
 /** Part 상세 조회 훅 (도면 변환 PENDING 시 자동 폴링) */
 export function usePartDetail(partId: string | undefined) {
   const pollStartRef = useRef<number | null>(null);
+  const pendingDrawingTracker = getPendingDrawingTracker(partId);
 
   const query = useQuery({
     queryKey: [...PART_DETAIL_QUERY_KEY, partId],
@@ -148,37 +213,78 @@ export function usePartDetail(partId: string | undefined) {
     enabled: !!partId,
   });
 
-  const conversionStatus = query.data?.drawing?.conversion_status;
-  const isPending = conversionStatus === "PENDING";
+  const data = useMemo(() => {
+    if (!query.data || !pendingDrawingTracker) {
+      return query.data;
+    }
 
-  // PENDING 상태 시작 시점 기록
+    const currentDrawing = query.data.drawing;
+    const hasSettledTrackedDrawing =
+      currentDrawing?.id === pendingDrawingTracker.drawingId &&
+      currentDrawing.conversion_status != null &&
+      currentDrawing.conversion_status !== "PENDING";
+
+    if (hasSettledTrackedDrawing) {
+      return query.data;
+    }
+
+    return {
+      ...query.data,
+      drawing: createPendingDrawing(pendingDrawingTracker, currentDrawing),
+    };
+  }, [pendingDrawingTracker, query.data]);
+
+  const conversionStatus = data?.drawing?.conversion_status;
+  const isPending = conversionStatus === "PENDING";
+  const { refetch } = query;
+
+  // 업로드 직후 상세 응답이 늦게 따라와도 polling을 유지한다.
   useEffect(() => {
-    if (isPending && pollStartRef.current === null) {
-      pollStartRef.current = Date.now();
+    if (isPending) {
+      pollStartRef.current =
+        pendingDrawingTracker?.startedAt ?? pollStartRef.current ?? Date.now();
     } else if (!isPending) {
       pollStartRef.current = null;
     }
-  }, [isPending]);
+  }, [isPending, pendingDrawingTracker?.startedAt]);
 
-  // PENDING인 동안 5초 간격 refetch, 5분 초과 시 중단
+  // PENDING인 동안 주기적으로 refetch하고, 완료/실패가 확인되면 추적을 정리한다.
   useEffect(() => {
-    if (!isPending) return;
+    if (!partId || !isPending) return;
 
     const id = setInterval(() => {
       if (
         pollStartRef.current &&
         Date.now() - pollStartRef.current > CONVERSION_POLL_TIMEOUT
       ) {
+        clearPendingDrawingTracker(partId);
         clearInterval(id);
+        void refetch();
         return;
       }
-      query.refetch();
+
+      void refetch().then((result) => {
+        const trackedDrawing = getPendingDrawingTracker(partId);
+        const nextDrawing = result.data?.drawing;
+
+        if (
+          trackedDrawing &&
+          nextDrawing?.id === trackedDrawing.drawingId &&
+          nextDrawing.conversion_status &&
+          nextDrawing.conversion_status !== "PENDING"
+        ) {
+          clearPendingDrawingTracker(partId);
+        }
+      });
     }, CONVERSION_POLL_INTERVAL);
 
     return () => clearInterval(id);
-  }, [isPending, query]);
+  }, [isPending, partId, refetch]);
 
-  return query;
+  return {
+    ...query,
+    data,
+  };
 }
 
 /** 부품이 속한 프로젝트 목록 조회 훅 */
@@ -279,7 +385,13 @@ export function useUploadDrawing(partId: string | undefined) {
 
       return registerDrawingForPart(partId!, file_id);
     },
-    onSuccess: () => {
+    onSuccess: (drawing) => {
+      if (drawing.conversion_status === "PENDING") {
+        trackPendingDrawing(partId, drawing);
+      } else {
+        clearPendingDrawingTracker(partId);
+      }
+
       toast.success("도면이 등록되었습니다");
       queryClient.invalidateQueries({
         queryKey: [...PART_DETAIL_QUERY_KEY, partId],
@@ -301,6 +413,7 @@ export function useDeleteDrawing(partId: string | undefined) {
   return useMutation({
     mutationFn: () => deleteDrawingFromPart(partId!),
     onSuccess: () => {
+      clearPendingDrawingTracker(partId);
       toast.success("도면이 삭제되었습니다");
       queryClient.invalidateQueries({
         queryKey: [...PART_DETAIL_QUERY_KEY, partId],
