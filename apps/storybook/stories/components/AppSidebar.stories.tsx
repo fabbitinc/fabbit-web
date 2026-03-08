@@ -24,10 +24,26 @@ const sections = [
   {
     id: "main",
     items: [
-      { id: "dashboard", label: "대시보드", icon: LayoutDashboard, active: true, onClick: () => {} },
-      { id: "projects", label: "프로젝트", icon: FolderKanban, onClick: () => {} },
-      { id: "changes", label: "변경 관리", icon: GitPullRequestArrow, onClick: () => {} },
-      { id: "parts", label: "부품관리", icon: Package, onClick: () => {} },
+      {
+        id: "dashboard",
+        label: "대시보드",
+        icon: LayoutDashboard,
+        active: true,
+        onClick: () => {},
+      },
+      {
+        id: "projects",
+        label: "프로젝트",
+        icon: FolderKanban,
+        onClick: () => {},
+      },
+      {
+        id: "changes",
+        label: "변경 관리",
+        icon: GitPullRequestArrow,
+        onClick: () => {},
+      },
+      { id: "parts", label: "부품 관리", icon: Package, onClick: () => {} },
     ],
   },
 ];

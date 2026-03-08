@@ -22,7 +22,13 @@ import {
 const brand = (
   <div className="flex items-center gap-2">
     <div className="flex size-7 items-center justify-center rounded-md bg-primary text-primary-foreground">
-      <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <svg
+        className="size-4"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+      >
         <path d="M12 2L2 7l10 5 10-5-10-5z" />
         <path d="M2 17l10 5 10-5" />
         <path d="M2 12l10 5 10-5" />
@@ -42,11 +48,32 @@ const navSections = [
   {
     id: "main",
     items: [
-      { id: "dashboard", label: "대시보드", icon: LayoutDashboard, onClick: () => {} },
-      { id: "projects", label: "프로젝트", icon: FolderKanban, onClick: () => {} },
-      { id: "changes", label: "변경 관리", icon: GitPullRequestArrow, onClick: () => {} },
-      { id: "parts", label: "부품관리", icon: Package, onClick: () => {} },
-      { id: "production", label: "생산", icon: Factory, active: true, onClick: () => {} },
+      {
+        id: "dashboard",
+        label: "대시보드",
+        icon: LayoutDashboard,
+        onClick: () => {},
+      },
+      {
+        id: "projects",
+        label: "프로젝트",
+        icon: FolderKanban,
+        onClick: () => {},
+      },
+      {
+        id: "changes",
+        label: "변경 관리",
+        icon: GitPullRequestArrow,
+        onClick: () => {},
+      },
+      { id: "parts", label: "부품 관리", icon: Package, onClick: () => {} },
+      {
+        id: "production",
+        label: "생산",
+        icon: Factory,
+        active: true,
+        onClick: () => {},
+      },
     ],
   },
 ];
@@ -81,7 +108,8 @@ const initialValues: WorkOrderCreateFormValues = {
 /* ─── 인터랙티브 래퍼 ─── */
 
 function InteractiveCreate() {
-  const [values, setValues] = useState<WorkOrderCreateFormValues>(initialValues);
+  const [values, setValues] =
+    useState<WorkOrderCreateFormValues>(initialValues);
   return (
     <WorkOrderCreateScreen
       formValues={values}

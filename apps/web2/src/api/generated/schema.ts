@@ -3343,16 +3343,19 @@ export interface components {
             sheet_name?: string;
         };
         JsonNode: {
+            number?: boolean;
+            container?: boolean;
             pojo?: boolean;
             int?: boolean;
             long?: boolean;
-            value_node?: boolean;
-            container?: boolean;
-            missing_node?: boolean;
-            object?: boolean;
+            integral_number?: boolean;
+            floating_point_number?: boolean;
             /** @enum {string} */
             node_type?: "ARRAY" | "BINARY" | "BOOLEAN" | "MISSING" | "NULL" | "NUMBER" | "OBJECT" | "POJO" | "STRING";
             string?: boolean;
+            value_node?: boolean;
+            missing_node?: boolean;
+            object?: boolean;
             short?: boolean;
             double?: boolean;
             big_decimal?: boolean;
@@ -3361,9 +3364,6 @@ export interface components {
             textual?: boolean;
             boolean?: boolean;
             binary?: boolean;
-            number?: boolean;
-            integral_number?: boolean;
-            floating_point_number?: boolean;
             array?: boolean;
             empty?: boolean;
             null?: boolean;
@@ -5187,19 +5187,40 @@ export interface components {
             /** Format: int64 */
             projects_count?: number;
         };
-        /** @description 응답 DTO */
+        /** @description 관련 도면 응답 */
         RelatedDrawingResponse: {
-            /** Format: uuid */
+            /**
+             * Format: uuid
+             * @description 도면 ID
+             */
             id?: string;
+            /** @description 도면 번호 */
             drawing_number?: string;
+            /** @description 도면명 */
             name?: string;
+            /** @description 버전 */
             version?: string;
-            /** @enum {string} */
+            /**
+             * @description 도면 상태
+             * @enum {string}
+             */
             status?: "DRAFT" | "IN_REVIEW" | "APPROVED" | "RELEASED" | "OBSOLETE";
-            /** @enum {string} */
+            /**
+             * @description 도면 변환 상태
+             * @enum {string}
+             */
             conversion_status?: "PENDING" | "COMPLETED" | "FAILED";
-            thumbnail_url?: string;
-            pdf_url?: string;
+            /**
+             * @description 뷰어 타입
+             * @example PDF
+             * @enum {string}
+             */
+            viewer_type?: "PDF" | "GLB";
+            /** @description 뷰어 본문 URL */
+            viewer_url?: string;
+            /** @description 미리보기 이미지 URL */
+            preview_url?: string;
+            /** @description 원본 파일 URL */
             original_file_url?: string;
         };
         /** @description 응답 DTO */

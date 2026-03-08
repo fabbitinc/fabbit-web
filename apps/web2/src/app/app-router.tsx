@@ -26,6 +26,7 @@ import { PartsTemplateAnalysisPage } from "@/pages/parts/parts-template-analysis
 import { PartsTemplateProcessingPage } from "@/pages/parts/parts-template-processing-page";
 import { PartsTemplateMappingPage } from "@/pages/parts/parts-template-mapping-page";
 import { BomExplorePage } from "@/pages/parts/bom-explore-page";
+import { PartDrawingViewerPage } from "@/pages/parts/part-drawing-viewer-page";
 
 export function AppRouter() {
   return (
@@ -56,6 +57,15 @@ export function AppRouter() {
           <Route element={<RegistrationLayout />}>
             <Route path="/invite/accept" element={<AcceptInvitePage />} />
           </Route>
+
+          <Route
+            path="/parts/drawing-viewer"
+            element={
+              <ProtectedRoute>
+                <PartDrawingViewerPage />
+              </ProtectedRoute>
+            }
+          />
 
           <Route
             element={

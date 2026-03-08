@@ -21,6 +21,7 @@ export interface PartPropertiesTabProps {
   isUploadingDrawing: boolean;
   part: PartPropertiesTabPart;
   onDeleteDrawing: () => void;
+  onOpenDrawingViewer?: (drawing: PartDrawingPreviewDrawing) => void;
   onUploadDrawing: (file: File) => void;
 }
 
@@ -41,6 +42,7 @@ export function PartPropertiesTab({
   isUploadingDrawing,
   part,
   onDeleteDrawing,
+  onOpenDrawingViewer,
   onUploadDrawing,
 }: PartPropertiesTabProps) {
   const rows: { label: string; value: ReactNode }[] = [
@@ -76,6 +78,7 @@ export function PartPropertiesTab({
           isDeleting={isDeletingDrawing}
           isUploading={isUploadingDrawing}
           onDelete={onDeleteDrawing}
+          onOpenViewer={onOpenDrawingViewer}
           onUpload={onUploadDrawing}
         />
       </div>

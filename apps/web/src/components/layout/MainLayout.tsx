@@ -17,7 +17,7 @@ export function MainLayout({ children }: MainLayoutProps) {
   const isItemsPage = location.pathname === "/items";
   const isItemDetailPage = location.pathname.startsWith("/items/");
 
-  // FolderTree를 보여줄 페이지들 (부품관리, 아이템 상세만 - 프로젝트 상세는 제외)
+  // FolderTree를 보여줄 페이지들 (부품 관리, 아이템 상세만 - 프로젝트 상세는 제외)
   const showFolderTree = isItemsPage || isItemDetailPage;
 
   const [isDesktop, setIsDesktop] = useState(() => window.innerWidth >= 1024);
@@ -32,7 +32,10 @@ export function MainLayout({ children }: MainLayoutProps) {
     if (isDesktop) {
       setIsSideNavCollapsed((prev) => {
         const next = !prev;
-        localStorage.setItem("fabbit-side-nav-collapsed", next ? "true" : "false");
+        localStorage.setItem(
+          "fabbit-side-nav-collapsed",
+          next ? "true" : "false",
+        );
         return next;
       });
       return;
@@ -47,7 +50,9 @@ export function MainLayout({ children }: MainLayoutProps) {
 
   const topNavRow = showBanner ? 2 : 1;
   const contentRow = showBanner ? 3 : 2;
-  const sideNavColumn = isDesktop ? `${isSideNavCollapsed ? 64 : SIDENAV_WIDTH}px` : "0px";
+  const sideNavColumn = isDesktop
+    ? `${isSideNavCollapsed ? 64 : SIDENAV_WIDTH}px`
+    : "0px";
 
   useEffect(() => {
     const handleResize = () => {
@@ -71,9 +76,13 @@ export function MainLayout({ children }: MainLayoutProps) {
       }}
     >
       {showBanner && (
-        <div className="flex items-center justify-between border-b border-blue-200 bg-blue-50 px-4" style={{ gridRow: 1, gridColumn: "1 / -1" }}>
+        <div
+          className="flex items-center justify-between border-b border-blue-200 bg-blue-50 px-4"
+          style={{ gridRow: 1, gridColumn: "1 / -1" }}
+        >
           <p className="truncate text-sm text-blue-900">
-            임시 배너입니다. 공지/안내 용도로 사용하고 나중에 삭제할 수 있습니다.
+            임시 배너입니다. 공지/안내 용도로 사용하고 나중에 삭제할 수
+            있습니다.
           </p>
           <Button
             variant="ghost"
@@ -99,7 +108,10 @@ export function MainLayout({ children }: MainLayoutProps) {
         />
       )}
 
-      <div style={{ gridRow: contentRow, gridColumn: 1 }} className="min-h-0 overflow-hidden">
+      <div
+        style={{ gridRow: contentRow, gridColumn: 1 }}
+        className="min-h-0 overflow-hidden"
+      >
         <Sidebar
           isDesktop={isDesktop}
           collapsed={isDesktop ? isSideNavCollapsed : false}

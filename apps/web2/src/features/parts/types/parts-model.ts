@@ -42,6 +42,15 @@ export type PartDrawingProcessingStatus =
   | "COMPLETED"
   | "FAILED";
 
+export type PartDrawingFailureCode =
+  | "TIMEOUT"
+  | "UNSUPPORTED_FORMAT"
+  | "CONVERTER_UNAVAILABLE"
+  | "CONVERSION_FAILED"
+  | "UNKNOWN";
+
+export type PartDrawingViewerType = "PDF" | "GLB";
+
 export interface PartDrawingModel {
   id: string;
   drawingNumber: string | null;
@@ -49,14 +58,18 @@ export interface PartDrawingModel {
   version: string | null;
   status: string | null;
   conversionStatus: PartDrawingProcessingStatus | null;
-  thumbnailUrl: string | null;
-  pdfUrl: string | null;
+  viewerType: PartDrawingViewerType | null;
+  viewerUrl: string | null;
+  previewUrl: string | null;
   originalFileUrl: string | null;
+  failureCode: PartDrawingFailureCode | null;
+  failureMessage: string | null;
 }
 
 export interface PartDrawingProcessingModel {
   status: PartDrawingProcessingStatus;
-  failureReason: string | null;
+  failureCode: PartDrawingFailureCode | null;
+  failureMessage: string | null;
   pdfReady: boolean;
   webpReady: boolean;
   glbReady: boolean;

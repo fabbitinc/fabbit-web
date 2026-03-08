@@ -28,7 +28,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@fabbit/ui";
 const brand = (
   <div className="flex items-center gap-2">
     <div className="flex size-7 items-center justify-center rounded-md bg-primary text-primary-foreground">
-      <svg className="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <svg
+        className="size-4"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+      >
         <path d="M12 2L2 7l10 5 10-5-10-5z" />
         <path d="M2 17l10 5 10-5" />
         <path d="M2 12l10 5 10-5" />
@@ -48,11 +54,32 @@ const navSections = [
   {
     id: "main",
     items: [
-      { id: "dashboard", label: "대시보드", icon: LayoutDashboard, onClick: () => {} },
-      { id: "projects", label: "프로젝트", icon: FolderKanban, onClick: () => {} },
-      { id: "changes", label: "변경 관리", icon: GitPullRequestArrow, onClick: () => {} },
-      { id: "parts", label: "부품관리", icon: Package, onClick: () => {} },
-      { id: "production", label: "생산", icon: Factory, active: true, onClick: () => {} },
+      {
+        id: "dashboard",
+        label: "대시보드",
+        icon: LayoutDashboard,
+        onClick: () => {},
+      },
+      {
+        id: "projects",
+        label: "프로젝트",
+        icon: FolderKanban,
+        onClick: () => {},
+      },
+      {
+        id: "changes",
+        label: "변경 관리",
+        icon: GitPullRequestArrow,
+        onClick: () => {},
+      },
+      { id: "parts", label: "부품 관리", icon: Package, onClick: () => {} },
+      {
+        id: "production",
+        label: "생산",
+        icon: Factory,
+        active: true,
+        onClick: () => {},
+      },
     ],
   },
 ];
@@ -83,9 +110,24 @@ const mockWorkOrder: WorkOrderDetail = {
     defectQuantity: 2,
   },
   links: [
-    { id: "l1", type: "production", label: "PR-240301-001 실적 등록 (40개)", onClick: () => {} },
-    { id: "l2", type: "production", label: "PR-240301-002 실적 등록 (20개)", onClick: () => {} },
-    { id: "l3", type: "defect", label: "DF-240301-001 납땜 불량 2건", onClick: () => {} },
+    {
+      id: "l1",
+      type: "production",
+      label: "PR-240301-001 실적 등록 (40개)",
+      onClick: () => {},
+    },
+    {
+      id: "l2",
+      type: "production",
+      label: "PR-240301-002 실적 등록 (20개)",
+      onClick: () => {},
+    },
+    {
+      id: "l3",
+      type: "defect",
+      label: "DF-240301-001 납땜 불량 2건",
+      onClick: () => {},
+    },
   ],
 };
 
@@ -113,7 +155,12 @@ const mockDoneWorkOrder: WorkOrderDetail = {
     defectQuantity: 0,
   },
   links: [
-    { id: "l1", type: "production", label: "PR-240305-001 실적 등록 (80개)", onClick: () => {} },
+    {
+      id: "l1",
+      type: "production",
+      label: "PR-240305-001 실적 등록 (80개)",
+      onClick: () => {},
+    },
   ],
 };
 

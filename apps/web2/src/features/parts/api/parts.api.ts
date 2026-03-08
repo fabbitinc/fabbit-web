@@ -56,6 +56,7 @@ import type {
   PartBomTreeModel,
   PartBomTreeNodeModel,
   PartDetailModel,
+  PartDrawingFailureCode,
   PartDrawingModel,
   PartDrawingProcessingModel,
   PartFileModel,
@@ -69,6 +70,52 @@ import type {
   PartsAvailableTeamModel,
   PartSupplierModel,
 } from "@/features/parts/types/parts-model";
+import {
+  DEFAULT_PART_DRAWING_FAILURE_MESSAGE,
+  getPartDrawingFailureMessage,
+  resolvePartDrawingFailureCode,
+} from "@/features/parts/lib/part-drawing-failure";
+
+interface PartDrawingResponseCompat {
+  id?: string;
+  drawing_id?: string;
+  drawingId?: string;
+  drawing_number?: string | null;
+  drawingNumber?: string | null;
+  name?: string | null;
+  version?: string | null;
+  status?: string | null;
+  conversion_status?: PartDrawingModel["conversionStatus"];
+  conversionStatus?: PartDrawingModel["conversionStatus"];
+  viewer_type?: PartDrawingModel["viewerType"];
+  viewerType?: PartDrawingModel["viewerType"];
+  viewer_url?: string | null;
+  viewerUrl?: string | null;
+  preview_url?: string | null;
+  previewUrl?: string | null;
+  original_file_url?: string | null;
+  originalFileUrl?: string | null;
+}
+
+interface DrawingProcessingResponseCompat extends DrawingProcessingResponseDto {
+  failureCode?: PartDrawingFailureCode | null;
+  failure_code?: PartDrawingFailureCode | null;
+  failureMessage?: string | null;
+  failure_message?: string | null;
+  pdfReady?: boolean;
+  webpReady?: boolean;
+  glbReady?: boolean;
+}
+
+function pickDefined<T>(...values: Array<T | null | undefined>): T | undefined {
+  for (const value of values) {
+    if (value !== null && value !== undefined) {
+      return value;
+    }
+  }
+
+  return undefined;
+}
 
 export async function fetchPartsList(query: ListPartsQueryDto): Promise<PartListResultModel> {
   const response = await listPartsApiV1PartsGet(query);
@@ -173,15 +220,25 @@ export async function registerPartDrawing(partId: string, request: RegisterPartD
 }
 
 export async function fetchDrawingProcessing(drawingId: string): Promise<PartDrawingProcessingModel> {
-  const response = await apiClient.get<DrawingProcessingResponseDto>(`/api/v1/drawings/${drawingId}/processing`);
+  const response = await apiClient.get<DrawingProcessingResponseCompat>(`/api/v1/drawings/${drawingId}/processing`);
   const processing = response.data;
+  const rawFailureReason = pickDefined(processing.failure_reason);
+  const failureCode = resolvePartDrawingFailureCode({
+    failureCode: pickDefined(processing.failureCode, processing.failure_code),
+    failureReason: rawFailureReason ?? pickDefined(processing.failureMessage, processing.failure_message),
+  });
+  const failureMessage =
+    getPartDrawingFailureMessage(failureCode) ??
+    pickDefined(processing.failureMessage, processing.failure_message) ??
+    (rawFailureReason ? DEFAULT_PART_DRAWING_FAILURE_MESSAGE : null);
 
   return {
     status: processing.status ?? "PENDING",
-    failureReason: processing.failure_reason ?? null,
-    pdfReady: processing.pdf_ready ?? false,
-    webpReady: processing.webp_ready ?? false,
-    glbReady: processing.glb_ready ?? false,
+    failureCode,
+    failureMessage,
+    pdfReady: pickDefined(processing.pdfReady, processing.pdf_ready) ?? false,
+    webpReady: pickDefined(processing.webpReady, processing.webp_ready) ?? false,
+    glbReady: pickDefined(processing.glbReady, processing.glb_ready) ?? false,
   };
 }
 
@@ -303,16 +360,36 @@ function toPartOwnerUserModel(
 function toPartDrawingModel(
   drawing: NonNullable<PartDetailResponseDto["drawing"]> | RegisterPartDrawingResponseDto,
 ): PartDrawingModel {
+  const compatDrawing = drawing as typeof drawing & PartDrawingResponseCompat;
+
   return {
-    id: "drawing_id" in drawing ? drawing.drawing_id : drawing.id,
-    drawingNumber: drawing.drawing_number ?? null,
-    name: drawing.name ?? null,
-    version: "version" in drawing ? (drawing.version ?? null) : null,
-    status: "status" in drawing ? (drawing.status ?? null) : null,
-    conversionStatus: drawing.conversion_status ?? null,
-    thumbnailUrl: "thumbnail_url" in drawing ? (drawing.thumbnail_url ?? null) : null,
-    pdfUrl: "pdf_url" in drawing ? (drawing.pdf_url ?? null) : null,
-    originalFileUrl: "original_file_url" in drawing ? (drawing.original_file_url ?? null) : null,
+    id:
+      pickDefined(compatDrawing.drawing_id, compatDrawing.drawingId, compatDrawing.id) ??
+      "",
+    drawingNumber:
+      pickDefined(compatDrawing.drawing_number, compatDrawing.drawingNumber) ??
+      null,
+    name: compatDrawing.name ?? null,
+    version: compatDrawing.version ?? null,
+    status: compatDrawing.status ?? null,
+    conversionStatus:
+      pickDefined(
+        compatDrawing.conversion_status,
+        compatDrawing.conversionStatus,
+      ) ?? null,
+    viewerType:
+      pickDefined(compatDrawing.viewer_type, compatDrawing.viewerType) ?? null,
+    viewerUrl:
+      pickDefined(compatDrawing.viewer_url, compatDrawing.viewerUrl) ?? null,
+    previewUrl:
+      pickDefined(compatDrawing.preview_url, compatDrawing.previewUrl) ?? null,
+    originalFileUrl:
+      pickDefined(
+        compatDrawing.original_file_url,
+        compatDrawing.originalFileUrl,
+      ) ?? null,
+    failureCode: null,
+    failureMessage: null,
   };
 }
 

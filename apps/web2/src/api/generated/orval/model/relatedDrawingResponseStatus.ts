@@ -5,6 +5,9 @@
  * OpenAPI spec version: v0
  */
 
+/**
+ * 도면 상태
+ */
 export type RelatedDrawingResponseStatus = typeof RelatedDrawingResponseStatus[keyof typeof RelatedDrawingResponseStatus];
 
 

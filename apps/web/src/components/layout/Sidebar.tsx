@@ -22,8 +22,13 @@ import { useUploadStore } from "@/stores/uploadStore";
 const menuItems = [
   { id: "dashboard", label: "대시보드", icon: LayoutDashboard, path: "/" },
   { id: "projects", label: "프로젝트", icon: FolderKanban, path: "/projects" },
-  { id: "changes", label: "변경 관리", icon: GitPullRequestArrow, path: "/changes" },
-  { id: "parts", label: "부품관리", icon: Package, path: "/parts" },
+  {
+    id: "changes",
+    label: "변경 관리",
+    icon: GitPullRequestArrow,
+    path: "/changes",
+  },
+  { id: "parts", label: "부품 관리", icon: Package, path: "/parts" },
 ];
 
 interface SidebarProps {
@@ -46,7 +51,7 @@ export function Sidebar({
   const location = useLocation();
   const files = useUploadStore((state) => state.files);
   const activeUploads = files.filter(
-    (f) => f.status === "uploading" || f.status === "analyzing"
+    (f) => f.status === "uploading" || f.status === "analyzing",
   );
   const hasActiveUploads = activeUploads.length > 0;
   const navWidth = Math.min(width, 320);
@@ -65,9 +70,12 @@ export function Sidebar({
         className={cn(
           "sidebar-shell sidebar-divider z-40 flex h-full shrink-0 flex-col border-r transition-[width,transform] duration-200",
           showAsOverlay && "absolute left-0 top-0 shadow-2xl",
-          !isVisible && "-translate-x-full"
+          !isVisible && "-translate-x-full",
         )}
-        style={{ width: isDesktop ? "100%" : navWidth, maxWidth: showAsOverlay ? "90vw" : undefined }}
+        style={{
+          width: isDesktop ? "100%" : navWidth,
+          maxWidth: showAsOverlay ? "90vw" : undefined,
+        }}
       >
         {!isDesktop && (
           <div className="sidebar-divider flex h-10 shrink-0 items-center justify-end border-b px-2">
@@ -86,7 +94,12 @@ export function Sidebar({
 
         <div className="flex min-h-0 flex-1 flex-col">
           <ScrollArea className="min-h-0 flex-1">
-            <nav className={cn("flex flex-col gap-1 p-3", collapsed && "items-center") }>
+            <nav
+              className={cn(
+                "flex flex-col gap-1 p-3",
+                collapsed && "items-center",
+              )}
+            >
               {menuItems.map((item) => {
                 const isActive = isMenuActive(item.path);
                 const navItem = (
@@ -95,12 +108,18 @@ export function Sidebar({
                     onClick={onCloseMobile}
                     className={cn(
                       "sidebar-nav-item relative flex h-9 items-center rounded-lg px-4 transition-all",
-                      collapsed ? "w-9 justify-center px-0" : "w-full justify-start gap-2.5",
-                      isActive ? "sidebar-nav-item--active" : ""
+                      collapsed
+                        ? "w-9 justify-center px-0"
+                        : "w-full justify-start gap-2.5",
+                      isActive ? "sidebar-nav-item--active" : "",
                     )}
                   >
                     <item.icon className="h-5 w-5 shrink-0" />
-                    {!collapsed && <span className="truncate text-sm font-medium">{item.label}</span>}
+                    {!collapsed && (
+                      <span className="truncate text-sm font-medium">
+                        {item.label}
+                      </span>
+                    )}
                   </NavLink>
                 );
 
@@ -108,7 +127,12 @@ export function Sidebar({
                   return (
                     <Tooltip key={item.id}>
                       <TooltipTrigger asChild>{navItem}</TooltipTrigger>
-                      <TooltipContent side="right" sideOffset={8} hideArrow className="sidebar-tooltip">
+                      <TooltipContent
+                        side="right"
+                        sideOffset={8}
+                        hideArrow
+                        className="sidebar-tooltip"
+                      >
                         {item.label}
                       </TooltipContent>
                     </Tooltip>
@@ -121,8 +145,16 @@ export function Sidebar({
 
             {showFolderTree && !collapsed && (
               <div className="sidebar-divider mt-2 border-t p-3">
-                <p className="mb-2 text-xs font-medium" style={{ color: "var(--nav-sidebar-icon)" }}>프로젝트 트리</p>
-                <div className="overflow-hidden rounded-md border" style={{ borderColor: "var(--nav-sidebar-border)" }}>
+                <p
+                  className="mb-2 text-xs font-medium"
+                  style={{ color: "var(--nav-sidebar-icon)" }}
+                >
+                  프로젝트 트리
+                </p>
+                <div
+                  className="overflow-hidden rounded-md border"
+                  style={{ borderColor: "var(--nav-sidebar-border)" }}
+                >
                   <FolderTree />
                 </div>
               </div>
@@ -130,22 +162,51 @@ export function Sidebar({
           </ScrollArea>
 
           {hasActiveUploads && (
-            <div className={cn("sidebar-divider border-t p-3", collapsed && "px-2") }>
+            <div
+              className={cn(
+                "sidebar-divider border-t p-3",
+                collapsed && "px-2",
+              )}
+            >
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <div className={cn(
-                    "sidebar-ai-indicator flex items-center rounded-lg",
-                    collapsed ? "h-10 w-10 justify-center" : "gap-2 px-3 py-2"
-                  )}>
-                    <Loader2 className="h-4 w-4 animate-spin" style={{ color: "var(--nav-sidebar-ai-icon)" }} />
+                  <div
+                    className={cn(
+                      "sidebar-ai-indicator flex items-center rounded-lg",
+                      collapsed
+                        ? "h-10 w-10 justify-center"
+                        : "gap-2 px-3 py-2",
+                    )}
+                  >
+                    <Loader2
+                      className="h-4 w-4 animate-spin"
+                      style={{ color: "var(--nav-sidebar-ai-icon)" }}
+                    />
                     {!collapsed && (
-                      <span className="text-xs font-medium" style={{ color: "var(--nav-sidebar-text)" }}>{activeUploads.length}개 처리 중</span>
+                      <span
+                        className="text-xs font-medium"
+                        style={{ color: "var(--nav-sidebar-text)" }}
+                      >
+                        {activeUploads.length}개 처리 중
+                      </span>
                     )}
                   </div>
                 </TooltipTrigger>
-                <TooltipContent side="right" sideOffset={8} hideArrow className="sidebar-tooltip">
-                  <p className="font-medium">{activeUploads.length}개 파일 처리 중</p>
-                  <p className="text-xs" style={{ color: "var(--nav-sidebar-ai-subtext)" }}>AI가 도면을 분석하고 있습니다</p>
+                <TooltipContent
+                  side="right"
+                  sideOffset={8}
+                  hideArrow
+                  className="sidebar-tooltip"
+                >
+                  <p className="font-medium">
+                    {activeUploads.length}개 파일 처리 중
+                  </p>
+                  <p
+                    className="text-xs"
+                    style={{ color: "var(--nav-sidebar-ai-subtext)" }}
+                  >
+                    AI가 도면을 분석하고 있습니다
+                  </p>
                 </TooltipContent>
               </Tooltip>
             </div>

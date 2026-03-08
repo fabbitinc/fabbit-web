@@ -10,7 +10,6 @@ import {
   ZoomOut,
 } from "lucide-react";
 import {
-  Badge,
   Button,
   Separator,
   Sheet,
@@ -24,19 +23,25 @@ import {
 import {
   GltfViewerCanvas,
   type GltfViewerCanvasHandle,
+  type GltfViewerProjectionMode,
   type GltfViewerRenderMode,
+  type GltfViewerSceneStats,
+  type GltfViewerStandardView,
   type GltfViewerStatus,
 } from "./gltf-viewer-canvas";
 
 export interface GltfViewerScreenProps {
   src: string;
+  category?: string;
   className?: string;
   description?: string;
+  fileName?: string;
   initialAutoRotate?: boolean;
   initialRenderMode?: GltfViewerRenderMode;
   initialShowGrid?: boolean;
+  partNumber?: string;
+  revision?: string;
   resourceUrls?: Record<string, string>;
-  subtitle?: string;
   title: string;
 }
 
@@ -67,29 +72,69 @@ function getStatusMeta(status: GltfViewerStatus, errorMessage: string | null) {
   };
 }
 
+function formatViewerLength(value: number) {
+  if (!Number.isFinite(value) || value <= 0) {
+    return "0 mm";
+  }
+
+  if (value >= 1) {
+    return `${Number(value.toFixed(value >= 10 ? 1 : 2)).toLocaleString("ko-KR")} m`;
+  }
+
+  const millimeters = value * 1000;
+
+  if (millimeters >= 100) {
+    return `${Math.round(millimeters).toLocaleString("ko-KR")} mm`;
+  }
+
+  return `${Number(millimeters.toFixed(1)).toLocaleString("ko-KR")} mm`;
+}
+
 export function GltfViewerScreen({
   src,
+  category,
   className,
-  description = "전체화면에서 3D 모델을 검토하는 뷰어입니다.",
+  description,
+  fileName,
   initialAutoRotate = false,
   initialRenderMode = "solid",
   initialShowGrid = true,
+  partNumber,
+  revision,
   resourceUrls,
-  subtitle = "3D 모델 검토",
   title,
 }: GltfViewerScreenProps) {
   const canvasRef = useRef<GltfViewerCanvasHandle>(null);
   const [status, setStatus] = useState<GltfViewerStatus>("loading");
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [showGrid, setShowGrid] = useState(initialShowGrid);
+  const [showAxesGizmo, setShowAxesGizmo] = useState(true);
   const [autoRotate, setAutoRotate] = useState(initialAutoRotate);
+  const [projectionMode, setProjectionMode] =
+    useState<GltfViewerProjectionMode>("perspective");
   const [renderMode, setRenderMode] =
     useState<GltfViewerRenderMode>(initialRenderMode);
-  const [showOptionsPanel, setShowOptionsPanel] = useState(true);
+  const [showOptionsPanel, setShowOptionsPanel] = useState(false);
   const [optionsSheetOpen, setOptionsSheetOpen] = useState(false);
+  const [sceneStats, setSceneStats] = useState<GltfViewerSceneStats | null>(null);
 
   const statusMeta = getStatusMeta(status, errorMessage);
-  const StatusIcon = statusMeta.icon;
+  const headerMetaItems = [
+    partNumber && partNumber !== title
+      ? { label: "품번", value: partNumber }
+      : null,
+    revision ? { label: "리비전", value: revision } : null,
+    category ? { label: "카테고리", value: category } : null,
+  ].filter((item): item is { label: string; value: string } => item !== null);
+  const headerFileName =
+    fileName && fileName !== title && fileName !== partNumber ? fileName : null;
+  const dimensionItems = sceneStats
+    ? [
+        { label: "폭", value: formatViewerLength(sceneStats.dimensions.x) },
+        { label: "높이", value: formatViewerLength(sceneStats.dimensions.y) },
+        { label: "깊이", value: formatViewerLength(sceneStats.dimensions.z) },
+      ]
+    : [];
   const optionsPanelContent = (
     <div className="flex h-full flex-col">
       <div className="border-b px-4 py-4">
@@ -97,13 +142,69 @@ export function GltfViewerScreen({
           <Info className="h-4 w-4 text-muted-foreground" />
           <p className="text-sm font-semibold text-foreground">표시 옵션</p>
         </div>
-        <p className="mt-1 text-xs text-muted-foreground">
-          분석 정보 없이 뷰어 제어만 제공합니다.
-        </p>
       </div>
 
       <div className="flex-1 space-y-4 overflow-y-auto px-4 py-4">
         <section className="space-y-3 rounded-2xl border bg-background/70 px-3 py-3">
+          <div>
+            <p className="font-medium text-foreground">표준 시점</p>
+            <p className="text-xs text-muted-foreground">
+              검토 기준 시점으로 빠르게 전환합니다.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            <Button
+              size="sm"
+              type="button"
+              variant="outline"
+              onClick={() => handleSetView("iso")}
+            >
+              등각
+            </Button>
+            <Button
+              size="sm"
+              type="button"
+              variant="outline"
+              onClick={() => handleSetView("front")}
+            >
+              정면
+            </Button>
+            <Button
+              size="sm"
+              type="button"
+              variant="outline"
+              onClick={() => handleSetView("right")}
+            >
+              우측
+            </Button>
+            <Button
+              size="sm"
+              type="button"
+              variant="outline"
+              onClick={() => handleSetView("top")}
+            >
+              평면
+            </Button>
+          </div>
+        </section>
+
+        <section className="space-y-3 rounded-2xl border bg-background/70 px-3 py-3">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="font-medium text-foreground">직교 투영</p>
+              <p className="text-xs text-muted-foreground">
+                원근 왜곡 없이 형상을 검토합니다.
+              </p>
+            </div>
+            <Switch
+              checked={projectionMode === "orthographic"}
+              onCheckedChange={(checked) =>
+                setProjectionMode(checked ? "orthographic" : "perspective")
+              }
+            />
+          </div>
+
           <div className="flex items-center justify-between gap-3">
             <div>
               <p className="font-medium text-foreground">그리드</p>
@@ -112,6 +213,16 @@ export function GltfViewerScreen({
               </p>
             </div>
             <Switch checked={showGrid} onCheckedChange={setShowGrid} />
+          </div>
+
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="font-medium text-foreground">원점 축 표시</p>
+              <p className="text-xs text-muted-foreground">
+                그리드 중심에 기준 축을 함께 표시합니다.
+              </p>
+            </div>
+            <Switch checked={showAxesGizmo} onCheckedChange={setShowAxesGizmo} />
           </div>
 
           <div className="flex items-center justify-between gap-3">
@@ -140,17 +251,37 @@ export function GltfViewerScreen({
           </div>
         </section>
 
-        <section className="space-y-2 rounded-2xl border bg-background/70 px-3 py-3">
-          <p className="text-sm font-semibold text-foreground">조작 가이드</p>
-          <div className="space-y-2 text-xs text-muted-foreground">
-            <p>왼쪽 드래그로 회전하고 휠로 확대 및 축소합니다.</p>
-            <p>Shift+왼쪽 드래그 또는 오른쪽 드래그로 평행 이동합니다.</p>
-            <p>시점이 어긋나면 상단의 맞춤 보기 또는 시점 초기화를 사용합니다.</p>
-          </div>
-        </section>
+        {dimensionItems.length > 0 ? (
+          <section className="space-y-3 rounded-2xl border bg-background/70 px-3 py-3">
+            <div>
+              <p className="font-medium text-foreground">모델 크기</p>
+              <p className="text-xs text-muted-foreground">
+                현재 모델 bounds 기준 외형 치수입니다.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 gap-2">
+              {dimensionItems.map((item) => (
+                <div
+                  key={item.label}
+                  className="flex items-center justify-between rounded-xl border bg-card px-3 py-2"
+                >
+                  <span className="text-sm text-muted-foreground">{item.label}</span>
+                  <span className="text-sm font-medium text-foreground">
+                    {item.value}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </section>
+        ) : null}
       </div>
     </div>
   );
+
+  function handleSetView(view: GltfViewerStandardView) {
+    canvasRef.current?.setView(view);
+  }
 
   return (
     <div
@@ -163,26 +294,34 @@ export function GltfViewerScreen({
         <div className="flex flex-col gap-4 px-4 py-4 md:px-5">
           <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
             <div className="min-w-0 flex-1 space-y-2">
-              <div className="flex flex-wrap items-center gap-2">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-muted-foreground">
-                  3D 모델 뷰어
-                </p>
-                <Badge variant={statusMeta.badgeVariant}>
-                  <StatusIcon
-                    className={cn("h-3 w-3", status === "loading" && "animate-spin")}
-                  />
-                  {statusMeta.label}
-                </Badge>
-                <Badge variant="outline">{subtitle}</Badge>
-              </div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-muted-foreground">
+                3D 모델 뷰어
+              </p>
 
-              <div className="space-y-1">
+              <div className="space-y-2">
                 <h1 className="truncate text-xl font-semibold text-foreground">
                   {title}
                 </h1>
-                <p className="max-w-4xl text-sm text-muted-foreground">
-                  {description}
-                </p>
+
+                {headerMetaItems.length > 0 ? (
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
+                    {headerMetaItems.map((item) => (
+                      <span key={item.label}>
+                        {item.label} {item.value}
+                      </span>
+                    ))}
+                  </div>
+                ) : null}
+
+                {headerFileName ? (
+                  <p className="text-sm text-muted-foreground">파일 {headerFileName}</p>
+                ) : null}
+
+                {description ? (
+                  <p className="max-w-4xl text-sm text-muted-foreground">
+                    {description}
+                  </p>
+                ) : null}
               </div>
             </div>
 
@@ -249,18 +388,6 @@ export function GltfViewerScreen({
               </Button>
             </div>
           </div>
-
-          <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-            <span className="rounded-full border bg-card px-2.5 py-1">
-              렌더 모드 {renderMode === "wireframe" ? "와이어프레임" : "솔리드"}
-            </span>
-            <span className="rounded-full border bg-card px-2.5 py-1">
-              그리드 {showGrid ? "표시" : "숨김"}
-            </span>
-            <span className="rounded-full border bg-card px-2.5 py-1">
-              자동 회전 {autoRotate ? "켜짐" : "꺼짐"}
-            </span>
-          </div>
         </div>
       </header>
 
@@ -273,12 +400,16 @@ export function GltfViewerScreen({
                 ariaLabel={title}
                 autoRotate={autoRotate}
                 className="h-full min-h-[28rem] rounded-[28px]"
+                projectionMode={projectionMode}
                 renderMode={renderMode}
                 resourceUrls={resourceUrls}
+                showAxesGizmo={showAxesGizmo}
+                showBackgroundDecorations={false}
                 showGrid={showGrid}
                 showInteractionHint={false}
                 showStatusBadge={false}
                 src={src}
+                onSceneStatsChange={setSceneStats}
                 onStatusChange={({
                   errorMessage: nextErrorMessage,
                   status: nextStatus,

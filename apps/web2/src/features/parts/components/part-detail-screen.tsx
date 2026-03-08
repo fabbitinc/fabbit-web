@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { PartDetailScreen as PartDetailScreenView } from "@fabbit/components";
+import type { PartDrawingPreviewDrawing } from "@fabbit/components";
 import { useNavigate } from "react-router-dom";
 import { PartHistoryTab, PartPropertiesTab } from "@fabbit/components";
 import { partsKeys } from "@/features/parts/api/parts.queries";
@@ -14,6 +15,7 @@ import { useDeletePartDrawingAction } from "@/features/parts/hooks/use-delete-pa
 import { usePartDrawingProcessingQuery } from "@/features/parts/hooks/use-part-drawing-processing-query";
 import { usePartDetailQuery } from "@/features/parts/hooks/use-part-detail-query";
 import { useUploadPartDrawingAction } from "@/features/parts/hooks/use-upload-part-drawing-action";
+import { DEFAULT_PART_DRAWING_FAILURE_MESSAGE } from "@/features/parts/lib/part-drawing-failure";
 import type { PartDetailModel, PartDetailTab } from "@/features/parts/types/parts-model";
 
 interface PartDetailScreenProps {
@@ -37,6 +39,50 @@ export function PartDetailScreen({ activeTab, onTabChange, partId }: PartDetailS
   );
   const handledProcessingStateRef = useRef<string | null>(null);
 
+  function handleOpenDrawingViewer(drawing: PartDrawingPreviewDrawing) {
+    if (drawing.viewerType !== "GLB" || !drawing.viewerUrl) {
+      return;
+    }
+
+    const searchParams = new URLSearchParams();
+    const part = partQuery.data;
+    const title =
+      part?.name?.trim() ||
+      part?.partNumber ||
+      drawing.drawingNumber ||
+      drawing.name ||
+      "3D 모델";
+
+    searchParams.set("src", drawing.viewerUrl);
+    searchParams.set("title", title);
+
+    if (part?.partNumber) {
+      searchParams.set("partNumber", part.partNumber);
+    } else if (drawing.drawingNumber) {
+      searchParams.set("partNumber", drawing.drawingNumber);
+    }
+
+    if (part?.revision) {
+      searchParams.set("revision", part.revision);
+    }
+
+    if (part?.category) {
+      searchParams.set("category", part.category);
+    }
+
+    if (drawing.name) {
+      searchParams.set("fileName", drawing.name);
+    } else if (drawing.drawingNumber) {
+      searchParams.set("fileName", drawing.drawingNumber);
+    }
+
+    window.open(
+      `/parts/drawing-viewer?${searchParams.toString()}`,
+      "_blank",
+      "noopener,noreferrer",
+    );
+  }
+
   useEffect(() => {
     if (!currentDrawingId) {
       handledProcessingStateRef.current = null;
@@ -59,6 +105,11 @@ export function PartDetailScreen({ activeTab, onTabChange, partId }: PartDetailS
     handledProcessingStateRef.current = handledKey;
 
     if (processingStatus === "FAILED") {
+      const failureCode = drawingProcessingQuery.data?.failureCode ?? null;
+      const failureMessage =
+        drawingProcessingQuery.data?.failureMessage ??
+        DEFAULT_PART_DRAWING_FAILURE_MESSAGE;
+
       queryClient.setQueryData<PartDetailModel | undefined>(partsKeys.detail(partId), (current) => {
         if (!current?.drawing || current.drawing.id !== currentDrawingId) {
           return current;
@@ -69,19 +120,20 @@ export function PartDetailScreen({ activeTab, onTabChange, partId }: PartDetailS
           drawing: {
             ...current.drawing,
             conversionStatus: "FAILED",
+            failureCode,
+            failureMessage,
           },
         };
       });
-      toast.error(
-        drawingProcessingQuery.data?.failureReason ?? "도면 처리에 실패했습니다.",
-      );
+      toast.error(failureMessage);
       return;
     }
 
     void refetchPartDetail();
   }, [
     currentDrawingId,
-    drawingProcessingQuery.data?.failureReason,
+    drawingProcessingQuery.data?.failureCode,
+    drawingProcessingQuery.data?.failureMessage,
     drawingProcessingQuery.data?.status,
     partId,
     queryClient,
@@ -103,6 +155,7 @@ export function PartDetailScreen({ activeTab, onTabChange, partId }: PartDetailS
         <PartPropertiesTab
           isDeletingDrawing={deletePartDrawingAction.isPending}
           isUploadingDrawing={uploadPartDrawingAction.isPending}
+          onOpenDrawingViewer={handleOpenDrawingViewer}
           part={partQuery.data}
           onDeleteDrawing={() => deletePartDrawingAction.mutate()}
           onUploadDrawing={async (file) => {

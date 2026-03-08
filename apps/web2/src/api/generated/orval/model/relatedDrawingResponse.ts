@@ -6,18 +6,30 @@
  */
 import type { RelatedDrawingResponseConversionStatus } from './relatedDrawingResponseConversionStatus';
 import type { RelatedDrawingResponseStatus } from './relatedDrawingResponseStatus';
+import type { RelatedDrawingResponseViewerType } from './relatedDrawingResponseViewerType';
 
 /**
- * 응답 DTO
+ * 관련 도면 응답
  */
 export interface RelatedDrawingResponse {
+  /** 도면 ID */
   id?: string;
+  /** 도면 번호 */
   drawing_number?: string;
+  /** 도면명 */
   name?: string;
+  /** 버전 */
   version?: string;
+  /** 도면 상태 */
   status?: RelatedDrawingResponseStatus;
+  /** 도면 변환 상태 */
   conversion_status?: RelatedDrawingResponseConversionStatus;
-  thumbnail_url?: string;
-  pdf_url?: string;
+  /** 뷰어 타입 */
+  viewer_type?: RelatedDrawingResponseViewerType;
+  /** 뷰어 본문 URL */
+  viewer_url?: string;
+  /** 미리보기 이미지 URL */
+  preview_url?: string;
+  /** 원본 파일 URL */
   original_file_url?: string;
 }

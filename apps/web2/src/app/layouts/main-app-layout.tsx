@@ -19,8 +19,13 @@ const SIDENAV_WIDTH = 240;
 const navigationItems = [
   { id: "dashboard", href: "/", label: "대시보드", icon: LayoutDashboard },
   { id: "projects", href: "/projects", label: "프로젝트", icon: FolderKanban },
-  { id: "changes", href: "/changes", label: "변경 관리", icon: GitPullRequestArrow },
-  { id: "parts", href: "/parts", label: "부품관리", icon: Package },
+  {
+    id: "changes",
+    href: "/changes",
+    label: "변경 관리",
+    icon: GitPullRequestArrow,
+  },
+  { id: "parts", href: "/parts", label: "부품 관리", icon: Package },
 ];
 
 function Brand() {
@@ -45,7 +50,9 @@ function Brand() {
           <path d="M2 12l10 5 10-5" />
         </svg>
       </div>
-      <span className="text-sm font-semibold leading-none text-foreground">Fabbit</span>
+      <span className="text-sm font-semibold leading-none text-foreground">
+        Fabbit
+      </span>
     </div>
   );
 }
@@ -83,7 +90,10 @@ export function MainAppLayout() {
     if (isDesktop) {
       setIsSideNavCollapsed((previous) => {
         const next = !previous;
-        localStorage.setItem("fabbit-side-nav-collapsed", next ? "true" : "false");
+        localStorage.setItem(
+          "fabbit-side-nav-collapsed",
+          next ? "true" : "false",
+        );
         return next;
       });
       return;
@@ -135,7 +145,10 @@ export function MainAppLayout() {
           id: item.id,
           label: item.label,
           icon: item.icon,
-          active: item.href === "/" ? location.pathname === "/" : location.pathname.startsWith(item.href),
+          active:
+            item.href === "/"
+              ? location.pathname === "/"
+              : location.pathname.startsWith(item.href),
           onClick: () => {
             navigate(item.href);
             closeMobileSideNav();
@@ -164,7 +177,7 @@ export function MainAppLayout() {
         })),
         onSelect: handleSwitchOrganization,
         switchingSlug: switchOrganizationAction.isPending
-          ? switchOrganizationAction.variables ?? null
+          ? (switchOrganizationAction.variables ?? null)
           : null,
       }
     : null;
@@ -193,13 +206,15 @@ export function MainAppLayout() {
         header={
           <AppHeader
             brand={<Brand />}
-            user={user
-              ? {
-                  name: user.name,
-                  email: user.email,
-                  profileImageUrl: user.profileImageUrl,
-                }
-              : null}
+            user={
+              user
+                ? {
+                    name: user.name,
+                    email: user.email,
+                    profileImageUrl: user.profileImageUrl,
+                  }
+                : null
+            }
             onToggleSidebar={handleToggleSideNav}
             organizationMenu={organizationMenu}
             primaryAction={{ label: "생성" }}

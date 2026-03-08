@@ -18,8 +18,9 @@ const samplePart = {
     version: "4",
     status: "승인됨",
     conversionStatus: "COMPLETED",
-    thumbnailUrl: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80",
-    pdfUrl: "https://example.com/drawing.pdf",
+    viewerType: "PDF",
+    viewerUrl: "https://example.com/drawing.pdf",
+    previewUrl: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80",
     originalFileUrl: "https://example.com/drawing.dwg",
   },
 } satisfies PartPropertiesTabProps["part"];

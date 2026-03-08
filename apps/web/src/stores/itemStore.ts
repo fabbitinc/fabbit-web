@@ -4,7 +4,7 @@ import type { ItemData } from "@/features/items/types";
 interface ItemStore {
   selectedFolderId: string;
   selectedItemId: string | null;
-  selectedProjectId: string | null; // 부품관리에서 선택된 프로젝트 ID
+  selectedProjectId: string | null; // 부품 관리에서 선택된 프로젝트 ID
   expandedIds: Set<string>;
   selectedItem: ItemData | null;
   drawerOpen: boolean;
@@ -39,13 +39,25 @@ export const useItemStore = create<ItemStore>((set, get) => ({
 
   // 배치 업데이트 함수 (성능 최적화: 3번 → 1번 리렌더링)
   selectFolder: (folderId, projectId) =>
-    set({ selectedFolderId: folderId, selectedItemId: null, selectedProjectId: projectId }),
+    set({
+      selectedFolderId: folderId,
+      selectedItemId: null,
+      selectedProjectId: projectId,
+    }),
 
   selectProject: (projectId) =>
-    set({ selectedFolderId: "", selectedItemId: null, selectedProjectId: projectId }),
+    set({
+      selectedFolderId: "",
+      selectedItemId: null,
+      selectedProjectId: projectId,
+    }),
 
   clearSelection: () =>
-    set({ selectedFolderId: "", selectedItemId: null, selectedProjectId: null }),
+    set({
+      selectedFolderId: "",
+      selectedItemId: null,
+      selectedProjectId: null,
+    }),
 
   toggleExpanded: (id) => {
     const current = get().expandedIds;
@@ -61,6 +73,7 @@ export const useItemStore = create<ItemStore>((set, get) => ({
   selectItem: (item) => set({ selectedItem: item, drawerOpen: item !== null }),
 
   openDrawer: () => set({ drawerOpen: true }),
-  closeDrawer: () => set({ drawerOpen: false, selectedItem: null, drawerExpanded: false }),
+  closeDrawer: () =>
+    set({ drawerOpen: false, selectedItem: null, drawerExpanded: false }),
   toggleDrawerExpand: () => set({ drawerExpanded: !get().drawerExpanded }),
 }));
