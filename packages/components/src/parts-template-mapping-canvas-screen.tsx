@@ -168,6 +168,7 @@ export interface PartsTemplateMappingCanvasScreenProps {
   edges: PartsTemplateMappingCanvasEdge[];
   emptyState?: PartsTemplateMappingCanvasEmptyState;
   fileName?: string;
+  headerContent?: ReactNode;
   headerActions?: ReactNode;
   nodes: PartsTemplateMappingCanvasNode[];
   onAddNode?: (tone: PartsTemplateMappingCanvasNodeTone) => void;
@@ -182,6 +183,7 @@ export interface PartsTemplateMappingCanvasScreenProps {
   onMoveProperty?: (request: PartsTemplateMappingCanvasPropertyMoveRequest) => void;
   onNodePositionChange?: (nodeId: string, position: { x: number; y: number }) => void;
   onResetNodes?: () => void;
+  sourcePreviewContent?: ReactNode;
   title?: string;
   unassignedProperties?: PartsTemplateMappingCanvasField[];
 }
@@ -385,6 +387,7 @@ export function PartsTemplateMappingCanvasScreen({
   edges,
   emptyState,
   fileName = "부품_관계_실험보드.fig",
+  headerContent,
   headerActions,
   nodes,
   onAddNode,
@@ -396,6 +399,7 @@ export function PartsTemplateMappingCanvasScreen({
   onMoveProperty,
   onNodePositionChange,
   onResetNodes,
+  sourcePreviewContent,
   title = "캔버스 매핑 실험실",
   unassignedProperties = [],
 }: PartsTemplateMappingCanvasScreenProps) {
@@ -1008,7 +1012,7 @@ export function PartsTemplateMappingCanvasScreen({
               })
             }
           >
-            <SelectTrigger className="h-9 rounded-xl border-border/70 bg-background/70 text-sm shadow-none">
+            <SelectTrigger className="h-9 rounded-lg border-border/70 bg-background/70 text-sm shadow-none">
               <SelectValue placeholder={mappingOptions.length ? "항목을 선택하세요" : "선택 항목이 없습니다"} />
             </SelectTrigger>
             <SelectContent>
@@ -1029,7 +1033,7 @@ export function PartsTemplateMappingCanvasScreen({
     return (
       <div className="h-screen overflow-hidden bg-background px-6 py-8">
         <div className="dev-page-container parts-template-mapping-canvas-theme flex h-full min-h-0 flex-col justify-center">
-          <section className="shrink-0 rounded-[28px] border bg-card px-6 py-8 text-center shadow-sm">
+          <section className="shrink-0 rounded-lg border bg-card px-6 py-8 text-center shadow-sm">
             <Badge variant="outline">매핑 실험</Badge>
             <h1 className="mt-4 text-2xl font-semibold text-foreground">
               {emptyState?.title ?? "표시할 카드가 아직 없습니다"}
@@ -1055,55 +1059,65 @@ export function PartsTemplateMappingCanvasScreen({
   return (
     <div className="h-screen overflow-hidden bg-background px-6 py-8">
       <div className="dev-page-container parts-template-mapping-canvas-theme flex h-full min-h-0 flex-col gap-4">
-        <section className="shrink-0 rounded-[28px] border bg-card px-6 py-6 shadow-sm">
-          <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
-            <div className="space-y-3">
-              <Badge variant="outline">매핑 실험</Badge>
-              <div>
-                <h1 className="text-2xl font-semibold tracking-tight text-foreground">{title}</h1>
-                <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">{description}</p>
+        {headerContent ? (
+          <div className="shrink-0">{headerContent}</div>
+        ) : (
+          <section className="shrink-0 rounded-lg border bg-card px-6 py-6 shadow-sm">
+            <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+              <div className="space-y-3">
+                <Badge variant="outline">매핑 실험</Badge>
+                <div>
+                  <h1 className="text-2xl font-semibold tracking-tight text-foreground">{title}</h1>
+                  <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">{description}</p>
+                </div>
+                <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground/80">{fileName}</p>
               </div>
-              <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground/80">{fileName}</p>
-            </div>
 
-            <div className="flex flex-wrap items-center gap-2">
-              {headerActions}
-              {onAddNode ? addableNodeTones.map((tone) => (
-                <Button
-                  key={tone}
-                  size="sm"
-                  variant="outline"
-                  onClick={() => onAddNode(tone)}
-                >
-                  <Plus className="size-3.5" />
-                  {getNodeToneLabel(tone)}
-                </Button>
-              )) : null}
-              <Badge variant="secondary">카드 {nodes.length}개</Badge>
-              <Badge variant="outline">연결 {edges.length}개</Badge>
-              {onResetNodes ? (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => {
-                    onResetNodes();
-                    window.requestAnimationFrame(() => {
+              <div className="flex flex-wrap items-center gap-2">
+                {headerActions}
+                {onAddNode ? addableNodeTones.map((tone) => (
+                  <Button
+                    key={tone}
+                    size="sm"
+                    variant="outline"
+                    onClick={() => onAddNode(tone)}
+                  >
+                    <Plus className="size-3.5" />
+                    {getNodeToneLabel(tone)}
+                  </Button>
+                )) : null}
+                <Badge variant="secondary">카드 {nodes.length}개</Badge>
+                <Badge variant="outline">연결 {edges.length}개</Badge>
+                {onResetNodes ? (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => {
+                      onResetNodes();
                       window.requestAnimationFrame(() => {
-                        fitCanvasToNodes();
+                        window.requestAnimationFrame(() => {
+                          fitCanvasToNodes();
+                        });
                       });
-                    });
-                  }}
-                >
-                  <Grip className="size-3.5" />
-                  배치 초기화
-                </Button>
-              ) : null}
+                    }}
+                  >
+                    <Grip className="size-3.5" />
+                    배치 초기화
+                  </Button>
+                ) : null}
+              </div>
             </div>
+          </section>
+        )}
+
+        {sourcePreviewContent ? (
+          <div className="shrink-0">
+            {sourcePreviewContent}
           </div>
-        </section>
+        ) : null}
 
         <div className="flex min-h-0 flex-1 flex-col gap-4 lg:flex-row">
-          <section className="relative min-h-0 min-w-0 flex-1 overflow-hidden overscroll-none rounded-[28px] border bg-card shadow-sm">
+          <section className="relative min-h-0 min-w-0 flex-1 overflow-hidden overscroll-none rounded-lg border bg-card shadow-sm">
             <div className="absolute left-4 top-4 z-20 flex flex-wrap items-center gap-2">
               <Button
                 aria-label="캔버스 축소"
@@ -1406,7 +1420,7 @@ export function PartsTemplateMappingCanvasScreen({
                       <button
                         type="button"
                         className={cn(
-                          "flex w-full cursor-grab items-center gap-3 rounded-[22px] p-4 text-left active:cursor-grabbing",
+                          "flex w-full cursor-grab items-center gap-3 rounded-[14px] p-4 text-left active:cursor-grabbing",
                           disableNodeInnerInteraction ? "pointer-events-none" : "",
                         )}
                         onPointerDown={(event) => handleNodePointerDown(event, node)}
@@ -1474,7 +1488,7 @@ export function PartsTemplateMappingCanvasScreen({
           </section>
 
           {showPropertySidebar ? (
-            <aside className="parts-template-mapping-canvas-sidebar w-full shrink-0 overflow-hidden rounded-[28px] border bg-card shadow-sm lg:h-full lg:w-[340px] lg:max-w-[340px]">
+            <aside className="parts-template-mapping-canvas-sidebar w-full shrink-0 overflow-hidden rounded-lg border bg-card shadow-sm lg:h-full lg:w-[340px] lg:max-w-[340px]">
               <div className="flex h-full min-h-0 flex-col">
                 <div className="border-b border-border/70 px-5 py-4">
                   <div className="flex items-start justify-between gap-3">
@@ -1512,19 +1526,19 @@ export function PartsTemplateMappingCanvasScreen({
                 </div>
 
                 {!isSelectedEditorCollapsed ? (
-                  <div className="max-h-[42%] shrink-0 overflow-y-auto border-b border-border/70 lg:min-h-0">
+                  <div className="max-h-[42%] shrink-0 overflow-y-auto overscroll-none border-b border-border/70 lg:min-h-0">
                     {selectedEditor ? (
                       selectedEditor.fields.length ? (
                         <div className="parts-template-mapping-canvas-field-editor-list">
                           {selectedEditor.fields.map((field) => renderFieldEditor(field, selectedEditor.owner))}
                         </div>
                       ) : (
-                        <div className="parts-template-mapping-canvas-shelf-empty mx-5 my-5 min-h-[180px] rounded-[20px] border border-dashed border-border/70 bg-background/70">
+                        <div className="parts-template-mapping-canvas-shelf-empty mx-5 my-5 min-h-[180px] rounded-lg border border-dashed border-border/70 bg-background/70">
                           아직 배치된 항목이 없습니다.
                         </div>
                       )
                     ) : (
-                      <div className="parts-template-mapping-canvas-shelf-empty mx-5 my-5 min-h-[180px] rounded-[20px] border border-dashed border-border/70 bg-background/70">
+                      <div className="parts-template-mapping-canvas-shelf-empty mx-5 my-5 min-h-[180px] rounded-lg border border-dashed border-border/70 bg-background/70">
                         편집할 카드를 선택해 주세요.
                       </div>
                     )}
@@ -1571,7 +1585,7 @@ export function PartsTemplateMappingCanvasScreen({
                 </div>
 
                 {!isUnassignedCollapsed ? (
-                  <div className="min-h-[260px] flex-1 overflow-y-auto lg:min-h-0">
+                  <div className="min-h-[260px] flex-1 overflow-y-auto overscroll-none lg:min-h-0">
                     <div
                       className="parts-template-mapping-canvas-shelf"
                       data-drop-active={

@@ -1,5 +1,6 @@
 import { useRef, useState, type DragEvent } from "react";
 import {
+  CircleHelp,
   Download,
   ExternalLink,
   FileDown,
@@ -16,6 +17,9 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
   cn,
 } from "@fabbit/ui";
 
@@ -43,11 +47,95 @@ export interface PartDrawingPreviewProps {
   onUpload: (file: File) => void;
 }
 
-const DRAWING_ACCEPT = [".pdf", ".dwg", ".dxf", ".png", ".jpg", ".jpeg", ".tif", ".tiff"];
+const DRAWING_EXTENSION_GROUPS = [
+  { label: "2D CAD", extensions: [".dwg", ".dxf"] },
+  { label: "PDF", extensions: [".pdf"] },
+  {
+    label: "이미지",
+    extensions: [".png", ".jpg", ".jpeg", ".bmp", ".tif", ".tiff", ".webp"],
+  },
+  {
+    label: "3D CAD",
+    extensions: [
+      ".step",
+      ".stp",
+      ".iges",
+      ".igs",
+      ".stl",
+      ".obj",
+      ".3mf",
+      ".fbx",
+      ".glb",
+      ".gltf",
+    ],
+  },
+] as const;
+
+const DRAWING_ACCEPT: string[] = DRAWING_EXTENSION_GROUPS.flatMap(
+  (group) => group.extensions,
+);
 
 function isAcceptedFile(file: File) {
   const ext = `.${file.name.split(".").pop()?.toLowerCase()}`;
   return DRAWING_ACCEPT.includes(ext);
+}
+
+function DrawingUploadHelp() {
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <button
+          aria-label="도면 업로드 허용 형식 보기"
+          className="inline-flex h-5 w-5 cursor-pointer items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          type="button"
+        >
+          <CircleHelp className="h-3.5 w-3.5" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent align="start" className="w-[320px] p-3">
+        <div className="space-y-3">
+          <div className="space-y-1">
+            <p className="text-sm font-semibold text-foreground">업로드 가능 형식</p>
+            <p className="text-xs leading-relaxed text-muted-foreground">
+              도면과 3D 모델 파일을 업로드할 수 있습니다.
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            {DRAWING_EXTENSION_GROUPS.map((group) => (
+              <div
+                key={group.label}
+                className="rounded-md border border-border/60 bg-muted/20 px-2.5 py-2"
+              >
+                <p className="text-[11px] font-medium uppercase tracking-wide text-foreground/80">
+                  {group.label}
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  {group.extensions
+                    .map((extension) => extension.slice(1).toUpperCase())
+                    .join(", ")}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+function DrawingPreviewSection({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="space-y-2">
+      <div className="flex items-center gap-1.5">
+        <h4 className="text-xs font-medium uppercase tracking-wider text-muted-foreground/70">
+          도면
+        </h4>
+        <DrawingUploadHelp />
+      </div>
+      {children}
+    </div>
+  );
 }
 
 export function PartDrawingPreview({
@@ -125,7 +213,9 @@ export function PartDrawingPreview({
   if (hasDrawing) {
     const previewDrawing = drawing;
     const hasThumbnail = !!previewDrawing.thumbnailUrl;
-    const isConverting = previewDrawing.conversionStatus === "PENDING";
+    const isConverting =
+      previewDrawing.conversionStatus === "PENDING" ||
+      previewDrawing.conversionStatus === "PROCESSING";
     const isFailed = previewDrawing.conversionStatus === "FAILED";
     const downloadOptions = [
       { label: "원본 다운로드", icon: Download, url: previewDrawing.originalFileUrl },
@@ -134,7 +224,7 @@ export function PartDrawingPreview({
     ].filter((option) => option.url != null);
 
     return (
-      <>
+      <DrawingPreviewSection>
         <input
           ref={fileInputRef}
           accept={DRAWING_ACCEPT.join(",")}
@@ -186,10 +276,10 @@ export function PartDrawingPreview({
                 {isFailed ? (
                   <div className="flex flex-col items-center gap-2">
                     <span className="text-center text-[11px] text-destructive">
-                      도면 변환에 실패했습니다. 파일을 다시 업로드해 주세요.
+                      미리보기 변환에 실패했습니다. 파일을 다시 업로드해 주세요.
                     </span>
                     <span className="text-[10px] text-muted-foreground/80">
-                      파일을 드래그하거나 클릭해서 다시 업로드
+                      클릭 또는 드래그해 다시 업로드
                     </span>
                     <Button
                       className="h-7 px-2.5 text-[11px]"
@@ -263,12 +353,12 @@ export function PartDrawingPreview({
             </div>
           ) : null}
         </div>
-      </>
+      </DrawingPreviewSection>
     );
   }
 
   return (
-    <>
+    <DrawingPreviewSection>
       <input
         ref={fileInputRef}
         accept={DRAWING_ACCEPT.join(",")}
@@ -326,7 +416,7 @@ export function PartDrawingPreview({
                   : "text-muted-foreground/35 group-hover:text-foreground/60",
               )}
             >
-              {isDragging ? "여기에 놓으세요" : "도면 등록"}
+              {isDragging ? "여기에 놓으세요" : "도면 또는 3D 파일 등록"}
             </p>
             <p
               className={cn(
@@ -336,11 +426,11 @@ export function PartDrawingPreview({
                   : "text-muted-foreground/20 group-hover:text-muted-foreground/40",
               )}
             >
-              파일을 드래그하거나 클릭하여 업로드 · PDF, DWG, DXF
+              클릭 또는 드래그해 업로드
             </p>
           </>
         )}
       </button>
-    </>
+    </DrawingPreviewSection>
   );
 }

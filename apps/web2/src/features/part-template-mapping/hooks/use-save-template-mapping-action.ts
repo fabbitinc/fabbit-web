@@ -28,7 +28,7 @@ type MappingRelationRequestDto =
 type MappingPayloadDto = Pick<MappingConfirmRequestDto, "file_id" | "mapping">;
 
 export function useSaveTemplateMappingAction() {
-      const queryClient = useQueryClient();
+  const queryClient = useQueryClient();
 
   return useMutation({
     mutationKey: ["part-template-mapping", "save-template-mapping-action"],
@@ -105,7 +105,7 @@ function toMappingRelationRequest(
     rel_type: mapping.relType as MappingRelationRequestDto["rel_type"],
     target_label: mapping.targetLabel,
     node_columns: mapping.nodeColumns,
-    rel_columns: mapping.relColumns,
+    rel_columns: toRelationColumnsRequest(mapping.relColumns),
     rel_column_types: Object.fromEntries(
       Object.entries(mapping.relColumnTypes).map(([key, value]) => [
         key,
@@ -115,4 +115,13 @@ function toMappingRelationRequest(
     confidence: mapping.confidence,
     reason: mapping.reason,
   };
+}
+
+function toRelationColumnsRequest(relColumns: Record<string, string>): Record<string, string> {
+  return Object.fromEntries(
+    Object.entries(relColumns).map(([sourceColumn, relationProperty]) => [
+      relationProperty,
+      sourceColumn,
+    ]),
+  );
 }

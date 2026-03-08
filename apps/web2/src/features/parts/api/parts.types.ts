@@ -23,6 +23,7 @@ export type PartOwnerResponseDto = ResponseOf<"/api/v1/parts/{partId}/owner", "g
 export type UpdatePartOwnerRequestDto = ApiRequestBody<"/api/v1/parts/{partId}/owner", "patch">;
 export type RegisterPartDrawingRequestDto = ApiRequestBody<"/api/v1/parts/{partId}/drawings", "post">;
 export type RegisterPartDrawingResponseDto = ResponseOf<"/api/v1/parts/{partId}/drawings", "post">;
+export type DrawingProcessingResponseDto = ResponseOf<"/api/v1/drawings/{drawingId}/processing", "get">;
 export type ListProjectsQueryDto = NonNullable<ApiParameters<"/api/v1/projects", "get">["query"]>;
 export type ProjectListResponseDto = ResponseOf<"/api/v1/projects", "get">;
 export type LinkProjectPartsRequestDto = ApiRequestBody<"/api/v1/projects/{projectId}/parts", "post">;

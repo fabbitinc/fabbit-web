@@ -2444,6 +2444,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/drawings/{drawingId}/processing": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * GET /api/v1/drawings/{drawingId}/processing
+         * @description 도면 비동기 처리 상태와 산출물 준비 여부를 조회합니다
+         */
+        get: operations["getProcessing"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/dashboard/stats": {
         parameters: {
             query?: never;
@@ -3323,23 +3343,16 @@ export interface components {
             sheet_name?: string;
         };
         JsonNode: {
-            array?: boolean;
-            empty?: boolean;
-            null?: boolean;
-            float?: boolean;
-            number?: boolean;
             pojo?: boolean;
             int?: boolean;
             long?: boolean;
-            integral_number?: boolean;
-            floating_point_number?: boolean;
-            /** @enum {string} */
-            node_type?: "ARRAY" | "BINARY" | "BOOLEAN" | "MISSING" | "NULL" | "NUMBER" | "OBJECT" | "POJO" | "STRING";
-            string?: boolean;
             value_node?: boolean;
             container?: boolean;
             missing_node?: boolean;
             object?: boolean;
+            /** @enum {string} */
+            node_type?: "ARRAY" | "BINARY" | "BOOLEAN" | "MISSING" | "NULL" | "NUMBER" | "OBJECT" | "POJO" | "STRING";
+            string?: boolean;
             short?: boolean;
             double?: boolean;
             big_decimal?: boolean;
@@ -3348,6 +3361,13 @@ export interface components {
             textual?: boolean;
             boolean?: boolean;
             binary?: boolean;
+            number?: boolean;
+            integral_number?: boolean;
+            floating_point_number?: boolean;
+            array?: boolean;
+            empty?: boolean;
+            null?: boolean;
+            float?: boolean;
             embedded_value?: boolean;
         };
         /** @description V2 매핑 미리보기 응답 */
@@ -5610,6 +5630,35 @@ export interface components {
         /** @description 이슈 lookup 응답 */
         IssueLookupResponse: {
             items?: components["schemas"]["IssueLookupItemResponse"][];
+        };
+        /** @description 도면 처리 상태 응답 DTO */
+        DrawingProcessingResponse: {
+            /**
+             * @description 도면 처리 상태
+             * @example PENDING
+             * @enum {string}
+             */
+            status?: "PENDING" | "PROCESSING" | "COMPLETED" | "FAILED";
+            /**
+             * @description 실패 사유
+             * @example 지원하지 않는 도면 파일 형식입니다
+             */
+            failure_reason?: string;
+            /**
+             * @description PDF 산출물 준비 여부
+             * @example true
+             */
+            pdf_ready?: boolean;
+            /**
+             * @description WEBP 산출물 준비 여부
+             * @example true
+             */
+            webp_ready?: boolean;
+            /**
+             * @description GLB 산출물 준비 여부
+             * @example false
+             */
+            glb_ready?: boolean;
         };
         /** @description BOM 링크 통계 */
         BomStatsResponse: {
@@ -16136,6 +16185,65 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["IssueLookupResponse"];
+                };
+            };
+        };
+    };
+    getProcessing: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 조회할 도면 ID */
+                drawingId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DrawingProcessingResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DrawingProcessingResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DrawingProcessingResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DrawingProcessingResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DrawingProcessingResponse"];
                 };
             };
         };

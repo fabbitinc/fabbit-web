@@ -36,16 +36,30 @@ export interface PartFilterOptionsModel {
   lifecycleStates: string[];
 }
 
+export type PartDrawingProcessingStatus =
+  | "PENDING"
+  | "PROCESSING"
+  | "COMPLETED"
+  | "FAILED";
+
 export interface PartDrawingModel {
   id: string;
   drawingNumber: string | null;
   name: string | null;
   version: string | null;
   status: string | null;
-  conversionStatus: string | null;
+  conversionStatus: PartDrawingProcessingStatus | null;
   thumbnailUrl: string | null;
   pdfUrl: string | null;
   originalFileUrl: string | null;
+}
+
+export interface PartDrawingProcessingModel {
+  status: PartDrawingProcessingStatus;
+  failureReason: string | null;
+  pdfReady: boolean;
+  webpReady: boolean;
+  glbReady: boolean;
 }
 
 export interface PartDetailModel {

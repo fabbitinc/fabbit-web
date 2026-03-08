@@ -8,6 +8,7 @@ import {
   fetchAssignableMembers,
   fetchAssignableTeams,
   fetchAvailableProjects,
+  fetchDrawingProcessing,
   fetchPartBom,
   fetchPartBomTree,
   fetchPartDetail,
@@ -40,6 +41,7 @@ export const partsKeys = {
   lists: () => ["parts", "list"] as const,
   list: (query: ListPartsQueryDto) => ["parts", "list", query] as const,
   detail: (partId: string) => ["parts", partId, "detail"] as const,
+  drawingProcessing: (drawingId: string) => ["parts", "drawings", drawingId, "processing"] as const,
   bom: (partId: string) => ["parts", partId, "bom"] as const,
   bomTree: (partId: string, query: PartBomTreeQueryDto) => ["parts", partId, "bom-tree", query] as const,
   files: (partId: string) => ["parts", partId, "files"] as const,
@@ -70,6 +72,12 @@ export const partsQueries = {
       queryKey: partsKeys.detail(partId),
       queryFn: () => fetchPartDetail(partId),
       staleTime: 30_000,
+    }),
+  drawingProcessing: (drawingId: string) =>
+    queryOptions({
+      queryKey: partsKeys.drawingProcessing(drawingId),
+      queryFn: () => fetchDrawingProcessing(drawingId),
+      staleTime: 0,
     }),
   bom: (partId: string) =>
     queryOptions({

@@ -62,9 +62,10 @@ export async function validateTemplateMapping(
 ): Promise<MappingValidationModel> {
   const response = await validateMappingApiV1MappingsValidatePost(request);
   const validation = response as MappingValidateResponseDto;
+  const sourceColumns = collectSourceColumnsFromMappingRequest(request.mapping);
 
   return {
-    normalizedMapping: toMappingDefinitionModel(validation.normalized_mapping),
+    normalizedMapping: toMappingDefinitionModel(validation.normalized_mapping, sourceColumns),
     errors: (validation.errors ?? []).map((issue) => ({
       code: issue.code,
       severity: issue.severity,
@@ -85,6 +86,34 @@ export async function validateTemplateMapping(
         }
       : null,
   };
+}
+
+function collectSourceColumnsFromMappingRequest(
+  mapping: MappingValidateRequestDto["mapping"],
+): string[] {
+  const sourceColumns = new Set<string>();
+
+  for (const propertyMapping of mapping.property_mappings ?? []) {
+    if (propertyMapping.source_column) {
+      sourceColumns.add(propertyMapping.source_column);
+    }
+  }
+
+  for (const relationMapping of mapping.relation_mappings ?? []) {
+    for (const sourceColumn of Object.values(relationMapping.node_columns ?? {})) {
+      if (sourceColumn) {
+        sourceColumns.add(sourceColumn);
+      }
+    }
+
+    for (const sourceColumn of Object.values(relationMapping.rel_columns ?? {})) {
+      if (sourceColumn) {
+        sourceColumns.add(sourceColumn);
+      }
+    }
+  }
+
+  return Array.from(sourceColumns);
 }
 
 function toMappingPreviewModel(response: MappingPreviewResponseDto): MappingPreviewModel {

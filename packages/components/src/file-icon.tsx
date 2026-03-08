@@ -26,15 +26,55 @@ export type FileIconKind =
   | "code"
   | "other";
 
-const DOCUMENT_EXTENSIONS = new Set(["doc", "docx", "hwp", "hwpx", "odt", "rtf", "txt", "md"]);
-const STEP_EXTENSIONS = new Set(["step", "stp"]);
-const DWG_EXTENSIONS = new Set(["dwg", "dxf"]);
-const SPREADSHEET_EXTENSIONS = new Set(["csv", "xls", "xlsx", "ods"]);
-const IMAGE_EXTENSIONS = new Set(["png", "jpg", "jpeg", "gif", "webp", "svg", "bmp", "tif", "tiff", "heic", "heif"]);
-const AUDIO_EXTENSIONS = new Set(["mp3", "wav", "flac", "aac", "m4a", "ogg"]);
-const VIDEO_EXTENSIONS = new Set(["mp4", "mov", "avi", "mkv", "webm"]);
-const ARCHIVE_EXTENSIONS = new Set(["zip", "rar", "7z", "tar", "gz", "bz2"]);
-const CODE_EXTENSIONS = new Set(["json", "xml", "yaml", "yml", "js", "jsx", "ts", "tsx", "html", "css"]);
+export interface FileIconExtensionRule {
+  kind: FileIconKind;
+  label: string;
+  extensions: readonly string[];
+}
+
+const DOCUMENT_EXTENSIONS = ["doc", "docx", "hwp", "hwpx", "odt", "rtf", "txt", "md"] as const;
+const STEP_EXTENSIONS = [
+  "step",
+  "stp",
+  "iges",
+  "igs",
+  "stl",
+  "obj",
+  "3mf",
+  "fbx",
+  "glb",
+  "gltf",
+] as const;
+const DWG_EXTENSIONS = ["dwg", "dxf"] as const;
+const SPREADSHEET_EXTENSIONS = ["csv", "xls", "xlsx", "ods"] as const;
+const IMAGE_EXTENSIONS = ["png", "jpg", "jpeg", "gif", "webp", "svg", "bmp", "tif", "tiff", "heic", "heif"] as const;
+const AUDIO_EXTENSIONS = ["mp3", "wav", "flac", "aac", "m4a", "ogg"] as const;
+const VIDEO_EXTENSIONS = ["mp4", "mov", "avi", "mkv", "webm"] as const;
+const ARCHIVE_EXTENSIONS = ["zip", "rar", "7z", "tar", "gz", "bz2"] as const;
+const CODE_EXTENSIONS = ["json", "xml", "yaml", "yml", "js", "jsx", "ts", "tsx", "html", "css"] as const;
+
+export const FILE_ICON_EXTENSION_RULES: ReadonlyArray<FileIconExtensionRule> = [
+  { kind: "pdf", label: "PDF", extensions: ["pdf"] },
+  { kind: "document", label: "문서", extensions: DOCUMENT_EXTENSIONS },
+  { kind: "step", label: "3D CAD", extensions: STEP_EXTENSIONS },
+  { kind: "dwg", label: "2D CAD", extensions: DWG_EXTENSIONS },
+  { kind: "xlsx", label: "스프레드시트", extensions: SPREADSHEET_EXTENSIONS },
+  { kind: "image", label: "이미지", extensions: IMAGE_EXTENSIONS },
+  { kind: "audio", label: "오디오", extensions: AUDIO_EXTENSIONS },
+  { kind: "video", label: "비디오", extensions: VIDEO_EXTENSIONS },
+  { kind: "archive", label: "압축", extensions: ARCHIVE_EXTENSIONS },
+  { kind: "code", label: "구조화 데이터", extensions: CODE_EXTENSIONS },
+] as const;
+
+const DOCUMENT_EXTENSION_SET = new Set(DOCUMENT_EXTENSIONS);
+const STEP_EXTENSION_SET = new Set(STEP_EXTENSIONS);
+const DWG_EXTENSION_SET = new Set(DWG_EXTENSIONS);
+const SPREADSHEET_EXTENSION_SET = new Set(SPREADSHEET_EXTENSIONS);
+const IMAGE_EXTENSION_SET = new Set(IMAGE_EXTENSIONS);
+const AUDIO_EXTENSION_SET = new Set(AUDIO_EXTENSIONS);
+const VIDEO_EXTENSION_SET = new Set(VIDEO_EXTENSIONS);
+const ARCHIVE_EXTENSION_SET = new Set(ARCHIVE_EXTENSIONS);
+const CODE_EXTENSION_SET = new Set(CODE_EXTENSIONS);
 
 const FILE_ICON_META: Record<FileIconKind, { Icon: LucideIcon; className: string }> = {
   pdf: {
@@ -113,16 +153,26 @@ export function resolveFileIconKind({
     normalizedContentType.includes("haansoft") ||
     normalizedContentType.includes("hwp") ||
     normalizedContentType.includes("hwpx") ||
-    DOCUMENT_EXTENSIONS.has(extension)
+    DOCUMENT_EXTENSION_SET.has(extension)
   ) {
     return "document";
   }
 
-  if (normalizedContentType.includes("step") || normalizedContentType.includes("stp") || STEP_EXTENSIONS.has(extension)) {
+  if (
+    normalizedContentType.startsWith("model/") ||
+    normalizedContentType.includes("step") ||
+    normalizedContentType.includes("stp") ||
+    normalizedContentType.includes("iges") ||
+    normalizedContentType.includes("igs") ||
+    normalizedContentType.includes("stl") ||
+    normalizedContentType.includes("obj") ||
+    normalizedContentType.includes("gltf") ||
+    STEP_EXTENSION_SET.has(extension)
+  ) {
     return "step";
   }
 
-  if (normalizedContentType.includes("dwg") || normalizedContentType.includes("dxf") || DWG_EXTENSIONS.has(extension)) {
+  if (normalizedContentType.includes("dwg") || normalizedContentType.includes("dxf") || DWG_EXTENSION_SET.has(extension)) {
     return "dwg";
   }
 
@@ -131,20 +181,20 @@ export function resolveFileIconKind({
     normalizedContentType.includes("sheet") ||
     normalizedContentType.includes("excel") ||
     normalizedContentType.includes("csv") ||
-    SPREADSHEET_EXTENSIONS.has(extension)
+    SPREADSHEET_EXTENSION_SET.has(extension)
   ) {
     return "xlsx";
   }
 
-  if (normalizedContentType.startsWith("image/") || IMAGE_EXTENSIONS.has(extension)) {
+  if (normalizedContentType.startsWith("image/") || IMAGE_EXTENSION_SET.has(extension)) {
     return "image";
   }
 
-  if (normalizedContentType.startsWith("audio/") || AUDIO_EXTENSIONS.has(extension)) {
+  if (normalizedContentType.startsWith("audio/") || AUDIO_EXTENSION_SET.has(extension)) {
     return "audio";
   }
 
-  if (normalizedContentType.startsWith("video/") || VIDEO_EXTENSIONS.has(extension)) {
+  if (normalizedContentType.startsWith("video/") || VIDEO_EXTENSION_SET.has(extension)) {
     return "video";
   }
 
@@ -152,7 +202,7 @@ export function resolveFileIconKind({
     normalizedContentType.includes("zip") ||
     normalizedContentType.includes("archive") ||
     normalizedContentType.includes("compressed") ||
-    ARCHIVE_EXTENSIONS.has(extension)
+    ARCHIVE_EXTENSION_SET.has(extension)
   ) {
     return "archive";
   }
@@ -163,7 +213,7 @@ export function resolveFileIconKind({
     normalizedContentType.includes("javascript") ||
     normalizedContentType.includes("typescript") ||
     normalizedContentType.includes("yaml") ||
-    CODE_EXTENSIONS.has(extension)
+    CODE_EXTENSION_SET.has(extension)
   ) {
     return "code";
   }

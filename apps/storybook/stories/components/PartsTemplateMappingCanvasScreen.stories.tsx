@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
+import { AlertTriangle, ChevronDown, RotateCcw, Sparkles, Table2 } from "lucide-react";
 import {
   PartsTemplateMappingCanvasScreen,
   resolvePartsTemplateMappingCanvasRelationLabel,
@@ -11,7 +12,13 @@ import {
   type PartsTemplateMappingCanvasField,
   type PartsTemplateMappingCanvasPropertyMoveRequest,
 } from "@fabbit/components";
-import { Button } from "@fabbit/ui";
+import {
+  Button,
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+  cn,
+} from "@fabbit/ui";
 
 const CANVAS_SAFE_MARGIN = 96;
 const WORKAREA_WIDTH = 4200 - CANVAS_SAFE_MARGIN * 2;
@@ -61,6 +68,8 @@ const NODE_TONE_PRIORITY: Record<PartsTemplateMappingCanvasNodeTone, number> = {
 };
 
 type CanvasDatasetId = "single" | "pair" | "multi";
+type CanvasDatasetPreviewRow = Record<string, string | number>;
+type CanvasPreviewHeaderOwner = PartsTemplateMappingCanvasNodeTone | "unassigned";
 
 interface CanvasDatasetDefinition {
   id: CanvasDatasetId;
@@ -69,6 +78,8 @@ interface CanvasDatasetDefinition {
   description: string;
   nodes: PartsTemplateMappingCanvasNode[];
   edges: PartsTemplateMappingCanvasEdge[];
+  previewHeaders: string[];
+  previewRows: CanvasDatasetPreviewRow[];
   unassignedProperties: PartsTemplateMappingCanvasField[];
 }
 
@@ -76,6 +87,176 @@ interface CanvasDatasetGraph {
   nodes: PartsTemplateMappingCanvasNode[];
   edges: PartsTemplateMappingCanvasEdge[];
   unassignedProperties: PartsTemplateMappingCanvasField[];
+}
+
+const PREVIEW_HEADER_STYLE_BY_OWNER: Record<PartsTemplateMappingCanvasNodeTone, CSSProperties> = {
+  part: {
+    backgroundColor: "color-mix(in srgb, var(--brand-500) 12%, var(--theme-surface))",
+    borderRightColor: "color-mix(in srgb, var(--brand-500) 22%, var(--theme-border))",
+    color: "var(--brand-600)",
+  },
+  drawing: {
+    backgroundColor: "color-mix(in srgb, var(--status-warning) 12%, var(--theme-surface))",
+    borderRightColor: "color-mix(in srgb, var(--status-warning) 22%, var(--theme-border))",
+    color: "var(--status-warning)",
+  },
+  supplier: {
+    backgroundColor: "color-mix(in srgb, var(--status-success) 12%, var(--theme-surface))",
+    borderRightColor: "color-mix(in srgb, var(--status-success) 22%, var(--theme-border))",
+    color: "var(--status-success)",
+  },
+  project: {
+    backgroundColor: "color-mix(in srgb, var(--status-accent) 12%, var(--theme-surface))",
+    borderRightColor: "color-mix(in srgb, var(--status-accent) 22%, var(--theme-border))",
+    color: "var(--status-accent)",
+  },
+};
+
+function buildPreviewHeaderOwnerMap(graph: CanvasDatasetGraph) {
+  const ownerMap = new Map<string, CanvasPreviewHeaderOwner>();
+
+  graph.nodes.forEach((node) => {
+    const tone = node.tone ?? "part";
+
+    (node.fields ?? []).forEach((field) => {
+      ownerMap.set(field.label, tone);
+    });
+  });
+
+  graph.unassignedProperties.forEach((field) => {
+    ownerMap.set(field.label, "unassigned");
+  });
+
+  return ownerMap;
+}
+
+function getPreviewHeaderStyle(owner?: CanvasPreviewHeaderOwner) {
+  if (!owner || owner === "unassigned") {
+    return undefined;
+  }
+
+  return PREVIEW_HEADER_STYLE_BY_OWNER[owner];
+}
+
+function CanvasDatasetSourcePreview({
+  dataset,
+  headerOwners,
+}: {
+  dataset: CanvasDatasetDefinition;
+  headerOwners: Map<string, CanvasPreviewHeaderOwner>;
+}) {
+  const [isOpen, setIsOpen] = useState(true);
+
+  return (
+    <Collapsible
+      open={isOpen}
+      onOpenChange={setIsOpen}
+    >
+      <CollapsibleTrigger className="flex w-full items-center gap-3 rounded-lg border bg-card px-5 py-4 text-left shadow-sm transition-colors hover:bg-muted/30">
+        <div className="inline-flex size-9 items-center justify-center rounded-full border bg-background/80 text-muted-foreground">
+          <Table2 className="size-4" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-semibold text-foreground">원본 데이터 미리보기</p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            {dataset.previewRows.length}행 x {dataset.previewHeaders.length}열
+          </p>
+        </div>
+        <ChevronDown
+          className={cn(
+            "size-4 shrink-0 text-muted-foreground transition-transform duration-200",
+            isOpen ? "rotate-180" : "rotate-0",
+          )}
+        />
+      </CollapsibleTrigger>
+      <CollapsibleContent>
+        <div className="mt-3 overflow-auto overscroll-none rounded-lg border bg-card shadow-sm">
+          <table className="w-full min-w-max text-xs">
+            <thead>
+              <tr className="border-b border-border/70 bg-muted">
+                <th className="sticky left-0 z-10 min-w-12 border-r border-border/70 bg-muted px-3 py-2 text-center font-semibold text-muted-foreground">
+                  #
+                </th>
+                {dataset.previewHeaders.map((header) => {
+                  const owner = headerOwners.get(header);
+
+                  return (
+                    <th
+                      key={header}
+                      className={cn(
+                        "min-w-[132px] border-r border-border/60 px-3 py-2 text-left font-semibold last:border-r-0",
+                        owner ? "" : "bg-muted text-foreground",
+                        owner === "unassigned" ? "bg-muted text-foreground" : "",
+                      )}
+                      style={getPreviewHeaderStyle(owner)}
+                    >
+                      <span className="inline-flex items-center gap-1.5">
+                        {owner === "unassigned" ? (
+                          <AlertTriangle className="size-3 text-[var(--status-warning)]" aria-hidden="true" />
+                        ) : null}
+                        {header}
+                      </span>
+                    </th>
+                  );
+                })}
+              </tr>
+            </thead>
+            <tbody>
+              {dataset.previewRows.map((row, rowIndex) => (
+                <tr
+                  key={`${dataset.id}-preview-row-${rowIndex + 1}`}
+                  className="border-b border-border/60 last:border-b-0"
+                >
+                  <td className="sticky left-0 z-10 border-r border-border/60 bg-background px-3 py-2 text-center text-muted-foreground">
+                    {rowIndex + 1}
+                  </td>
+                  {dataset.previewHeaders.map((header) => (
+                    <td
+                      key={`${dataset.id}-preview-cell-${rowIndex + 1}-${header}`}
+                      className="border-r border-border/50 px-3 py-2 text-foreground/90 last:border-r-0"
+                    >
+                      {String(row[header] ?? "")}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </CollapsibleContent>
+    </Collapsible>
+  );
+}
+
+function CanvasAppliedHeader({
+  fileName,
+  onResetClick,
+}: {
+  fileName: string;
+  onResetClick: () => void;
+}) {
+  return (
+    <section className="rounded-lg border bg-card px-6 py-5 shadow-sm">
+      <div className="mb-2 flex items-center gap-2">
+        <Sparkles className="h-5 w-5 text-primary" />
+        <h1 className="text-xl font-bold text-foreground">매핑 확인</h1>
+        <Button
+          variant="outline"
+          size="sm"
+          className="ml-auto gap-1.5"
+          onClick={onResetClick}
+        >
+          <RotateCcw className="size-3.5" />
+          초기화
+        </Button>
+      </div>
+      <p className="text-sm text-muted-foreground">
+        {fileName
+          ? `${fileName} 분석 결과를 검토하고 관계와 항목 배치를 조정하세요.`
+          : "분석 결과를 검토하고 관계와 항목 배치를 조정하세요."}
+      </p>
+    </section>
+  );
 }
 
 const PART_FIELD_OPTIONS: PartsTemplateMappingCanvasFieldOption[] = [
@@ -174,14 +355,31 @@ function cloneEdges(edges: PartsTemplateMappingCanvasEdge[]) {
   }));
 }
 
-function getPropertyOrder(label: string) {
-  const index = PROPERTY_LABEL_ORDER.indexOf(label as (typeof PROPERTY_LABEL_ORDER)[number]);
-  return index === -1 ? Number.MAX_SAFE_INTEGER : index;
+function getPropertyOrder(
+  label: string,
+  headerOrder: string[],
+) {
+  const headerIndex = headerOrder.indexOf(label);
+
+  if (headerIndex !== -1) {
+    return headerIndex;
+  }
+
+  const fallbackIndex = PROPERTY_LABEL_ORDER.indexOf(label as (typeof PROPERTY_LABEL_ORDER)[number]);
+
+  if (fallbackIndex !== -1) {
+    return headerOrder.length + fallbackIndex;
+  }
+
+  return headerOrder.length + PROPERTY_LABEL_ORDER.length + Number.MAX_SAFE_INTEGER / 4;
 }
 
-function sortCanvasProperties(properties: PartsTemplateMappingCanvasField[]) {
+function sortCanvasProperties(
+  properties: PartsTemplateMappingCanvasField[],
+  headerOrder: string[],
+) {
   return cloneFields(properties).sort((left, right) => {
-    const orderGap = getPropertyOrder(left.label) - getPropertyOrder(right.label);
+    const orderGap = getPropertyOrder(left.label, headerOrder) - getPropertyOrder(right.label, headerOrder);
 
     if (orderGap !== 0) {
       return orderGap;
@@ -362,6 +560,25 @@ const DATASET_DEFINITIONS: CanvasDatasetDefinition[] = [
       }),
     ],
     edges: [],
+    previewHeaders: ["품번", "품명", "규격", "재질", "단위", "중량"],
+    previewRows: [
+      {
+        "품번": "PRT-1001",
+        "품명": "구동 브래킷",
+        "규격": "120 x 48 x 6",
+        "재질": "AL6061",
+        "단위": "EA",
+        "중량": "1.2kg",
+      },
+      {
+        "품번": "PRT-1002",
+        "품명": "센서 플레이트",
+        "규격": "84 x 36 x 4",
+        "재질": "SUS304",
+        "단위": "EA",
+        "중량": "0.6kg",
+      },
+    ],
     unassignedProperties: buildUnassignedProperties("single", [
       { label: "단위", hint: "기본 단위" },
       { label: "중량", hint: "기초 중량" },
@@ -400,6 +617,27 @@ const DATASET_DEFINITIONS: CanvasDatasetDefinition[] = [
         targetId: "pair-part",
         label: "참조",
         properties: buildRelationProperties("edge-pair-drawing-part", "도면", "부품"),
+      },
+    ],
+    previewHeaders: ["품번", "품명", "분류", "도면 번호", "개정", "승인 상태", "납기 조건"],
+    previewRows: [
+      {
+        "품번": "ASSY-2201",
+        "품명": "메인 브래킷",
+        "분류": "가공품",
+        "도면 번호": "DWG-2201-A",
+        "개정": "A",
+        "승인 상태": "검토 완료",
+        "납기 조건": "양산 기준",
+      },
+      {
+        "품번": "ASSY-2202",
+        "품명": "커버 플레이트",
+        "분류": "판금품",
+        "도면 번호": "DWG-2202-B",
+        "개정": "B",
+        "승인 상태": "승인 대기",
+        "납기 조건": "초도 2주",
       },
     ],
     unassignedProperties: buildUnassignedProperties("pair", [
@@ -473,6 +711,72 @@ const DATASET_DEFINITIONS: CanvasDatasetDefinition[] = [
         targetId: "multi-part",
         label: "관리",
         properties: buildRelationProperties("edge-multi-project-part", "프로젝트", "부품"),
+      },
+    ],
+    previewHeaders: [
+      "품번",
+      "품명",
+      "규격",
+      "재질",
+      "도면 번호",
+      "개정",
+      "공급사 코드",
+      "공급사명",
+      "프로젝트 코드",
+      "프로젝트명",
+      "단위",
+      "중량",
+      "승인 상태",
+      "납기 조건",
+    ],
+    previewRows: [
+      {
+        "품번": "MTR-001",
+        "품명": "모터 하우징",
+        "규격": "210 x 180 x 95",
+        "재질": "AL6061",
+        "도면 번호": "DWG-9001-A",
+        "개정": "A",
+        "공급사 코드": "SUP-014",
+        "공급사명": "세명정밀",
+        "프로젝트 코드": "PJ-ALPHA",
+        "프로젝트명": "알파 라인",
+        "단위": "EA",
+        "중량": "3.8kg",
+        "승인 상태": "승인 완료",
+        "납기 조건": "월 2회 입고",
+      },
+      {
+        "품번": "MTR-002",
+        "품명": "엔드 커버",
+        "규격": "168 x 168 x 22",
+        "재질": "ADC12",
+        "도면 번호": "DWG-9002-B",
+        "개정": "B",
+        "공급사 코드": "SUP-021",
+        "공급사명": "하나테크",
+        "프로젝트 코드": "PJ-ALPHA",
+        "프로젝트명": "알파 라인",
+        "단위": "EA",
+        "중량": "1.1kg",
+        "승인 상태": "검토 중",
+        "납기 조건": "초도 10일",
+      },
+      {
+        "품번": "MTR-003",
+        "품명": "센서 브래킷",
+        "규격": "74 x 52 x 4",
+        "재질": "SUS304",
+        "도면 번호": "DWG-9003-A",
+        "개정": "A",
+        "공급사 코드": "SUP-014",
+        "공급사명": "세명정밀",
+        "프로젝트 코드": "PJ-BETA",
+        "프로젝트명": "베타 모듈",
+        "단위": "EA",
+        "중량": "0.3kg",
+        "승인 상태": "승인 대기",
+        "납기 조건": "긴급 발주",
       },
     ],
     unassignedProperties: buildUnassignedProperties("multi", [
@@ -652,17 +956,20 @@ function layoutDatasetGraph(
   };
 }
 
-function normalizeGraphProperties(graph: CanvasDatasetGraph) {
+function normalizeGraphProperties(
+  graph: CanvasDatasetGraph,
+  headerOrder: string[],
+) {
   return {
     nodes: cloneNodes(graph.nodes).map((node) => ({
       ...node,
-      fields: sortCanvasProperties(node.fields ?? []),
+      fields: sortCanvasProperties(node.fields ?? [], headerOrder),
     })),
     edges: cloneEdges(graph.edges).map((edge) => ({
       ...edge,
-      properties: sortCanvasProperties(edge.properties ?? []),
+      properties: sortCanvasProperties(edge.properties ?? [], headerOrder),
     })),
-    unassignedProperties: sortCanvasProperties(graph.unassignedProperties),
+    unassignedProperties: sortCanvasProperties(graph.unassignedProperties, headerOrder),
   };
 }
 
@@ -685,16 +992,20 @@ function buildDatasetGraph(datasetId: CanvasDatasetId) {
   const dataset = getDatasetDefinition(datasetId);
   const laidOutGraph = layoutDatasetGraph(dataset.nodes, dataset.edges);
 
-  return normalizeGraphProperties({
-    nodes: laidOutGraph.nodes,
-    edges: laidOutGraph.edges,
-    unassignedProperties: cloneFields(dataset.unassignedProperties),
-  });
+  return normalizeGraphProperties(
+    {
+      nodes: laidOutGraph.nodes,
+      edges: laidOutGraph.edges,
+      unassignedProperties: cloneFields(dataset.unassignedProperties),
+    },
+    dataset.previewHeaders,
+  );
 }
 
 function movePropertyInGraph(
   graph: CanvasDatasetGraph,
   request: PartsTemplateMappingCanvasPropertyMoveRequest,
+  headerOrder: string[],
 ) {
   const property = { ...request.property };
   const nextNodes = cloneNodes(graph.nodes).map((node) => ({
@@ -712,59 +1023,93 @@ function movePropertyInGraph(
     const targetNode = nextNodes.find((node) => node.id === targetId);
     const nextProperty = targetNode ? applyFieldToNode(property, targetNode) : property;
 
-    return normalizeGraphProperties({
-      nodes: nextNodes.map((node) =>
-        node.id === targetId
-          ? {
-              ...node,
-              fields: [...(node.fields ?? []), nextProperty],
-            }
-          : node,
-      ),
-      edges: nextEdges,
-      unassignedProperties: nextUnassigned,
-    });
+    return normalizeGraphProperties(
+      {
+        nodes: nextNodes.map((node) =>
+          node.id === targetId
+            ? {
+                ...node,
+                fields: [...(node.fields ?? []), nextProperty],
+              }
+            : node,
+        ),
+        edges: nextEdges,
+        unassignedProperties: nextUnassigned,
+      },
+      headerOrder,
+    );
   }
 
   if (request.target.kind === "edge") {
     const targetId = request.target.id;
     const nextProperty = applyFieldToEdge(property);
 
-    return normalizeGraphProperties({
-      nodes: nextNodes,
-      edges: nextEdges.map((edge) =>
-        edge.id === targetId
-          ? {
-              ...edge,
-              properties: [...(edge.properties ?? []), nextProperty],
-            }
-          : edge,
-      ),
-      unassignedProperties: nextUnassigned,
-    });
+    return normalizeGraphProperties(
+      {
+        nodes: nextNodes,
+        edges: nextEdges.map((edge) =>
+          edge.id === targetId
+            ? {
+                ...edge,
+                properties: [...(edge.properties ?? []), nextProperty],
+              }
+            : edge,
+        ),
+        unassignedProperties: nextUnassigned,
+      },
+      headerOrder,
+    );
   }
 
   nextUnassigned = [...nextUnassigned, clearFieldMappingContext(property)];
 
-  return normalizeGraphProperties({
-    nodes: nextNodes,
-    edges: nextEdges,
-    unassignedProperties: nextUnassigned,
-  });
+  return normalizeGraphProperties(
+    {
+      nodes: nextNodes,
+      edges: nextEdges,
+      unassignedProperties: nextUnassigned,
+    },
+    headerOrder,
+  );
 }
 
 function updateFieldMappingInGraph(
   graph: CanvasDatasetGraph,
   request: PartsTemplateMappingCanvasFieldMappingChangeRequest,
+  headerOrder: string[],
 ) {
   if (request.owner.kind === "node") {
-    return normalizeGraphProperties({
+    return normalizeGraphProperties(
+      {
+        ...graph,
+        nodes: graph.nodes.map((node) =>
+          node.id === request.owner.id
+            ? {
+                ...node,
+                fields: (node.fields ?? []).map((field) =>
+                  field.id === request.fieldId
+                    ? {
+                        ...field,
+                        mappedValue: request.value,
+                      }
+                    : field,
+                ),
+              }
+            : node,
+        ),
+      },
+      headerOrder,
+    );
+  }
+
+  return normalizeGraphProperties(
+    {
       ...graph,
-      nodes: graph.nodes.map((node) =>
-        node.id === request.owner.id
+      edges: graph.edges.map((edge) =>
+        edge.id === request.owner.id
           ? {
-              ...node,
-              fields: (node.fields ?? []).map((field) =>
+              ...edge,
+              properties: (edge.properties ?? []).map((field) =>
                 field.id === request.fieldId
                   ? {
                       ...field,
@@ -773,35 +1118,21 @@ function updateFieldMappingInGraph(
                   : field,
               ),
             }
-          : node,
+          : edge,
       ),
-    });
-  }
-
-  return normalizeGraphProperties({
-    ...graph,
-    edges: graph.edges.map((edge) =>
-      edge.id === request.owner.id
-        ? {
-            ...edge,
-            properties: (edge.properties ?? []).map((field) =>
-              field.id === request.fieldId
-                ? {
-                    ...field,
-                    mappedValue: request.value,
-                  }
-                : field,
-            ),
-          }
-        : edge,
-    ),
-  });
+    },
+    headerOrder,
+  );
 }
 
 function PartsTemplateMappingCanvasScreenStory({
   startEmpty = false,
+  withSourcePreview = false,
+  mode = "playground",
 }: {
   startEmpty?: boolean;
+  withSourcePreview?: boolean;
+  mode?: "default" | "playground";
 }) {
   const initialGraph = startEmpty
     ? {
@@ -814,7 +1145,10 @@ function PartsTemplateMappingCanvasScreenStory({
   const [canvasVersion, setCanvasVersion] = useState(0);
   const [graph, setGraph] = useState<CanvasDatasetGraph>(initialGraph);
   const activeDataset = getDatasetDefinition(activeDatasetId);
+  const activePreviewHeaders = activeDataset.previewHeaders;
   const { nodes, edges, unassignedProperties } = graph;
+  const isDefaultMode = mode === "default";
+  const previewHeaderOwners = buildPreviewHeaderOwnerMap(graph);
 
   function loadDataset(datasetId: CanvasDatasetId) {
     const nextGraph = buildDatasetGraph(datasetId);
@@ -832,29 +1166,32 @@ function PartsTemplateMappingCanvasScreenStory({
     const definition = buildNodeDefinition(type);
 
     setGraph((current) =>
-      normalizeGraphProperties({
-        ...current,
-        nodes: [
-          ...current.nodes,
-          {
-            id: `${type}-${current.nodes.length + 1}`,
-            x: WORKAREA_CENTER_X - NEW_NODE_GAP_X + (current.nodes.length % 3) * NEW_NODE_GAP_X,
-            y: WORKAREA_CENTER_Y - 240 + Math.floor(current.nodes.length / 3) * NEW_NODE_GAP_Y,
-            ...definition,
-            fields: definition.fields?.map((field) => ({
-              ...field,
-              id: `${field.id}-${current.nodes.length + 1}`,
-            })),
-          },
-        ],
-      }),
+      normalizeGraphProperties(
+        {
+          ...current,
+          nodes: [
+            ...current.nodes,
+            {
+              id: `${type}-${current.nodes.length + 1}`,
+              x: WORKAREA_CENTER_X - NEW_NODE_GAP_X + (current.nodes.length % 3) * NEW_NODE_GAP_X,
+              y: WORKAREA_CENTER_Y - 240 + Math.floor(current.nodes.length / 3) * NEW_NODE_GAP_Y,
+              ...definition,
+              fields: definition.fields?.map((field) => ({
+                ...field,
+                id: `${field.id}-${current.nodes.length + 1}`,
+              })),
+            },
+          ],
+        },
+        activePreviewHeaders,
+      ),
     );
   }
 
   return (
     <PartsTemplateMappingCanvasScreen
       key={`${activeDatasetId}-${canvasVersion}`}
-      addableNodeTones={["supplier", "part", "drawing", "project"]}
+      addableNodeTones={isDefaultMode ? undefined : ["supplier", "part", "drawing", "project"]}
       description={activeDataset.description}
       edges={edges}
       emptyState={{
@@ -864,26 +1201,41 @@ function PartsTemplateMappingCanvasScreenStory({
         onActionClick: () => loadDataset(activeDatasetId),
       }}
       fileName={activeDataset.fileName}
+      headerContent={
+        isDefaultMode ? (
+          <CanvasAppliedHeader
+            fileName={activeDataset.fileName}
+            onResetClick={() => loadDataset(activeDatasetId)}
+          />
+        ) : undefined
+      }
+      sourcePreviewContent={
+        withSourcePreview ? (
+          <CanvasDatasetSourcePreview dataset={activeDataset} headerOwners={previewHeaderOwners} />
+        ) : undefined
+      }
       headerActions={(
-        <div className="flex flex-wrap items-center gap-2">
-          <span className="text-xs uppercase tracking-[0.22em] text-muted-foreground/80">
-            테스트 데이터셋
-          </span>
-          {DATASET_DEFINITIONS.map((dataset) => (
-            <Button
-              key={dataset.id}
-              aria-pressed={dataset.id === activeDatasetId}
-              size="sm"
-              variant={dataset.id === activeDatasetId ? "default" : "outline"}
-              onClick={() => loadDataset(dataset.id)}
-            >
-              {dataset.label}
-            </Button>
-          ))}
-        </div>
+        isDefaultMode ? undefined : (
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-xs uppercase tracking-[0.22em] text-muted-foreground/80">
+              테스트 데이터셋
+            </span>
+            {DATASET_DEFINITIONS.map((dataset) => (
+              <Button
+                key={dataset.id}
+                aria-pressed={dataset.id === activeDatasetId}
+                size="sm"
+                variant={dataset.id === activeDatasetId ? "default" : "outline"}
+                onClick={() => loadDataset(dataset.id)}
+              >
+                {dataset.label}
+              </Button>
+            ))}
+          </div>
+        )
       )}
       nodes={nodes}
-      onAddNode={addNode}
+      onAddNode={isDefaultMode ? undefined : addNode}
       onConnect={({ sourceId, targetId }) => {
         const source = nodes.find((node) => node.id === sourceId);
         const target = nodes.find((node) => node.id === targetId);
@@ -904,23 +1256,26 @@ function PartsTemplateMappingCanvasScreenStory({
         }
 
         setGraph((current) =>
-          normalizeGraphProperties({
-            ...current,
-            edges: [
-              ...current.edges,
-              {
-                id: nextEdgeId,
-                sourceId,
-                targetId,
-                label:
-                  source && target
-                    ? resolvePartsTemplateMappingCanvasRelationLabel(source.tone, target.tone)
-                    : "관계",
-                ...(source && target ? buildEdgeCardPosition(source, target) : {}),
-                properties: [],
-              },
-            ],
-          }),
+          normalizeGraphProperties(
+            {
+              ...current,
+              edges: [
+                ...current.edges,
+                {
+                  id: nextEdgeId,
+                  sourceId,
+                  targetId,
+                  label:
+                    source && target
+                      ? resolvePartsTemplateMappingCanvasRelationLabel(source.tone, target.tone)
+                      : "관계",
+                  ...(source && target ? buildEdgeCardPosition(source, target) : {}),
+                  properties: [],
+                },
+              ],
+            },
+            activePreviewHeaders,
+          ),
         );
 
         return nextEdgeId;
@@ -929,14 +1284,17 @@ function PartsTemplateMappingCanvasScreenStory({
         setGraph((current) => {
           const removedEdge = current.edges.find((edge) => edge.id === edgeId);
 
-          return normalizeGraphProperties({
-            ...current,
-            edges: current.edges.filter((edge) => edge.id !== edgeId),
-            unassignedProperties: [
-              ...current.unassignedProperties,
-              ...(removedEdge?.properties ?? []).map((field) => clearFieldMappingContext(field)),
-            ],
-          });
+          return normalizeGraphProperties(
+            {
+              ...current,
+              edges: current.edges.filter((edge) => edge.id !== edgeId),
+              unassignedProperties: [
+                ...current.unassignedProperties,
+                ...(removedEdge?.properties ?? []).map((field) => clearFieldMappingContext(field)),
+              ],
+            },
+            activePreviewHeaders,
+          );
         });
       }}
       onDeleteNode={(nodeId) => {
@@ -946,17 +1304,20 @@ function PartsTemplateMappingCanvasScreenStory({
             (edge) => edge.sourceId === nodeId || edge.targetId === nodeId,
           );
 
-          return normalizeGraphProperties({
-            nodes: current.nodes.filter((node) => node.id !== nodeId),
-            edges: current.edges.filter(
-              (edge) => edge.sourceId !== nodeId && edge.targetId !== nodeId,
-            ),
-            unassignedProperties: [
-              ...current.unassignedProperties,
-              ...(removedNode?.fields ?? []).map((field) => clearFieldMappingContext(field)),
-              ...removedEdges.flatMap((edge) => (edge.properties ?? []).map((field) => clearFieldMappingContext(field))),
-            ],
-          });
+          return normalizeGraphProperties(
+            {
+              nodes: current.nodes.filter((node) => node.id !== nodeId),
+              edges: current.edges.filter(
+                (edge) => edge.sourceId !== nodeId && edge.targetId !== nodeId,
+              ),
+              unassignedProperties: [
+                ...current.unassignedProperties,
+                ...(removedNode?.fields ?? []).map((field) => clearFieldMappingContext(field)),
+                ...removedEdges.flatMap((edge) => (edge.properties ?? []).map((field) => clearFieldMappingContext(field))),
+              ],
+            },
+            activePreviewHeaders,
+          );
         });
       }}
       onEdgePositionChange={(edgeId, position) => {
@@ -966,10 +1327,10 @@ function PartsTemplateMappingCanvasScreenStory({
         }));
       }}
       onFieldMappingChange={(request) => {
-        setGraph((current) => updateFieldMappingInGraph(current, request));
+        setGraph((current) => updateFieldMappingInGraph(current, request, activePreviewHeaders));
       }}
       onMoveProperty={(request) => {
-        setGraph((current) => movePropertyInGraph(current, request));
+        setGraph((current) => movePropertyInGraph(current, request, activePreviewHeaders));
       }}
       onNodePositionChange={(nodeId, position) => {
         setGraph((current) => ({
@@ -978,7 +1339,7 @@ function PartsTemplateMappingCanvasScreenStory({
         }));
       }}
       onResetNodes={resetGraph}
-      title={`테스트 데이터셋 / ${activeDataset.label}`}
+      title={isDefaultMode ? "매핑 확인" : `테스트 데이터셋 / ${activeDataset.label}`}
       unassignedProperties={unassignedProperties}
     />
   );
@@ -996,6 +1357,10 @@ const meta = {
 export default meta;
 
 type Story = StoryObj<typeof meta>;
+
+export const Default: Story = {
+  render: () => <PartsTemplateMappingCanvasScreenStory withSourcePreview mode="default" />,
+};
 
 export const Playground: Story = {
   render: () => <PartsTemplateMappingCanvasScreenStory />,

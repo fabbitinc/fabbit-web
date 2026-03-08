@@ -1,3 +1,4 @@
+import { apiClient } from "@/api/client";
 import { listMembers as listOrgMembersApiV1MembersGet } from "@/api/generated/orval/members/members";
 import {
   getPartOwner as getPartOwnerApiV1PartsPartIdOwnerGet,
@@ -38,6 +39,7 @@ import type {
   MemberListResponseDto,
   PartBomResponseDto,
   PartDetailResponseDto,
+  DrawingProcessingResponseDto,
   PartFilesResponseDto,
   PartListResponseDto,
   PartOwnerResponseDto,
@@ -55,6 +57,7 @@ import type {
   PartBomTreeNodeModel,
   PartDetailModel,
   PartDrawingModel,
+  PartDrawingProcessingModel,
   PartFileModel,
   PartFilterOptionsModel,
   PartListItemModel,
@@ -167,6 +170,19 @@ export async function updatePartOwner(partId: string, request: UpdatePartOwnerRe
 export async function registerPartDrawing(partId: string, request: RegisterPartDrawingRequestDto): Promise<PartDrawingModel> {
   const response = await registerDrawingForPartApiV1PartsPartIdDrawingsPost(partId, request);
   return toPartDrawingModel(response as RegisterPartDrawingResponseDto);
+}
+
+export async function fetchDrawingProcessing(drawingId: string): Promise<PartDrawingProcessingModel> {
+  const response = await apiClient.get<DrawingProcessingResponseDto>(`/api/v1/drawings/${drawingId}/processing`);
+  const processing = response.data;
+
+  return {
+    status: processing.status ?? "PENDING",
+    failureReason: processing.failure_reason ?? null,
+    pdfReady: processing.pdf_ready ?? false,
+    webpReady: processing.webp_ready ?? false,
+    glbReady: processing.glb_ready ?? false,
+  };
 }
 
 export async function deletePartDrawing(partId: string) {

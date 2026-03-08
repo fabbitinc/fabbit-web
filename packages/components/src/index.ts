@@ -77,8 +77,13 @@ export { DescriptionList } from "./description-list";
 export type { DescriptionItem, DescriptionListProps } from "./description-list";
 export { EmptyState } from "./empty-state";
 export type { EmptyStateProps } from "./empty-state";
-export { FileIcon, resolveFileIconKind } from "./file-icon";
-export type { FileIconKind, FileIconProps, ResolveFileIconKindOptions } from "./file-icon";
+export { FileIcon, FILE_ICON_EXTENSION_RULES, resolveFileIconKind } from "./file-icon";
+export type {
+  FileIconExtensionRule,
+  FileIconKind,
+  FileIconProps,
+  ResolveFileIconKindOptions,
+} from "./file-icon";
 export { FilterBar } from "./filter-bar";
 export type { FilterBarProps, FilterChip } from "./filter-bar";
 export { FormSection } from "./form-section";
@@ -126,12 +131,31 @@ export type {
   PartDrawingPreviewPart,
   PartDrawingPreviewProps,
 } from "./part-drawing-preview";
+export { PartAttachmentsTab } from "./part-attachments-tab";
+export type { PartAttachmentItem, PartAttachmentsTabProps } from "./part-attachments-tab";
+export { PartBomTab } from "./part-bom-tab";
+export type {
+  PartBomTabDirection,
+  PartBomTabItem,
+  PartBomTabProps,
+} from "./part-bom-tab";
 export { PartHeaderCard } from "./part-header-card";
 export type { PartHeaderCardPart, PartHeaderCardProps } from "./part-header-card";
 export { PartHistoryTab } from "./part-history-tab";
 export type { PartHistoryEntry, PartHistoryTabProps } from "./part-history-tab";
+export { PartOwnerTab } from "./part-owner-tab";
+export type {
+  PartOwnerTabMemberOption,
+  PartOwnerTabOwnerValue,
+  PartOwnerTabProps,
+  PartOwnerTabTeamOption,
+} from "./part-owner-tab";
 export { PartPropertiesTab } from "./part-properties-tab";
 export type { PartPropertiesTabPart, PartPropertiesTabProps } from "./part-properties-tab";
+export { PartProjectsTab } from "./part-projects-tab";
+export type { PartProjectsTabProject, PartProjectsTabProps } from "./part-projects-tab";
+export { PartSuppliersTab } from "./part-suppliers-tab";
+export type { PartSuppliersTabProps, PartSuppliersTabSupplier } from "./part-suppliers-tab";
 export { ProjectListTable } from "./project-list-table";
 export type {
   ProjectListTableItem,
@@ -367,3 +391,14 @@ export type {
 } from "./production-result-detail-screen";
 export { GltfViewer } from "./gltf-viewer";
 export type { GltfViewerProps } from "./gltf-viewer";
+export { GltfViewerCanvas } from "./gltf-viewer-canvas";
+export type {
+  GltfViewerCanvasHandle,
+  GltfViewerCanvasProps,
+  GltfViewerRenderMode,
+  GltfViewerSceneStats,
+  GltfViewerStatus,
+  GltfViewerStatusChange,
+} from "./gltf-viewer-canvas";
+export { GltfViewerScreen } from "./gltf-viewer-screen";
+export type { GltfViewerScreenProps } from "./gltf-viewer-screen";
