@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 14 14" width="120" height="120">
+  <g fill="#333333">
+    <circle cx="4" cy="2" r="0.7"/><circle cx="10" cy="2" r="0.7"/>
+    <circle cx="4" cy="3" r="0.7"/><circle cx="10" cy="3" r="0.7"/>
+    <circle cx="4" cy="4" r="0.7"/><circle cx="10" cy="4" r="0.7"/>
+    
+    <circle cx="5" cy="5" r="0.7"/><circle cx="6" cy="5" r="0.7"/><circle cx="7" cy="5" r="0.7"/><circle cx="8" cy="5" r="0.7"/><circle cx="9" cy="5" r="0.7"/>
+    <circle cx="4" cy="6" r="0.7"/><circle cx="5" cy="6" r="0.7"/><circle cx="6" cy="6" r="0.7"/><circle cx="7" cy="6" r="0.7"/><circle cx="8" cy="6" r="0.7"/><circle cx="9" cy="6" r="0.7"/><circle cx="10" cy="6" r="0.7"/>
+    
+    <circle cx="4" cy="7" r="0.7"/><circle cx="6" cy="7" r="0.7"/><circle cx="7" cy="7" r="0.7"/><circle cx="8" cy="7" r="0.7"/><circle cx="10" cy="7" r="0.7"/>
+    <circle cx="4" cy="8" r="0.7"/><circle cx="5" cy="8" r="0.7"/><circle cx="6" cy="8" r="0.7"/><circle cx="7" cy="8" r="0.7"/><circle cx="8" cy="8" r="0.7"/><circle cx="9" cy="8" r="0.7"/><circle cx="10" cy="8" r="0.7"/>
+    
+    <circle cx="5" cy="9" r="0.7"/><circle cx="6" cy="9" r="0.7"/><circle cx="7" cy="9" r="0.7"/><circle cx="8" cy="9" r="0.7"/><circle cx="9" cy="9" r="0.7"/>
+    
+    <circle cx="4" cy="10" r="0.7"/><circle cx="5" cy="10" r="0.7"/><circle cx="6" cy="10" r="0.7"/><circle cx="7" cy="10" r="0.7"/><circle cx="8" cy="10" r="0.7"/><circle cx="9" cy="10" r="0.7"/><circle cx="10" cy="10" r="0.7"/><circle cx="12" cy="10" r="0.7"/>
+    <circle cx="3" cy="11" r="0.7"/><circle cx="4" cy="11" r="0.7"/><circle cx="5" cy="11" r="0.7"/><circle cx="6" cy="11" r="0.7"/><circle cx="7" cy="11" r="0.7"/><circle cx="8" cy="11" r="0.7"/><circle cx="9" cy="11" r="0.7"/><circle cx="10" cy="11" r="0.7"/><circle cx="11" cy="11" r="0.7"/><circle cx="12" cy="11" r="0.7"/>
+    
+    <circle cx="4" cy="12" r="0.7"/><circle cx="5" cy="12" r="0.7"/><circle cx="8" cy="12" r="0.7"/><circle cx="9" cy="12" r="0.7"/>
+  </g>
+</svg>

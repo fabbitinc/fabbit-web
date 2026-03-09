@@ -1,19 +1,17 @@
 import type {
-  PaymentCard,
-  SubscriptionPlan,
-  PaymentHistory,
-} from "../types/billing.types";
+  PaymentCardModel,
+  PaymentHistoryModel,
+  SubscriptionPlanModel,
+} from "@/features/billing/types/billing-model";
 
-// ── 플랜 ──
-export const mockPlan: SubscriptionPlan = {
+export const mockPlan: SubscriptionPlanModel = {
   name: "Business",
   monthlyPrice: 99_000,
   status: "active",
   nextBillingDate: "2026-04-01",
 };
 
-// ── 카드 ──
-export const mockCards: PaymentCard[] = [
+export const mockCards: PaymentCardModel[] = [
   {
     id: "card-1",
     brand: "VISA",
@@ -34,12 +32,11 @@ export const mockCards: PaymentCard[] = [
   },
 ];
 
-// ── 결제 이력 ──
-export const mockPaymentHistory: PaymentHistory[] = [
+export const mockPaymentHistory: PaymentHistoryModel[] = [
   {
     id: "pay-1",
     date: "2026-03-01",
-    description: "Business 플랜 — 3월",
+    description: "Business 플랜 - 3월",
     amount: 99_000,
     status: "paid",
     receiptUrl: "#",
@@ -47,7 +44,7 @@ export const mockPaymentHistory: PaymentHistory[] = [
   {
     id: "pay-2",
     date: "2026-02-01",
-    description: "Business 플랜 — 2월",
+    description: "Business 플랜 - 2월",
     amount: 99_000,
     status: "paid",
     receiptUrl: "#",
@@ -63,7 +60,7 @@ export const mockPaymentHistory: PaymentHistory[] = [
   {
     id: "pay-4",
     date: "2026-01-01",
-    description: "Business 플랜 — 1월",
+    description: "Business 플랜 - 1월",
     amount: 99_000,
     status: "paid",
     receiptUrl: "#",
@@ -71,7 +68,7 @@ export const mockPaymentHistory: PaymentHistory[] = [
   {
     id: "pay-5",
     date: "2025-12-20",
-    description: "AI 크레딧 추가 (BOM 분석 100건)",
+    description: "AI 크레딧 추가 구매",
     amount: 15_000,
     status: "refunded",
   },

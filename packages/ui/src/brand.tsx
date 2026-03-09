@@ -77,8 +77,9 @@ const brandThemes: Record<string, BrandThemeDef> = {
     fontFamily: "'Roboto', sans-serif",
     icon: (
       <>
-        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-        <path d="M9 12l2 2 4-4" />
+        <path d="M12 2L2 7l10 5 10-5-10-5z" />
+        <path d="M2 17l10 5 10-5" />
+        <path d="M2 12l10 5 10-5" />
       </>
     ),
   },
@@ -185,7 +186,12 @@ interface BrandMarkProps extends ComponentProps<"div"> {
   theme?: string;
 }
 
-function BrandMark({ size = "md", theme, className, ...props }: BrandMarkProps) {
+function BrandMark({
+  size = "md",
+  theme,
+  className,
+  ...props
+}: BrandMarkProps) {
   const s = sizeMap[size];
   const t = getThemeDef(theme);
 

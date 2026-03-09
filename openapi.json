@@ -14515,19 +14515,13 @@
                     "container": {
                         "type": "boolean"
                     },
-                    "pojo": {
+                    "value_node": {
                         "type": "boolean"
                     },
-                    "int": {
+                    "missing_node": {
                         "type": "boolean"
                     },
-                    "long": {
-                        "type": "boolean"
-                    },
-                    "integral_number": {
-                        "type": "boolean"
-                    },
-                    "floating_point_number": {
+                    "object": {
                         "type": "boolean"
                     },
                     "node_type": {
@@ -14545,15 +14539,6 @@
                         ]
                     },
                     "string": {
-                        "type": "boolean"
-                    },
-                    "value_node": {
-                        "type": "boolean"
-                    },
-                    "missing_node": {
-                        "type": "boolean"
-                    },
-                    "object": {
                         "type": "boolean"
                     },
                     "short": {
@@ -14576,6 +14561,21 @@
                         "type": "boolean"
                     },
                     "binary": {
+                        "type": "boolean"
+                    },
+                    "integral_number": {
+                        "type": "boolean"
+                    },
+                    "floating_point_number": {
+                        "type": "boolean"
+                    },
+                    "pojo": {
+                        "type": "boolean"
+                    },
+                    "int": {
+                        "type": "boolean"
+                    },
+                    "long": {
                         "type": "boolean"
                     },
                     "array": {

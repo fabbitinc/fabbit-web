@@ -1,51 +1,103 @@
 import axios from "axios";
 
-// 백엔드 에러 코드 → 프론트엔드 메시지 매핑 (i18n 대비)
 const ERROR_MESSAGES: Record<string, string> = {
-  // auth - send-verification
   ALREADY_EXISTS: "이미 가입된 이메일입니다.",
-  COOLDOWN_ACTIVE: "잠시 후 다시 시도해 주세요.",
+  COOLDOWN_ACTIVE: "인증 메일을 너무 자주 요청했습니다. 잠시 후 다시 시도해 주세요.",
   INVALID_EMAIL: "올바른 이메일 형식을 입력해 주세요.",
   TURNSTILE_FAILED: "보안 인증에 실패했습니다. 다시 시도해 주세요.",
-
-  // auth - verify-email
   INVALID_CODE: "인증코드가 올바르지 않습니다.",
   CODE_EXPIRED: "인증코드가 만료되었습니다. 다시 발송해 주세요.",
-  TOO_MANY_ATTEMPTS: "인증 시도 횟수를 초과했습니다. 인증코드를 다시 발송해 주세요.",
-
-  // auth - register
+  TOO_MANY_ATTEMPTS: "인증 시도 횟수를 초과했습니다. 다시 발송해 주세요.",
   TOKEN_EXPIRED: "인증이 만료되었습니다. 이메일 인증을 다시 진행해 주세요.",
   SLUG_TAKEN: "이미 사용 중인 워크스페이스 주소입니다.",
-
-  // auth - login
   INVALID_CREDENTIALS: "이메일 또는 비밀번호가 올바르지 않습니다.",
   ACCOUNT_DISABLED: "비활성화된 계정입니다. 관리자에게 문의해 주세요.",
 };
 
-/**
- * API 에러에서 사용자 친화적 메시지를 추출한다.
- *
- * 백엔드 응답 구조: { code: "ERROR_CODE", message: "..." }
- * code를 기준으로 프론트 매핑 메시지를 반환한다 (백엔드 message는 무시).
- * 매핑되지 않은 code는 fallback을 반환한다.
- *
- * FastAPI ValidationError({ detail: [...] }) 형태도 지원.
- */
-export function extractApiError(error: unknown, fallback = "요청에 실패했습니다."): string {
+type ApiErrorStatusMessages = Partial<Record<number, string>>;
+
+interface ExtractApiErrorOptions {
+  fallback?: string;
+  codeMessages?: Record<string, string>;
+  statusMessages?: ApiErrorStatusMessages;
+}
+
+function resolveOptions(options?: string | ExtractApiErrorOptions): Required<ExtractApiErrorOptions> {
+  if (typeof options === "string") {
+    return {
+      fallback: options,
+      codeMessages: {},
+      statusMessages: {},
+    };
+  }
+
+  return {
+    fallback: options?.fallback ?? "요청에 실패했습니다.",
+    codeMessages: options?.codeMessages ?? {},
+    statusMessages: options?.statusMessages ?? {},
+  };
+}
+
+function extractDetailMessage(detail: unknown) {
+  if (typeof detail === "string") {
+    return detail;
+  }
+
+  if (Array.isArray(detail) && detail.length > 0) {
+    const firstDetail = detail[0];
+
+    if (typeof firstDetail === "string") {
+      return firstDetail;
+    }
+
+    if (firstDetail && typeof firstDetail === "object") {
+      if ("msg" in firstDetail && typeof firstDetail.msg === "string") {
+        return firstDetail.msg;
+      }
+
+      if ("message" in firstDetail && typeof firstDetail.message === "string") {
+        return firstDetail.message;
+      }
+    }
+  }
+
+  if (detail && typeof detail === "object" && "message" in detail && typeof detail.message === "string") {
+    return detail.message;
+  }
+
+  return null;
+}
+
+export function extractApiError(error: unknown, options?: string | ExtractApiErrorOptions) {
+  const { fallback, codeMessages, statusMessages } = resolveOptions(options);
+
   if (!axios.isAxiosError(error) || !error.response?.data) {
     return error instanceof Error ? error.message : fallback;
   }
 
   const data = error.response.data;
+  const status = error.response.status;
+  const mergedCodeMessages = {
+    ...ERROR_MESSAGES,
+    ...codeMessages,
+  };
 
-  // { code: "ALREADY_EXISTS", message: "..." } 형태
-  if (typeof data.code === "string" && data.code in ERROR_MESSAGES) {
-    return ERROR_MESSAGES[data.code];
+  if (typeof data.code === "string" && data.code in mergedCodeMessages) {
+    return mergedCodeMessages[data.code];
   }
 
-  // FastAPI ValidationError: { detail: [{ msg: "..." }] }
-  if (Array.isArray(data.detail) && data.detail.length > 0) {
-    return data.detail[0].msg ?? fallback;
+  if (typeof data.message === "string" && data.message.trim()) {
+    return data.message;
+  }
+
+  const detailMessage = extractDetailMessage(data.detail);
+
+  if (detailMessage) {
+    return detailMessage;
+  }
+
+  if (status in statusMessages && statusMessages[status]) {
+    return statusMessages[status] ?? fallback;
   }
 
   return fallback;

@@ -143,3 +143,5 @@ vite.config.ts.timestamp-*
 
 # Turborepo cache
 .turbo/
+
+.archive/

@@ -21,7 +21,7 @@ export interface PartsListTableItem {
   category: string | null;
   revision: string;
   lifecycleState: string | null;
-  drawingNumber: string | null;
+  drawingId: string | null;
   childrenCount: number;
 }
 
@@ -263,7 +263,7 @@ export function PartsListTable({
                   )}
                 </td>
                 <td className="px-2 py-2 text-center">
-                  {item.drawingNumber ? (
+                  {item.drawingId ? (
                     <FileText className="mx-auto h-4 w-4 text-muted-foreground" />
                   ) : (
                     <span className="text-muted-foreground/40">—</span>

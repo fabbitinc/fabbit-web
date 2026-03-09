@@ -11,7 +11,8 @@ import { Badge, Card, CardContent, CardHeader, CardTitle } from "@fabbit/ui";
 
 const sampleProjects = [
   {
-    description: "모터 제어기와 연계되는 전장/기구 부품을 묶어 관리하는 프로젝트입니다.",
+    description:
+      "모터 제어기와 연계되는 전장/기구 부품을 묶어 관리하는 프로젝트입니다.",
     id: "project-1",
     isArchived: false,
     name: "EV 모터 컨트롤러",
@@ -36,7 +37,10 @@ const sampleProjects = [
   },
 ] satisfies ProjectListTableItem[];
 
-function sortProjects(items: ProjectListTableItem[], queryState: ProjectListTableQueryState) {
+function sortProjects(
+  items: ProjectListTableItem[],
+  queryState: ProjectListTableQueryState,
+) {
   return [...items].sort((left, right) => {
     if (queryState.sortKey === "part-count") {
       return queryState.sortDirection === "asc"
@@ -66,7 +70,9 @@ function ProjectListScreenStory({
   const filteredProjects = useMemo(() => {
     const normalizedQuery = queryState.query.trim().toLowerCase();
     const items = normalizedQuery
-      ? initialItems.filter((item) => item.name.toLowerCase().includes(normalizedQuery))
+      ? initialItems.filter((item) =>
+          item.name.toLowerCase().includes(normalizedQuery),
+        )
       : initialItems;
 
     return sortProjects(items, queryState);
@@ -79,7 +85,9 @@ function ProjectListScreenStory({
           <CardTitle>프로젝트 생성</CardTitle>
         </CardHeader>
         <CardContent className="space-y-3">
-          <p className="text-sm text-muted-foreground">생성 다이얼로그는 `web2`에서 연결하고, screen은 위치만 제공합니다.</p>
+          <p className="text-sm text-muted-foreground">
+            생성 다이얼로그는 `web`에서 연결하고, screen은 위치만 제공합니다.
+          </p>
           <Badge variant="secondary">Dialog Slot</Badge>
         </CardContent>
       </Card>
@@ -87,16 +95,21 @@ function ProjectListScreenStory({
     isError: false,
     isLoading: false,
     onCreateClick: () => setIsCreateDialogOpen(true),
-    onPageChange: (page: number) => setQueryState((current) => ({ ...current, page })),
-    onPageSizeChange: (pageSize: number) => setQueryState((current) => ({ ...current, page: 1, pageSize })),
-    onQueryChange: (query: string) => setQueryState((current) => ({ ...current, page: 1, query })),
+    onPageChange: (page: number) =>
+      setQueryState((current) => ({ ...current, page })),
+    onPageSizeChange: (pageSize: number) =>
+      setQueryState((current) => ({ ...current, page: 1, pageSize })),
+    onQueryChange: (query: string) =>
+      setQueryState((current) => ({ ...current, page: 1, query })),
     onRetry: () => undefined,
     onRowClick: () => undefined,
     onSortChange: (sortKey: ProjectListTableSortKey) =>
       setQueryState((current) => ({
         ...current,
         sortDirection:
-          current.sortKey === sortKey && current.sortDirection === "asc" ? "desc" : "asc",
+          current.sortKey === sortKey && current.sortDirection === "asc"
+            ? "desc"
+            : "asc",
         sortKey,
       })),
     projects: filteredProjects,

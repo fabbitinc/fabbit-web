@@ -5,57 +5,61 @@ import { Button } from "@fabbit/ui";
 
 function LoginScreenStory({
   errorMessage,
+  initialEmail = "seongha@fabbit.ai",
+  initialPassword = "qwer1234",
   isRegisterDomain = true,
   isSubmitting = false,
+  withSocialLogin = true,
 }: {
   errorMessage?: string;
+  initialEmail?: string;
+  initialPassword?: string;
   isRegisterDomain?: boolean;
   isSubmitting?: boolean;
+  withSocialLogin?: boolean;
 }) {
-  const [email, setEmail] = useState("seongha@fabbit.ai");
-  const [password, setPassword] = useState("qwer1234");
+  const [email, setEmail] = useState(initialEmail);
+  const [password, setPassword] = useState(initialPassword);
   const [showPassword, setShowPassword] = useState(false);
 
   return (
-    <div className="min-h-screen bg-background px-4 py-8 lg:px-10">
-      <div className="mx-auto max-w-6xl">
-        <LoginScreen
-          email={email}
-          errorMessage={errorMessage}
-          forgotPasswordAction={
-            <button className="cursor-pointer text-xs text-primary" type="button">
-              비밀번호 찾기
-            </button>
-          }
-          isRegisterDomain={isRegisterDomain}
-          isSubmitting={isSubmitting}
-          password={password}
-          showPassword={showPassword}
-          signupAction={
-            <button className="font-medium text-primary" type="button">
-              회원가입
-            </button>
-          }
-          socialLoginSection={
-            <div className="space-y-3">
-              <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">또는 다음 방법으로 계속</p>
-              <div className="grid gap-3 sm:grid-cols-2">
-                <Button className="justify-center" type="button" variant="outline">
-                  Google로 계속
-                </Button>
-                <Button className="justify-center" type="button" variant="outline">
-                  Microsoft로 계속
-                </Button>
-              </div>
+    <LoginScreen
+      email={email}
+      errorMessage={errorMessage}
+      forgotPasswordAction={
+        <button className="cursor-pointer text-xs text-primary" type="button">
+          비밀번호 찾기
+        </button>
+      }
+      isRegisterDomain={isRegisterDomain}
+      isSubmitting={isSubmitting}
+      password={password}
+      showPassword={showPassword}
+      signupAction={
+        <button className="font-medium text-primary" type="button">
+          회원가입
+        </button>
+      }
+      socialLoginSection={
+        withSocialLogin ? (
+          <div className="space-y-3">
+            <p className="text-xs uppercase tracking-[0.24em] text-muted-foreground">또는 다음 방법으로 계속</p>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <Button className="justify-center" type="button" variant="outline">
+                Google로 계속
+              </Button>
+              <Button className="justify-center" type="button" variant="outline">
+                Microsoft로 계속
+              </Button>
             </div>
-          }
-          onEmailChange={setEmail}
-          onPasswordChange={setPassword}
-          onSubmit={(event) => event.preventDefault()}
-          onTogglePasswordVisibility={() => setShowPassword((previous) => !previous)}
-        />
-      </div>
-    </div>
+          </div>
+        ) : undefined
+      }
+      onEmailChange={setEmail}
+      onPasswordChange={setPassword}
+      onSubmit={(event) => event.preventDefault()}
+      onTogglePasswordVisibility={() => setShowPassword((previous) => !previous)}
+    />
   );
 }
 
@@ -74,6 +78,10 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   render: () => <LoginScreenStory />,
+};
+
+export const EmptyForm: Story = {
+  render: () => <LoginScreenStory initialEmail="" initialPassword="" withSocialLogin={false} />,
 };
 
 export const ErrorState: Story = {

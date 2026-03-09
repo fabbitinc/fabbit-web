@@ -10,6 +10,7 @@ import {
   Search,
 } from "lucide-react";
 import {
+  BrandLogo,
   Button,
   Dialog,
   DialogContent,
@@ -82,30 +83,7 @@ export interface AppHeaderProps {
 }
 
 function DefaultBrand() {
-  return (
-    <div className="flex items-center gap-2">
-      <div
-        className="flex size-7 items-center justify-center rounded-md"
-        style={{
-          backgroundColor: "var(--brand-500)",
-          color: "var(--nav-topbar-avatar-text)",
-        }}
-      >
-        <svg
-          className="size-4"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-        >
-          <path d="M12 2L2 7l10 5 10-5-10-5z" />
-          <path d="M2 17l10 5 10-5" />
-          <path d="M2 12l10 5 10-5" />
-        </svg>
-      </div>
-      <span className="text-sm font-semibold leading-none text-foreground">Fabbit</span>
-    </div>
-  );
+  return <BrandLogo size="sm" />;
 }
 
 export function AppHeader({

@@ -139,6 +139,15 @@ export type {
   PartBomTabItem,
   PartBomTabProps,
 } from "./part-bom-tab";
+export { PartEditorScreen } from "./part-editor-screen";
+export type {
+  PartEditorScreenDrawingSummary,
+  PartEditorScreenExtendedField,
+  PartEditorScreenFormValues,
+  PartEditorScreenOption,
+  PartEditorScreenProps,
+  PartEditorScreenReferenceStats,
+} from "./part-editor-screen";
 export { PartHeaderCard } from "./part-header-card";
 export type { PartHeaderCardPart, PartHeaderCardProps } from "./part-header-card";
 export { PartHistoryTab } from "./part-history-tab";

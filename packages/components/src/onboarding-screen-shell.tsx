@@ -46,9 +46,9 @@ export function OnboardingScreenShell({
         </div>
 
         <div className="relative z-10 space-y-2 text-sm text-blue-100/80">
-          <p>조직 생성과 온보딩 흐름</p>
-          <p>사용자 인증과 워크스페이스 설정</p>
-          <p>기존 web 화면 구조를 기준으로 정리</p>
+          <p>빠른 이메일 인증으로 바로 시작할 수 있습니다.</p>
+          <p>워크스페이스별로 독립된 환경을 안전하게 운영합니다.</p>
+          <p>가입 후에도 주요 설정은 언제든 다시 변경할 수 있습니다.</p>
         </div>
       </div>
 
