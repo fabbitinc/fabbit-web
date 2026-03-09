@@ -322,6 +322,7 @@ export function PartDrawingPreview({
   if (hasDrawing) {
     const previewDrawing = drawing;
     const hasPreview = !!previewDrawing.previewUrl;
+    const drawingNumberLabel = previewDrawing.drawingNumber?.trim() || null;
     const canOpenViewer = !!previewDrawing.viewerUrl;
     const isFailed = previewDrawing.conversionStatus === "FAILED";
     const failureDescription =
@@ -476,10 +477,10 @@ export function PartDrawingPreview({
             </button>
           </div>
 
-          {hasPreview ? (
+          {hasPreview && drawingNumberLabel ? (
             <div className="absolute bottom-2 left-2">
               <span className="rounded bg-background/80 px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground shadow-sm">
-                {previewDrawing.drawingNumber}
+                {drawingNumberLabel}
               </span>
             </div>
           ) : null}

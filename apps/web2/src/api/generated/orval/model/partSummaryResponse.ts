@@ -16,6 +16,6 @@ export interface PartSummaryResponse {
   category?: string;
   revision?: string;
   lifecycle_state?: PartSummaryResponseLifecycleState;
-  drawing_number?: string;
+  drawing_id?: string;
   children_count?: number;
 }

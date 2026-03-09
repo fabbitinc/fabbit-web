@@ -72,6 +72,7 @@ export * from './creditUsageResponse';
 export * from './dashboardStatsResponse';
 export * from './deleteDefaultOwnerParams';
 export * from './drawingProcessingResponse';
+export * from './drawingProcessingResponseFailureCode';
 export * from './drawingProcessingResponseStatus';
 export * from './exportBomTreeParams';
 export * from './exportPartsParams';

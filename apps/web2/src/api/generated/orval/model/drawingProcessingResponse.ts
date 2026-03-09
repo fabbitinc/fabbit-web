@@ -4,6 +4,7 @@
  * OpenAPI definition
  * OpenAPI spec version: v0
  */
+import type { DrawingProcessingResponseFailureCode } from './drawingProcessingResponseFailureCode';
 import type { DrawingProcessingResponseStatus } from './drawingProcessingResponseStatus';
 
 /**
@@ -12,8 +13,10 @@ import type { DrawingProcessingResponseStatus } from './drawingProcessingRespons
 export interface DrawingProcessingResponse {
   /** 도면 처리 상태 */
   status?: DrawingProcessingResponseStatus;
-  /** 실패 사유 */
-  failure_reason?: string;
+  /** 도면 처리 실패 코드 */
+  failure_code?: DrawingProcessingResponseFailureCode;
+  /** 도면 처리 실패 메시지 */
+  failure_message?: string;
   /** PDF 산출물 준비 여부 */
   pdf_ready?: boolean;
   /** WEBP 산출물 준비 여부 */

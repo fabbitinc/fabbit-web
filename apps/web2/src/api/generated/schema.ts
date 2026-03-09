@@ -5146,7 +5146,8 @@ export interface components {
             revision?: string;
             /** @enum {string} */
             lifecycle_state?: "DESIGN" | "PROTOTYPE" | "PRODUCTION" | "EOL" | "OBSOLETE";
-            drawing_number?: string;
+            /** Format: uuid */
+            drawing_id?: string;
             /** Format: int64 */
             children_count?: number;
         };
@@ -5661,10 +5662,16 @@ export interface components {
              */
             status?: "PENDING" | "PROCESSING" | "COMPLETED" | "FAILED";
             /**
-             * @description 실패 사유
-             * @example 지원하지 않는 도면 파일 형식입니다
+             * @description 도면 처리 실패 코드
+             * @example TIMEOUT
+             * @enum {string}
              */
-            failure_reason?: string;
+            failure_code?: "TIMEOUT" | "UNSUPPORTED_FORMAT" | "CONVERTER_UNAVAILABLE" | "CONVERSION_FAILED" | "UNKNOWN";
+            /**
+             * @description 도면 처리 실패 메시지
+             * @example 도면 변환 시간이 초과되었습니다.
+             */
+            failure_message?: string;
             /**
              * @description PDF 산출물 준비 여부
              * @example true
