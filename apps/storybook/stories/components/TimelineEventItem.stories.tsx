@@ -104,6 +104,21 @@ export const ReviewApproved: Story = {
   },
 };
 
+export const ChangeRequestSubmitted: Story = {
+  args: {
+    event: {
+      id: "9",
+      type: "cr_state_changed",
+      author,
+      createdAtLabel: "방금",
+      content: {
+        from: "DRAFT",
+        to: "SUBMITTED",
+      },
+    },
+  },
+};
+
 export const FileAttached: Story = {
   args: {
     event: {
@@ -127,7 +142,8 @@ export const Showcase: Story = {
       { id: "5", type: "file_attached", author, createdAtLabel: "5시간 전", fileNames: ["analysis.pdf"] },
       { id: "6", type: "cr_changed", author, createdAtLabel: "2시간 전", linkedIssueCount: 1, linkedIssues: [{ number: 42, title: "인버터 하우징 간섭 수정", type: "change_request" }] },
       { id: "7", type: "review_approved", author: { name: "박도현", profileImageUrl: null }, createdAtLabel: "1시간 전" },
-      { id: "8", type: "status_change", author, createdAtLabel: "방금", content: "closed" },
+      { id: "8", type: "cr_state_changed", author, createdAtLabel: "40분 전", content: { from: "DRAFT", to: "SUBMITTED" } },
+      { id: "9", type: "status_change", author, createdAtLabel: "방금", content: "closed" },
     ];
     return (
       <div className="space-y-1">

@@ -1,14 +1,16 @@
 import {
   AlertCircle,
   CheckCircle2,
-  FileCheck,
   FilePen,
-  FileX,
   HelpCircle,
   MessageSquare,
   Plus,
 } from "lucide-react";
 import { Button, LabelBadge, UserAvatar } from "@fabbit/ui";
+import {
+  getChangeRequestStatusConfig,
+  getIssueStatusConfig,
+} from "./work-item-status";
 
 export type ChangeManagementScreenView = "issues" | "requests";
 export type ChangeManagementScreenState = "open" | "closed";
@@ -101,27 +103,9 @@ function timeAgo(iso: string) {
 }
 
 function getStatusConfig(item: ChangeManagementScreenItem) {
-  if (item.kind === "requests") {
-    const normalized = (item.crState ?? item.state).toUpperCase();
-
-    if (normalized === "DRAFT") {
-      return { className: "text-gray-500", icon: FilePen, label: "초안" };
-    }
-    if (normalized === "MERGED") {
-      return { className: "text-purple-600", icon: FileCheck, label: "반영" };
-    }
-    if (normalized === "CLOSED") {
-      return { className: "text-red-500", icon: FileX, label: "닫힘" };
-    }
-
-    return { className: "text-emerald-600", icon: FilePen, label: "제출" };
-  }
-
-  if (item.state === "CLOSED") {
-    return { className: "text-purple-600", icon: CheckCircle2, label: "닫힘" };
-  }
-
-  return { className: "text-emerald-600", icon: AlertCircle, label: "열림" };
+  return item.kind === "requests"
+    ? getChangeRequestStatusConfig(item.crState ?? item.state)
+    : getIssueStatusConfig(item.state);
 }
 
 export function ChangeManagementScreen({
@@ -260,7 +244,7 @@ export function ChangeManagementScreen({
                   onClick={() => onItemClick(item)}
                 >
                   <div className="mt-0.5 w-14 shrink-0">
-                    <span className={`inline-flex items-center gap-1 ${status.className}`}>
+                    <span className={`inline-flex items-center gap-1 ${status.toneClassName}`}>
                       <StatusIcon className="size-4" />
                       <span className="text-xs font-medium">{status.label}</span>
                     </span>

@@ -4,7 +4,6 @@ import {
   ArrowLeft,
   CheckCircle2,
   FileCheck,
-  FilePen,
   Loader2,
   MessageSquare,
   Pencil,
@@ -29,6 +28,7 @@ import {
   type ChangeRequestSidebarProps,
 } from "./change-request-sidebar";
 import { TimelineEventItem, type TimelineEventData } from "./timeline-event";
+import { ChangeRequestStatusBadge } from "./work-item-status";
 
 export interface ChangeRequestDetailTabItem {
   id: string;
@@ -163,44 +163,6 @@ function formatFullDate(iso: string) {
     minute: "2-digit",
     hour12: false,
   });
-}
-
-const STATE_BADGE_STYLE: Record<string, string> = {
-  DRAFT: "border-gray-300 bg-gray-50 text-gray-700 dark:border-gray-700 dark:bg-gray-950 dark:text-gray-400",
-  OPEN: "border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-700 dark:bg-emerald-950 dark:text-emerald-400",
-  SUBMITTED: "border-blue-300 bg-blue-50 text-blue-700 dark:border-blue-700 dark:bg-blue-950 dark:text-blue-400",
-  MERGED: "border-purple-300 bg-purple-50 text-purple-700 dark:border-purple-700 dark:bg-purple-950 dark:text-purple-400",
-  CLOSED: "border-red-300 bg-red-50 text-red-700 dark:border-red-700 dark:bg-red-950 dark:text-red-400",
-};
-
-const STATE_LABEL: Record<string, string> = {
-  DRAFT: "초안",
-  OPEN: "열림",
-  SUBMITTED: "제출됨",
-  MERGED: "반영됨",
-  CLOSED: "닫힘",
-};
-
-function ChangeRequestStatusIcon({ state }: { state: string }) {
-  const className = "h-4 w-4";
-
-  if (state === "MERGED") {
-    return <CheckCircle2 className={`${className} text-purple-600 dark:text-purple-400`} />;
-  }
-
-  if (state === "CLOSED") {
-    return <XCircle className={`${className} text-red-500 dark:text-red-400`} />;
-  }
-
-  if (state === "SUBMITTED") {
-    return <FileCheck className={`${className} text-blue-600 dark:text-blue-400`} />;
-  }
-
-  if (state === "DRAFT") {
-    return <FilePen className={`${className} text-gray-500 dark:text-gray-400`} />;
-  }
-
-  return <AlertCircle className={`${className} text-emerald-600 dark:text-emerald-400`} />;
 }
 
 function ChangeTimelineCommentItem({
@@ -474,10 +436,7 @@ export function ChangeRequestDetailScreen({
           </h2>
         )}
         <div className="mt-2 flex flex-wrap items-center gap-2">
-          <Badge variant="outline" className={STATE_BADGE_STYLE[changeRequest.crState] ?? ""}>
-            <ChangeRequestStatusIcon state={changeRequest.crState} />
-            {STATE_LABEL[changeRequest.crState] ?? changeRequest.crState}
-          </Badge>
+          <ChangeRequestStatusBadge state={changeRequest.crState} />
           <span className="text-sm text-muted-foreground">
             <span className="font-medium text-foreground">{createdByName}</span>
             {" 님이 "}

@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Settings } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Loader2, Settings } from "lucide-react";
 import { Button, Input, Checkbox, Popover, PopoverContent, PopoverTrigger, UserAvatar } from "@fabbit/ui";
 
 export interface MemberPickerSectionProps {
@@ -14,6 +14,8 @@ export interface MemberPickerSectionProps {
   /** 없으면 + 버튼 숨김 (읽기 전용 표시) */
   onSync?: (userIds: string[]) => void;
   onRequestMembers?: () => void;
+  onSearchChange?: (search: string) => void;
+  isSearching?: boolean;
   isUpdating?: boolean;
 }
 
@@ -25,11 +27,35 @@ export function MemberPickerSection({
   displayItems,
   onSync,
   onRequestMembers,
+  onSearchChange,
+  isSearching,
   isUpdating,
 }: MemberPickerSectionProps) {
   const [popoverOpen, setPopoverOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [draftIds, setDraftIds] = useState<string[]>([]);
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>(null);
+
+  useEffect(() => () => {
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+  }, []);
+
+  const handleQueryChange = useCallback(
+    (value: string) => {
+      setQuery(value);
+
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+
+      debounceRef.current = setTimeout(() => {
+        onSearchChange?.(value);
+      }, 300);
+    },
+    [onSearchChange],
+  );
 
   const filtered = availableMembers.filter((m) => {
     if (!query.trim()) return true;
@@ -46,11 +72,17 @@ export function MemberPickerSection({
             open={popoverOpen}
             onOpenChange={(open) => {
               setPopoverOpen(open);
+              if (debounceRef.current) {
+                clearTimeout(debounceRef.current);
+              }
               if (open) {
                 onRequestMembers?.();
                 setDraftIds(selectedIds);
+                setQuery("");
+                onSearchChange?.("");
               } else {
                 setQuery("");
+                onSearchChange?.("");
               }
             }}
           >
@@ -67,11 +99,18 @@ export function MemberPickerSection({
                 <p className="text-xs font-medium text-foreground">
                   {applyLabel.replace("적용", "추가")}
                 </p>
-                <Input
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder="멤버 검색"
-                />
+                <div className="relative">
+                  <Input
+                    value={query}
+                    onChange={(e) => handleQueryChange(e.target.value)}
+                    placeholder="멤버 검색"
+                  />
+                  {isSearching ? (
+                    <div className="absolute right-2 top-1/2 -translate-y-1/2">
+                      <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
+                    </div>
+                  ) : null}
+                </div>
                 <div className="max-h-48 space-y-1 overflow-auto">
                   {filtered.length === 0 ? (
                     <p className="px-1 py-2 text-xs text-muted-foreground">
@@ -107,6 +146,10 @@ export function MemberPickerSection({
                   className="w-full"
                   disabled={isUpdating}
                   onClick={() => {
+                    if (debounceRef.current) {
+                      clearTimeout(debounceRef.current);
+                    }
+                    onSearchChange?.("");
                     onSync(draftIds);
                     setPopoverOpen(false);
                     setQuery("");

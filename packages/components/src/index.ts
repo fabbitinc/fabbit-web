@@ -356,6 +356,12 @@ export type {
   ChangeRequestDetailScreenProps,
   ChangeRequestDetailTabItem,
 } from "./change-request-detail-screen";
+export {
+  ChangeRequestStatusBadge,
+  ChangeRequestStatusIcon,
+  IssueStatusBadge,
+  IssueStatusIcon,
+} from "./work-item-status";
 export { WorkOrderListScreen } from "./work-order-list-screen";
 export type {
   WorkOrderListItem,

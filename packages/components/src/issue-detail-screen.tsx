@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { AlertCircle, ArrowLeft, CheckCircle2, Loader2, MessageSquare, Pencil, XCircle } from "lucide-react";
+import { ArrowLeft, Loader2, MessageSquare, Pencil, XCircle } from "lucide-react";
 import {
   Avatar,
   AvatarFallback,
@@ -21,6 +21,7 @@ import {
   type IssueSidebarUser,
 } from "./issue-sidebar";
 import { TimelineEventItem, type TimelineEventData } from "./timeline-event";
+import { IssueStatusBadge } from "./work-item-status";
 
 export interface IssueDetailScreenUser {
   id?: string | null;
@@ -90,8 +91,10 @@ export interface IssueDetailScreenProps {
   isClosingIssue?: boolean;
   isCreatingComment?: boolean;
   isError?: boolean;
+  isLabelsSearching?: boolean;
   isLoading?: boolean;
   isMetaUpdating?: boolean;
+  isMembersSearching?: boolean;
   isNotFound?: boolean;
   isPartsSearching?: boolean;
   isReopeningIssue?: boolean;
@@ -111,8 +114,10 @@ export interface IssueDetailScreenProps {
   onCreateLinkedChange: () => void;
   onDeleteComment: (commentId: string) => Promise<void>;
   onDeleteFile: (fileId: string) => Promise<void> | void;
+  onLabelSearchChange?: (search: string) => void;
   onNavigateToChange: (changeNumber: number) => void;
   onNavigateToIssueMention: (issueNumber: number, issueType: "issue" | "change_request") => void;
+  onMemberSearchChange?: (search: string) => void;
   onNavigateToPart?: (partId: string) => void;
   onPartsSearchChange?: (search: string) => void;
   onReopenIssue: () => Promise<void> | void;
@@ -172,21 +177,6 @@ function formatFullDate(iso: string) {
     hour12: false,
   });
 }
-
-function IssueStatusIcon({ state }: { state: string }) {
-  const className = "h-4 w-4";
-
-  return state === "OPEN" ? (
-    <AlertCircle className={`${className} text-emerald-600 dark:text-emerald-400`} />
-  ) : (
-    <CheckCircle2 className={`${className} text-red-500 dark:text-red-400`} />
-  );
-}
-
-const STATUS_BADGE_STYLE: Record<string, string> = {
-  OPEN: "border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-700 dark:bg-emerald-950 dark:text-emerald-400",
-  CLOSED: "border-red-300 bg-red-50 text-red-700 dark:border-red-700 dark:bg-red-950 dark:text-red-400",
-};
 
 function IssueTimelineCommentItem({
   comment,
@@ -315,8 +305,10 @@ export function IssueDetailScreen({
   isClosingIssue = false,
   isCreatingComment = false,
   isError = false,
+  isLabelsSearching = false,
   isLoading = false,
   isMetaUpdating = false,
+  isMembersSearching = false,
   isNotFound = false,
   isPartsSearching = false,
   isReopeningIssue = false,
@@ -333,8 +325,10 @@ export function IssueDetailScreen({
   onCreateLinkedChange,
   onDeleteComment: _onDeleteComment,
   onDeleteFile,
+  onLabelSearchChange,
   onNavigateToChange,
   onNavigateToIssueMention,
+  onMemberSearchChange,
   onNavigateToPart,
   onPartsSearchChange,
   onReopenIssue,
@@ -436,10 +430,7 @@ export function IssueDetailScreen({
           </h2>
         )}
         <div className="mt-2 flex flex-wrap items-center gap-2">
-          <Badge variant="outline" className={STATUS_BADGE_STYLE[issue.state] ?? ""}>
-            <IssueStatusIcon state={issue.state} />
-            {issue.state === "CLOSED" ? "닫힘" : "열림"}
-          </Badge>
+          <IssueStatusBadge state={issue.state} />
           <span className="text-sm text-muted-foreground">
             <span className="font-medium text-foreground">{createdByName}</span>
             {" 님이 "}
@@ -635,6 +626,8 @@ export function IssueDetailScreen({
                     selectedIds: selectedAssigneeIds,
                     onSync: onSyncAssignees,
                     onRequest: onRequestMembers ?? (() => undefined),
+                    onSearchChange: onMemberSearchChange,
+                    isSearching: isMembersSearching,
                     isUpdating: isMetaUpdating,
                   }
                 : undefined
@@ -646,6 +639,8 @@ export function IssueDetailScreen({
                     selectedIds: selectedLabelIds,
                     onSync: onSyncLabels,
                     onRequest: onRequestLabels ?? (() => undefined),
+                    onSearchChange: onLabelSearchChange,
+                    isSearching: isLabelsSearching,
                     isUpdating: isMetaUpdating,
                   }
                 : undefined

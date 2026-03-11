@@ -82,7 +82,9 @@ export function ChangeRequestDetailScreen({
   const changeRequest = changeRequestQuery.data;
 
   const [membersEnabled, setMembersEnabled] = useState(false);
+  const [membersSearch, setMembersSearch] = useState("");
   const [labelsEnabled, setLabelsEnabled] = useState(false);
+  const [labelsSearch, setLabelsSearch] = useState("");
   const [partsEnabled, setPartsEnabled] = useState(false);
   const [issuesEnabled, setIssuesEnabled] = useState(false);
   const [partsSearch, setPartsSearch] = useState("");
@@ -91,14 +93,20 @@ export function ChangeRequestDetailScreen({
   const deferredPartsSearch = useDeferredValue(partsSearch.trim());
   const deferredIssuesSearch = useDeferredValue(issuesSearch.trim());
 
-  const memberLookup = useMemberLookupQuery({ limit: 20 }, membersEnabled);
-  const labelLookup = useLabelLookupQuery({ limit: 20 }, labelsEnabled);
+  const memberLookup = useMemberLookupQuery(
+    { search: membersSearch.trim() || undefined },
+    membersEnabled,
+  );
+  const labelLookup = useLabelLookupQuery(
+    { search: labelsSearch.trim() || undefined },
+    labelsEnabled,
+  );
   const partLookup = usePartLookupQuery(
-    { search: deferredPartsSearch || undefined, limit: 20 },
+    { search: deferredPartsSearch || undefined },
     partsEnabled,
   );
   const issueLookup = useIssueLookupQuery(
-    { search: deferredIssuesSearch || undefined, limit: 20 },
+    { search: deferredIssuesSearch || undefined },
     issuesEnabled,
   );
 
@@ -251,9 +259,11 @@ export function ChangeRequestDetailScreen({
         })),
         selectedIds: changeRequest?.assignees.map((assignee) => assignee.userId) ?? [],
         onRequest: () => setMembersEnabled(true),
+        onSearchChange: setMembersSearch,
         onSync: async (userIds: string[]) => {
           await syncAssigneesAction.mutateAsync(userIds);
         },
+        isSearching: memberLookup.isFetching,
         isUpdating: syncAssigneesAction.isPending,
       }}
       reviewerPicker={{
@@ -264,9 +274,11 @@ export function ChangeRequestDetailScreen({
         })),
         selectedIds: changeRequest?.reviewers.map((reviewer) => reviewer.userId) ?? [],
         onRequest: () => setMembersEnabled(true),
+        onSearchChange: setMembersSearch,
         onSync: async (userIds: string[]) => {
           await syncReviewersAction.mutateAsync(userIds);
         },
+        isSearching: memberLookup.isFetching,
         isUpdating: syncReviewersAction.isPending,
       }}
       labelPicker={{
@@ -277,9 +289,11 @@ export function ChangeRequestDetailScreen({
         })),
         selectedIds: changeRequest?.labels.map((label) => label.id) ?? [],
         onRequest: () => setLabelsEnabled(true),
+        onSearchChange: setLabelsSearch,
         onSync: async (labelIds: string[]) => {
           await syncLabelsAction.mutateAsync(labelIds);
         },
+        isSearching: labelLookup.isFetching,
         isUpdating: syncLabelsAction.isPending,
       }}
       partPicker={{

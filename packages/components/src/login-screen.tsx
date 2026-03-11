@@ -35,7 +35,7 @@ export function LoginScreen({
 }: LoginScreenProps) {
   return (
     <div className="flex min-h-screen">
-      <div className="relative hidden flex-col items-center justify-center overflow-hidden border-r border-border/70 bg-[#0f172a] lg:flex lg:w-1/2">
+      <div className="relative hidden flex-col items-center justify-center overflow-hidden border-r border-border/70 bg-[var(--login-panel-bg,#0f172a)] lg:flex lg:w-1/2">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_40%,color-mix(in_srgb,var(--primary)_60%,transparent),transparent_60%),radial-gradient(circle_at_75%_65%,color-mix(in_srgb,var(--accent)_45%,transparent),transparent_55%),radial-gradient(circle_at_60%_80%,color-mix(in_srgb,var(--primary)_35%,transparent),transparent_45%)]" />
         <div className="relative z-10 w-full max-w-md space-y-8 px-8">
           <BrandLogo size="xl" textClassName="text-white" />

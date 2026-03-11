@@ -1,8 +1,6 @@
 import type { ReactNode } from "react";
 import {
-  AlertCircle,
   CheckCircle2,
-  FileCheck,
   FilePen,
   LinkIcon,
   MessageSquare,
@@ -14,6 +12,10 @@ import {
   XCircle,
 } from "lucide-react";
 import { LabelBadge, Tooltip, TooltipContent, TooltipTrigger, UserAvatar } from "@fabbit/ui";
+import {
+  ChangeRequestStatusIcon,
+  IssueStatusIcon,
+} from "./work-item-status";
 
 // ── 타입 ──────────────────────────────────────────────────
 
@@ -205,8 +207,8 @@ export function TimelineEventItem({ event, onNavigate }: TimelineEventItemProps)
     return (
       <EventRow
         icon={isReopened
-          ? <AlertCircle className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-          : <CheckCircle2 className="h-4 w-4 text-red-500 dark:text-red-400" />}
+          ? <IssueStatusIcon state="OPEN" className="h-4 w-4" />
+          : <IssueStatusIcon state="CLOSED" className="h-4 w-4" />}
         timestamp={ts}
       >
         <ActivityAuthor author={author} />
@@ -220,32 +222,26 @@ export function TimelineEventItem({ event, onNavigate }: TimelineEventItemProps)
     const detail = event.content as { from?: string; to?: string } | null;
     const from = detail?.from?.toUpperCase() ?? "";
     const to = detail?.to?.toUpperCase() ?? "";
+    const targetState = to || "SUBMITTED";
 
     let message: string;
-    let icon: ReactNode;
 
     if (from === "CLOSED" && to === "SUBMITTED") {
       message = " 님이 변경 요청을 다시 제출했습니다";
-      icon = <AlertCircle className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />;
     } else if (to === "DRAFT") {
       message = " 님이 변경 요청을 초안상태로 변경했습니다";
-      icon = <FilePen className="h-4 w-4 text-muted-foreground" />;
     } else if (to === "SUBMITTED") {
       message = " 님이 변경 요청을 제출했습니다";
-      icon = <FilePen className="h-4 w-4 text-blue-600 dark:text-blue-400" />;
     } else if (to === "MERGED") {
       message = " 님이 변경 요청을 반영했습니다";
-      icon = <FileCheck className="h-4 w-4 text-purple-600 dark:text-purple-400" />;
     } else if (to === "CLOSED") {
       message = " 님이 변경 요청을 닫았습니다";
-      icon = <CheckCircle2 className="h-4 w-4 text-red-500 dark:text-red-400" />;
     } else {
       message = " 님이 변경 요청 상태를 변경했습니다";
-      icon = <FilePen className="h-4 w-4 text-amber-600 dark:text-amber-400" />;
     }
 
     return (
-      <EventRow icon={icon} timestamp={ts}>
+      <EventRow icon={<ChangeRequestStatusIcon state={targetState} className="h-4 w-4" />} timestamp={ts}>
         <ActivityAuthor author={author} />
         {message}
       </EventRow>
@@ -277,7 +273,7 @@ export function TimelineEventItem({ event, onNavigate }: TimelineEventItemProps)
   // CR 머지
   if (type === "cr_merged") {
     return (
-      <EventRow icon={<FileCheck className="h-4 w-4 text-purple-600 dark:text-purple-400" />} timestamp={ts}>
+      <EventRow icon={<ChangeRequestStatusIcon state="MERGED" className="h-4 w-4" />} timestamp={ts}>
         <ActivityAuthor author={author} />
         {" 님이 변경 요청을 반영했습니다"}
         {event.issueTitle && <span className="text-muted-foreground/70"> — {event.issueTitle}</span>}

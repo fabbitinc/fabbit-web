@@ -54,19 +54,28 @@ export function ChangeCreateForm({
 }: ChangeCreateFormProps) {
   const navigate = useNavigate();
   const [assigneesEnabled, setAssigneesEnabled] = useState(false);
+  const [assigneeSearch, setAssigneeSearch] = useState("");
   const [reviewersEnabled, setReviewersEnabled] = useState(false);
+  const [reviewerSearch, setReviewerSearch] = useState("");
   const [labelsEnabled, setLabelsEnabled] = useState(false);
+  const [labelSearch, setLabelSearch] = useState("");
   const [partsEnabled, setPartsEnabled] = useState(false);
   const [partSearch, setPartSearch] = useState("");
 
-  const assigneeLookup = useMemberLookupQuery({ limit: 100 }, assigneesEnabled);
+  const assigneeLookup = useMemberLookupQuery(
+    { search: assigneeSearch.trim() || undefined },
+    assigneesEnabled,
+  );
   const reviewerLookup = useMemberLookupQuery(
-    { limit: 100 },
+    { search: reviewerSearch.trim() || undefined },
     includeReviewers && reviewersEnabled,
   );
-  const labelLookup = useLabelLookupQuery({ limit: 100 }, labelsEnabled);
+  const labelLookup = useLabelLookupQuery(
+    { search: labelSearch.trim() || undefined },
+    labelsEnabled,
+  );
   const partLookup = usePartLookupQuery(
-    { search: partSearch.trim() || undefined, limit: 20 },
+    { search: partSearch.trim() || undefined },
     partsEnabled,
   );
 
@@ -78,9 +87,12 @@ export function ChangeCreateForm({
       titlePlaceholder={titlePlaceholder ?? `${heading} 제목을 입력하세요`}
       editorPlaceholder={editorPlaceholder ?? `${heading} 설명을 입력하세요`}
       includeReviewers={includeReviewers}
+      isAssigneeSearching={assigneeLookup.isFetching}
+      isLabelSearching={labelLookup.isFetching}
       isPending={isPending}
       linkedIssueNumber={linkedIssueNumber}
       linkedIssueTitle={linkedIssueTitle}
+      isReviewerSearching={reviewerLookup.isFetching}
       assigneeOptions={(assigneeLookup.data ?? []).map((member) => ({
         id: member.userId,
         name: member.fullName,
@@ -103,14 +115,17 @@ export function ChangeCreateForm({
         partNumber: part.partNumber,
         name: part.name,
       }))}
+      onAssigneeSearchChange={setAssigneeSearch}
       isPartSearching={partLookup.isFetching}
       onBack={() => navigate(backHref)}
       onCancel={() => navigate(backHref)}
+      onLabelSearchChange={setLabelSearch}
       onRequestAssignees={() => setAssigneesEnabled(true)}
       onRequestReviewers={() => setReviewersEnabled(true)}
       onRequestLabels={() => setLabelsEnabled(true)}
       onRequestParts={() => setPartsEnabled(true)}
       onPartSearchChange={setPartSearch}
+      onReviewerSearchChange={setReviewerSearch}
       submitLabel={submitLabel}
       onSubmit={async (input) => {
         await onSubmit(toSubmitInput(input));

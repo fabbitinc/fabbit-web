@@ -84,7 +84,7 @@ export function MappingSaveDialog({
   }, [existingNameSet, mappingName, saveMode]);
 
   const existingModeClassName = [
-    "rounded-2xl border px-3 py-3 text-sm font-medium transition-colors",
+    "rounded-lg border px-3 py-2 text-sm font-medium transition-colors",
     saveMode === "existing"
       ? "border-primary/30 bg-primary/10 text-primary"
       : "border-border text-muted-foreground hover:bg-muted/50",
@@ -94,7 +94,7 @@ export function MappingSaveDialog({
     .join(" ");
 
   const newModeClassName = [
-    "rounded-2xl border px-3 py-3 text-sm font-medium transition-colors",
+    "rounded-lg border px-3 py-2 text-sm font-medium transition-colors",
     saveMode === "new"
       ? "border-primary/30 bg-primary/10 text-primary"
       : "border-border text-muted-foreground hover:bg-muted/50",

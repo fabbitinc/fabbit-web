@@ -82,7 +82,9 @@ export function IssueDetailScreen({ issueNumber }: IssueDetailScreenProps) {
   const issue = issueQuery.data;
 
   const [membersEnabled, setMembersEnabled] = useState(false);
+  const [membersSearch, setMembersSearch] = useState("");
   const [labelsEnabled, setLabelsEnabled] = useState(false);
+  const [labelsSearch, setLabelsSearch] = useState("");
   const [partsEnabled, setPartsEnabled] = useState(false);
   const [partsSearch, setPartsSearch] = useState("");
   const [changesEnabled, setChangesEnabled] = useState(false);
@@ -91,14 +93,20 @@ export function IssueDetailScreen({ issueNumber }: IssueDetailScreenProps) {
   const deferredPartsSearch = useDeferredValue(partsSearch.trim());
   const deferredChangesSearch = useDeferredValue(changesSearch.trim());
 
-  const assigneeLookup = useMemberLookupQuery({ limit: 20 }, membersEnabled);
-  const labelLookup = useLabelLookupQuery({ limit: 20 }, labelsEnabled);
+  const assigneeLookup = useMemberLookupQuery(
+    { search: membersSearch.trim() || undefined },
+    membersEnabled,
+  );
+  const labelLookup = useLabelLookupQuery(
+    { search: labelsSearch.trim() || undefined },
+    labelsEnabled,
+  );
   const partLookup = usePartLookupQuery(
-    { search: deferredPartsSearch || undefined, limit: 20 },
+    { search: deferredPartsSearch || undefined },
     partsEnabled,
   );
   const changeLookup = useChangeLookupQuery(
-    { search: deferredChangesSearch || undefined, limit: 20 },
+    { search: deferredChangesSearch || undefined },
     changesEnabled,
   );
 
@@ -239,6 +247,7 @@ export function IssueDetailScreen({ issueNumber }: IssueDetailScreenProps) {
       isClosingIssue={closeIssueAction.isPending}
       isCreatingComment={createCommentAction.isPending}
       isError={issueQuery.isError || timelineQuery.isError}
+      isLabelsSearching={labelLookup.isFetching}
       isLoading={issueQuery.isLoading}
       isMetaUpdating={
         syncAssigneesAction.isPending ||
@@ -246,6 +255,7 @@ export function IssueDetailScreen({ issueNumber }: IssueDetailScreenProps) {
         syncPartsAction.isPending ||
         syncChangesAction.isPending
       }
+      isMembersSearching={assigneeLookup.isFetching}
       isNotFound={!issueQuery.isLoading && !issueQuery.isError && !issue}
       isPartsSearching={partLookup.isFetching}
       isReopeningIssue={reopenIssueAction.isPending}
@@ -284,8 +294,10 @@ export function IssueDetailScreen({ issueNumber }: IssueDetailScreenProps) {
       }}
       onDeleteComment={(commentId) => deleteCommentAction.mutateAsync(commentId)}
       onDeleteFile={(fileId) => deleteIssueFileAction.mutateAsync(fileId)}
+      onLabelSearchChange={setLabelsSearch}
       onNavigateToChange={(changeNumber) => navigate(`/changes/requests/${changeNumber}`)}
       onNavigateToIssueMention={navigateToIssueMention}
+      onMemberSearchChange={setMembersSearch}
       onNavigateToPart={(partId) => navigate(`/parts/${partId}`)}
       onPartsSearchChange={setPartsSearch}
       onReopenIssue={() => {

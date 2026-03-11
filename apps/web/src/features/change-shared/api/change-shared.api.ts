@@ -18,8 +18,17 @@ import type {
   LookupPartModel,
 } from "@/features/change-shared/types/change-shared-model";
 
+const DEFAULT_LOOKUP_LIMIT = 5;
+
+function withDefaultLookupLimit<T extends { limit?: number }>(query: T): T {
+  return {
+    ...query,
+    limit: query.limit ?? DEFAULT_LOOKUP_LIMIT,
+  };
+}
+
 export async function lookupMembers(query: MemberLookupQueryDto): Promise<LookupMemberModel[]> {
-  const response = await lookupMembersApiV1MembersLookupGet(query);
+  const response = await lookupMembersApiV1MembersLookupGet(withDefaultLookupLimit(query));
 
   return response.items.map((user) => ({
     userId: user.user_id,
@@ -30,7 +39,7 @@ export async function lookupMembers(query: MemberLookupQueryDto): Promise<Lookup
 }
 
 export async function lookupLabels(query: LabelLookupQueryDto): Promise<LookupLabelModel[]> {
-  const response = await lookupLabelsApiV1LabelsLookupGet(query);
+  const response = await lookupLabelsApiV1LabelsLookupGet(withDefaultLookupLimit(query));
 
   return response.items.map((label) => ({
     id: label.id,
@@ -40,7 +49,7 @@ export async function lookupLabels(query: LabelLookupQueryDto): Promise<LookupLa
 }
 
 export async function lookupParts(query: PartLookupQueryDto): Promise<LookupPartModel[]> {
-  const response = await lookupPartsApiV1PartsLookupGet(query);
+  const response = await lookupPartsApiV1PartsLookupGet(withDefaultLookupLimit(query));
 
   return response.items.map((part) => ({
     id: part.id,
@@ -50,7 +59,7 @@ export async function lookupParts(query: PartLookupQueryDto): Promise<LookupPart
 }
 
 export async function lookupIssues(query: IssueLookupQueryDto): Promise<LookupIssueModel[]> {
-  const response = await lookupIssuesApiV1IssuesLookupGet(query);
+  const response = await lookupIssuesApiV1IssuesLookupGet(withDefaultLookupLimit(query));
 
   return response.items.map((issue) => ({
     id: issue.id,
@@ -62,7 +71,7 @@ export async function lookupIssues(query: IssueLookupQueryDto): Promise<LookupIs
 }
 
 export async function lookupChanges(query: ChangeLookupQueryDto): Promise<LookupChangeModel[]> {
-  const response = await lookupChangeRequestsApiV1ChangesLookupGet(query);
+  const response = await lookupChangeRequestsApiV1ChangesLookupGet(withDefaultLookupLimit(query));
 
   return response.items.map((change) => ({
     id: change.id,

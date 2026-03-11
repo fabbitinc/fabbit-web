@@ -1,8 +1,5 @@
 import { useRef, useState } from "react";
 import {
-  FileCheck,
-  FilePen,
-  FileX,
   Loader2,
   Plus,
   Settings,
@@ -21,6 +18,10 @@ import { FileIcon, type FileIconKind } from "./file-icon";
 import { LabelPickerSection } from "./label-picker-section";
 import { MemberPickerSection } from "./member-picker-section";
 import { PartPickerSection } from "./part-picker-section";
+import {
+  ChangeRequestStatusIcon,
+  getChangeRequestStatusConfig,
+} from "./work-item-status";
 
 export interface IssueSidebarUser {
   id?: string;
@@ -84,14 +85,18 @@ export interface IssueSidebarProps {
     availableMembers: { id: string; name: string; email: string }[];
     selectedIds: string[];
     onRequest: () => void;
+    onSearchChange?: (search: string) => void;
     onSync: (userIds: string[]) => void;
+    isSearching?: boolean;
     isUpdating?: boolean;
   };
   labelPicker?: {
     availableLabels: { id: string; name: string; colorHex: string }[];
     selectedIds: string[];
     onRequest: () => void;
+    onSearchChange?: (search: string) => void;
     onSync: (labelIds: string[]) => void;
+    isSearching?: boolean;
     isUpdating?: boolean;
   };
   linkedChangePicker?: {
@@ -153,38 +158,6 @@ async function downloadAttachment(file: IssueSidebarFile) {
     anchor.rel = "noopener noreferrer";
     anchor.click();
   }
-}
-
-function ChangeStateIcon({ state }: { state: string }) {
-  const normalized = state.toLowerCase();
-  const className = "h-3.5 w-3.5 shrink-0";
-
-  if (normalized === "merged") {
-    return <FileCheck className={`${className} text-purple-600 dark:text-purple-400`} />;
-  }
-
-  if (normalized === "closed") {
-    return <FileX className={`${className} text-red-500 dark:text-red-400`} />;
-  }
-
-  return (
-    <FilePen
-      className={`${className} ${
-        normalized === "draft"
-          ? "text-gray-500 dark:text-gray-400"
-          : "text-emerald-600 dark:text-emerald-400"
-      }`}
-    />
-  );
-}
-
-function getChangeStateLabel(state: string) {
-  const normalized = state.toLowerCase();
-
-  if (normalized === "draft") return "초안";
-  if (normalized === "submitted" || normalized === "open") return "제출";
-  if (normalized === "merged") return "반영";
-  return "닫힘";
 }
 
 function SectionSettingsButton({ onClick }: { onClick?: () => void }) {
@@ -297,12 +270,17 @@ function LinkedChangesSection({
                             );
                           }}
                         />
-                        <ChangeStateIcon state={change.state} />
+                        <ChangeRequestStatusIcon
+                          state={change.state}
+                          className="h-3.5 w-3.5 shrink-0"
+                        />
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-xs font-medium text-foreground">
                             #{change.number} {change.title}
                           </p>
-                          <p className="text-[11px] text-muted-foreground">{getChangeStateLabel(change.state)}</p>
+                          <p className="text-[11px] text-muted-foreground">
+                            {getChangeRequestStatusConfig(change.state).label}
+                          </p>
                         </div>
                       </label>
                     ))
@@ -336,7 +314,10 @@ function LinkedChangesSection({
               key={change.id}
               className="group flex w-full items-center gap-2 rounded-md px-2 py-1.5 transition-colors hover:bg-muted"
             >
-              <ChangeStateIcon state={change.state} />
+              <ChangeRequestStatusIcon
+                state={change.state}
+                className="h-3.5 w-3.5 shrink-0"
+              />
               <button
                 type="button"
                 className="min-w-0 flex-1 cursor-pointer text-left"
@@ -345,7 +326,9 @@ function LinkedChangesSection({
                 <p className="truncate text-xs font-medium text-foreground">
                   #{change.number} {change.title}
                 </p>
-                <p className="text-[11px] text-muted-foreground">{getChangeStateLabel(change.state)}</p>
+                <p className="text-[11px] text-muted-foreground">
+                  {getChangeRequestStatusConfig(change.state).label}
+                </p>
               </button>
               {picker ? (
                 <button
@@ -415,6 +398,8 @@ export function IssueSidebar({
           displayItems={assignees}
           onSync={assigneePicker.onSync}
           onRequestMembers={assigneePicker.onRequest}
+          onSearchChange={assigneePicker.onSearchChange}
+          isSearching={assigneePicker.isSearching}
           isUpdating={assigneePicker.isUpdating}
         />
       ) : (
@@ -440,6 +425,8 @@ export function IssueSidebar({
           displayLabels={labels}
           onSync={labelPicker.onSync}
           onRequestLabels={labelPicker.onRequest}
+          onSearchChange={labelPicker.onSearchChange}
+          isSearching={labelPicker.isSearching}
           isUpdating={labelPicker.isUpdating}
         />
       ) : (

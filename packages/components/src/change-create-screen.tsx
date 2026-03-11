@@ -55,18 +55,24 @@ export interface ChangeCreateScreenProps {
   editorPlaceholder: string;
   heading: string;
   includeReviewers?: boolean;
+  isAssigneeSearching?: boolean;
+  isLabelSearching?: boolean;
   isPartSearching?: boolean;
   isPending?: boolean;
+  isReviewerSearching?: boolean;
   labelOptions?: ChangeCreateScreenLabelOption[];
   linkedIssueNumber?: number | null;
   linkedIssueTitle?: string | null;
+  onAssigneeSearchChange?: (search: string) => void;
   onBack: () => void;
   onCancel?: () => void;
+  onLabelSearchChange?: (search: string) => void;
   onRequestAssignees?: () => void;
   onRequestLabels?: () => void;
   onRequestParts?: () => void;
   onRequestReviewers?: () => void;
   onPartSearchChange?: (search: string) => void;
+  onReviewerSearchChange?: (search: string) => void;
   onSubmit: (input: ChangeCreateScreenSubmitInput) => Promise<void>;
   partOptions?: ChangeCreateScreenPartOption[];
   reviewerOptions?: ChangeCreateScreenMemberOption[];
@@ -87,18 +93,24 @@ export function ChangeCreateScreen({
   editorPlaceholder,
   heading,
   includeReviewers = false,
+  isAssigneeSearching = false,
+  isLabelSearching = false,
   isPartSearching = false,
   isPending = false,
+  isReviewerSearching = false,
   labelOptions = [],
   linkedIssueNumber: initialLinkedIssueNumber,
   linkedIssueTitle,
+  onAssigneeSearchChange,
   onBack,
   onCancel,
+  onLabelSearchChange,
   onRequestAssignees,
   onRequestLabels,
   onRequestParts,
   onRequestReviewers,
   onPartSearchChange,
+  onReviewerSearchChange,
   onSubmit,
   partOptions = [],
   reviewerOptions = [],
@@ -249,6 +261,8 @@ export function ChangeCreateScreen({
                   }))}
                 onSync={setReviewerIds}
                 onRequestMembers={onRequestReviewers}
+                onSearchChange={onReviewerSearchChange}
+                isSearching={isReviewerSearching}
               />
             ) : null}
 
@@ -271,6 +285,8 @@ export function ChangeCreateScreen({
                 }))}
               onSync={setAssigneeIds}
               onRequestMembers={onRequestAssignees}
+              onSearchChange={onAssigneeSearchChange}
+              isSearching={isAssigneeSearching}
             />
 
             <LabelPickerSection
@@ -281,6 +297,8 @@ export function ChangeCreateScreen({
                 .filter((label): label is ChangeCreateScreenLabelOption => Boolean(label))}
               onSync={setLabelIds}
               onRequestLabels={onRequestLabels}
+              onSearchChange={onLabelSearchChange}
+              isSearching={isLabelSearching}
             />
 
             <PartPickerSection

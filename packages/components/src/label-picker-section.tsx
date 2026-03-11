@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Settings } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Loader2, Settings } from "lucide-react";
 import { Button, Input, Checkbox, LabelBadge, Popover, PopoverContent, PopoverTrigger } from "@fabbit/ui";
 
 export interface LabelPickerSectionProps {
@@ -10,6 +10,8 @@ export interface LabelPickerSectionProps {
   /** 없으면 + 버튼 숨김 (읽기 전용 표시) */
   onSync?: (labelIds: string[]) => void;
   onRequestLabels?: () => void;
+  onSearchChange?: (search: string) => void;
+  isSearching?: boolean;
   isUpdating?: boolean;
 }
 
@@ -19,11 +21,35 @@ export function LabelPickerSection({
   displayLabels,
   onSync,
   onRequestLabels,
+  onSearchChange,
+  isSearching,
   isUpdating,
 }: LabelPickerSectionProps) {
   const [popoverOpen, setPopoverOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [draftIds, setDraftIds] = useState<string[]>([]);
+  const debounceRef = useRef<ReturnType<typeof setTimeout>>(null);
+
+  useEffect(() => () => {
+    if (debounceRef.current) {
+      clearTimeout(debounceRef.current);
+    }
+  }, []);
+
+  const handleQueryChange = useCallback(
+    (value: string) => {
+      setQuery(value);
+
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+
+      debounceRef.current = setTimeout(() => {
+        onSearchChange?.(value);
+      }, 300);
+    },
+    [onSearchChange],
+  );
 
   const filtered = availableLabels.filter((label) => {
     if (!query.trim()) return true;
@@ -39,11 +65,17 @@ export function LabelPickerSection({
             open={popoverOpen}
             onOpenChange={(open) => {
               setPopoverOpen(open);
+              if (debounceRef.current) {
+                clearTimeout(debounceRef.current);
+              }
               if (open) {
                 onRequestLabels?.();
                 setDraftIds(selectedIds);
+                setQuery("");
+                onSearchChange?.("");
               } else {
                 setQuery("");
+                onSearchChange?.("");
               }
             }}
           >
@@ -58,11 +90,18 @@ export function LabelPickerSection({
             <PopoverContent className="w-72 p-3" align="end">
               <div className="space-y-2">
                 <p className="text-xs font-medium text-foreground">라벨 추가</p>
-                <Input
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder="라벨 검색"
-                />
+                <div className="relative">
+                  <Input
+                    value={query}
+                    onChange={(e) => handleQueryChange(e.target.value)}
+                    placeholder="라벨 검색"
+                  />
+                  {isSearching ? (
+                    <div className="absolute right-2 top-1/2 -translate-y-1/2">
+                      <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
+                    </div>
+                  ) : null}
+                </div>
                 <div className="max-h-48 space-y-1 overflow-auto">
                   {filtered.length === 0 ? (
                     <p className="px-1 py-2 text-xs text-muted-foreground">
@@ -94,6 +133,10 @@ export function LabelPickerSection({
                   className="w-full"
                   disabled={isUpdating}
                   onClick={() => {
+                    if (debounceRef.current) {
+                      clearTimeout(debounceRef.current);
+                    }
+                    onSearchChange?.("");
                     onSync(draftIds);
                     setPopoverOpen(false);
                     setQuery("");

@@ -11,6 +11,7 @@
   --ai-text: #1e40af;
   --logo-from: #1e3a8a;
   --logo-to: #3b7bff;
+  --login-panel-bg: #1a1035;
   --theme-text-primary: #1e293b;
   --theme-text-secondary: #64748b;
   --theme-border: #cbd5e1;
@@ -110,6 +111,7 @@
   --ai-text: #0e7490;
   --logo-from: #0e7490;
   --logo-to: #b9a7ff;
+  --login-panel-bg: #1a1028;
   --theme-text-primary: #0b0d10;
   --theme-text-secondary: #273140;
   --theme-border: #d1d5db;
@@ -209,6 +211,7 @@
   --ai-text: #2d4334;
   --logo-from: #2d4334;
   --logo-to: #c9a46b;
+  --login-panel-bg: #18142a;
   --theme-text-primary: #101417;
   --theme-text-secondary: #4a5568;
   --theme-border: #cbd5e0;
@@ -308,6 +311,7 @@
   --ai-text: #001d5e;
   --logo-from: #001d5e;
   --logo-to: #002c8c;
+  --login-panel-bg: #221520;
   --theme-text-primary: #161616;
   --theme-text-secondary: #525252;
   --theme-border: #d1d9e0;
@@ -407,6 +411,7 @@
   --ai-text: #27272a;
   --logo-from: #27272a;
   --logo-to: #7828c8;
+  --login-panel-bg: #0e1825;
   --theme-text-primary: #1f2328;
   --theme-text-secondary: #636c76;
   --theme-border: #e0e0e0;
@@ -506,6 +511,7 @@
   --ai-text: #05694a;
   --logo-from: #05694a;
   --logo-to: #087f5b;
+  --login-panel-bg: #1a1430;
   --theme-text-primary: #212529;
   --theme-text-secondary: #495057;
   --theme-border: #dcdcde;
@@ -605,6 +611,7 @@
   --ai-text: #121416;
   --logo-from: #212529;
   --logo-to: #fd7e14;
+  --login-panel-bg: #0e1528;
   --theme-text-primary: #161616;
   --theme-text-secondary: #525252;
   --theme-border: #adb5bd;
@@ -704,6 +711,7 @@
   --ai-text: #4c2d9e;
   --logo-from: #4c2d9e;
   --logo-to: #22d3ee;
+  --login-panel-bg: #1e1510;
   --theme-text-primary: #25292e;
   --theme-text-secondary: #636c76;
   --theme-border: #dae0e7;
@@ -803,6 +811,7 @@
   --ai-text: #0d1117;
   --logo-from: #1f2328;
   --logo-to: #0969da;
+  --login-panel-bg: #1e1520;
   --theme-text-primary: #1f2328;
   --theme-text-secondary: #636c76;
   --theme-border: #c8d1da;
@@ -902,6 +911,7 @@
   --ai-text: #262626;
   --logo-from: #3b3b3b;
   --logo-to: #fcc419;
+  --login-panel-bg: #141228;
   --theme-text-primary: #18171d;
   --theme-text-secondary: #57565c;
   --theme-border: #bfbfc3;
@@ -1001,6 +1011,7 @@
   --ai-text: #1e40af;
   --logo-from: #1e3a8a;
   --logo-to: #7c3aed;
+  --login-panel-bg: #0f1a1e;
   --theme-text-primary: #0f172a;
   --theme-text-secondary: #475569;
   --theme-border: #dbe5f3;

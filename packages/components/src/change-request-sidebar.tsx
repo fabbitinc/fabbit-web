@@ -1,6 +1,5 @@
 import { useMemo, useRef, useState } from "react";
 import {
-  AlertCircle,
   Loader2,
   Plus,
   Settings,
@@ -21,6 +20,7 @@ import { FileIcon } from "./file-icon";
 import { LabelPickerSection } from "./label-picker-section";
 import { MemberPickerSection } from "./member-picker-section";
 import { PartPickerSection } from "./part-picker-section";
+import { IssueStatusIcon, getIssueStatusConfig } from "./work-item-status";
 
 export interface ChangeRequestSidebarUser {
   userId: string;
@@ -88,6 +88,8 @@ export interface ChangeRequestSidebarProps {
     selectedIds: string[];
     onSync: (userIds: string[]) => void;
     onRequest: () => void;
+    onSearchChange?: (search: string) => void;
+    isSearching?: boolean;
     isUpdating?: boolean;
   };
   reviewerPicker?: {
@@ -95,6 +97,8 @@ export interface ChangeRequestSidebarProps {
     selectedIds: string[];
     onSync: (userIds: string[]) => void;
     onRequest: () => void;
+    onSearchChange?: (search: string) => void;
+    isSearching?: boolean;
     isUpdating?: boolean;
   };
   labelPicker?: {
@@ -102,6 +106,8 @@ export interface ChangeRequestSidebarProps {
     selectedIds: string[];
     onSync: (labelIds: string[]) => void;
     onRequest: () => void;
+    onSearchChange?: (search: string) => void;
+    isSearching?: boolean;
     isUpdating?: boolean;
   };
   partPicker?: {
@@ -144,10 +150,6 @@ function SectionSettingsButton({ onClick }: { onClick?: () => void }) {
       <Settings className="h-3 w-3" />
     </button>
   );
-}
-
-function getIssueStateLabel(state: string) {
-  return state.toUpperCase() === "OPEN" ? "열림" : "닫힘";
 }
 
 function formatFileSize(size: number) {
@@ -214,6 +216,8 @@ export function ChangeRequestSidebar({
             }))}
             onSync={reviewerPicker.onSync}
             onRequestMembers={reviewerPicker.onRequest}
+            onSearchChange={reviewerPicker.onSearchChange}
+            isSearching={reviewerPicker.isSearching}
             isUpdating={reviewerPicker.isUpdating}
           />
         ) : (
@@ -256,6 +260,8 @@ export function ChangeRequestSidebar({
             }))}
             onSync={assigneePicker.onSync}
             onRequestMembers={assigneePicker.onRequest}
+            onSearchChange={assigneePicker.onSearchChange}
+            isSearching={assigneePicker.isSearching}
             isUpdating={assigneePicker.isUpdating}
           />
         ) : (
@@ -296,6 +302,8 @@ export function ChangeRequestSidebar({
             }))}
             onSync={labelPicker.onSync}
             onRequestLabels={labelPicker.onRequest}
+            onSearchChange={labelPicker.onSearchChange}
+            isSearching={labelPicker.isSearching}
             isUpdating={labelPicker.isUpdating}
           />
         ) : (
@@ -382,16 +390,17 @@ export function ChangeRequestSidebar({
                               );
                             }}
                           />
-                          {issue.state.toUpperCase() === "OPEN" ? (
-                            <AlertCircle className="h-3.5 w-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
-                          ) : (
-                            <X className="h-3.5 w-3.5 shrink-0 text-red-500 dark:text-red-400" />
-                          )}
+                          <IssueStatusIcon
+                            state={issue.state}
+                            className="h-3.5 w-3.5 shrink-0"
+                          />
                           <div className="min-w-0 flex-1">
                             <p className="truncate text-xs font-medium text-foreground">
                               #{issue.number} {issue.title}
                             </p>
-                            <p className="text-[11px] text-muted-foreground">{getIssueStateLabel(issue.state)}</p>
+                            <p className="text-[11px] text-muted-foreground">
+                              {getIssueStatusConfig(issue.state).label}
+                            </p>
                           </div>
                         </label>
                       ))
@@ -424,11 +433,10 @@ export function ChangeRequestSidebar({
                 key={issue.id}
                 className="group flex w-full items-center gap-2 rounded-md px-2 py-1.5 transition-colors hover:bg-muted"
               >
-                {issue.state.toUpperCase() === "OPEN" ? (
-                  <AlertCircle className="h-3.5 w-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
-                ) : (
-                  <X className="h-3.5 w-3.5 shrink-0 text-red-500 dark:text-red-400" />
-                )}
+                <IssueStatusIcon
+                  state={issue.state}
+                  className="h-3.5 w-3.5 shrink-0"
+                />
                 <button
                   type="button"
                   className="min-w-0 flex-1 cursor-pointer text-left"
@@ -437,7 +445,9 @@ export function ChangeRequestSidebar({
                   <p className="truncate text-xs font-medium text-foreground">
                     #{issue.number} {issue.title}
                   </p>
-                  <p className="text-[11px] text-muted-foreground">{getIssueStateLabel(issue.state)}</p>
+                  <p className="text-[11px] text-muted-foreground">
+                    {getIssueStatusConfig(issue.state).label}
+                  </p>
                 </button>
                 {linkedIssuePicker ? (
                   <button
