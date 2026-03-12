@@ -10,6 +10,7 @@ import type { PartListItemModel, PartsListQueryState, PartListSortKey } from "@/
 
 interface PartsListScreenProps {
   queryState: PartsListQueryState;
+  onFiltersApply: (queryState: PartsListQueryState) => void;
   onCategoryChange: (category: string | null) => void;
   onHasChildrenChange: (hasChildren: boolean | null) => void;
   onHasDrawingChange: (hasDrawing: boolean | null) => void;
@@ -54,6 +55,7 @@ function sortParts(
 
 export function PartsListScreen({
   queryState,
+  onFiltersApply,
   onCategoryChange,
   onHasChildrenChange,
   onHasDrawingChange,
@@ -115,6 +117,7 @@ export function PartsListScreen({
           onOpenChange={setIsLinkDialogOpen}
         />
       )}
+      onFiltersApply={onFiltersApply}
       queryState={queryState}
       selectedIds={selectedIds}
       totalCount={totalCount}

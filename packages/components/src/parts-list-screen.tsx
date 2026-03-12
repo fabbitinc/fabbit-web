@@ -51,6 +51,7 @@ export interface PartsListScreenProps {
   isLoading: boolean;
   items: PartsListTableItem[];
   linkDialogContent?: ReactNode;
+  onFiltersApply?: (queryState: PartsListScreenQueryState) => void;
   queryState: PartsListScreenQueryState;
   selectedIds: Set<string>;
   totalCount: number;
@@ -81,6 +82,18 @@ interface FilterChip {
   onRemove: () => void;
 }
 
+interface DropdownEmptyStateProps {
+  message: string;
+}
+
+function DropdownEmptyState({ message }: DropdownEmptyStateProps) {
+  return (
+    <DropdownMenuItem disabled className="text-muted-foreground">
+      {message}
+    </DropdownMenuItem>
+  );
+}
+
 function isSameQueryState(left: PartsListScreenQueryState, right: PartsListScreenQueryState) {
   return (
     left.query === right.query &&
@@ -97,6 +110,7 @@ export function PartsListScreen({
   isLoading,
   items,
   linkDialogContent,
+  onFiltersApply,
   queryState,
   selectedIds,
   totalCount,
@@ -177,6 +191,11 @@ export function PartsListScreen({
 
   function applyFilters() {
     if (!hasPendingChanges) {
+      return;
+    }
+
+    if (onFiltersApply) {
+      onFiltersApply(draftState);
       return;
     }
 
@@ -307,21 +326,25 @@ export function PartsListScreen({
               <DropdownMenuContent align="start" className="w-44">
                 <DropdownMenuLabel>카테고리</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                {filterOptions.categories.map((category) => (
-                  <DropdownMenuCheckboxItem
-                    key={category}
-                    checked={draftState.category === category}
-                    onCheckedChange={() =>
-                      setDraftState((current) => ({
-                        ...current,
-                        category: current.category === category ? null : category,
-                      }))
-                    }
-                    onSelect={(event) => event.preventDefault()}
-                  >
-                    {category}
-                  </DropdownMenuCheckboxItem>
-                ))}
+                {filterOptions.categories.length > 0 ? (
+                  filterOptions.categories.map((category) => (
+                    <DropdownMenuCheckboxItem
+                      key={category}
+                      checked={draftState.category === category}
+                      onCheckedChange={() =>
+                        setDraftState((current) => ({
+                          ...current,
+                          category: current.category === category ? null : category,
+                        }))
+                      }
+                      onSelect={(event) => event.preventDefault()}
+                    >
+                      {category}
+                    </DropdownMenuCheckboxItem>
+                  ))
+                ) : (
+                  <DropdownEmptyState message="표시할 카테고리가 없습니다." />
+                )}
                 {draftState.category ? (
                   <>
                     <DropdownMenuSeparator />
@@ -348,21 +371,25 @@ export function PartsListScreen({
               <DropdownMenuContent align="start" className="w-44">
                 <DropdownMenuLabel>상태</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                {filterOptions.lifecycleStates.map((lifecycleState) => (
-                  <DropdownMenuCheckboxItem
-                    key={lifecycleState}
-                    checked={draftState.lifecycleState === lifecycleState}
-                    onCheckedChange={() =>
-                      setDraftState((current) => ({
-                        ...current,
-                        lifecycleState: current.lifecycleState === lifecycleState ? null : lifecycleState,
-                      }))
-                    }
-                    onSelect={(event) => event.preventDefault()}
-                  >
-                    {lifecycleState}
-                  </DropdownMenuCheckboxItem>
-                ))}
+                {filterOptions.lifecycleStates.length > 0 ? (
+                  filterOptions.lifecycleStates.map((lifecycleState) => (
+                    <DropdownMenuCheckboxItem
+                      key={lifecycleState}
+                      checked={draftState.lifecycleState === lifecycleState}
+                      onCheckedChange={() =>
+                        setDraftState((current) => ({
+                          ...current,
+                          lifecycleState: current.lifecycleState === lifecycleState ? null : lifecycleState,
+                        }))
+                      }
+                      onSelect={(event) => event.preventDefault()}
+                    >
+                      {lifecycleState}
+                    </DropdownMenuCheckboxItem>
+                  ))
+                ) : (
+                  <DropdownEmptyState message="표시할 상태 옵션이 없습니다." />
+                )}
                 {draftState.lifecycleState ? (
                   <>
                     <DropdownMenuSeparator />

@@ -14512,6 +14512,15 @@
                     "number": {
                         "type": "boolean"
                     },
+                    "pojo": {
+                        "type": "boolean"
+                    },
+                    "int": {
+                        "type": "boolean"
+                    },
+                    "long": {
+                        "type": "boolean"
+                    },
                     "container": {
                         "type": "boolean"
                     },
@@ -14567,15 +14576,6 @@
                         "type": "boolean"
                     },
                     "floating_point_number": {
-                        "type": "boolean"
-                    },
-                    "pojo": {
-                        "type": "boolean"
-                    },
-                    "int": {
-                        "type": "boolean"
-                    },
-                    "long": {
                         "type": "boolean"
                     },
                     "array": {
