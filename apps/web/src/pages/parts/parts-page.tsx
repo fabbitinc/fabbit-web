@@ -39,6 +39,15 @@ function parseTriState(value: string | null) {
   return null;
 }
 
+function setOptionalSearchParam(searchParams: URLSearchParams, key: string, value: string | null) {
+  if (!value) {
+    searchParams.delete(key);
+    return;
+  }
+
+  searchParams.set(key, value);
+}
+
 export function PartsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -65,6 +74,28 @@ export function PartsPage() {
   return (
     <PartsListScreen
       queryState={queryState}
+      onFiltersApply={(nextQueryState) => {
+        setSearchParams((previous) => {
+          const next = new URLSearchParams(previous);
+          const normalizedQuery = nextQueryState.query.trim();
+
+          setOptionalSearchParam(next, "q", normalizedQuery || null);
+          setOptionalSearchParam(next, "category", nextQueryState.category);
+          setOptionalSearchParam(next, "lifecycle", nextQueryState.lifecycleState);
+          setOptionalSearchParam(
+            next,
+            "drawing",
+            nextQueryState.hasDrawing == null ? null : nextQueryState.hasDrawing ? "with" : "without",
+          );
+          setOptionalSearchParam(
+            next,
+            "children",
+            nextQueryState.hasChildren == null ? null : nextQueryState.hasChildren ? "with" : "without",
+          );
+          next.delete("page");
+          return next;
+        });
+      }}
       onCategoryChange={(category) => {
         setSearchParams((previous) => {
           const next = new URLSearchParams(previous);
