@@ -12,6 +12,7 @@ export type RelatedDrawingResponseConversionStatus = typeof RelatedDrawingRespon
 
 
 export const RelatedDrawingResponseConversionStatus = {
+  ACTION_REQUIRED: 'ACTION_REQUIRED',
   PENDING: 'PENDING',
   COMPLETED: 'COMPLETED',
   FAILED: 'FAILED',

@@ -1,9 +1,0 @@
-import{A as t}from"./production-result-detail-screen-kTjdDYfl.js";import"./index-B4avf9CM.js";import"./iframe-DjFiVPSj.js";import"./user-avatar-CJtlkw0_.js";import"./circle-alert-7HBXfu_Z.js";import"./chevrons-up-down-cjEB4Cse.js";import"./settings-BbypiVPi.js";import"./sparkles-BrCodocr.js";import"./tag-BpztlO3h.js";import"./index-CqusOY6v.js";import"./preload-helper-PPVm8Dsz.js";const r=[{date:"2026-03-01",bomAnalysis:42,drawingAnalysis:18,aiChat:27},{date:"2026-03-02",bomAnalysis:55,drawingAnalysis:22,aiChat:31},{date:"2026-03-03",bomAnalysis:49,drawingAnalysis:24,aiChat:28},{date:"2026-03-04",bomAnalysis:63,drawingAnalysis:35,aiChat:30},{date:"2026-03-05",bomAnalysis:70,drawingAnalysis:40,aiChat:34},{date:"2026-03-06",bomAnalysis:78,drawingAnalysis:44,aiChat:37},{date:"2026-03-07",bomAnalysis:82,drawingAnalysis:48,aiChat:41}],e={currentPeriodEnd:"2026-03-31T00:00:00Z",planCreditsUsed:8400,planCreditsLimit:12e3,planCreditsRemaining:3600,bonusCreditsUsed:1200,bonusCreditsRemaining:2800,categories:[{category:"BOM_ANALYSIS",creditsUsed:5100,usageCount:182},{category:"DRAWING_ANALYSIS",creditsUsed:2300,usageCount:74},{category:"AI_CHAT",creditsUsed:1e3,usageCount:410}]},C={title:"Components/AIUsagePanel",component:t,tags:["autodocs"],parameters:{layout:"padded"},args:{trend:r,usage:e}},a={},s={args:{usage:{...e,planCreditsUsed:11e3,planCreditsRemaining:1e3}}};a.parameters={...a.parameters,docs:{...a.parameters?.docs,source:{originalSource:"{}",...a.parameters?.docs?.source}}};s.parameters={...s.parameters,docs:{...s.parameters?.docs,source:{originalSource:`{
-  args: {
-    usage: {
-      ...usage,
-      planCreditsUsed: 11000,
-      planCreditsRemaining: 1000
-    }
-  }
-}`,...s.parameters?.docs?.source}}};const y=["Default","Warning"];export{a as Default,s as Warning,y as __namedExportsOrder,C as default};

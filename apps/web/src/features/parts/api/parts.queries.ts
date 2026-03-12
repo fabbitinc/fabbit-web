@@ -21,6 +21,7 @@ import {
   fetchTeamLookup,
   linkPartsToProject,
   registerPartDrawing,
+  registerPartDrawingRenderSource,
   updatePartOwner,
 } from "@/features/parts/api/parts.api";
 import type {
@@ -32,6 +33,7 @@ import type {
   ListProjectsQueryDto,
   PartBomTreeQueryDto,
   RegisterPartDrawingRequestDto,
+  RegisterPartDrawingRenderSourceRequestDto,
   UpdatePartOwnerRequestDto,
 } from "@/features/parts/api/parts.types";
 
@@ -161,6 +163,12 @@ export const partsMutations = {
     mutationOptions({
       mutationKey: ["parts", partId, "register-drawing"],
       mutationFn: (request: RegisterPartDrawingRequestDto) => registerPartDrawing(partId, request),
+    }),
+  registerDrawingRenderSource: (drawingId: string) =>
+    mutationOptions({
+      mutationKey: ["parts", "drawings", drawingId, "register-render-source"],
+      mutationFn: (request: RegisterPartDrawingRenderSourceRequestDto) =>
+        registerPartDrawingRenderSource(drawingId, request),
     }),
   deleteDrawing: (partId: string) =>
     mutationOptions({

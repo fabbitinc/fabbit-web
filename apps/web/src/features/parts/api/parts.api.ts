@@ -1,4 +1,7 @@
-import { apiClient } from "@/api/client";
+import {
+  getProcessing as getDrawingProcessingApiV1DrawingsDrawingIdProcessingGet,
+  registerRenderSource as registerDrawingRenderSourceApiV1DrawingsDrawingIdRenderSourcePost,
+} from "@/api/generated/orval/drawings/drawings";
 import { listMembers as listOrgMembersApiV1MembersGet } from "@/api/generated/orval/members/members";
 import {
   getPartOwner as getPartOwnerApiV1PartsPartIdOwnerGet,
@@ -48,9 +51,12 @@ import type {
   ProjectListResponseDto,
   RegisterPartDrawingRequestDto,
   RegisterPartDrawingResponseDto,
+  RegisterPartDrawingRenderSourceRequestDto,
+  RegisterPartDrawingRenderSourceResponseDto,
   UpdatePartOwnerRequestDto,
 } from "@/features/parts/api/parts.types";
 import type {
+  PartDrawingActionRequiredReason,
   PartBomItemModel,
   PartBomModel,
   PartBomTreeModel,
@@ -98,6 +104,10 @@ interface PartDrawingResponseCompat {
 }
 
 type DrawingProcessingResponseCompat = Partial<DrawingProcessingResponseDto> & {
+  actionRequiredReason?: PartDrawingActionRequiredReason | null;
+  action_required_reason?: PartDrawingActionRequiredReason | null;
+  allowedRenderSourceExtensions?: string[] | null;
+  allowed_render_source_extensions?: string[] | null;
   failureCode?: PartDrawingFailureCode | null;
   failure_code?: PartDrawingFailureCode | null;
   failureMessage?: string | null;
@@ -220,9 +230,23 @@ export async function registerPartDrawing(partId: string, request: RegisterPartD
   return toPartDrawingModel(response as RegisterPartDrawingResponseDto);
 }
 
+export async function registerPartDrawingRenderSource(
+  drawingId: string,
+  request: RegisterPartDrawingRenderSourceRequestDto,
+): Promise<PartDrawingModel["conversionStatus"]> {
+  const response = await registerDrawingRenderSourceApiV1DrawingsDrawingIdRenderSourcePost(
+    drawingId,
+    request,
+  );
+  const result = response as RegisterPartDrawingRenderSourceResponseDto;
+
+  return result.conversion_status ?? null;
+}
+
 export async function fetchDrawingProcessing(drawingId: string): Promise<PartDrawingProcessingModel> {
-  const response = await apiClient.get<DrawingProcessingResponseCompat>(`/api/v1/drawings/${drawingId}/processing`);
-  const processing = response.data;
+  const response =
+    await getDrawingProcessingApiV1DrawingsDrawingIdProcessingGet(drawingId);
+  const processing = response as DrawingProcessingResponseCompat;
   const rawFailureReason = pickDefined(processing.failure_reason);
   const failureCode = resolvePartDrawingFailureCode({
     failureCode: pickDefined(processing.failureCode, processing.failure_code),
@@ -240,6 +264,16 @@ export async function fetchDrawingProcessing(drawingId: string): Promise<PartDra
     pdfReady: pickDefined(processing.pdfReady, processing.pdf_ready) ?? false,
     webpReady: pickDefined(processing.webpReady, processing.webp_ready) ?? false,
     glbReady: pickDefined(processing.glbReady, processing.glb_ready) ?? false,
+    actionRequiredReason:
+      pickDefined(
+        processing.actionRequiredReason,
+        processing.action_required_reason,
+      ) ?? null,
+    allowedRenderSourceExtensions:
+      pickDefined(
+        processing.allowedRenderSourceExtensions,
+        processing.allowed_render_source_extensions,
+      ) ?? [],
   };
 }
 
@@ -391,6 +425,7 @@ function toPartDrawingModel(
       ) ?? null,
     failureCode: null,
     failureMessage: null,
+    webViewRequirement: null,
   };
 }
 

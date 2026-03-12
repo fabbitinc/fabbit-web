@@ -1,0 +1,18 @@
+import{j as n}from"./index-DRJbD1WP.js";import{r as i,s}from"./gltf-viewer-screen-BDJMhtPo.js";import"./iframe-1IsFew62.js";import"./preload-helper-PPVm8Dsz.js";import"./index-DlmQN4rJ.js";import"./user-avatar-DUF4fm1-.js";import"./circle-alert-7zZvF5ip.js";import"./chevrons-up-down-Lo45OW50.js";import"./sparkles-DR0EIcjG.js";import"./settings-C_MU7ihM.js";import"./tag-BOBLkXxb.js";import"./info-Em3TPLDt.js";const p=[{kind:"pdf",label:"PDF",name:".pdf",contentType:"application/pdf"},{kind:"document",label:"문서",name:".docx",contentType:"application/vnd.openxmlformats-officedocument.wordprocessingml.document"},{kind:"step",label:"STEP",name:".step",contentType:"model/step"},{kind:"dwg",label:"DWG",name:".dwg",contentType:"application/acad"},{kind:"xlsx",label:"스프레드시트",name:".xlsx",contentType:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"},{kind:"image",label:"이미지",name:".png",contentType:"image/png"},{kind:"audio",label:"오디오",name:".m4a",contentType:"audio/mp4"},{kind:"video",label:"비디오",name:".mp4",contentType:"video/mp4"},{kind:"archive",label:"압축",name:".zip",contentType:"application/zip"},{kind:"code",label:"구조화 데이터",name:".json",contentType:"application/json"},{kind:"other",label:"기타",name:".bin",contentType:"application/octet-stream"}],o=Object.fromEntries(s.map(e=>[e.kind,e.extensions])),N={title:"Components/FileIcon",component:i,tags:["autodocs"],parameters:{layout:"padded"},args:{kind:"pdf",name:".pdf",contentType:"application/pdf"}},t={},a={render:()=>n.jsx("div",{className:"grid gap-3 sm:grid-cols-2 lg:grid-cols-3",children:p.map(e=>n.jsxs("div",{className:"flex items-center gap-3 rounded-lg border border-border/70 bg-card px-4 py-3",children:[n.jsx("div",{className:"rounded-full bg-muted/70 p-2",children:n.jsx(i,{kind:e.kind,name:e.name,contentType:e.contentType})}),n.jsxs("div",{className:"min-w-0 flex-1",children:[n.jsx("p",{className:"text-sm font-medium text-foreground",children:e.label}),n.jsx("p",{className:"truncate text-xs text-muted-foreground",children:e.name}),o[e.kind]?.length?n.jsx("div",{className:"mt-2 flex flex-wrap gap-1",children:o[e.kind]?.map(d=>n.jsx("span",{className:"rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground",children:d},`${e.kind}-${d}`))}):null]})]},e.kind))})};t.parameters={...t.parameters,docs:{...t.parameters?.docs,source:{originalSource:"{}",...t.parameters?.docs?.source}}};a.parameters={...a.parameters,docs:{...a.parameters?.docs,source:{originalSource:`{
+  render: () => <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+      {fileKinds.map(item => <div key={item.kind} className="flex items-center gap-3 rounded-lg border border-border/70 bg-card px-4 py-3">
+          <div className="rounded-full bg-muted/70 p-2">
+            <FileIcon kind={item.kind} name={item.name} contentType={item.contentType} />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-medium text-foreground">{item.label}</p>
+            <p className="truncate text-xs text-muted-foreground">{item.name}</p>
+            {extensionsByKind[item.kind]?.length ? <div className="mt-2 flex flex-wrap gap-1">
+                {extensionsByKind[item.kind]?.map(extension => <span key={\`\${item.kind}-\${extension}\`} className="rounded bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">
+                    {extension}
+                  </span>)}
+              </div> : null}
+          </div>
+        </div>)}
+    </div>
+}`,...a.parameters?.docs?.source}}};const T=["Default","Showcase"];export{t as Default,a as Showcase,T as __namedExportsOrder,N as default};

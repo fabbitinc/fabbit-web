@@ -4,6 +4,7 @@
  * OpenAPI definition
  * OpenAPI spec version: v0
  */
+import type { DrawingProcessingResponseActionRequiredReason } from './drawingProcessingResponseActionRequiredReason';
 import type { DrawingProcessingResponseFailureCode } from './drawingProcessingResponseFailureCode';
 import type { DrawingProcessingResponseStatus } from './drawingProcessingResponseStatus';
 
@@ -23,4 +24,8 @@ export interface DrawingProcessingResponse {
   webp_ready?: boolean;
   /** GLB 산출물 준비 여부 */
   glb_ready?: boolean;
+  /** 추가 사용자 조치 사유 */
+  action_required_reason?: DrawingProcessingResponseActionRequiredReason;
+  /** 추가 업로드 가능한 render source 확장자 목록 */
+  allowed_render_source_extensions?: string[];
 }

@@ -5,15 +5,33 @@
  * OpenAPI spec version: v0
  */
 import type {
-  DrawingProcessingResponse
+  DrawingProcessingResponse,
+  RegisterDrawingRenderSourceRequest,
+  RegisterDrawingRenderSourceResponse
 } from '../model';
 
 import { customInstance } from '../../../orval/custom-instance.js';
+import type { BodyType } from '../../../orval/custom-instance.js';
 
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 
+  /**
+ * 도면 변환용 render source 파일을 등록하고 비동기 변환을 요청합니다
+ * @summary POST /api/v1/drawings/{drawingId}/render-source
+ */
+export const registerRenderSource = (
+    drawingId: string,
+    registerDrawingRenderSourceRequest: BodyType<RegisterDrawingRenderSourceRequest>,
+ options?: SecondParameter<typeof customInstance<RegisterDrawingRenderSourceResponse>>,) => {
+      return customInstance<RegisterDrawingRenderSourceResponse>(
+      {url: `/api/v1/drawings/${drawingId}/render-source`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: registerDrawingRenderSourceRequest
+    },
+      options);
+    }
   /**
  * 도면 비동기 처리 상태와 산출물 준비 여부를 조회합니다
  * @summary GET /api/v1/drawings/{drawingId}/processing
@@ -26,4 +44,5 @@ export const getProcessing = (
     },
       options);
     }
-  export type GetProcessingResult = NonNullable<Awaited<ReturnType<typeof getProcessing>>>
+  export type RegisterRenderSourceResult = NonNullable<Awaited<ReturnType<typeof registerRenderSource>>>
+export type GetProcessingResult = NonNullable<Awaited<ReturnType<typeof getProcessing>>>

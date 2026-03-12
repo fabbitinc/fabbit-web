@@ -13,7 +13,7 @@ const samplePart = {
     viewerType: "PDF",
     viewerUrl: "https://example.com/drawing.pdf",
     previewUrl: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=1200&q=80",
-    originalFileUrl: "https://example.com/drawing.dwg",
+    originalFileUrl: "https://example.com/drawing.dxf",
   },
 } satisfies PartDrawingPreviewProps["part"];
 
@@ -78,6 +78,29 @@ export const Processing: Story = {
   },
 };
 
+export const RequiresWebViewFile: Story = {
+  args: {
+    part: {
+      partNumber: "HSG-FRM-8801",
+      drawing: {
+        drawingNumber: "DWG-8801",
+        name: "하우징 프레임",
+        version: "D",
+        status: "원본 등록",
+        conversionStatus: "MANUAL_REQUIRED",
+        viewerType: null,
+        viewerUrl: null,
+        previewUrl: null,
+        originalFileUrl: "https://example.com/housing-frame.dwg",
+        webViewRequirement: {
+          title: "웹에서 보기 위한 파일이 필요합니다.",
+          description: "원본 파일은 저장되었습니다. 웹에서 확인하려면 추가 파일을 올려 주세요.",
+        },
+      },
+    },
+  },
+};
+
 export const Failed: Story = {
   args: {
     part: {
@@ -119,6 +142,30 @@ export const Showcase: Story = {
               ...samplePart.drawing,
               conversionStatus: "PROCESSING",
               previewUrl: null,
+            },
+          }}
+        />
+      </ShowcaseCard>
+
+      <ShowcaseCard title="웹 확인용 파일 필요">
+        <PartDrawingPreview
+          {...args}
+          part={{
+            partNumber: "DRV-ASSY-3100",
+            drawing: {
+              drawingNumber: "ASSY-3100",
+              name: "드라이브 유닛 어셈블리",
+              version: "A",
+              status: "원본 등록",
+              conversionStatus: "MANUAL_REQUIRED",
+              viewerType: null,
+              viewerUrl: null,
+              previewUrl: null,
+              originalFileUrl: "https://example.com/drive-unit.sldasm",
+              webViewRequirement: {
+                title: "웹에서 보기 위한 파일이 필요합니다.",
+                description: "원본 파일은 저장되었습니다. 웹에서 확인하려면 추가 파일을 올려 주세요.",
+              },
             },
           }}
         />

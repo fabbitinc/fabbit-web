@@ -12,6 +12,7 @@ export type DrawingProcessingResponseStatus = typeof DrawingProcessingResponseSt
 
 
 export const DrawingProcessingResponseStatus = {
+  ACTION_REQUIRED: 'ACTION_REQUIRED',
   PENDING: 'PENDING',
   PROCESSING: 'PROCESSING',
   COMPLETED: 'COMPLETED',

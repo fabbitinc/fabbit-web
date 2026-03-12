@@ -130,6 +130,7 @@ export type {
   PartDrawingPreviewDrawing,
   PartDrawingPreviewPart,
   PartDrawingPreviewProps,
+  PartDrawingPreviewWebViewRequirement,
 } from "./part-drawing-preview";
 export { PartAttachmentsTab } from "./part-attachments-tab";
 export type { PartAttachmentItem, PartAttachmentsTabProps } from "./part-attachments-tab";

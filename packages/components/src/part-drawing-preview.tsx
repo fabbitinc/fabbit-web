@@ -12,13 +12,18 @@ import {
   Upload,
 } from "lucide-react";
 import {
-  Badge,
+  Button,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
   cn,
 } from "@fabbit/ui";
+
+export interface PartDrawingPreviewWebViewRequirement {
+  title: string;
+  description?: string | null;
+}
 
 export interface PartDrawingPreviewDrawing {
   drawingNumber: string | null;
@@ -31,6 +36,7 @@ export interface PartDrawingPreviewDrawing {
   previewUrl: string | null;
   originalFileUrl: string | null;
   failureMessage?: string | null;
+  webViewRequirement?: PartDrawingPreviewWebViewRequirement | null;
 }
 
 export interface PartDrawingPreviewPart {
@@ -48,19 +54,35 @@ export interface PartDrawingPreviewProps {
 }
 
 const DRAWING_EXTENSION_GROUPS = [
-  { label: "2D CAD", extensions: [".dwg", ".dxf"] },
-  { label: "PDF", extensions: [".pdf"] },
   {
-    label: "이미지",
-    extensions: [".png", ".jpg", ".jpeg", ".bmp", ".tif", ".tiff", ".webp"],
+    label: "2D",
+    uploadableExtensions: [".dwg", ".dxf", ".pdf"],
+    additionalWorkExtensions: [".dwg"],
   },
   {
-    label: "3D CAD",
-    extensions: [
+    label: "이미지",
+    uploadableExtensions: [
+      ".png",
+      ".jpg",
+      ".jpeg",
+      ".bmp",
+      ".tif",
+      ".tiff",
+      ".webp",
+    ],
+    additionalWorkExtensions: [],
+  },
+  {
+    label: "3D",
+    uploadableExtensions: [
+      ".sldprt",
+      ".sldasm",
       ".step",
       ".stp",
       ".iges",
       ".igs",
+      ".brep",
+      ".brp",
       ".stl",
       ".obj",
       ".3mf",
@@ -68,11 +90,28 @@ const DRAWING_EXTENSION_GROUPS = [
       ".glb",
       ".gltf",
     ],
+    additionalWorkExtensions: [".sldprt", ".sldasm"],
   },
 ] as const;
 
-const DRAWING_ACCEPT: string[] = DRAWING_EXTENSION_GROUPS.flatMap(
-  (group) => group.extensions,
+const DRAWING_ACCEPT = Array.from(
+  new Set(
+    DRAWING_EXTENSION_GROUPS.flatMap((group) => group.uploadableExtensions),
+  ),
+);
+
+const DRAWING_ADDITIONAL_WORK_EXTENSION_SET = new Set(
+  DRAWING_EXTENSION_GROUPS.flatMap((group) => group.additionalWorkExtensions),
+);
+
+const TWO_D_DRAWING_EXTENSION_GROUP = DRAWING_EXTENSION_GROUPS.find(
+  (group) => group.label === "2D",
+);
+const IMAGE_DRAWING_EXTENSION_GROUP = DRAWING_EXTENSION_GROUPS.find(
+  (group) => group.label === "이미지",
+);
+const THREE_D_DRAWING_EXTENSION_GROUP = DRAWING_EXTENSION_GROUPS.find(
+  (group) => group.label === "3D",
 );
 
 function isAcceptedFile(file: File) {
@@ -80,10 +119,17 @@ function isAcceptedFile(file: File) {
   return DRAWING_ACCEPT.includes(ext);
 }
 
-function formatExtensions(extensions: readonly string[]) {
-  return extensions
-    .map((extension) => extension.slice(1).toUpperCase())
-    .join(", ");
+function getFileNameFromUrl(url: string | null | undefined, fallback: string) {
+  if (!url) {
+    return fallback;
+  }
+
+  try {
+    const pathname = new URL(url).pathname;
+    return decodeURIComponent(pathname.split("/").pop() || fallback);
+  } catch {
+    return fallback;
+  }
 }
 
 const DRAWING_PREVIEW_FRAME_CLASSNAME =
@@ -94,34 +140,54 @@ function DrawingPreviewSection({ children }: { children: ReactNode }) {
 }
 
 function DrawingFormatSummary({ compact = false }: { compact?: boolean }) {
-  return (
-    <div
-      className={cn(
-        "grid grid-cols-1 gap-2 sm:grid-cols-2",
-        !compact && "lg:gap-3",
-      )}
-    >
-      {DRAWING_EXTENSION_GROUPS.map((group) => (
-        <div
-          key={group.label}
+  const additionalWorkExtensions = Array.from(
+    DRAWING_ADDITIONAL_WORK_EXTENSION_SET,
+  ).map((extension) => extension.toUpperCase().slice(1));
+
+  function renderExtensions(extensions: readonly string[]) {
+    return extensions.map((extension, index) => {
+      const uppercasedExtension = extension.toUpperCase().slice(1);
+      const requiresAdditionalWork =
+        DRAWING_ADDITIONAL_WORK_EXTENSION_SET.has(extension);
+
+      return (
+        <span
+          key={extension}
           className={cn(
-            "rounded-xl border border-border/70 bg-background/80 p-3 text-left",
-            compact && "bg-background/70 p-2.5",
+            requiresAdditionalWork && "font-medium text-status-warning",
           )}
         >
-          <div className="flex items-center justify-between gap-2">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-foreground/75">
-              {group.label}
-            </p>
-            <Badge className="px-1.5 py-0 text-[10px]" variant="secondary">
-              {group.extensions.length}종
-            </Badge>
-          </div>
-          <p className="mt-1.5 text-xs leading-5 text-muted-foreground">
-            {formatExtensions(group.extensions)}
-          </p>
-        </div>
-      ))}
+          {uppercasedExtension}
+          {index < extensions.length - 1 ? ", " : ""}
+        </span>
+      );
+    });
+  }
+
+  return (
+    <div className={cn("space-y-3", compact && "space-y-2.5")}>
+      <div className="space-y-2 text-xs leading-6 text-muted-foreground">
+        <p>
+          <span className="mr-2 font-medium text-foreground/80">2D</span>
+          {renderExtensions([
+            ...(TWO_D_DRAWING_EXTENSION_GROUP?.uploadableExtensions ?? []),
+            ...(IMAGE_DRAWING_EXTENSION_GROUP?.uploadableExtensions ?? []),
+          ])}
+        </p>
+        <p>
+          <span className="mr-2 font-medium text-foreground/80">3D</span>
+          {renderExtensions(
+            THREE_D_DRAWING_EXTENSION_GROUP?.uploadableExtensions ?? [],
+          )}
+        </p>
+      </div>
+
+      <div className="space-y-1">
+        <p className="text-xs text-status-warning">
+          {additionalWorkExtensions.join(", ")} 확장자는 원본은 저장되지만
+          웹에서 보려면 추가 파일이 필요합니다.
+        </p>
+      </div>
     </div>
   );
 }
@@ -171,7 +237,9 @@ function DrawingEmptyState({ isDragging }: { isDragging: boolean }) {
 
       <div className="relative rounded-xl border border-border/60 bg-background/70 p-3">
         <div className="mb-2 flex items-center">
-          <p className="text-xs font-medium text-foreground">지원 형식 요약</p>
+          <p className="text-xs font-medium text-foreground">
+            업로드 가능한 확장자
+          </p>
         </div>
         <DrawingFormatSummary compact />
       </div>
@@ -223,6 +291,75 @@ function DrawingFailedState({ description }: { description: string }) {
           {description}
         </p>
       </div>
+    </div>
+  );
+}
+
+function DrawingActionRequiredFooter({
+  description,
+  title,
+  onUpload,
+}: {
+  description?: string | null;
+  title: string;
+  onUpload: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      className="absolute inset-x-4 bottom-4 z-10 flex cursor-pointer items-start gap-3 rounded-xl border border-status-warning-border bg-background/90 p-3 text-left shadow-sm backdrop-blur-sm transition-colors hover:bg-status-warning-bg/40"
+      onClick={onUpload}
+    >
+      <div className="mt-0.5 flex size-9 shrink-0 items-center justify-center rounded-full bg-status-warning-bg text-status-warning">
+        <Upload className="h-4 w-4" />
+      </div>
+
+      <div className="min-w-0 space-y-1">
+        <p className="text-sm font-semibold text-foreground">{title}</p>
+        {description ? (
+          <p className="text-xs leading-5 text-muted-foreground">
+            {description}
+          </p>
+        ) : null}
+        <p className="text-xs leading-5 text-muted-foreground">
+          클릭 업로드 또는 도면 미리보기 영역에 드래그 앤 드롭
+        </p>
+      </div>
+    </button>
+  );
+}
+
+function DrawingOriginalFileState({
+  fileName,
+  isDragging,
+  onDownload,
+}: {
+  fileName: string;
+  isDragging: boolean;
+  onDownload?: () => void;
+}) {
+  if (isDragging) {
+    return (
+      <div className="flex h-full w-full flex-col items-center justify-center gap-4 px-6 text-center">
+        <div className="flex size-16 items-center justify-center rounded-full border border-primary/20 bg-primary/5">
+          <Upload className="h-7 w-7 text-primary" />
+        </div>
+        <p className="text-lg font-semibold text-foreground">
+          여기에 파일을 놓으세요
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex h-full w-full flex-col items-center justify-center gap-4 px-6 text-center">
+      <p className="text-lg font-semibold text-foreground">{fileName}</p>
+      {onDownload ? (
+        <Button type="button" onClick={onDownload}>
+          <Download className="h-4 w-4" />
+          원본 다운로드
+        </Button>
+      ) : null}
     </div>
   );
 }
@@ -334,6 +471,18 @@ export function PartDrawingPreview({
         : previewDrawing.viewerType === "PDF"
           ? "PDF 보기"
           : "뷰어 보기";
+    const originalFileName = getFileNameFromUrl(
+      previewDrawing.originalFileUrl,
+      previewDrawing.name ?? previewDrawing.drawingNumber ?? part.partNumber,
+    );
+    const webViewRequirement = previewDrawing.webViewRequirement ?? null;
+    const isActionRequired =
+      !!webViewRequirement &&
+      !hasPreview &&
+      !isProcessing &&
+      !isFailed &&
+      !canOpenViewer;
+    const supportsCentralUpload = isActionRequired;
     const downloadOptions = [
       {
         label: "원본 다운로드",
@@ -385,28 +534,29 @@ export function PartDrawingPreview({
             DRAWING_PREVIEW_FRAME_CLASSNAME,
             hasPreview && "bg-muted/20",
             isProcessing && "border-primary/20 bg-primary/5",
-            isFailed &&
-              "cursor-pointer border-destructive/25 bg-destructive/5 hover:border-destructive/40",
-            !hasPreview && !isProcessing && !isFailed && "bg-muted/20",
-            isFailed && isDragging && "border-primary bg-primary/5",
+            isFailed && "border-destructive/25 bg-destructive/5",
+            isActionRequired && "border-status-warning-border bg-muted/10",
+            !hasPreview &&
+              !isProcessing &&
+              !isFailed &&
+              !isActionRequired &&
+              "bg-muted/20",
+            supportsCentralUpload &&
+              isDragging &&
+              "border-primary bg-primary/5",
           )}
-          onDragLeave={isFailed ? handleDragLeave : undefined}
-          onDragOver={isFailed ? handleDragOver : undefined}
-          onDrop={isFailed ? handleDrop : undefined}
+          onDragLeave={supportsCentralUpload ? handleDragLeave : undefined}
+          onDragOver={supportsCentralUpload ? handleDragOver : undefined}
+          onDrop={supportsCentralUpload ? handleDrop : undefined}
         >
           <div
             className={cn(
               "absolute inset-0 flex items-center justify-center",
               hasPreview ? "p-4" : "p-0",
-              (isFailed || canOpenViewer) && "cursor-pointer",
+              isActionRequired && "pb-24",
+              canOpenViewer && !isActionRequired && "cursor-pointer",
             )}
-            onClick={
-              isFailed
-                ? openFilePicker
-                : canOpenViewer
-                  ? () => openViewer(previewDrawing)
-                  : undefined
-            }
+            onClick={canOpenViewer ? () => openViewer(previewDrawing) : undefined}
           >
             {hasPreview ? (
               <img
@@ -425,6 +575,18 @@ export function PartDrawingPreview({
                 description="미리보기를 준비하고 있습니다."
                 title="도면을 변환하고 있습니다"
               />
+            ) : isActionRequired ? (
+              <DrawingOriginalFileState
+                fileName={originalFileName}
+                isDragging={isDragging}
+                onDownload={
+                  previewDrawing.originalFileUrl
+                    ? () => {
+                        void handleDownload(previewDrawing.originalFileUrl ?? "");
+                      }
+                    : undefined
+                }
+              />
             ) : (
               <div className="flex flex-col items-center gap-2 text-muted-foreground/40">
                 <div className="relative">
@@ -438,46 +600,56 @@ export function PartDrawingPreview({
             )}
           </div>
 
-          <div className="absolute right-2 top-2 flex gap-1.5 opacity-0 transition-opacity group-hover:opacity-100">
-            {downloadOptions.length > 0 ? (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button
-                    className="flex h-8 items-center gap-1.5 rounded-md bg-background/95 px-2.5 text-xs font-medium text-muted-foreground shadow-sm backdrop-blur-sm transition-colors hover:bg-background hover:text-foreground"
-                    type="button"
-                    onClick={(event) => event.stopPropagation()}
-                  >
-                    <Download className="h-3.5 w-3.5" />
-                    다운로드
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="min-w-[150px]">
-                  {downloadOptions.map((option) => (
-                    <DropdownMenuItem
-                      key={option.label}
-                      onClick={() => handleDownload(option.url ?? "")}
-                    >
-                      <option.icon className="mr-2 h-4 w-4" />
-                      {option.label}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            ) : null}
-            <button
-              className="flex h-8 items-center gap-1.5 rounded-md bg-background/95 px-2.5 text-xs font-medium text-muted-foreground shadow-sm backdrop-blur-sm transition-colors hover:bg-destructive/10 hover:text-destructive"
-              type="button"
-              onClick={(event) => {
-                event.stopPropagation();
-                handleDelete();
-              }}
-            >
-              <Trash2 className="h-3.5 w-3.5" />
-              삭제
-            </button>
-          </div>
+          {isActionRequired && webViewRequirement && !isDragging ? (
+            <DrawingActionRequiredFooter
+              description={webViewRequirement.description}
+              title={webViewRequirement.title}
+              onUpload={openFilePicker}
+            />
+          ) : null}
 
-          {hasPreview && drawingNumberLabel ? (
+          {!isActionRequired ? (
+            <div className="absolute right-2 top-2 flex gap-1.5 opacity-0 transition-opacity group-hover:opacity-100">
+              {downloadOptions.length > 0 ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      className="flex h-8 items-center gap-1.5 rounded-md bg-background/95 px-2.5 text-xs font-medium text-muted-foreground shadow-sm backdrop-blur-sm transition-colors hover:bg-background hover:text-foreground"
+                      type="button"
+                      onClick={(event) => event.stopPropagation()}
+                    >
+                      <Download className="h-3.5 w-3.5" />
+                      다운로드
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="min-w-[150px]">
+                    {downloadOptions.map((option) => (
+                      <DropdownMenuItem
+                        key={option.label}
+                        onClick={() => handleDownload(option.url ?? "")}
+                      >
+                        <option.icon className="mr-2 h-4 w-4" />
+                        {option.label}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : null}
+              <button
+                className="flex h-8 items-center gap-1.5 rounded-md bg-background/95 px-2.5 text-xs font-medium text-muted-foreground shadow-sm backdrop-blur-sm transition-colors hover:bg-destructive/10 hover:text-destructive"
+                type="button"
+                onClick={(event) => {
+                  event.stopPropagation();
+                  handleDelete();
+                }}
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+                삭제
+              </button>
+            </div>
+          ) : null}
+
+          {!isActionRequired && hasPreview && drawingNumberLabel ? (
             <div className="absolute bottom-2 left-2">
               <span className="rounded bg-background/80 px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground shadow-sm">
                 {drawingNumberLabel}
@@ -485,7 +657,7 @@ export function PartDrawingPreview({
             </div>
           ) : null}
 
-          {canOpenViewer ? (
+          {!isActionRequired && canOpenViewer ? (
             <div className="absolute bottom-2 right-2">
               <span className="flex h-6 items-center gap-1 rounded bg-background/80 px-2 text-muted-foreground shadow-sm">
                 <ExternalLink className="h-3 w-3" />

@@ -1096,6 +1096,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/drawings/{drawingId}/render-source": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * POST /api/v1/drawings/{drawingId}/render-source
+         * @description 도면 변환용 render source 파일을 등록하고 비동기 변환을 요청합니다
+         */
+        post: operations["registerRenderSource"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/changes": {
         parameters: {
             query?: never;
@@ -3343,11 +3363,11 @@ export interface components {
             sheet_name?: string;
         };
         JsonNode: {
+            container?: boolean;
             number?: boolean;
             pojo?: boolean;
             int?: boolean;
             long?: boolean;
-            container?: boolean;
             value_node?: boolean;
             missing_node?: boolean;
             object?: boolean;
@@ -3561,7 +3581,7 @@ export interface components {
             drawing_number?: string;
             name?: string;
             /** @enum {string} */
-            conversion_status?: "PENDING" | "COMPLETED" | "FAILED";
+            conversion_status?: "ACTION_REQUIRED" | "PENDING" | "COMPLETED" | "FAILED";
         };
         /** @description 조직 생성 요청 */
         CreateOrganizationRequest: {
@@ -4011,6 +4031,28 @@ export interface components {
         BatchCompleteResponse: {
             items?: components["schemas"]["FileCompleteResponse"][];
             failed?: components["schemas"]["BatchCompleteFailure"][];
+        };
+        /** @description 도면 render source 등록 요청 DTO */
+        RegisterDrawingRenderSourceRequest: {
+            /**
+             * Format: uuid
+             * @description 업로드 완료된 render source 파일 ID
+             */
+            file_id: string;
+        };
+        /** @description 도면 render source 등록 응답 DTO */
+        RegisterDrawingRenderSourceResponse: {
+            /**
+             * Format: uuid
+             * @description 도면 ID
+             */
+            drawing_id?: string;
+            /**
+             * @description 도면 변환 상태
+             * @example PENDING
+             * @enum {string}
+             */
+            conversion_status?: "ACTION_REQUIRED" | "PENDING" | "COMPLETED" | "FAILED";
         };
         /** @description 변경요청 생성 요청 */
         CreateChangeRequestRequest: {
@@ -5210,7 +5252,7 @@ export interface components {
              * @description 도면 변환 상태
              * @enum {string}
              */
-            conversion_status?: "PENDING" | "COMPLETED" | "FAILED";
+            conversion_status?: "ACTION_REQUIRED" | "PENDING" | "COMPLETED" | "FAILED";
             /**
              * @description 뷰어 타입
              * @example PDF
@@ -5660,7 +5702,7 @@ export interface components {
              * @example PENDING
              * @enum {string}
              */
-            status?: "PENDING" | "PROCESSING" | "COMPLETED" | "FAILED";
+            status?: "ACTION_REQUIRED" | "PENDING" | "PROCESSING" | "COMPLETED" | "FAILED";
             /**
              * @description 도면 처리 실패 코드
              * @example TIMEOUT
@@ -5687,6 +5729,20 @@ export interface components {
              * @example false
              */
             glb_ready?: boolean;
+            /**
+             * @description 추가 사용자 조치 사유
+             * @example RENDER_SOURCE_REQUIRED
+             * @enum {string}
+             */
+            action_required_reason?: "RENDER_SOURCE_REQUIRED";
+            /**
+             * @description 추가 업로드 가능한 render source 확장자 목록
+             * @example [
+             *       "pdf",
+             *       "dxf"
+             *     ]
+             */
+            allowed_render_source_extensions?: string[];
         };
         /** @description BOM 링크 통계 */
         BomStatsResponse: {
@@ -10859,6 +10915,69 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["BatchCompleteResponse"];
+                };
+            };
+        };
+    };
+    registerRenderSource: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description render source를 등록할 도면 ID */
+                drawingId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegisterDrawingRenderSourceRequest"];
+            };
+        };
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegisterDrawingRenderSourceResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegisterDrawingRenderSourceResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegisterDrawingRenderSourceResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegisterDrawingRenderSourceResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegisterDrawingRenderSourceResponse"];
                 };
             };
         };

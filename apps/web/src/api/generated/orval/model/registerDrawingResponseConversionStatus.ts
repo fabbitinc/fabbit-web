@@ -9,6 +9,7 @@ export type RegisterDrawingResponseConversionStatus = typeof RegisterDrawingResp
 
 
 export const RegisterDrawingResponseConversionStatus = {
+  ACTION_REQUIRED: 'ACTION_REQUIRED',
   PENDING: 'PENDING',
   COMPLETED: 'COMPLETED',
   FAILED: 'FAILED',

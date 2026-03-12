@@ -15,13 +15,52 @@ import { useDeletePartDrawingAction } from "@/features/parts/hooks/use-delete-pa
 import { usePartDrawingProcessingQuery } from "@/features/parts/hooks/use-part-drawing-processing-query";
 import { usePartDetailQuery } from "@/features/parts/hooks/use-part-detail-query";
 import { useUploadPartDrawingAction } from "@/features/parts/hooks/use-upload-part-drawing-action";
+import { useUploadPartDrawingRenderSourceAction } from "@/features/parts/hooks/use-upload-part-drawing-render-source-action";
 import { DEFAULT_PART_DRAWING_FAILURE_MESSAGE } from "@/features/parts/lib/part-drawing-failure";
-import type { PartDetailModel, PartDetailTab } from "@/features/parts/types/parts-model";
+import type {
+  PartDetailModel,
+  PartDetailTab,
+  PartDrawingProcessingModel,
+  PartDrawingWebViewRequirementModel,
+} from "@/features/parts/types/parts-model";
 
 interface PartDetailScreenProps {
   activeTab: PartDetailTab;
   onTabChange: (tab: PartDetailTab) => void;
   partId: string;
+}
+
+type PartDrawingStatus = NonNullable<PartDetailModel["drawing"]>["conversionStatus"];
+
+function formatRenderSourceExtensions(extensions: string[]) {
+  return extensions
+    .map((extension) => extension.replace(/^\./, "").toUpperCase())
+    .filter(Boolean)
+    .join(", ");
+}
+
+function buildWebViewRequirement(
+  currentDrawingStatus: PartDrawingStatus | null,
+  processing: PartDrawingProcessingModel | undefined,
+): PartDrawingWebViewRequirementModel | null {
+  const isActionRequired =
+    currentDrawingStatus === "ACTION_REQUIRED" ||
+    processing?.status === "ACTION_REQUIRED";
+
+  if (!isActionRequired) {
+    return null;
+  }
+
+  const formattedExtensions = formatRenderSourceExtensions(
+    processing?.allowedRenderSourceExtensions ?? [],
+  );
+
+  return {
+    title: "웹에서 보기 위한 파일이 필요합니다.",
+    description: formattedExtensions
+      ? `원본 파일은 저장되었습니다. 웹에서 확인하려면 ${formattedExtensions} 형식 파일을 올려 주세요.`
+      : "원본 파일은 저장되었습니다. 웹에서 확인하려면 추가 파일을 올려 주세요.",
+  };
 }
 
 export function PartDetailScreen({ activeTab, onTabChange, partId }: PartDetailScreenProps) {
@@ -32,10 +71,48 @@ export function PartDetailScreen({ activeTab, onTabChange, partId }: PartDetailS
   const deletePartDrawingAction = useDeletePartDrawingAction(partId);
   const currentDrawingId = partQuery.data?.drawing?.id ?? null;
   const currentDrawingStatus = partQuery.data?.drawing?.conversionStatus ?? null;
+  const shouldQueryDrawingProcessing =
+    currentDrawingStatus === "PENDING" ||
+    currentDrawingStatus === "PROCESSING" ||
+    currentDrawingStatus === "ACTION_REQUIRED";
   const refetchPartDetail = partQuery.refetch;
   const drawingProcessingQuery = usePartDrawingProcessingQuery(
     currentDrawingId,
-    currentDrawingStatus === "PENDING" || currentDrawingStatus === "PROCESSING",
+    shouldQueryDrawingProcessing,
+  );
+  const uploadPartDrawingRenderSourceAction =
+    useUploadPartDrawingRenderSourceAction({
+      drawingId: currentDrawingId,
+      partId,
+    });
+  const resolvedPart = partQuery.data
+    ? {
+        ...partQuery.data,
+        drawing: partQuery.data.drawing
+          ? {
+              ...partQuery.data.drawing,
+              conversionStatus:
+                drawingProcessingQuery.data?.status === "ACTION_REQUIRED"
+                  ? "ACTION_REQUIRED"
+                  : partQuery.data.drawing.conversionStatus,
+              failureCode:
+                drawingProcessingQuery.data?.status === "FAILED"
+                  ? drawingProcessingQuery.data.failureCode
+                  : partQuery.data.drawing.failureCode,
+              failureMessage:
+                drawingProcessingQuery.data?.status === "FAILED"
+                  ? drawingProcessingQuery.data.failureMessage
+                  : partQuery.data.drawing.failureMessage,
+              webViewRequirement: buildWebViewRequirement(
+                partQuery.data.drawing.conversionStatus,
+                drawingProcessingQuery.data,
+              ),
+            }
+          : null,
+      }
+    : undefined;
+  const shouldUploadRenderSource = Boolean(
+    resolvedPart?.drawing?.id && resolvedPart.drawing.webViewRequirement,
   );
   const handledProcessingStateRef = useRef<string | null>(null);
 
@@ -149,16 +226,24 @@ export function PartDetailScreen({ activeTab, onTabChange, partId }: PartDetailS
       isError={partQuery.isError || !partQuery.data}
       isLoading={partQuery.isLoading}
       ownerContent={<PartOwnerTab partId={partId} />}
-      part={partQuery.data}
+      part={resolvedPart}
       projectsContent={<PartProjectsTab partId={partId} />}
-      propertiesContent={partQuery.data ? (
+      propertiesContent={resolvedPart ? (
         <PartPropertiesTab
           isDeletingDrawing={deletePartDrawingAction.isPending}
-          isUploadingDrawing={uploadPartDrawingAction.isPending}
+          isUploadingDrawing={
+            uploadPartDrawingAction.isPending ||
+            uploadPartDrawingRenderSourceAction.isPending
+          }
           onOpenDrawingViewer={handleOpenDrawingViewer}
-          part={partQuery.data}
+          part={resolvedPart}
           onDeleteDrawing={() => deletePartDrawingAction.mutate()}
           onUploadDrawing={async (file) => {
+            if (shouldUploadRenderSource && resolvedPart.drawing?.id) {
+              await uploadPartDrawingRenderSourceAction.mutateAsync(file);
+              return;
+            }
+
             await uploadPartDrawingAction.mutateAsync(file);
           }}
         />

@@ -16,7 +16,11 @@ export function usePartDrawingProcessingQuery(
         return 1_000;
       }
 
-      return status === "COMPLETED" || status === "FAILED" ? false : 1_000;
+      return status === "COMPLETED" ||
+        status === "FAILED" ||
+        status === "ACTION_REQUIRED"
+        ? false
+        : 1_000;
     },
     refetchIntervalInBackground: true,
   });

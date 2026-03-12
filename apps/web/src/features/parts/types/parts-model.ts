@@ -37,6 +37,7 @@ export interface PartFilterOptionsModel {
 }
 
 export type PartDrawingProcessingStatus =
+  | "ACTION_REQUIRED"
   | "PENDING"
   | "PROCESSING"
   | "COMPLETED"
@@ -50,6 +51,12 @@ export type PartDrawingFailureCode =
   | "UNKNOWN";
 
 export type PartDrawingViewerType = "PDF" | "GLB";
+export type PartDrawingActionRequiredReason = "RENDER_SOURCE_REQUIRED";
+
+export interface PartDrawingWebViewRequirementModel {
+  title: string;
+  description: string | null;
+}
 
 export interface PartDrawingModel {
   id: string;
@@ -64,6 +71,7 @@ export interface PartDrawingModel {
   originalFileUrl: string | null;
   failureCode: PartDrawingFailureCode | null;
   failureMessage: string | null;
+  webViewRequirement: PartDrawingWebViewRequirementModel | null;
 }
 
 export interface PartDrawingProcessingModel {
@@ -73,6 +81,8 @@ export interface PartDrawingProcessingModel {
   pdfReady: boolean;
   webpReady: boolean;
   glbReady: boolean;
+  actionRequiredReason: PartDrawingActionRequiredReason | null;
+  allowedRenderSourceExtensions: string[];
 }
 
 export interface PartDetailModel {
