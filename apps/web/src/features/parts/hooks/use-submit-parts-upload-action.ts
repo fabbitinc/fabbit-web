@@ -2,9 +2,9 @@ import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
   batchCompleteFileUpload,
-  batchCreateFileUpload,
   completeFileUpload,
-  createFileUpload,
+  prepareFileUpload,
+  prepareFileUploads,
   uploadFileToPresignedUrl,
 } from "@/api/file.api";
 import { startPartsSynthesis } from "@/features/parts/api/parts-upload.api";
@@ -63,10 +63,11 @@ async function uploadSourceFiles(files: PartsUploadFileModel[]): Promise<Synthes
   if (files.length === 1) {
     const file = files[0];
     const contentType = file.file.type || "application/octet-stream";
-    const created = await createFileUpload({
-      original_name: file.name,
-      content_type: contentType,
-      file_size: file.size,
+    const created = await prepareFileUpload({
+      file: file.file,
+      originalName: file.name,
+      contentType,
+      fileSize: file.size,
     });
 
     await uploadFileToPresignedUrl(created.upload_url, file.file, contentType);
@@ -80,11 +81,12 @@ async function uploadSourceFiles(files: PartsUploadFileModel[]): Promise<Synthes
     ];
   }
 
-  const created = await batchCreateFileUpload(
+  const created = await prepareFileUploads(
     files.map((file) => ({
-      original_name: file.name,
-      content_type: file.file.type || "application/octet-stream",
-      file_size: file.size,
+      file: file.file,
+      originalName: file.name,
+      contentType: file.file.type || "application/octet-stream",
+      fileSize: file.size,
     })),
   );
 

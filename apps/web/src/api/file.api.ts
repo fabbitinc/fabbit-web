@@ -1,4 +1,8 @@
 import { apiClient } from "@/api/client";
+import {
+  toCreateFileUploadRequestFromFile,
+  toCreateFileUploadRequestsFromFiles,
+} from "@/api/file-hash";
 import type {
   BatchCompleteFileRequestDto,
   BatchCompleteFileResponseDto,
@@ -7,17 +11,26 @@ import type {
   CreateFileRequestDto,
   CreateFileResponseDto,
   FileCompleteResponseDto,
+  FileUploadSource,
 } from "@/api/file.types";
 
-export async function createFileUpload(request: CreateFileRequestDto) {
+async function createFileUpload(request: CreateFileRequestDto) {
   const response = await apiClient.post<CreateFileResponseDto>("/api/v1/files/upload", request);
   return response.data;
 }
 
-export async function batchCreateFileUpload(items: CreateFileRequestDto[]) {
+async function batchCreateFileUpload(items: CreateFileRequestDto[]) {
   const request: BatchCreateFileRequestDto = { items };
   const response = await apiClient.post<BatchCreateFileResponseDto>("/api/v1/files/upload/batch", request);
   return response.data;
+}
+
+export async function prepareFileUpload(source: FileUploadSource) {
+  return createFileUpload(await toCreateFileUploadRequestFromFile(source));
+}
+
+export async function prepareFileUploads(sources: FileUploadSource[]) {
+  return batchCreateFileUpload(await toCreateFileUploadRequestsFromFiles(sources));
 }
 
 export async function completeFileUpload(fileId: string) {
@@ -50,11 +63,7 @@ export async function uploadFileToPresignedUrl(uploadUrl: string, file: File, co
 
 export async function uploadSingleFile(file: File) {
   const contentType = file.type || "application/octet-stream";
-  const created = await createFileUpload({
-    original_name: file.name,
-    content_type: contentType,
-    file_size: file.size,
-  });
+  const created = await prepareFileUpload({ file, contentType });
 
   await uploadFileToPresignedUrl(created.upload_url, file, contentType);
   await completeFileUpload(created.file_id);
@@ -71,13 +80,7 @@ export async function uploadFiles(files: File[]) {
     return [await uploadSingleFile(files[0])];
   }
 
-  const created = await batchCreateFileUpload(
-    files.map((file) => ({
-      original_name: file.name,
-      content_type: file.type || "application/octet-stream",
-      file_size: file.size,
-    })),
-  );
+  const created = await prepareFileUploads(files.map((file) => ({ file })));
 
   await Promise.all(
     created.items.map((item, index) =>

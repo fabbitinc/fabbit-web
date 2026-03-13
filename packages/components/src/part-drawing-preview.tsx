@@ -13,6 +13,12 @@ import {
 } from "lucide-react";
 import {
   Button,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -44,10 +50,15 @@ export interface PartDrawingPreviewPart {
   drawing: PartDrawingPreviewDrawing | null;
 }
 
+export type PartDrawingPreviewActivityState =
+  | "idle"
+  | "uploading"
+  | "processing";
+
 export interface PartDrawingPreviewProps {
+  activityState: PartDrawingPreviewActivityState;
   part: PartDrawingPreviewPart;
   isDeleting: boolean;
-  isUploading: boolean;
   onDelete: () => void;
   onOpenViewer?: (drawing: PartDrawingPreviewDrawing) => void;
   onUpload: (file: File) => void;
@@ -94,13 +105,13 @@ const DRAWING_EXTENSION_GROUPS = [
   },
 ] as const;
 
-const DRAWING_ACCEPT = Array.from(
+const DRAWING_ACCEPT: readonly string[] = Array.from(
   new Set(
     DRAWING_EXTENSION_GROUPS.flatMap((group) => group.uploadableExtensions),
   ),
 );
 
-const DRAWING_ADDITIONAL_WORK_EXTENSION_SET = new Set(
+const DRAWING_ADDITIONAL_WORK_EXTENSION_SET: ReadonlySet<string> = new Set(
   DRAWING_EXTENSION_GROUPS.flatMap((group) => group.additionalWorkExtensions),
 );
 
@@ -117,6 +128,16 @@ const THREE_D_DRAWING_EXTENSION_GROUP = DRAWING_EXTENSION_GROUPS.find(
 function isAcceptedFile(file: File) {
   const ext = `.${file.name.split(".").pop()?.toLowerCase()}`;
   return DRAWING_ACCEPT.includes(ext);
+}
+
+function getFileExtensionLabel(fileName: string) {
+  const fileNameSegments = fileName.split(".");
+
+  if (fileNameSegments.length < 2) {
+    return null;
+  }
+
+  return fileNameSegments.at(-1)?.toLowerCase() ?? null;
 }
 
 function getFileNameFromUrl(url: string | null | undefined, fallback: string) {
@@ -364,34 +385,81 @@ function DrawingOriginalFileState({
   );
 }
 
+function UnsupportedDrawingFormatDialog({
+  fileName,
+  open,
+  onOpenChange,
+}: {
+  fileName: string | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
+  const extensionLabel = fileName ? getFileExtensionLabel(fileName) : null;
+  const description = extensionLabel
+    ? (
+        <>
+          <code className="mx-0.5 rounded bg-muted px-1.5 py-0.5 font-mono text-[0.9em] text-foreground">
+            {extensionLabel}
+          </code>
+          형식은 업로드할 수 없습니다. 지원 확장자를 확인해주세요.
+        </>
+      )
+    : "지원하지 않는 파일 형식입니다. 지원 확장자를 확인해주세요.";
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-sm">
+        <DialogHeader>
+          <DialogTitle>지원하지 않는 파일 형식입니다</DialogTitle>
+          <DialogDescription>{description}</DialogDescription>
+        </DialogHeader>
+        <DialogFooter>
+          <Button type="button" onClick={() => onOpenChange(false)}>
+            확인
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 export function PartDrawingPreview({
+  activityState,
   part,
   isDeleting,
-  isUploading,
   onDelete,
   onOpenViewer,
   onUpload,
 }: PartDrawingPreviewProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isDragging, setIsDragging] = useState(false);
+  const [unsupportedFileName, setUnsupportedFileName] = useState<string | null>(
+    null,
+  );
   const drawing = part.drawing;
   const hasDrawing = drawing != null;
-  const isProcessing =
-    isUploading ||
-    drawing?.conversionStatus === "PENDING" ||
-    drawing?.conversionStatus === "PROCESSING";
+  const isUploading = activityState === "uploading";
+  const isProcessing = activityState === "processing";
+  const isBusy = isUploading || isProcessing;
+  const canDelete = !isUploading;
 
   function openFilePicker() {
-    if (isProcessing) {
+    if (isBusy) {
       return;
     }
     fileInputRef.current?.click();
   }
 
   function handleFile(file: File | null | undefined) {
-    if (!file || !isAcceptedFile(file)) {
+    if (!file) {
       return;
     }
+
+    if (!isAcceptedFile(file)) {
+      setUnsupportedFileName(file.name);
+      return;
+    }
+
     onUpload(file);
   }
 
@@ -416,7 +484,7 @@ export function PartDrawingPreview({
   }
 
   function handleDelete() {
-    if (isDeleting) {
+    if (!canDelete || isDeleting) {
       return;
     }
 
@@ -479,7 +547,7 @@ export function PartDrawingPreview({
     const isActionRequired =
       !!webViewRequirement &&
       !hasPreview &&
-      !isProcessing &&
+      !isBusy &&
       !isFailed &&
       !canOpenViewer;
     const supportsCentralUpload = isActionRequired;
@@ -517,6 +585,16 @@ export function PartDrawingPreview({
 
     return (
       <DrawingPreviewSection>
+        <UnsupportedDrawingFormatDialog
+          fileName={unsupportedFileName}
+          open={unsupportedFileName != null}
+          onOpenChange={(open) => {
+            if (!open) {
+              setUnsupportedFileName(null);
+            }
+          }}
+        />
+
         <input
           ref={fileInputRef}
           accept={DRAWING_ACCEPT.join(",")}
@@ -533,11 +611,11 @@ export function PartDrawingPreview({
             "group border",
             DRAWING_PREVIEW_FRAME_CLASSNAME,
             hasPreview && "bg-muted/20",
-            isProcessing && "border-primary/20 bg-primary/5",
+            isBusy && "border-primary/20 bg-primary/5",
             isFailed && "border-destructive/25 bg-destructive/5",
             isActionRequired && "border-status-warning-border bg-muted/10",
             !hasPreview &&
-              !isProcessing &&
+              !isBusy &&
               !isFailed &&
               !isActionRequired &&
               "bg-muted/20",
@@ -570,10 +648,18 @@ export function PartDrawingPreview({
               />
             ) : isFailed ? (
               <DrawingFailedState description={failureDescription} />
-            ) : isProcessing ? (
+            ) : isBusy ? (
               <DrawingProcessingState
-                description="미리보기를 준비하고 있습니다."
-                title="도면을 변환하고 있습니다"
+                description={
+                  isUploading
+                    ? "파일 무결성을 확인하고 업로드를 진행하고 있습니다."
+                    : "미리보기를 준비하고 있습니다."
+                }
+                title={
+                  isUploading
+                    ? "도면을 업로드하고 있습니다"
+                    : "도면을 변환하고 있습니다"
+                }
               />
             ) : isActionRequired ? (
               <DrawingOriginalFileState
@@ -608,33 +694,33 @@ export function PartDrawingPreview({
             />
           ) : null}
 
-          {!isActionRequired ? (
-            <div className="absolute right-2 top-2 flex gap-1.5 opacity-0 transition-opacity group-hover:opacity-100">
-              {downloadOptions.length > 0 ? (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button
-                      className="flex h-8 items-center gap-1.5 rounded-md bg-background/95 px-2.5 text-xs font-medium text-muted-foreground shadow-sm backdrop-blur-sm transition-colors hover:bg-background hover:text-foreground"
-                      type="button"
-                      onClick={(event) => event.stopPropagation()}
+          <div className="absolute right-2 top-2 flex gap-1.5 opacity-0 transition-opacity group-hover:opacity-100">
+            {!isActionRequired && downloadOptions.length > 0 ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    className="flex h-8 items-center gap-1.5 rounded-md bg-background/95 px-2.5 text-xs font-medium text-muted-foreground shadow-sm backdrop-blur-sm transition-colors hover:bg-background hover:text-foreground"
+                    type="button"
+                    onClick={(event) => event.stopPropagation()}
+                  >
+                    <Download className="h-3.5 w-3.5" />
+                    다운로드
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="min-w-[150px]">
+                  {downloadOptions.map((option) => (
+                    <DropdownMenuItem
+                      key={option.label}
+                      onClick={() => handleDownload(option.url ?? "")}
                     >
-                      <Download className="h-3.5 w-3.5" />
-                      다운로드
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="min-w-[150px]">
-                    {downloadOptions.map((option) => (
-                      <DropdownMenuItem
-                        key={option.label}
-                        onClick={() => handleDownload(option.url ?? "")}
-                      >
-                        <option.icon className="mr-2 h-4 w-4" />
-                        {option.label}
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              ) : null}
+                      <option.icon className="mr-2 h-4 w-4" />
+                      {option.label}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : null}
+            {canDelete ? (
               <button
                 className="flex h-8 items-center gap-1.5 rounded-md bg-background/95 px-2.5 text-xs font-medium text-muted-foreground shadow-sm backdrop-blur-sm transition-colors hover:bg-destructive/10 hover:text-destructive"
                 type="button"
@@ -646,8 +732,8 @@ export function PartDrawingPreview({
                 <Trash2 className="h-3.5 w-3.5" />
                 삭제
               </button>
-            </div>
-          ) : null}
+            ) : null}
+          </div>
 
           {!isActionRequired && hasPreview && drawingNumberLabel ? (
             <div className="absolute bottom-2 left-2">
@@ -672,6 +758,16 @@ export function PartDrawingPreview({
 
   return (
     <DrawingPreviewSection>
+      <UnsupportedDrawingFormatDialog
+        fileName={unsupportedFileName}
+        open={unsupportedFileName != null}
+        onOpenChange={(open) => {
+          if (!open) {
+            setUnsupportedFileName(null);
+          }
+        }}
+      />
+
       <input
         ref={fileInputRef}
         accept={DRAWING_ACCEPT.join(",")}
@@ -687,8 +783,8 @@ export function PartDrawingPreview({
         className={cn(
           "group flex cursor-pointer flex-col items-center justify-center transition-all",
           DRAWING_PREVIEW_FRAME_CLASSNAME,
-          isProcessing && "border border-primary/20 bg-primary/5",
-          !isProcessing &&
+          isBusy && "border border-primary/20 bg-primary/5",
+          !isBusy &&
             (isDragging
               ? "border-2 border-dashed border-primary bg-primary/5"
               : "border-2 border-dashed border-muted-foreground/15 bg-muted/10 hover:border-primary/40 hover:bg-muted/20"),
@@ -699,10 +795,18 @@ export function PartDrawingPreview({
         onDragOver={handleDragOver}
         onDrop={handleDrop}
       >
-        {isProcessing ? (
+        {isBusy ? (
           <DrawingProcessingState
-            description="미리보기 산출물을 준비하고 있습니다."
-            title="도면을 변환하고 있습니다"
+            description={
+              isUploading
+                ? "파일 무결성을 확인하고 업로드를 진행하고 있습니다."
+                : "미리보기 산출물을 준비하고 있습니다."
+            }
+            title={
+              isUploading
+                ? "도면을 업로드하고 있습니다"
+                : "도면을 변환하고 있습니다"
+            }
           />
         ) : (
           <DrawingEmptyState isDragging={isDragging} />

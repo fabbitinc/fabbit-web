@@ -44,6 +44,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "es-hangul": "^2.3.8",
+    "hash-wasm": "^4.12.0",
     "i18next": "^25.8.6",
     "input-otp": "^1.4.2",
     "lucide-react": "^0.563.0",

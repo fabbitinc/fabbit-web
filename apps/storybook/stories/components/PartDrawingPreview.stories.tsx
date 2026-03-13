@@ -25,9 +25,9 @@ const meta = {
     layout: "padded",
   },
   args: {
+    activityState: "idle",
     part: samplePart,
     isDeleting: false,
-    isUploading: false,
     onDelete: () => undefined,
     onUpload: () => undefined,
   },
@@ -67,6 +67,7 @@ export const Empty: Story = {
 
 export const Processing: Story = {
   args: {
+    activityState: "processing",
     part: {
       ...samplePart,
       drawing: {
@@ -74,6 +75,16 @@ export const Processing: Story = {
         conversionStatus: "PROCESSING",
         previewUrl: null,
       },
+    },
+  },
+};
+
+export const Uploading: Story = {
+  args: {
+    activityState: "uploading",
+    part: {
+      partNumber: samplePart.partNumber,
+      drawing: null,
     },
   },
 };
@@ -136,6 +147,7 @@ export const Showcase: Story = {
       <ShowcaseCard title="산출물 생성 중">
         <PartDrawingPreview
           {...args}
+          activityState="processing"
           part={{
             ...samplePart,
             drawing: {
@@ -143,6 +155,17 @@ export const Showcase: Story = {
               conversionStatus: "PROCESSING",
               previewUrl: null,
             },
+          }}
+        />
+      </ShowcaseCard>
+
+      <ShowcaseCard title="원본 업로드 중">
+        <PartDrawingPreview
+          {...args}
+          activityState="uploading"
+          part={{
+            partNumber: samplePart.partNumber,
+            drawing: null,
           }}
         />
       </ShowcaseCard>

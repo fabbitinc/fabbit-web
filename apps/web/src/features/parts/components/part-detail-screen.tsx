@@ -16,6 +16,7 @@ import { usePartDrawingProcessingQuery } from "@/features/parts/hooks/use-part-d
 import { usePartDetailQuery } from "@/features/parts/hooks/use-part-detail-query";
 import { useUploadPartDrawingAction } from "@/features/parts/hooks/use-upload-part-drawing-action";
 import { useUploadPartDrawingRenderSourceAction } from "@/features/parts/hooks/use-upload-part-drawing-render-source-action";
+import { usePendingNavigationGuard } from "@/hooks/use-pending-navigation-guard";
 import { DEFAULT_PART_DRAWING_FAILURE_MESSAGE } from "@/features/parts/lib/part-drawing-failure";
 import type {
   PartDetailModel,
@@ -85,6 +86,9 @@ export function PartDetailScreen({ activeTab, onTabChange, partId }: PartDetailS
       drawingId: currentDrawingId,
       partId,
     });
+  const isDrawingUploading =
+    uploadPartDrawingAction.isPending ||
+    uploadPartDrawingRenderSourceAction.isPending;
   const resolvedPart = partQuery.data
     ? {
         ...partQuery.data,
@@ -111,10 +115,21 @@ export function PartDetailScreen({ activeTab, onTabChange, partId }: PartDetailS
           : null,
       }
     : undefined;
+  const drawingActivityState =
+    isDrawingUploading
+      ? "uploading"
+      : resolvedPart?.drawing?.conversionStatus === "PENDING" ||
+          resolvedPart?.drawing?.conversionStatus === "PROCESSING"
+        ? "processing"
+        : "idle";
   const shouldUploadRenderSource = Boolean(
     resolvedPart?.drawing?.id && resolvedPart.drawing.webViewRequirement,
   );
   const handledProcessingStateRef = useRef<string | null>(null);
+
+  usePendingNavigationGuard({
+    when: isDrawingUploading,
+  });
 
   function handleOpenDrawingViewer(drawing: PartDrawingPreviewDrawing) {
     if (drawing.viewerType !== "GLB" || !drawing.viewerUrl) {
@@ -230,11 +245,8 @@ export function PartDetailScreen({ activeTab, onTabChange, partId }: PartDetailS
       projectsContent={<PartProjectsTab partId={partId} />}
       propertiesContent={resolvedPart ? (
         <PartPropertiesTab
+          drawingActivityState={drawingActivityState}
           isDeletingDrawing={deletePartDrawingAction.isPending}
-          isUploadingDrawing={
-            uploadPartDrawingAction.isPending ||
-            uploadPartDrawingRenderSourceAction.isPending
-          }
           onOpenDrawingViewer={handleOpenDrawingViewer}
           part={resolvedPart}
           onDeleteDrawing={() => deletePartDrawingAction.mutate()}

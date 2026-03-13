@@ -1,6 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { createFileUpload, uploadFileToPresignedUrl } from "@/api/file.api";
+import { prepareFileUpload, uploadFileToPresignedUrl } from "@/api/file.api";
 import { extractTemplateMappingError } from "@/features/part-template-mapping/lib/template-mapping-utils";
 import { usePartTemplateMappingStore } from "@/features/part-template-mapping/stores/template-mapping-store";
 import { useTemplateUploadStore } from "@/features/part-template-mapping/stores/template-upload-store";
@@ -50,10 +50,9 @@ export function useTemplateUploadAction() {
           progress: 15,
         });
 
-        const created = await createFileUpload({
-          original_name: file.name,
-          content_type: contentType,
-          file_size: file.size,
+        const created = await prepareFileUpload({
+          file,
+          contentType,
         });
 
         uploadStore.updateUploadedFile(localFileId, {

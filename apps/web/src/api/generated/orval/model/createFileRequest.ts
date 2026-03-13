@@ -10,14 +10,23 @@
  */
 export interface CreateFileRequest {
   /**
+   * 원본 파일명
    * @minLength 0
    * @maxLength 500
    */
   original_name: string;
   /**
+   * 콘텐츠 타입
    * @minLength 0
    * @maxLength 100
    */
   content_type: string;
+  /** 파일 크기(bytes) */
   file_size?: number;
+  /**
+   * 클라이언트가 계산한 SHA-256 hex
+   * @minLength 1
+   * @pattern ^[0-9A-Fa-f]{64}$
+   */
+  content_hash: string;
 }

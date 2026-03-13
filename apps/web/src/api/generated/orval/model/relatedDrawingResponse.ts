@@ -32,4 +32,6 @@ export interface RelatedDrawingResponse {
   preview_url?: string;
   /** 원본 파일 URL */
   original_file_url?: string;
+  /** 추가 업로드 가능한 render source 확장자 목록 */
+  allowed_render_source_extensions?: string[];
 }

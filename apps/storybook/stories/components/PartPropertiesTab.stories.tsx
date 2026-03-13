@@ -102,8 +102,8 @@ const meta = {
     layout: "padded",
   },
   args: {
+    drawingActivityState: "idle",
     isDeletingDrawing: false,
-    isUploadingDrawing: false,
     part: readyPart,
     onDeleteDrawing: () => undefined,
     onUploadDrawing: () => undefined,
@@ -130,7 +130,18 @@ export const RequiresWebViewFileForSolidWorks: Story = {
 
 export const Processing: Story = {
   args: {
+    drawingActivityState: "processing",
     part: processingPart,
+  },
+};
+
+export const Uploading: Story = {
+  args: {
+    drawingActivityState: "uploading",
+    part: {
+      ...readyPart,
+      drawing: null,
+    },
   },
 };
 
@@ -155,7 +166,16 @@ export const Showcase: Story = {
       />
       <PartPropertiesTab
         {...args}
+        drawingActivityState="processing"
         part={processingPart}
+      />
+      <PartPropertiesTab
+        {...args}
+        drawingActivityState="uploading"
+        part={{
+          ...readyPart,
+          drawing: null,
+        }}
       />
       <PartPropertiesTab
         {...args}

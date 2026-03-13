@@ -1,6 +1,13 @@
 import type { DeepDefined } from "@/api/types";
 import type { components } from "@/api/generated/schema";
 
+export interface FileUploadSource {
+  file: File;
+  originalName?: string;
+  contentType?: string;
+  fileSize?: number;
+}
+
 export type BatchCreateFileRequestDto = components["schemas"]["BatchCreateFileRequest"];
 export type BatchCreateFileResponseDto = DeepDefined<components["schemas"]["BatchCreateFileResponse"]>;
 export type BatchCompleteFileRequestDto = components["schemas"]["BatchCompleteRequest"];

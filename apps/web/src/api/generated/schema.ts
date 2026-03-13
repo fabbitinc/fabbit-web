@@ -3363,11 +3363,11 @@ export interface components {
             sheet_name?: string;
         };
         JsonNode: {
-            container?: boolean;
             number?: boolean;
             pojo?: boolean;
             int?: boolean;
             long?: boolean;
+            container?: boolean;
             value_node?: boolean;
             missing_node?: boolean;
             object?: boolean;
@@ -3984,10 +3984,27 @@ export interface components {
         };
         /** @description 파일 업로드 URL 발급 요청 */
         CreateFileRequest: {
+            /**
+             * @description 원본 파일명
+             * @example sample.pdf
+             */
             original_name: string;
+            /**
+             * @description 콘텐츠 타입
+             * @example application/pdf
+             */
             content_type: string;
-            /** Format: int64 */
+            /**
+             * Format: int64
+             * @description 파일 크기(bytes)
+             * @example 1024
+             */
             file_size?: number;
+            /**
+             * @description 클라이언트가 계산한 SHA-256 hex
+             * @example 6d2bc3f13b59bf38368ffce5aa7498479f880c6da14961fb1bc696ff44e43173
+             */
+            content_hash: string;
         };
         /** @description 응답 DTO */
         CreateFileResponse: {
@@ -5265,6 +5282,14 @@ export interface components {
             preview_url?: string;
             /** @description 원본 파일 URL */
             original_file_url?: string;
+            /**
+             * @description 추가 업로드 가능한 render source 확장자 목록
+             * @example [
+             *       "pdf",
+             *       "dxf"
+             *     ]
+             */
+            allowed_render_source_extensions?: string[];
         };
         /** @description 응답 DTO */
         PartSuppliersResponse: {

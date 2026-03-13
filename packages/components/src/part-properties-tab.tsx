@@ -1,6 +1,10 @@
 import type { ReactNode } from "react";
 import { Badge } from "@fabbit/ui";
-import { PartDrawingPreview, type PartDrawingPreviewDrawing } from "./part-drawing-preview";
+import {
+  PartDrawingPreview,
+  type PartDrawingPreviewActivityState,
+  type PartDrawingPreviewDrawing,
+} from "./part-drawing-preview";
 
 export interface PartPropertiesTabPart {
   partNumber: string;
@@ -17,8 +21,8 @@ export interface PartPropertiesTabPart {
 }
 
 export interface PartPropertiesTabProps {
+  drawingActivityState: PartDrawingPreviewActivityState;
   isDeletingDrawing: boolean;
-  isUploadingDrawing: boolean;
   part: PartPropertiesTabPart;
   onDeleteDrawing: () => void;
   onOpenDrawingViewer?: (drawing: PartDrawingPreviewDrawing) => void;
@@ -38,8 +42,8 @@ function getLifecycleVariant(lifecycleState: string | null): "outline" | "neutra
 }
 
 export function PartPropertiesTab({
+  drawingActivityState,
   isDeletingDrawing,
-  isUploadingDrawing,
   part,
   onDeleteDrawing,
   onOpenDrawingViewer,
@@ -74,9 +78,9 @@ export function PartPropertiesTab({
     <div className="grid grid-cols-1 gap-5 lg:grid-cols-5">
       <div className="lg:col-span-3">
         <PartDrawingPreview
+          activityState={drawingActivityState}
           part={{ drawing: part.drawing, partNumber: part.partNumber }}
           isDeleting={isDeletingDrawing}
-          isUploading={isUploadingDrawing}
           onDelete={onDeleteDrawing}
           onOpenViewer={onOpenDrawingViewer}
           onUpload={onUploadDrawing}

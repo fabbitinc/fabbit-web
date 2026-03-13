@@ -14593,9 +14593,6 @@
             "JsonNode": {
                 "type": "object",
                 "properties": {
-                    "container": {
-                        "type": "boolean"
-                    },
                     "number": {
                         "type": "boolean"
                     },
@@ -14606,6 +14603,9 @@
                         "type": "boolean"
                     },
                     "long": {
+                        "type": "boolean"
+                    },
+                    "container": {
                         "type": "boolean"
                     },
                     "value_node": {
@@ -15885,20 +15885,34 @@
                 "properties": {
                     "original_name": {
                         "type": "string",
+                        "description": "\uc6d0\ubcf8 \ud30c\uc77c\uba85",
+                        "example": "sample.pdf",
                         "maxLength": 500,
                         "minLength": 0
                     },
                     "content_type": {
                         "type": "string",
+                        "description": "\ucf58\ud150\uce20 \ud0c0\uc785",
+                        "example": "application/pdf",
                         "maxLength": 100,
                         "minLength": 0
                     },
                     "file_size": {
                         "type": "integer",
-                        "format": "int64"
+                        "format": "int64",
+                        "description": "\ud30c\uc77c \ud06c\uae30(bytes)",
+                        "example": 1024
+                    },
+                    "content_hash": {
+                        "type": "string",
+                        "description": "\ud074\ub77c\uc774\uc5b8\ud2b8\uac00 \uacc4\uc0b0\ud55c SHA-256 hex",
+                        "example": "6d2bc3f13b59bf38368ffce5aa7498479f880c6da14961fb1bc696ff44e43173",
+                        "minLength": 1,
+                        "pattern": "^[0-9A-Fa-f]{64}$"
                     }
                 },
                 "required": [
+                    "content_hash",
                     "content_type",
                     "original_name"
                 ]
@@ -18147,6 +18161,17 @@
                     "original_file_url": {
                         "type": "string",
                         "description": "\uc6d0\ubcf8 \ud30c\uc77c URL"
+                    },
+                    "allowed_render_source_extensions": {
+                        "type": "array",
+                        "description": "\ucd94\uac00 \uc5c5\ub85c\ub4dc \uac00\ub2a5\ud55c render source \ud655\uc7a5\uc790 \ubaa9\ub85d",
+                        "example": [
+                            "pdf",
+                            "dxf"
+                        ],
+                        "items": {
+                            "type": "string"
+                        }
                     }
                 }
             },

@@ -127,6 +127,7 @@ export { PartPickerSection } from "./part-picker-section";
 export type { PartPickerSectionProps } from "./part-picker-section";
 export { PartDrawingPreview } from "./part-drawing-preview";
 export type {
+  PartDrawingPreviewActivityState,
   PartDrawingPreviewDrawing,
   PartDrawingPreviewPart,
   PartDrawingPreviewProps,
