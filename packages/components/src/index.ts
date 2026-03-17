@@ -40,14 +40,14 @@ export type {
   CardManagementPlan,
   CardManagementPlanStatus,
 } from "./card-management-panel";
-export { ChangeRequestDiffTab } from "./change-request-diff-tab";
+export { EngineeringChangeDiffTab } from "./engineering-change-diff-tab";
 export type {
-  ChangeRequestDiffChanges,
-  ChangeRequestDiffItem,
-  ChangeRequestDiffPartSnapshot,
-  ChangeRequestDiffItemType,
-  ChangeRequestDiffTabProps,
-} from "./change-request-diff-tab";
+  EngineeringChangeDiffChanges,
+  EngineeringChangeDiffItem,
+  EngineeringChangeDiffPartSnapshot,
+  EngineeringChangeDiffItemType,
+  EngineeringChangeDiffTabProps,
+} from "./engineering-change-diff-tab";
 export { ChangeCreateScreen } from "./change-create-screen";
 export type {
   ChangeCreateScreenLabelOption,
@@ -56,7 +56,7 @@ export type {
   ChangeCreateScreenProps,
   ChangeCreateScreenSubmitInput,
 } from "./change-create-screen";
-export { ChangeRequestSidebar } from "./change-request-sidebar";
+export { EngineeringChangeSidebar } from "./engineering-change-sidebar";
 export type {
   AIUsagePanelData,
   AIUsagePanelProps,
@@ -64,15 +64,15 @@ export type {
 } from "./ai-usage-panel";
 export { AIUsagePanel } from "./ai-usage-panel";
 export type {
-  ChangeRequestSidebarChangeRequest,
-  ChangeRequestSidebarFile,
-  ChangeRequestSidebarLabel,
-  ChangeRequestSidebarLinkedIssue,
-  ChangeRequestSidebarPart,
-  ChangeRequestSidebarProps,
-  ChangeRequestSidebarReviewer,
-  ChangeRequestSidebarUser,
-} from "./change-request-sidebar";
+  EngineeringChangeSidebarEngineeringChange,
+  EngineeringChangeSidebarFile,
+  EngineeringChangeSidebarLabel,
+  EngineeringChangeSidebarLinkedIssue,
+  EngineeringChangeSidebarPart,
+  EngineeringChangeSidebarProps,
+  EngineeringChangeSidebarReviewer,
+  EngineeringChangeSidebarUser,
+} from "./engineering-change-sidebar";
 export { DescriptionList } from "./description-list";
 export type { DescriptionItem, DescriptionListProps } from "./description-list";
 export { EmptyState } from "./empty-state";
@@ -134,7 +134,11 @@ export type {
   PartDrawingPreviewWebViewRequirement,
 } from "./part-drawing-preview";
 export { PartAttachmentsTab } from "./part-attachments-tab";
-export type { PartAttachmentItem, PartAttachmentsTabProps } from "./part-attachments-tab";
+export type {
+  PartAttachmentsTabProps,
+  PartDrawingAttachmentItem,
+  PartFileAttachmentItem,
+} from "./part-attachments-tab";
 export { PartBomTab } from "./part-bom-tab";
 export type {
   PartBomTabDirection,
@@ -153,14 +157,26 @@ export type {
 export { PartHeaderCard } from "./part-header-card";
 export type { PartHeaderCardPart, PartHeaderCardProps } from "./part-header-card";
 export { PartHistoryTab } from "./part-history-tab";
-export type { PartHistoryEntry, PartHistoryTabProps } from "./part-history-tab";
-export { PartOwnerTab } from "./part-owner-tab";
 export type {
-  PartOwnerTabMemberOption,
-  PartOwnerTabOwnerValue,
-  PartOwnerTabProps,
-  PartOwnerTabTeamOption,
-} from "./part-owner-tab";
+  PartHistoryDraft,
+  PartHistoryEntry,
+  PartHistoryRevision,
+  PartHistoryRevisionChangeSummary,
+  PartHistoryRevisionEvent,
+  PartHistoryRevisionEventType,
+  PartHistoryRevisionStatus,
+  PartHistoryTabProps,
+} from "./part-history-tab";
+export { PartRevisionDiff } from "./part-revision-diff";
+export type {
+  PartRevisionDiffBomChange,
+  PartRevisionDiffChangeType,
+  PartRevisionDiffData,
+  PartRevisionDiffFieldChange,
+  PartRevisionDiffFileChange,
+  PartRevisionDiffProps,
+  PartRevisionDiffRevisionOption,
+} from "./part-revision-diff";
 export { PartPropertiesTab } from "./part-properties-tab";
 export type { PartPropertiesTabPart, PartPropertiesTabProps } from "./part-properties-tab";
 export { PartProjectsTab } from "./part-projects-tab";
@@ -300,6 +316,11 @@ export type {
   PartsListScreenProps,
   PartsListScreenQueryState,
 } from "./parts-list-screen";
+export type {
+  PartsListScreenMode,
+  PartsListScreenPrimaryTab,
+  PartsListScreenWorkbenchFilter,
+} from "./parts-list-mode-tabs";
 export { PartDetailScreen } from "./part-detail-screen";
 export type {
   PartDetailScreenProps,
@@ -331,7 +352,7 @@ export type {
   PartsTemplateMappingCanvasEdge,
   PartsTemplateMappingCanvasEmptyState,
   PartsTemplateMappingCanvasField,
-  PartsTemplateMappingCanvasFieldMappingChangeRequest,
+  PartsTemplateMappingCanvasFieldMappingEngineeringChange,
   PartsTemplateMappingCanvasFieldOption,
   PartsTemplateMappingCanvasFieldOwner,
   PartsTemplateMappingCanvasNode,
@@ -353,14 +374,14 @@ export type {
 } from "./parts-template-mapping-board";
 export { IssueDetailScreen } from "./issue-detail-screen";
 export type { IssueDetailScreenProps } from "./issue-detail-screen";
-export { ChangeRequestDetailScreen } from "./change-request-detail-screen";
+export { EngineeringChangeDetailScreen } from "./engineering-change-detail-screen";
 export type {
-  ChangeRequestDetailScreenProps,
-  ChangeRequestDetailTabItem,
-} from "./change-request-detail-screen";
+  EngineeringChangeDetailScreenProps,
+  EngineeringChangeDetailTabItem,
+} from "./engineering-change-detail-screen";
 export {
-  ChangeRequestStatusBadge,
-  ChangeRequestStatusIcon,
+  EngineeringChangeStatusBadge,
+  EngineeringChangeStatusIcon,
   IssueStatusBadge,
   IssueStatusIcon,
 } from "./work-item-status";
@@ -419,3 +440,14 @@ export type {
 } from "./gltf-viewer-canvas";
 export { GltfViewerScreen } from "./gltf-viewer-screen";
 export type { GltfViewerScreenProps } from "./gltf-viewer-screen";
+export { PdfViewerCanvas } from "./pdf-viewer-canvas";
+export type {
+  PdfViewerCanvasHandle,
+  PdfViewerCanvasProps,
+  PdfViewerMarkupTool,
+  PdfViewerPageInfo,
+  PdfViewerStatus,
+  PdfViewerStatusChange,
+} from "./pdf-viewer-canvas";
+export { PdfViewerScreen } from "./pdf-viewer-screen";
+export type { PdfViewerScreenProps } from "./pdf-viewer-screen";

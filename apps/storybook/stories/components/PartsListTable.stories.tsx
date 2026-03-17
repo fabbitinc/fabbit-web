@@ -15,7 +15,7 @@ const sampleItems = [
     category: "기구",
     revision: "C",
     lifecycleState: "양산",
-    drawingNumber: "DWG-0142",
+    drawingId: "drawing-1",
     childrenCount: 14,
   },
   {
@@ -25,7 +25,7 @@ const sampleItems = [
     category: "전장",
     revision: "F",
     lifecycleState: "시제품",
-    drawingNumber: null,
+    drawingId: null,
     childrenCount: 0,
   },
   {
@@ -35,7 +35,7 @@ const sampleItems = [
     category: "하네스",
     revision: "B",
     lifecycleState: "중단",
-    drawingNumber: "DWG-0081",
+    drawingId: "drawing-3",
     childrenCount: 2,
   },
 ] satisfies PartsListTableItem[];
@@ -71,32 +71,31 @@ function sortItems(items: PartsListTableItem[], sortKey: PartsListTableSortKey, 
 function PartsListTableStory({
   initialItems = sampleItems,
   isLoading = false,
-  totalCount = sampleItems.length,
 }: {
   initialItems?: PartsListTableItem[];
   isLoading?: boolean;
-  totalCount?: number;
 }) {
-  const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
   const [sortKey, setSortKey] = useState<PartsListTableSortKey>("partNumber");
   const [sortOrder, setSortOrder] = useState<PartsListTableSortOrder>("asc");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [hasPreviousPage, setHasPreviousPage] = useState(false);
 
   const items = useMemo(() => sortItems(initialItems, sortKey, sortOrder), [initialItems, sortKey, sortOrder]);
 
   return (
     <PartsListTable
+      hasNextPage
+      hasPreviousPage={hasPreviousPage}
       isLoading={isLoading}
       items={items}
-      page={page}
       pageSize={pageSize}
       selectedIds={selectedIds}
       sortKey={sortKey}
       sortOrder={sortOrder}
-      totalCount={totalCount}
-      onPageChange={setPage}
+      onNextPage={() => setHasPreviousPage(true)}
       onPageSizeChange={setPageSize}
+      onPreviousPage={() => setHasPreviousPage(false)}
       onRowClick={() => undefined}
       onSortChange={(nextSortKey) => {
         setSortOrder((current) => (sortKey === nextSortKey && current === "asc" ? "desc" : "asc"));
@@ -150,7 +149,7 @@ export const Loading: Story = {
 };
 
 export const EmptyState: Story = {
-  render: () => <PartsListTableStory initialItems={[]} totalCount={0} />,
+  render: () => <PartsListTableStory initialItems={[]} />,
 };
 
 export const Showcase: Story = {
@@ -168,7 +167,7 @@ export const Showcase: Story = {
 
       <div>
         <p className="mb-3 text-sm font-medium text-muted-foreground">빈 상태</p>
-        <PartsListTableStory initialItems={[]} totalCount={0} />
+        <PartsListTableStory initialItems={[]} />
       </div>
     </div>
   ),

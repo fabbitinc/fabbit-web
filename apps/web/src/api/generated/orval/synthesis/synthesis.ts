@@ -21,7 +21,7 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
   /**
  * 전체 합성 작업 이력을 최신순으로 조회합니다
- * @summary GET /api/v1/synthesis
+ * @summary 전체 합성 작업 이력을 최신순으로 조회합니다
  */
 export const listSynthesisJobs1 = (
     
@@ -33,7 +33,7 @@ export const listSynthesisJobs1 = (
     }
   /**
  * 매핑 기반 합성 배치를 시작하고 batch/job 정보를 반환합니다
- * @summary POST /api/v1/synthesis
+ * @summary 매핑 기반 합성 배치를 시작하고 batch/job 정보를 반환합니다
  */
 export const startSynthesis1 = (
     synthesisStartRequest: BodyType<SynthesisStartRequest>,
@@ -47,7 +47,7 @@ export const startSynthesis1 = (
     }
   /**
  * 개별 합성 작업 상태를 조회합니다
- * @summary GET /api/v1/synthesis/{jobId}
+ * @summary 개별 합성 작업 상태를 조회합니다
  */
 export const getSynthesisJob1 = (
     jobId: string,
@@ -59,7 +59,7 @@ export const getSynthesisJob1 = (
     }
   /**
  * 합성 배치 진행 상태를 조회합니다
- * @summary GET /api/v1/synthesis/batches/{batchId}
+ * @summary 합성 배치 진행 상태를 조회합니다
  */
 export const getSynthesisBatch1 = (
     batchId: string,

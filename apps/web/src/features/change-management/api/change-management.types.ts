@@ -8,5 +8,7 @@ type ResponseOf<
 export type IssueListQueryDto = NonNullable<ApiParameters<"/api/v1/issues", "get">["query"]>;
 export type IssueListResponseDto = ResponseOf<"/api/v1/issues", "get">;
 
-export type ChangeRequestListQueryDto = NonNullable<ApiParameters<"/api/v1/changes", "get">["query"]>;
-export type ChangeRequestListResponseDto = ResponseOf<"/api/v1/changes", "get">;
+export type EngineeringChangeListQueryDto = NonNullable<
+  ApiParameters<"/api/v1/engineering-changes", "get">["query"]
+>;
+export type EngineeringChangeListResponseDto = ResponseOf<"/api/v1/engineering-changes", "get">;

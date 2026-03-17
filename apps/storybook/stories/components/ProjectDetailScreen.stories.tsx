@@ -72,7 +72,7 @@ function ProjectDetailScreenStory({
     <ProjectDetailScreen
       activeView={activeView}
       activityContent={panel("프로젝트 활동", "멤버 추가, 부품 연결, 상태 변경 이력이 표시됩니다.")}
-      changeContent={panel("변경 요청", "프로젝트 범위의 변경 요청 목록이 표시됩니다.")}
+      changeContent={panel("변경관리", "프로젝트 범위의 변경관리 목록이 표시됩니다.")}
       isError={isError}
       issuesContent={panel("이슈", "프로젝트 범위의 이슈 목록이 표시됩니다.")}
       isLoading={isLoading}

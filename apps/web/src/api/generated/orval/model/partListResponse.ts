@@ -10,8 +10,7 @@ import type { PartSummaryResponse } from './partSummaryResponse';
  * 응답 DTO
  */
 export interface PartListResponse {
-  total?: number;
-  offset?: number;
-  limit?: number;
+  next_cursor?: string;
+  prev_cursor?: string;
   items?: PartSummaryResponse[];
 }

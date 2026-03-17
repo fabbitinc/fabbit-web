@@ -23,7 +23,7 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
   /**
  * 프로젝트 목록을 검색/페이징 조회합니다
- * @summary GET /api/v1/projects
+ * @summary 프로젝트 목록을 검색/페이징 조회합니다
  */
 export const listProjects = (
     params?: ListProjectsParams,
@@ -36,7 +36,7 @@ export const listProjects = (
     }
   /**
  * 프로젝트를 생성하고 상세 정보를 반환합니다
- * @summary POST /api/v1/projects
+ * @summary 프로젝트를 생성하고 상세 정보를 반환합니다
  */
 export const createProject = (
     createProjectRequest: BodyType<CreateProjectRequest>,
@@ -50,7 +50,7 @@ export const createProject = (
     }
   /**
  * 프로젝트 보관을 해제합니다
- * @summary POST /api/v1/projects/{projectId}/unarchive
+ * @summary 프로젝트 보관을 해제합니다
  */
 export const unarchiveProject = (
     projectId: string,
@@ -62,7 +62,7 @@ export const unarchiveProject = (
     }
   /**
  * 프로젝트를 보관 상태로 전환합니다
- * @summary POST /api/v1/projects/{projectId}/archive
+ * @summary 프로젝트를 보관 상태로 전환합니다
  */
 export const archiveProject = (
     projectId: string,
@@ -74,7 +74,7 @@ export const archiveProject = (
     }
   /**
  * 프로젝트 상세를 조회합니다
- * @summary GET /api/v1/projects/{projectId}
+ * @summary 프로젝트 상세를 조회합니다
  */
 export const getProject = (
     projectId: string,
@@ -86,7 +86,7 @@ export const getProject = (
     }
   /**
  * 프로젝트를 소프트 삭제합니다
- * @summary DELETE /api/v1/projects/{projectId}
+ * @summary 프로젝트를 소프트 삭제합니다
  */
 export const deleteProject = (
     projectId: string,
@@ -98,7 +98,7 @@ export const deleteProject = (
     }
   /**
  * 프로젝트 이름/설명을 수정합니다
- * @summary PATCH /api/v1/projects/{projectId}
+ * @summary 프로젝트 이름/설명을 수정합니다
  */
 export const updateProject = (
     projectId: string,
@@ -113,14 +113,14 @@ export const updateProject = (
     }
   /**
  * 프로젝트 활동 피드를 cursor 기반으로 조회합니다
- * @summary GET /api/v1/projects/{projectId}/activities
+ * @summary 프로젝트 활동 피드를 cursor 기반으로 조회합니다
  */
 export const getProjectActivities = (
     projectId: string,
     params?: GetProjectActivitiesParams,
  options?: SecondParameter<typeof customInstance<ActivityListResponse>>,) => {
       return customInstance<ActivityListResponse>(
-      {url: `/api/v1/projects/${projectId}/activities`, method: 'GET',
+      {url: `/api/v1/projects/${projectId}/histories`, method: 'GET',
         params
     },
       options);

@@ -66,15 +66,15 @@ export const FILE_ICON_EXTENSION_RULES: ReadonlyArray<FileIconExtensionRule> = [
   { kind: "code", label: "구조화 데이터", extensions: CODE_EXTENSIONS },
 ] as const;
 
-const DOCUMENT_EXTENSION_SET = new Set(DOCUMENT_EXTENSIONS);
-const STEP_EXTENSION_SET = new Set(STEP_EXTENSIONS);
-const DWG_EXTENSION_SET = new Set(DWG_EXTENSIONS);
-const SPREADSHEET_EXTENSION_SET = new Set(SPREADSHEET_EXTENSIONS);
-const IMAGE_EXTENSION_SET = new Set(IMAGE_EXTENSIONS);
-const AUDIO_EXTENSION_SET = new Set(AUDIO_EXTENSIONS);
-const VIDEO_EXTENSION_SET = new Set(VIDEO_EXTENSIONS);
-const ARCHIVE_EXTENSION_SET = new Set(ARCHIVE_EXTENSIONS);
-const CODE_EXTENSION_SET = new Set(CODE_EXTENSIONS);
+const DOCUMENT_EXTENSION_SET = new Set<string>(DOCUMENT_EXTENSIONS);
+const STEP_EXTENSION_SET = new Set<string>(STEP_EXTENSIONS);
+const DWG_EXTENSION_SET = new Set<string>(DWG_EXTENSIONS);
+const SPREADSHEET_EXTENSION_SET = new Set<string>(SPREADSHEET_EXTENSIONS);
+const IMAGE_EXTENSION_SET = new Set<string>(IMAGE_EXTENSIONS);
+const AUDIO_EXTENSION_SET = new Set<string>(AUDIO_EXTENSIONS);
+const VIDEO_EXTENSION_SET = new Set<string>(VIDEO_EXTENSIONS);
+const ARCHIVE_EXTENSION_SET = new Set<string>(ARCHIVE_EXTENSIONS);
+const CODE_EXTENSION_SET = new Set<string>(CODE_EXTENSIONS);
 
 const FILE_ICON_META: Record<FileIconKind, { Icon: LucideIcon; className: string }> = {
   pdf: {

@@ -170,8 +170,8 @@ export function ProjectWorkItemsPanel({
         ? "열린 이슈가 없습니다"
         : "닫힌 이슈가 없습니다"
       : statusFilter === "open"
-        ? "열린 변경 요청이 없습니다"
-        : "닫힌 변경 요청이 없습니다";
+        ? "열린 변경관리가 없습니다"
+        : "닫힌 변경관리가 없습니다";
 
   const EmptyIcon = kind === "issue" ? AlertCircle : FilePen;
 
@@ -220,7 +220,7 @@ export function ProjectWorkItemsPanel({
       {isError && !isLoading ? (
         <div className="flex min-h-64 flex-col items-center justify-center gap-3 px-6 py-16 text-center">
           <p className="text-sm text-muted-foreground">
-            {kind === "issue" ? "이슈 목록을 불러오지 못했습니다." : "변경 요청 목록을 불러오지 못했습니다."}
+            {kind === "issue" ? "이슈 목록을 불러오지 못했습니다." : "변경관리 목록을 불러오지 못했습니다."}
           </p>
           {onRetry ? (
             <Button size="sm" type="button" variant="outline" onClick={onRetry}>

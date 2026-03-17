@@ -75,7 +75,7 @@ export const Issues: Story = {};
 
 export const Changes: Story = {
   args: {
-    createLabel: "새 변경 요청",
+    createLabel: "새 변경관리",
     items: changeItems,
     kind: "change",
   },

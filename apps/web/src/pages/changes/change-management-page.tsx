@@ -15,7 +15,7 @@ const defaultQueryState: ChangeManagementQueryState = {
   pageSize: 20,
 };
 
-const validViews = new Set<ChangeManagementView>(["issues", "requests"]);
+const validViews = new Set<ChangeManagementView>(["issues", "engineering-changes"]);
 const validStates = new Set<ChangeManagementState>(["open", "closed"]);
 const validPageSizes = new Set([20, 40, 80]);
 

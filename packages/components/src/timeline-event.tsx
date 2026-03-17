@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import {
   CheckCircle2,
+  FileCheck,
   FilePen,
   LinkIcon,
   MessageSquare,
@@ -13,7 +14,7 @@ import {
 } from "lucide-react";
 import { LabelBadge, Tooltip, TooltipContent, TooltipTrigger, UserAvatar } from "@fabbit/ui";
 import {
-  ChangeRequestStatusIcon,
+  EngineeringChangeStatusIcon,
   IssueStatusIcon,
 } from "./work-item-status";
 
@@ -65,7 +66,7 @@ export interface TimelineEventData {
   fileCount?: number;
   fileNames?: string[];
   linkedIssueCount?: number;
-  linkedIssues?: { number: number; title: string; type?: "issue" | "change_request" }[];
+  linkedIssues?: { number: number; title: string; type?: "issue" | "engineering_change" }[];
   isComment?: boolean;
   addedLabels?: { name: string; color: string }[];
   removedLabels?: { name: string; color: string }[];
@@ -73,7 +74,7 @@ export interface TimelineEventData {
 
 export interface TimelineEventItemProps {
   event: TimelineEventData;
-  onNavigate?: (number: number, type: "issue" | "change_request") => void;
+  onNavigate?: (number: number, type: "issue" | "engineering_change") => void;
 }
 
 // ── 내부 헬퍼 ────────────────────────────────────────────
@@ -119,8 +120,8 @@ function ClickableIssueLink({
   onNavigate,
   block,
 }: {
-  item: { number: number; title: string; type?: "issue" | "change_request" };
-  onNavigate?: (number: number, type: "issue" | "change_request") => void;
+  item: { number: number; title: string; type?: "issue" | "engineering_change" };
+  onNavigate?: (number: number, type: "issue" | "engineering_change") => void;
   block?: boolean;
 }) {
   const issueType = item.type ?? "issue";
@@ -190,7 +191,7 @@ export function TimelineEventItem({ event, onNavigate }: TimelineEventItemProps)
     );
   }
 
-  // 리뷰 변경 요청
+  // 리뷰 변경
   if (type === "review_changes_requested") {
     return (
       <EventRow icon={<XCircle className="h-4 w-4 text-red-500 dark:text-red-400" />} timestamp={ts}>
@@ -227,21 +228,21 @@ export function TimelineEventItem({ event, onNavigate }: TimelineEventItemProps)
     let message: string;
 
     if (from === "CLOSED" && to === "SUBMITTED") {
-      message = " 님이 변경 요청을 다시 제출했습니다";
+      message = " 님이 변경관리를 다시 제출했습니다";
     } else if (to === "DRAFT") {
-      message = " 님이 변경 요청을 초안상태로 변경했습니다";
+      message = " 님이 변경관리를 초안 상태로 변경했습니다";
     } else if (to === "SUBMITTED") {
-      message = " 님이 변경 요청을 제출했습니다";
+      message = " 님이 변경관리를 제출했습니다";
     } else if (to === "MERGED") {
-      message = " 님이 변경 요청을 반영했습니다";
+      message = " 님이 변경관리를 반영했습니다";
     } else if (to === "CLOSED") {
-      message = " 님이 변경 요청을 닫았습니다";
+      message = " 님이 변경관리를 닫았습니다";
     } else {
-      message = " 님이 변경 요청 상태를 변경했습니다";
+      message = " 님이 변경관리 상태를 변경했습니다";
     }
 
     return (
-      <EventRow icon={<ChangeRequestStatusIcon state={targetState} className="h-4 w-4" />} timestamp={ts}>
+      <EventRow icon={<EngineeringChangeStatusIcon state={targetState} className="h-4 w-4" />} timestamp={ts}>
         <ActivityAuthor author={author} />
         {message}
       </EventRow>
@@ -262,7 +263,7 @@ export function TimelineEventItem({ event, onNavigate }: TimelineEventItemProps)
     return (
       <EventRow icon={<FilePen className="h-3.5 w-3.5 text-muted-foreground" />} timestamp={ts}>
         <ActivityAuthor author={author} />
-        {" 님이 변경 요청을 생성했습니다"}
+        {" 님이 변경관리를 생성했습니다"}
         {event.issueTitle && (
           <span className="text-muted-foreground/70"> — #{event.issueNumber} {event.issueTitle}</span>
         )}
@@ -273,9 +274,9 @@ export function TimelineEventItem({ event, onNavigate }: TimelineEventItemProps)
   // CR 머지
   if (type === "cr_merged") {
     return (
-      <EventRow icon={<ChangeRequestStatusIcon state="MERGED" className="h-4 w-4" />} timestamp={ts}>
+      <EventRow icon={<EngineeringChangeStatusIcon state="MERGED" className="h-4 w-4" />} timestamp={ts}>
         <ActivityAuthor author={author} />
-        {" 님이 변경 요청을 반영했습니다"}
+        {" 님이 변경관리를 반영했습니다"}
         {event.issueTitle && <span className="text-muted-foreground/70"> — {event.issueTitle}</span>}
       </EventRow>
     );
@@ -395,7 +396,7 @@ export function TimelineEventItem({ event, onNavigate }: TimelineEventItemProps)
     );
   }
 
-  // 변경 요청 연결/해제 (이슈 → CR)
+  // 변경관리 연결/해제 (이슈 → Engineering Change)
   if (type === "cr_changed") {
     const isRemoval = (event.linkedIssueCount ?? 0) < 0;
     return (
@@ -408,7 +409,7 @@ export function TimelineEventItem({ event, onNavigate }: TimelineEventItemProps)
         onNavigate={onNavigate}
       >
         <ActivityAuthor author={author} />
-        {isRemoval ? " 님이 변경 요청을 해제했습니다" : " 님이 변경 요청을 연결했습니다"}
+        {isRemoval ? " 님이 변경관리를 해제했습니다" : " 님이 변경관리를 연결했습니다"}
       </LinkedBlock>
     );
   }

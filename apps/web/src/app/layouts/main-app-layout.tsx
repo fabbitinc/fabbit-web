@@ -14,20 +14,9 @@ import { useAuthStore } from "@/features/auth";
 import { useLogoutAction } from "@/features/auth/hooks/use-logout-action";
 import { useSwitchOrganizationAction } from "@/features/auth/hooks/use-switch-organization-action";
 import { PartsUploadDialog } from "@/features/parts/components/parts-upload-dialog";
+import { useSettingsQuery } from "@/features/settings";
 
 const SIDENAV_WIDTH = 240;
-
-const navigationItems = [
-  { id: "dashboard", href: "/", label: "대시보드", icon: LayoutDashboard },
-  { id: "projects", href: "/projects", label: "프로젝트", icon: FolderKanban },
-  {
-    id: "changes",
-    href: "/changes",
-    label: "변경 관리",
-    icon: GitPullRequestArrow,
-  },
-  { id: "parts", href: "/parts", label: "부품 관리", icon: Package },
-];
 
 function Brand() {
   return <BrandLogo size="sm" />;
@@ -52,6 +41,7 @@ export function MainAppLayout() {
   const currentMembership = useAuthStore((state) => state.currentMembership);
   const switchOrganizationAction = useSwitchOrganizationAction();
   const logoutAction = useLogoutAction();
+  const settingsQuery = useSettingsQuery();
   const [isDesktop, setIsDesktop] = useState(() => window.innerWidth >= 1024);
   const [isSideNavCollapsed, setIsSideNavCollapsed] = useState(
     () => localStorage.getItem("fabbit-side-nav-collapsed") === "true",
@@ -113,6 +103,30 @@ export function MainAppLayout() {
     window.location.href = result.destination;
   }, [logoutAction]);
 
+  const partWorkflowMode = settingsQuery.data?.partWorkflowMode ?? "DIRECT";
+
+  const navigationItems = useMemo(
+    () =>
+      partWorkflowMode === "ENGINEERING_CHANGE_REQUIRED"
+        ? [
+            { id: "dashboard", href: "/", label: "대시보드", icon: LayoutDashboard },
+            { id: "projects", href: "/projects", label: "프로젝트", icon: FolderKanban },
+            {
+              id: "changes",
+              href: "/changes",
+              label: "변경 관리",
+              icon: GitPullRequestArrow,
+            },
+            { id: "parts", href: "/parts", label: "부품 관리", icon: Package },
+          ]
+        : [
+            { id: "dashboard", href: "/", label: "대시보드", icon: LayoutDashboard },
+            { id: "projects", href: "/projects", label: "프로젝트", icon: FolderKanban },
+            { id: "parts", href: "/parts", label: "부품 관리", icon: Package },
+          ],
+    [partWorkflowMode],
+  );
+
   const sidebarSections = useMemo(
     () => [
       {
@@ -132,7 +146,7 @@ export function MainAppLayout() {
         })),
       },
     ],
-    [closeMobileSideNav, location.pathname, navigate],
+    [closeMobileSideNav, location.pathname, navigate, navigationItems],
   );
 
   const organizationMenu = currentMembership

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useMemo, type ReactNode } from "react";
 import {
   ChevronDown,
   Download,
@@ -16,6 +16,7 @@ import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
+  DropdownMenuEmptyState,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -27,11 +28,19 @@ import {
   type PartsListTableItem,
   type PartsListTableSortKey,
 } from "./parts-list-table";
+import {
+  PartsListModeTabs,
+  type PartsListScreenMode,
+  type PartsListScreenPrimaryTab,
+  type PartsListScreenWorkbenchFilter,
+} from "./parts-list-mode-tabs";
 
 export interface PartsListScreenQueryState {
   query: string;
-  page: number;
+  cursor: string | null;
+  cursorDirection: "next" | "prev" | null;
   pageSize: number;
+  mineOnly: boolean;
   category: string | null;
   lifecycleState: string | null;
   hasDrawing: boolean | null;
@@ -46,15 +55,24 @@ export interface PartsListScreenFilterOptions {
 }
 
 export interface PartsListScreenProps {
+  activePrimaryTab?: PartsListScreenPrimaryTab;
+  activeWorkbenchFilter?: PartsListScreenWorkbenchFilter;
   filterOptions: PartsListScreenFilterOptions;
+  hasNextPage?: boolean;
+  hasPreviousPage?: boolean;
   isExporting: boolean;
   isLoading: boolean;
+  isSearchPending?: boolean;
   items: PartsListTableItem[];
   linkDialogContent?: ReactNode;
-  onFiltersApply?: (queryState: PartsListScreenQueryState) => void;
+  mode?: PartsListScreenMode;
+  onNextPage: () => void;
+  onPrimaryTabChange?: (tab: PartsListScreenPrimaryTab) => void;
+  onPreviousPage: () => void;
+  onWorkbenchFilterChange?: (filter: PartsListScreenWorkbenchFilter) => void;
   queryState: PartsListScreenQueryState;
+  searchValue?: string;
   selectedIds: Set<string>;
-  totalCount: number;
   onAllExportClick: () => void;
   onCategoryChange: (category: string | null) => void;
   onClearSelection: () => void;
@@ -64,10 +82,11 @@ export interface PartsListScreenProps {
   onHasDrawingChange: (hasDrawing: boolean | null) => void;
   onLifecycleStateChange: (lifecycleState: string | null) => void;
   onLinkClick: () => void;
-  onPageChange: (page: number) => void;
+  onMineOnlyChange: (mineOnly: boolean) => void;
   onPageSizeChange: (pageSize: number) => void;
   onQueryChange: (query: string) => void;
   onRowClick: (partId: string) => void;
+  onSearchValueChange?: (query: string) => void;
   onSelectedExportClick: () => void;
   onSortChange: (sortKey: PartsListTableSortKey) => void;
   onTemplateAnalysisClick: () => void;
@@ -82,38 +101,25 @@ interface FilterChip {
   onRemove: () => void;
 }
 
-interface DropdownEmptyStateProps {
-  message: string;
-}
-
-function DropdownEmptyState({ message }: DropdownEmptyStateProps) {
-  return (
-    <DropdownMenuItem disabled className="text-muted-foreground">
-      {message}
-    </DropdownMenuItem>
-  );
-}
-
-function isSameQueryState(left: PartsListScreenQueryState, right: PartsListScreenQueryState) {
-  return (
-    left.query === right.query &&
-    left.category === right.category &&
-    left.lifecycleState === right.lifecycleState &&
-    left.hasDrawing === right.hasDrawing &&
-    left.hasChildren === right.hasChildren
-  );
-}
-
 export function PartsListScreen({
+  activePrimaryTab = "master",
+  activeWorkbenchFilter = "draft",
   filterOptions,
+  hasNextPage,
+  hasPreviousPage,
   isExporting,
   isLoading,
+  isSearchPending = false,
   items,
   linkDialogContent,
-  onFiltersApply,
+  mode = "change-managed",
+  onNextPage,
+  onPrimaryTabChange,
+  onPreviousPage,
+  onWorkbenchFilterChange,
   queryState,
+  searchValue = queryState.query,
   selectedIds,
-  totalCount,
   onAllExportClick,
   onCategoryChange,
   onClearSelection,
@@ -123,10 +129,11 @@ export function PartsListScreen({
   onHasDrawingChange,
   onLifecycleStateChange,
   onLinkClick,
-  onPageChange,
+  onMineOnlyChange,
   onPageSizeChange,
   onQueryChange,
   onRowClick,
+  onSearchValueChange,
   onSelectedExportClick,
   onSortChange,
   onTemplateAnalysisClick,
@@ -134,88 +141,83 @@ export function PartsListScreen({
   onToggleSelectOne,
   onUploadClick,
 }: PartsListScreenProps) {
-  const [draftState, setDraftState] = useState<PartsListScreenQueryState>(queryState);
-
-  useEffect(() => {
-    setDraftState(queryState);
-  }, [queryState]);
-
-  const hasPendingChanges = useMemo(() => !isSameQueryState(draftState, queryState), [draftState, queryState]);
-  const draftAttributeCount =
-    (draftState.hasDrawing !== null ? 1 : 0) + (draftState.hasChildren !== null ? 1 : 0);
+  const isWorkbench = activePrimaryTab === "workbench";
+  const activeAttributeCount =
+    (queryState.hasDrawing !== null ? 1 : 0) + (queryState.hasChildren !== null ? 1 : 0);
   const hasAppliedFilters = Boolean(
     queryState.query.trim() ||
       queryState.category ||
       queryState.lifecycleState ||
       queryState.hasDrawing !== null ||
-      queryState.hasChildren !== null,
+      queryState.hasChildren !== null ||
+      (isWorkbench && queryState.mineOnly),
   );
 
   const activeChips = useMemo<FilterChip[]>(() => {
     const chips: FilterChip[] = [];
 
-    if (draftState.category) {
+    if (queryState.category) {
       chips.push({
         key: "category",
-        label: `카테고리: ${draftState.category}`,
-        onRemove: () => setDraftState((current) => ({ ...current, category: null })),
+        label: `카테고리: ${queryState.category}`,
+        onRemove: () => onCategoryChange(null),
       });
     }
 
-    if (draftState.lifecycleState) {
+    if (queryState.lifecycleState) {
       chips.push({
         key: "lifecycleState",
-        label: `상태: ${draftState.lifecycleState}`,
-        onRemove: () => setDraftState((current) => ({ ...current, lifecycleState: null })),
+        label: `상태: ${queryState.lifecycleState}`,
+        onRemove: () => onLifecycleStateChange(null),
       });
     }
 
-    if (draftState.hasDrawing !== null) {
+    if (queryState.hasDrawing !== null) {
       chips.push({
         key: "hasDrawing",
-        label: `도면 ${draftState.hasDrawing ? "있음" : "없음"}`,
-        onRemove: () => setDraftState((current) => ({ ...current, hasDrawing: null })),
+        label: `도면 ${queryState.hasDrawing ? "있음" : "없음"}`,
+        onRemove: () => onHasDrawingChange(null),
       });
     }
 
-    if (draftState.hasChildren !== null) {
+    if (queryState.hasChildren !== null) {
       chips.push({
         key: "hasChildren",
-        label: `하위 부품 ${draftState.hasChildren ? "있음" : "없음"}`,
-        onRemove: () => setDraftState((current) => ({ ...current, hasChildren: null })),
+        label: `하위 부품 ${queryState.hasChildren ? "있음" : "없음"}`,
+        onRemove: () => onHasChildrenChange(null),
+      });
+    }
+
+    if (isWorkbench && queryState.mineOnly) {
+      chips.push({
+        key: "mineOnly",
+        label: "내 작업만",
+        onRemove: () => onMineOnlyChange(false),
       });
     }
 
     return chips;
-  }, [draftState]);
-
-  function applyFilters() {
-    if (!hasPendingChanges) {
-      return;
-    }
-
-    if (onFiltersApply) {
-      onFiltersApply(draftState);
-      return;
-    }
-
-    onQueryChange(draftState.query);
-    onCategoryChange(draftState.category);
-    onLifecycleStateChange(draftState.lifecycleState);
-    onHasDrawingChange(draftState.hasDrawing);
-    onHasChildrenChange(draftState.hasChildren);
-    onPageChange(1);
-  }
+  }, [
+    isWorkbench,
+    onCategoryChange,
+    onHasChildrenChange,
+    onHasDrawingChange,
+    onLifecycleStateChange,
+    onMineOnlyChange,
+    queryState.category,
+    queryState.hasChildren,
+    queryState.hasDrawing,
+    queryState.lifecycleState,
+    queryState.mineOnly,
+  ]);
 
   function clearDraftFilters() {
-    setDraftState((current) => ({
-      ...current,
-      query: "",
-      category: null,
-      lifecycleState: null,
-      hasDrawing: null,
-      hasChildren: null,
-    }));
+    onQueryChange("");
+    onCategoryChange(null);
+    onLifecycleStateChange(null);
+    onHasDrawingChange(null);
+    onHasChildrenChange(null);
+    onMineOnlyChange(false);
   }
 
   const selectedCount = selectedIds.size;
@@ -244,34 +246,31 @@ export function PartsListScreen({
         </div>
       </div>
 
+      <div className="mb-4">
+        <PartsListModeTabs
+          activePrimaryTab={activePrimaryTab}
+          activeWorkbenchFilter={activeWorkbenchFilter}
+          isMineOnly={queryState.mineOnly}
+          mode={mode}
+          onMineOnlyChange={onMineOnlyChange}
+          onPrimaryTabChange={onPrimaryTabChange ?? (() => undefined)}
+          onWorkbenchFilterChange={onWorkbenchFilterChange ?? (() => undefined)}
+        />
+      </div>
+
       <div className="mb-2 flex items-center gap-2">
         <div className="relative flex-1">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            className="pl-10"
+            className="pl-10 pr-10"
             placeholder="품번, 품명으로 검색..."
-            value={draftState.query}
-            onChange={(event) => setDraftState((current) => ({ ...current, query: event.target.value }))}
-            onKeyDown={(event) => {
-              if (event.key === "Enter") {
-                applyFilters();
-              }
-            }}
+            value={searchValue}
+            onChange={(event) => (onSearchValueChange ?? onQueryChange)(event.target.value)}
           />
+          {isSearchPending ? (
+            <Loader2 className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 animate-spin text-muted-foreground" />
+          ) : null}
         </div>
-        <Button disabled={!hasPendingChanges} type="button" variant={hasPendingChanges ? "default" : "outline"} onClick={applyFilters}>
-          <Search className="h-4 w-4" />
-          검색
-        </Button>
-        <span className="shrink-0 text-sm text-muted-foreground">
-          {isLoading ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <>
-              <span className="font-semibold text-foreground">{totalCount}</span>건
-            </>
-          )}
-        </span>
       </div>
 
       <div className="mb-2 flex flex-wrap items-center gap-2">
@@ -314,7 +313,7 @@ export function PartsListScreen({
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
-                  className={draftState.category ? "border-primary/50 text-primary" : undefined}
+                  className={queryState.category ? "border-primary/50 text-primary" : undefined}
                   size="sm"
                   type="button"
                   variant="outline"
@@ -323,19 +322,16 @@ export function PartsListScreen({
                   <ChevronDown className="h-3.5 w-3.5" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-44">
+              <DropdownMenuContent align="start" className="w-52">
                 <DropdownMenuLabel>카테고리</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 {filterOptions.categories.length > 0 ? (
                   filterOptions.categories.map((category) => (
                     <DropdownMenuCheckboxItem
                       key={category}
-                      checked={draftState.category === category}
+                      checked={queryState.category === category}
                       onCheckedChange={() =>
-                        setDraftState((current) => ({
-                          ...current,
-                          category: current.category === category ? null : category,
-                        }))
+                        onCategoryChange(queryState.category === category ? null : category)
                       }
                       onSelect={(event) => event.preventDefault()}
                     >
@@ -343,12 +339,14 @@ export function PartsListScreen({
                     </DropdownMenuCheckboxItem>
                   ))
                 ) : (
-                  <DropdownEmptyState message="표시할 카테고리가 없습니다." />
+                  <DropdownMenuEmptyState>
+                    표시할 카테고리가 없습니다.
+                  </DropdownMenuEmptyState>
                 )}
-                {draftState.category ? (
+                {queryState.category ? (
                   <>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => setDraftState((current) => ({ ...current, category: null }))}>
+                    <DropdownMenuItem onClick={() => onCategoryChange(null)}>
                       선택 해제
                     </DropdownMenuItem>
                   </>
@@ -359,7 +357,7 @@ export function PartsListScreen({
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
-                  className={draftState.lifecycleState ? "border-primary/50 text-primary" : undefined}
+                  className={queryState.lifecycleState ? "border-primary/50 text-primary" : undefined}
                   size="sm"
                   type="button"
                   variant="outline"
@@ -368,19 +366,16 @@ export function PartsListScreen({
                   <ChevronDown className="h-3.5 w-3.5" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="start" className="w-44">
+              <DropdownMenuContent align="start" className="w-52">
                 <DropdownMenuLabel>상태</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 {filterOptions.lifecycleStates.length > 0 ? (
                   filterOptions.lifecycleStates.map((lifecycleState) => (
                     <DropdownMenuCheckboxItem
                       key={lifecycleState}
-                      checked={draftState.lifecycleState === lifecycleState}
+                      checked={queryState.lifecycleState === lifecycleState}
                       onCheckedChange={() =>
-                        setDraftState((current) => ({
-                          ...current,
-                          lifecycleState: current.lifecycleState === lifecycleState ? null : lifecycleState,
-                        }))
+                        onLifecycleStateChange(queryState.lifecycleState === lifecycleState ? null : lifecycleState)
                       }
                       onSelect={(event) => event.preventDefault()}
                     >
@@ -388,14 +383,14 @@ export function PartsListScreen({
                     </DropdownMenuCheckboxItem>
                   ))
                 ) : (
-                  <DropdownEmptyState message="표시할 상태 옵션이 없습니다." />
+                  <DropdownMenuEmptyState>
+                    표시할 상태 옵션이 없습니다.
+                  </DropdownMenuEmptyState>
                 )}
-                {draftState.lifecycleState ? (
+                {queryState.lifecycleState ? (
                   <>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      onClick={() => setDraftState((current) => ({ ...current, lifecycleState: null }))}
-                    >
+                    <DropdownMenuItem onClick={() => onLifecycleStateChange(null)}>
                       선택 해제
                     </DropdownMenuItem>
                   </>
@@ -406,7 +401,7 @@ export function PartsListScreen({
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
-                  className={draftAttributeCount > 0 ? "border-primary/50 text-primary" : undefined}
+                  className={activeAttributeCount > 0 ? "border-primary/50 text-primary" : undefined}
                   size="sm"
                   type="button"
                   variant="outline"
@@ -418,25 +413,15 @@ export function PartsListScreen({
               <DropdownMenuContent align="start" className="w-44">
                 <DropdownMenuLabel>도면</DropdownMenuLabel>
                 <DropdownMenuCheckboxItem
-                  checked={draftState.hasDrawing === true}
-                  onCheckedChange={() =>
-                    setDraftState((current) => ({
-                      ...current,
-                      hasDrawing: current.hasDrawing === true ? null : true,
-                    }))
-                  }
+                  checked={queryState.hasDrawing === true}
+                  onCheckedChange={() => onHasDrawingChange(queryState.hasDrawing === true ? null : true)}
                   onSelect={(event) => event.preventDefault()}
                 >
                   도면 있음
                 </DropdownMenuCheckboxItem>
                 <DropdownMenuCheckboxItem
-                  checked={draftState.hasDrawing === false}
-                  onCheckedChange={() =>
-                    setDraftState((current) => ({
-                      ...current,
-                      hasDrawing: current.hasDrawing === false ? null : false,
-                    }))
-                  }
+                  checked={queryState.hasDrawing === false}
+                  onCheckedChange={() => onHasDrawingChange(queryState.hasDrawing === false ? null : false)}
                   onSelect={(event) => event.preventDefault()}
                 >
                   도면 없음
@@ -444,31 +429,21 @@ export function PartsListScreen({
                 <DropdownMenuSeparator />
                 <DropdownMenuLabel>하위 부품</DropdownMenuLabel>
                 <DropdownMenuCheckboxItem
-                  checked={draftState.hasChildren === true}
-                  onCheckedChange={() =>
-                    setDraftState((current) => ({
-                      ...current,
-                      hasChildren: current.hasChildren === true ? null : true,
-                    }))
-                  }
+                  checked={queryState.hasChildren === true}
+                  onCheckedChange={() => onHasChildrenChange(queryState.hasChildren === true ? null : true)}
                   onSelect={(event) => event.preventDefault()}
                 >
                   하위 부품 있음
                 </DropdownMenuCheckboxItem>
                 <DropdownMenuCheckboxItem
-                  checked={draftState.hasChildren === false}
-                  onCheckedChange={() =>
-                    setDraftState((current) => ({
-                      ...current,
-                      hasChildren: current.hasChildren === false ? null : false,
-                    }))
-                  }
+                  checked={queryState.hasChildren === false}
+                  onCheckedChange={() => onHasChildrenChange(queryState.hasChildren === false ? null : false)}
                   onSelect={(event) => event.preventDefault()}
                 >
                   하위 부품 없음
                 </DropdownMenuCheckboxItem>
               </DropdownMenuContent>
-            </DropdownMenu>
+              </DropdownMenu>
 
             <div className="flex-1" />
 
@@ -518,14 +493,15 @@ export function PartsListScreen({
       <PartsListTable
         isLoading={isLoading}
         items={items}
-        page={queryState.page}
         pageSize={queryState.pageSize}
         selectedIds={selectedIds}
         sortKey={queryState.sortKey}
         sortOrder={queryState.sortOrder}
-        totalCount={totalCount}
-        onPageChange={onPageChange}
+        hasNextPage={hasNextPage}
+        hasPreviousPage={hasPreviousPage}
+        onNextPage={onNextPage}
         onPageSizeChange={onPageSizeChange}
+        onPreviousPage={onPreviousPage}
         onRowClick={onRowClick}
         onSortChange={onSortChange}
         onToggleSelectAll={onToggleSelectAll}

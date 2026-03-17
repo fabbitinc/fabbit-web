@@ -116,7 +116,7 @@ export interface IssueDetailScreenProps {
   onDeleteFile: (fileId: string) => Promise<void> | void;
   onLabelSearchChange?: (search: string) => void;
   onNavigateToChange: (changeNumber: number) => void;
-  onNavigateToIssueMention: (issueNumber: number, issueType: "issue" | "change_request") => void;
+  onNavigateToIssueMention: (issueNumber: number, issueType: "issue" | "engineering_change") => void;
   onMemberSearchChange?: (search: string) => void;
   onNavigateToPart?: (partId: string) => void;
   onPartsSearchChange?: (search: string) => void;
@@ -189,7 +189,7 @@ function IssueTimelineCommentItem({
   comment: IssueDetailScreenCommentItem;
   canEdit: boolean;
   issueMentionFetcher?: TiptapMentionFetcher;
-  onNavigateToIssueMention: (issueNumber: number, issueType: "issue" | "change_request") => void;
+  onNavigateToIssueMention: (issueNumber: number, issueType: "issue" | "engineering_change") => void;
   onUpdate: (commentId: string, body: TiptapEditorProps["content"] | null) => Promise<void>;
   userMentionFetcher?: TiptapMentionFetcher;
 }) {

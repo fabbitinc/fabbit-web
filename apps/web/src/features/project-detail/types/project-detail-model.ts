@@ -97,7 +97,7 @@ export interface ProjectChangeListItemModel {
   id: string;
   number: number;
   title: string;
-  crState: string;
+  engineeringChangeState: string;
   createdAt: string;
   commentsCount: number;
   createdByName: string;

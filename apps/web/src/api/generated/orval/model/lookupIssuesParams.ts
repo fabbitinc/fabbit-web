@@ -11,10 +11,6 @@ export type LookupIssuesParams = {
  */
 search?: string;
 /**
- * 조회할 이슈 타입
- */
-type?: string;
-/**
  * 조회 건수
  * @minimum 1
  * @maximum 50

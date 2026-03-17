@@ -200,7 +200,7 @@ export function IssueDetailScreen({ issueNumber }: IssueDetailScreenProps) {
         id: change.id,
         number: change.number,
         title: change.title,
-        state: change.crState,
+        state: change.state,
       })),
       linkedIssues: [],
       number: issue.number,
@@ -214,10 +214,10 @@ export function IssueDetailScreen({ issueNumber }: IssueDetailScreenProps) {
     };
   }, [issue]);
 
-  const navigateToIssueMention = (targetIssueNumber: number, issueType: "issue" | "change_request") => {
+  const navigateToIssueMention = (targetIssueNumber: number, issueType: "issue" | "engineering_change") => {
     navigate(
-      issueType === "change_request"
-        ? `/changes/requests/${targetIssueNumber}`
+      issueType === "engineering_change"
+        ? `/changes/engineering-changes/${targetIssueNumber}`
         : `/changes/issues/${targetIssueNumber}`,
     );
   };
@@ -228,7 +228,7 @@ export function IssueDetailScreen({ issueNumber }: IssueDetailScreenProps) {
         id: change.id,
         number: change.number,
         title: change.title,
-        state: change.crState,
+        state: change.state,
       }))}
       availableLabels={(labelLookup.data ?? []).map((label: LookupLabelModel) => ({
         id: label.id,
@@ -290,15 +290,14 @@ export function IssueDetailScreen({ issueNumber }: IssueDetailScreenProps) {
           issueNumber: String(issue.number),
           issueTitle: issue.title,
         });
-        navigate(`/changes/requests/new?${params.toString()}`);
+        navigate(`/changes/engineering-changes/new?${params.toString()}`);
       }}
       onDeleteComment={(commentId) => deleteCommentAction.mutateAsync(commentId)}
       onDeleteFile={(fileId) => deleteIssueFileAction.mutateAsync(fileId)}
       onLabelSearchChange={setLabelsSearch}
-      onNavigateToChange={(changeNumber) => navigate(`/changes/requests/${changeNumber}`)}
+      onNavigateToChange={(changeNumber) => navigate(`/changes/engineering-changes/${changeNumber}`)}
       onNavigateToIssueMention={navigateToIssueMention}
       onMemberSearchChange={setMembersSearch}
-      onNavigateToPart={(partId) => navigate(`/parts/${partId}`)}
       onPartsSearchChange={setPartsSearch}
       onReopenIssue={() => {
         reopenIssueAction.mutate();

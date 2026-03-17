@@ -258,13 +258,13 @@ function toProjectChangeListItemModel(
     id: item.id,
     number: item.number,
     title: item.title,
-    crState: item.cr_state,
+    engineeringChangeState: item.state,
     createdAt: item.created_at,
     commentsCount: item.comments_count,
     createdByName: item.created_by?.full_name ?? "삭제된 사용자",
     createdByProfileImageUrl: item.created_by?.profile_image_url ?? null,
-    labels: item.labels.map(toProjectWorkItemLabelModel),
-    assignees: item.assignees.map(toProjectWorkItemUserModel),
+    labels: [],
+    assignees: item.reviewers.map(toProjectWorkItemUserModel),
   };
 }
 

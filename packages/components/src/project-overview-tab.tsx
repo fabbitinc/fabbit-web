@@ -115,7 +115,7 @@ export function ProjectOverviewTab({ project }: ProjectOverviewTabProps) {
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-4">
         <StatCard accentClassName="bg-blue-100 text-blue-600" icon={Package} label="연결된 부품" value={project.partCount} />
         <StatCard accentClassName="bg-emerald-100 text-emerald-600" icon={AlertCircle} label="열린 이슈" value={overviewIssueCount} />
-        <StatCard accentClassName="bg-amber-100 text-amber-600" icon={FilePen} label="열린 변경 요청" value={overviewChangeCount} />
+        <StatCard accentClassName="bg-amber-100 text-amber-600" icon={FilePen} label="열린 변경관리" value={overviewChangeCount} />
         <StatCard accentClassName="bg-purple-100 text-purple-600" icon={FileCheck} label="반영 완료" value={overviewMergedChangeCount} />
       </div>
 

@@ -35,7 +35,7 @@ export const WithoutClick: Story = {
   },
 };
 
-export const ChangeRequest: Story = {
+export const EngineeringChange: Story = {
   args: {
     icon: GitPullRequestArrow,
     label: "할당된 변경요청",

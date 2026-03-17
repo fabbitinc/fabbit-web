@@ -1,9 +1,17 @@
+import type { PartDetailResponseLifecycleState } from "@/api/generated/orval/model/partDetailResponseLifecycleState";
+import type { PartRevisionHistoryDraftResponseStatus } from "@/api/generated/orval/model/partRevisionHistoryDraftResponseStatus";
+import type { PartRevisionHistoryItemResponseStatus } from "@/api/generated/orval/model/partRevisionHistoryItemResponseStatus";
+
+export type PartLifecycleState = PartDetailResponseLifecycleState;
+
 export interface PartsListQueryState {
   query: string;
-  page: number;
+  cursor: string | null;
+  cursorDirection: "next" | "prev" | null;
   pageSize: number;
+  mineOnly: boolean;
   category: string | null;
-  lifecycleState: string | null;
+  lifecycleState: PartLifecycleState | null;
   hasDrawing: boolean | null;
   hasChildren: boolean | null;
   sortKey: PartListSortKey;
@@ -15,25 +23,27 @@ export type PartListSortOrder = "asc" | "desc";
 
 export interface PartListItemModel {
   id: string;
+  routeId: string;
   partNumber: string;
   name: string | null;
   category: string | null;
   revision: string;
-  lifecycleState: string | null;
+  lifecycleState: PartLifecycleState | null;
   drawingId: string | null;
   childrenCount: number;
+  workStatus: "DRAFT" | "RELEASED" | "SUPERSEDED" | "CANCELED" | null;
 }
 
 export interface PartListResultModel {
-  total: number;
-  offset: number;
+  nextCursor: string | null;
+  prevCursor: string | null;
   limit: number;
   items: PartListItemModel[];
 }
 
 export interface PartFilterOptionsModel {
   categories: string[];
-  lifecycleStates: string[];
+  lifecycleStates: PartLifecycleState[];
 }
 
 export type PartDrawingProcessingStatus =
@@ -87,35 +97,26 @@ export interface PartDrawingProcessingModel {
 
 export interface PartDetailModel {
   id: string;
+  routeId: string;
   partNumber: string;
   name: string | null;
   revision: string;
+  draftKey: string | null;
   material: string | null;
   unit: string | null;
   description: string | null;
   category: string | null;
-  lifecycleState: string | null;
+  lifecycleState: PartLifecycleState | null;
   isPhantom: boolean | null;
   leadTimeDays: number | null;
   extendedProperties: Record<string, unknown>;
-  ownerId: string | null;
-  owner: PartOwnerUserModel | null;
-  ownerTeamId: string | null;
-  ownerTeamName: string | null;
   drawing: PartDrawingModel | null;
+  draftCount: number;
   childrenCount: number;
   parentsCount: number;
   suppliersCount: number;
   filesCount: number;
   projectsCount: number;
-}
-
-export interface PartOwnerUserModel {
-  userId: string;
-  fullName: string;
-  email: string;
-  phone: string | null;
-  profileImageUrl: string | null;
 }
 
 export interface PartBomItemModel {
@@ -142,7 +143,7 @@ export interface PartBomTreeNodeModel {
   material: string | null;
   unit: string | null;
   category: string | null;
-  lifecycleState: string | null;
+  lifecycleState: PartLifecycleState | null;
   quantity: number;
   children: PartBomTreeNodeModel[];
 }
@@ -161,7 +162,7 @@ export interface PartBomDisplayNodeModel {
   quantity: number;
   material: string | null;
   revision: string | null;
-  lifecycleState: string | null;
+  lifecycleState: PartLifecycleState | null;
   unit: string | null;
   category: string | null;
   children: PartBomDisplayNodeModel[];
@@ -174,19 +175,38 @@ export interface PartBomFlatRowModel {
   totalQuantity: number;
   material: string | null;
   revision: string | null;
-  lifecycleState: string | null;
+  lifecycleState: PartLifecycleState | null;
   unit: string | null;
   category: string | null;
   occurrences: number;
 }
 
-export interface PartFileModel {
-  fileId: string;
+export interface PartAttachmentModel {
+  id: string;
+  kind: "drawing" | "file";
   originalName: string;
   contentType: string;
   fileSize: number;
   fileUrl: string | null;
   createdAt: string;
+}
+
+export type PartPreviewSourceType = "DRAWING" | "PREVIEW_FILE";
+
+export interface PartPreviewSourceModel {
+  sourceId: string;
+  sourceType: PartPreviewSourceType;
+  attachmentType: PartPreviewSourceType;
+  previewFileId: string | null;
+  fileId: string | null;
+  drawingId: string | null;
+  originalName: string;
+  contentType: string | null;
+  fileSize: number | null;
+  fileUrl: string | null;
+  selected: boolean;
+  deletable: boolean;
+  createdAt: string | null;
 }
 
 export interface PartSupplierModel {
@@ -203,13 +223,6 @@ export interface PartProjectModel {
   description: string | null;
 }
 
-export interface PartOwnerModel {
-  ownerId: string | null;
-  owner: PartOwnerUserModel | null;
-  ownerTeamId: string | null;
-  ownerTeamName: string | null;
-}
-
 export interface PartsAvailableProjectModel {
   id: string;
   name: string;
@@ -224,4 +237,76 @@ export interface PartsAvailableTeamModel {
   memberCount: number;
 }
 
-export type PartDetailTab = "properties" | "bom" | "attachments" | "suppliers" | "projects" | "owner" | "history";
+export type PartDetailTab = "properties" | "bom" | "attachments" | "suppliers" | "projects" | "history";
+
+// ── 리비전 이력 ──────────────────────────────────────────
+
+export type PartRevisionStatus = PartRevisionHistoryItemResponseStatus;
+export type PartRevisionDraftStatus = PartRevisionHistoryDraftResponseStatus;
+
+export interface PartRevisionHistoryChangeSummaryModel {
+  attributeChanges: number;
+  fileChanges: number;
+  bomChanges: number;
+}
+
+export interface PartRevisionHistoryDraftModel {
+  revisionId: string;
+  name: string | null;
+  status: PartRevisionDraftStatus;
+  createdAt: string | null;
+  createdByName: string | null;
+  completedAt: string | null;
+  completedByName: string | null;
+  releasedRevisionCode: string | null;
+  reason: string | null;
+}
+
+export interface PartRevisionHistoryItemModel {
+  revisionId: string;
+  revisionCode: string;
+  status: PartRevisionStatus;
+  name: string | null;
+  releasedAt: string | null;
+  releasedByName: string | null;
+  summary: PartRevisionHistoryChangeSummaryModel | null;
+  drafts: PartRevisionHistoryDraftModel[];
+}
+
+// ── 리비전 diff ──────────────────────────────────────────
+
+export type PartRevisionDiffChangeType = "ADDED" | "REMOVED" | "CHANGED";
+
+export interface PartRevisionDiffAttributeModel {
+  fieldKey: string;
+  fieldLabel: string;
+  changeType: PartRevisionDiffChangeType;
+  beforeValue: string | null;
+  afterValue: string | null;
+}
+
+export interface PartRevisionDiffFileModel {
+  itemType: string;
+  displayName: string;
+  changeType: PartRevisionDiffChangeType;
+}
+
+export interface PartRevisionDiffBomModel {
+  lineNumber: string | null;
+  beforePartNumber: string | null;
+  beforeName: string | null;
+  beforeQuantity: number | null;
+  afterPartNumber: string | null;
+  afterName: string | null;
+  afterQuantity: number | null;
+  changeType: PartRevisionDiffChangeType;
+}
+
+export interface PartRevisionDiffModel {
+  baseRevisionCode: string | null;
+  targetRevisionCode: string | null;
+  summary: PartRevisionHistoryChangeSummaryModel | null;
+  attributes: PartRevisionDiffAttributeModel[];
+  files: PartRevisionDiffFileModel[];
+  bom: PartRevisionDiffBomModel[];
+}

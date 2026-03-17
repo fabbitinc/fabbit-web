@@ -11,7 +11,7 @@ import type { JsonNode } from './jsonNode';
  */
 export interface CommentResponse {
   id?: string;
-  issue_id?: string;
+  target_id?: string;
   body?: JsonNode;
   created_at?: string;
   updated_at?: string;

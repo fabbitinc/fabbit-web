@@ -13,9 +13,13 @@ has_drawing?: boolean;
 has_children?: boolean;
 project_id?: string;
 /**
- * @minimum 0
+ * 다음 페이지 조회 기준 커서
  */
-offset?: number;
+next_cursor?: string;
+/**
+ * 이전 페이지 조회 기준 커서
+ */
+prev_cursor?: string;
 /**
  * @minimum 1
  * @maximum 100

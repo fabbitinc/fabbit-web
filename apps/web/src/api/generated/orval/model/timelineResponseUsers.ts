@@ -4,6 +4,6 @@
  * OpenAPI definition
  * OpenAPI spec version: v0
  */
-import type { IssueUserSummaryResponse } from './issueUserSummaryResponse';
+import type { UserSummaryResponse } from './userSummaryResponse';
 
-export type TimelineResponseUsers = {[key: string]: IssueUserSummaryResponse};
+export type TimelineResponseUsers = {[key: string]: UserSummaryResponse};

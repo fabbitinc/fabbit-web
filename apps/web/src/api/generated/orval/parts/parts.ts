@@ -5,26 +5,20 @@
  * OpenAPI spec version: v0
  */
 import type {
-  AttachFilesRequest,
-  BomTreeResponse,
   CategoryLookupResponse,
   CategoryStatsResponse,
-  ExportBomTreeParams,
+  CreatePartRequest,
   ExportPartsParams,
-  FileItemResponse,
-  GetBomTreeParams,
+  ListInProgressPartsParams,
   ListPartsParams,
+  LookupDraftsParams,
   LookupParts1Params,
-  PartBomResponse,
   PartDetailResponse,
-  PartFilesResponse,
+  PartDraftLookupResponse,
   PartFilterOptionsResponse,
+  PartInProgressListResponse,
   PartListResponse,
   PartLookupResponse,
-  PartProjectsResponse,
-  PartSuppliersResponse,
-  RegisterDrawingRequest,
-  RegisterDrawingResponse,
   RenameCategoryRequest,
   RenameCategoryResponse
 } from '../model';
@@ -37,62 +31,35 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 
   /**
- * Part에 연결된 업로드 완료 파일 목록을 조회합니다
- * @summary GET /api/v1/parts/{partId}/files
+ * Part 목록을 검색/필터 조건과 함께 조회합니다
+ * @summary Part 목록을 검색/필터 조건과 함께 조회합니다
  */
-export const getPartFiles = (
-    partId: string,
- options?: SecondParameter<typeof customInstance<PartFilesResponse | Blob>>,) => {
-      return customInstance<PartFilesResponse | Blob>(
-      {url: `/api/v1/parts/${partId}/files`, method: 'GET'
+export const listParts = (
+    params?: ListPartsParams,
+ options?: SecondParameter<typeof customInstance<PartListResponse | Blob>>,) => {
+      return customInstance<PartListResponse | Blob>(
+      {url: `/api/v1/parts`, method: 'GET',
+        params
     },
       options);
     }
   /**
- * 업로드 완료 파일들을 Part에 배치 연결합니다
- * @summary POST /api/v1/parts/{partId}/files
+ * 부품을 생성하고 생성 직후 상세 정보를 반환합니다
+ * @summary 부품을 생성하고 생성 직후 상세 정보를 반환합니다
  */
-export const attachFiles = (
-    partId: string,
-    attachFilesRequest: BodyType<AttachFilesRequest>,
- options?: SecondParameter<typeof customInstance<FileItemResponse[] | Blob>>,) => {
-      return customInstance<FileItemResponse[] | Blob>(
-      {url: `/api/v1/parts/${partId}/files`, method: 'POST',
+export const createPart = (
+    createPartRequest: BodyType<CreatePartRequest>,
+ options?: SecondParameter<typeof customInstance<PartDetailResponse | Blob>>,) => {
+      return customInstance<PartDetailResponse | Blob>(
+      {url: `/api/v1/parts`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
-      data: attachFilesRequest
-    },
-      options);
-    }
-  /**
- * 업로드 완료 파일을 Drawing으로 등록하고 Part에 연결합니다
- * @summary POST /api/v1/parts/{partId}/drawings
- */
-export const registerDrawingForPart = (
-    partId: string,
-    registerDrawingRequest: BodyType<RegisterDrawingRequest>,
- options?: SecondParameter<typeof customInstance<RegisterDrawingResponse | Blob>>,) => {
-      return customInstance<RegisterDrawingResponse | Blob>(
-      {url: `/api/v1/parts/${partId}/drawings`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: registerDrawingRequest
-    },
-      options);
-    }
-  /**
- * Part에 연결된 도면을 삭제합니다 (Drawing + 연결 파일 soft delete)
- * @summary DELETE /api/v1/parts/{partId}/drawings
- */
-export const deleteDrawingFromPart = (
-    partId: string,
- options?: SecondParameter<typeof customInstance<void>>,) => {
-      return customInstance<void>(
-      {url: `/api/v1/parts/${partId}/drawings`, method: 'DELETE'
+      data: createPartRequest
     },
       options);
     }
   /**
  * 카테고리 이름을 일괄 변경하고 변경 건수를 반환합니다
- * @summary PATCH /api/v1/parts/categories/{category}
+ * @summary 카테고리 이름을 일괄 변경하고 변경 건수를 반환합니다
  */
 export const renameCategory = (
     category: string,
@@ -106,98 +73,8 @@ export const renameCategory = (
       options);
     }
   /**
- * Part 목록을 검색/필터 조건과 함께 조회합니다
- * @summary GET /api/v1/parts
- */
-export const listParts = (
-    params?: ListPartsParams,
- options?: SecondParameter<typeof customInstance<PartListResponse | Blob>>,) => {
-      return customInstance<PartListResponse | Blob>(
-      {url: `/api/v1/parts`, method: 'GET',
-        params
-    },
-      options);
-    }
-  /**
- * Part 상세 정보와 관계 카운트(children/parents/suppliers/files/projects)를 조회합니다
- * @summary GET /api/v1/parts/{partId}
- */
-export const getPart = (
-    partId: string,
- options?: SecondParameter<typeof customInstance<PartDetailResponse | Blob>>,) => {
-      return customInstance<PartDetailResponse | Blob>(
-      {url: `/api/v1/parts/${partId}`, method: 'GET'
-    },
-      options);
-    }
-  /**
- * Part에 연결된 공급사 목록을 조회합니다
- * @summary GET /api/v1/parts/{partId}/suppliers
- */
-export const getPartSuppliers = (
-    partId: string,
- options?: SecondParameter<typeof customInstance<PartSuppliersResponse | Blob>>,) => {
-      return customInstance<PartSuppliersResponse | Blob>(
-      {url: `/api/v1/parts/${partId}/suppliers`, method: 'GET'
-    },
-      options);
-    }
-  /**
- * 해당 Part가 소속된 프로젝트 목록을 조회합니다
- * @summary GET /api/v1/parts/{partId}/projects
- */
-export const getPartProjects = (
-    partId: string,
- options?: SecondParameter<typeof customInstance<PartProjectsResponse | Blob>>,) => {
-      return customInstance<PartProjectsResponse | Blob>(
-      {url: `/api/v1/parts/${partId}/projects`, method: 'GET'
-    },
-      options);
-    }
-  /**
- * Part의 직접 자식/직접 부모 BOM 관계(1-depth)를 조회합니다
- * @summary GET /api/v1/parts/{partId}/bom
- */
-export const getPartBom = (
-    partId: string,
- options?: SecondParameter<typeof customInstance<PartBomResponse | Blob>>,) => {
-      return customInstance<PartBomResponse | Blob>(
-      {url: `/api/v1/parts/${partId}/bom`, method: 'GET'
-    },
-      options);
-    }
-  /**
- * Part BOM 트리를 정전개(forward) 또는 역전개(reverse)로 조회합니다
- * @summary GET /api/v1/parts/{partId}/bom/tree
- */
-export const getBomTree = (
-    partId: string,
-    params?: GetBomTreeParams,
- options?: SecondParameter<typeof customInstance<BomTreeResponse | Blob>>,) => {
-      return customInstance<BomTreeResponse | Blob>(
-      {url: `/api/v1/parts/${partId}/bom/tree`, method: 'GET',
-        params
-    },
-      options);
-    }
-  /**
- * Part BOM 트리를 Excel(.xlsx) 파일로 내보냅니다
- * @summary GET /api/v1/parts/{partId}/bom/tree/export
- */
-export const exportBomTree = (
-    partId: string,
-    params?: ExportBomTreeParams,
- options?: SecondParameter<typeof customInstance<Blob>>,) => {
-      return customInstance<Blob>(
-      {url: `/api/v1/parts/${partId}/bom/tree/export`, method: 'GET',
-        params,
-        responseType: 'blob'
-    },
-      options);
-    }
-  /**
  * 품번/품명으로 경량 Part 목록을 조회합니다
- * @summary GET /api/v1/parts/lookup
+ * @summary 품번/품명으로 경량 Part 목록을 조회합니다
  */
 export const lookupParts1 = (
     params?: LookupParts1Params,
@@ -209,8 +86,21 @@ export const lookupParts1 = (
       options);
     }
   /**
+ * 진행중 부품 작업함 목록을 검색/필터 조건과 함께 조회합니다
+ * @summary 진행중 부품 작업함 목록을 검색/필터 조건과 함께 조회합니다
+ */
+export const listInProgressParts = (
+    params?: ListInProgressPartsParams,
+ options?: SecondParameter<typeof customInstance<PartInProgressListResponse | Blob>>,) => {
+      return customInstance<PartInProgressListResponse | Blob>(
+      {url: `/api/v1/parts/in-progress`, method: 'GET',
+        params
+    },
+      options);
+    }
+  /**
  * Part 목록 필터 옵션(카테고리/수명주기 상태)을 조회합니다
- * @summary GET /api/v1/parts/filter-options
+ * @summary Part 목록 필터 옵션(카테고리/수명주기 상태)을 조회합니다
  */
 export const getFilterOptions = (
     
@@ -222,7 +112,7 @@ export const getFilterOptions = (
     }
   /**
  * 필터링된 Part 목록을 Excel(.xlsx) 파일로 내보냅니다
- * @summary GET /api/v1/parts/export
+ * @summary 필터링된 Part 목록을 Excel(.xlsx) 파일로 내보냅니다
  */
 export const exportParts = (
     params?: ExportPartsParams,
@@ -235,8 +125,21 @@ export const exportParts = (
       options);
     }
   /**
+ * 현재 사용자가 만든 변경관리 연결 가능 초안 목록을 조회합니다
+ * @summary 현재 사용자가 만든 변경관리 연결 가능 초안 목록을 조회합니다
+ */
+export const lookupDrafts = (
+    params?: LookupDraftsParams,
+ options?: SecondParameter<typeof customInstance<PartDraftLookupResponse | Blob>>,) => {
+      return customInstance<PartDraftLookupResponse | Blob>(
+      {url: `/api/v1/parts/drafts/lookup`, method: 'GET',
+        params
+    },
+      options);
+    }
+  /**
  * 카테고리별 부품 개수를 조회합니다
- * @summary GET /api/v1/parts/categories
+ * @summary 카테고리별 부품 개수를 조회합니다
  */
 export const listCategories = (
     
@@ -248,7 +151,7 @@ export const listCategories = (
     }
   /**
  * 카테고리 문자열 목록을 경량 조회합니다
- * @summary GET /api/v1/parts/categories/lookup
+ * @summary 카테고리 문자열 목록을 경량 조회합니다
  */
 export const lookupCategories = (
     
@@ -258,34 +161,13 @@ export const lookupCategories = (
     },
       options);
     }
-  /**
- * Part에 연결된 첨부파일 1건을 제거(소프트 삭제)합니다
- * @summary DELETE /api/v1/parts/{partId}/files/{fileId}
- */
-export const detachFile = (
-    partId: string,
-    fileId: string,
- options?: SecondParameter<typeof customInstance<void>>,) => {
-      return customInstance<void>(
-      {url: `/api/v1/parts/${partId}/files/${fileId}`, method: 'DELETE'
-    },
-      options);
-    }
-  export type GetPartFilesResult = NonNullable<Awaited<ReturnType<typeof getPartFiles>>>
-export type AttachFilesResult = NonNullable<Awaited<ReturnType<typeof attachFiles>>>
-export type RegisterDrawingForPartResult = NonNullable<Awaited<ReturnType<typeof registerDrawingForPart>>>
-export type DeleteDrawingFromPartResult = NonNullable<Awaited<ReturnType<typeof deleteDrawingFromPart>>>
+  export type ListPartsResult = NonNullable<Awaited<ReturnType<typeof listParts>>>
+export type CreatePartResult = NonNullable<Awaited<ReturnType<typeof createPart>>>
 export type RenameCategoryResult = NonNullable<Awaited<ReturnType<typeof renameCategory>>>
-export type ListPartsResult = NonNullable<Awaited<ReturnType<typeof listParts>>>
-export type GetPartResult = NonNullable<Awaited<ReturnType<typeof getPart>>>
-export type GetPartSuppliersResult = NonNullable<Awaited<ReturnType<typeof getPartSuppliers>>>
-export type GetPartProjectsResult = NonNullable<Awaited<ReturnType<typeof getPartProjects>>>
-export type GetPartBomResult = NonNullable<Awaited<ReturnType<typeof getPartBom>>>
-export type GetBomTreeResult = NonNullable<Awaited<ReturnType<typeof getBomTree>>>
-export type ExportBomTreeResult = NonNullable<Awaited<ReturnType<typeof exportBomTree>>>
 export type LookupParts1Result = NonNullable<Awaited<ReturnType<typeof lookupParts1>>>
+export type ListInProgressPartsResult = NonNullable<Awaited<ReturnType<typeof listInProgressParts>>>
 export type GetFilterOptionsResult = NonNullable<Awaited<ReturnType<typeof getFilterOptions>>>
 export type ExportPartsResult = NonNullable<Awaited<ReturnType<typeof exportParts>>>
+export type LookupDraftsResult = NonNullable<Awaited<ReturnType<typeof lookupDrafts>>>
 export type ListCategoriesResult = NonNullable<Awaited<ReturnType<typeof listCategories>>>
 export type LookupCategoriesResult = NonNullable<Awaited<ReturnType<typeof lookupCategories>>>
-export type DetachFileResult = NonNullable<Awaited<ReturnType<typeof detachFile>>>

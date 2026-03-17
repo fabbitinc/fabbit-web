@@ -24,7 +24,7 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
   /**
  * V2 매핑 ID로 최신 리비전을 조회합니다
- * @summary GET /api/v2/mappings/{mappingId}
+ * @summary V2 매핑 ID로 최신 리비전을 조회합니다
  */
 export const get = (
     mappingId: string,
@@ -36,7 +36,7 @@ export const get = (
     }
   /**
  * V2 매핑을 수정하고 새로운 리비전을 생성합니다
- * @summary PUT /api/v2/mappings/{mappingId}
+ * @summary V2 매핑을 수정하고 새로운 리비전을 생성합니다
  */
 export const update = (
     mappingId: string,
@@ -51,7 +51,7 @@ export const update = (
     }
   /**
  * V2 매핑을 비활성화(soft delete)합니다
- * @summary DELETE /api/v2/mappings/{mappingId}
+ * @summary V2 매핑을 비활성화(soft delete)합니다
  */
 export const _delete = (
     mappingId: string,
@@ -63,7 +63,7 @@ export const _delete = (
     }
   /**
  * V2 매핑을 정규화하고 파일 샘플 데이터 기준으로 오류/경고를 검증합니다
- * @summary POST /api/v2/mappings/validate
+ * @summary V2 매핑을 정규화하고 파일 샘플 데이터 기준으로 오류/경고를 검증합니다
  */
 export const validate = (
     mappingV2ValidateRequest: BodyType<MappingV2ValidateRequest>,
@@ -77,7 +77,7 @@ export const validate = (
     }
   /**
  * 업로드된 파일을 nodes[] + relations[] 구조의 V2 매핑으로 미리보기합니다
- * @summary POST /api/v2/mappings/preview
+ * @summary 업로드된 파일을 nodes[] + relations[] 구조의 V2 매핑으로 미리보기합니다
  */
 export const preview = (
     mappingV2PreviewRequest: BodyType<MappingV2PreviewRequest>,
@@ -91,7 +91,7 @@ export const preview = (
     }
   /**
  * 검토된 V2 매핑을 확정하여 새 V2 매핑 레코드(버전 1)를 생성합니다
- * @summary POST /api/v2/mappings/confirm
+ * @summary 검토된 V2 매핑을 확정하여 새 V2 매핑 레코드(버전 1)를 생성합니다
  */
 export const confirm = (
     mappingV2ConfirmRequest: BodyType<MappingV2ConfirmRequest>,
@@ -105,7 +105,7 @@ export const confirm = (
     }
   /**
  * 활성 V2 매핑 목록을 최신순으로 조회합니다
- * @summary GET /api/v2/mappings
+ * @summary 활성 V2 매핑 목록을 최신순으로 조회합니다
  */
 export const list = (
     

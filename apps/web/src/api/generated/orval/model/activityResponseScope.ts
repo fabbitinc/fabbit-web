@@ -10,7 +10,7 @@ export type ActivityResponseScope = typeof ActivityResponseScope[keyof typeof Ac
 
 export const ActivityResponseScope = {
   issue: 'issue',
-  cr: 'cr',
+  engineering_change: 'engineering_change',
   project: 'project',
   organization: 'organization',
 } as const;

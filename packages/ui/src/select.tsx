@@ -143,9 +143,29 @@ const SelectSeparator = React.forwardRef<
 
 SelectSeparator.displayName = SelectPrimitive.Separator.displayName;
 
+function SelectEmptyState({
+  children,
+  className,
+  ...props
+}: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="select-empty-state"
+      className={cn(
+        "px-2 py-2 text-sm leading-5 text-muted-foreground whitespace-normal break-keep",
+        className,
+      )}
+      {...props}
+    >
+      {children}
+    </div>
+  );
+}
+
 export {
   Select,
   SelectContent,
+  SelectEmptyState,
   SelectGroup,
   SelectItem,
   SelectLabel,

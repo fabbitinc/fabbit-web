@@ -5,6 +5,7 @@ import {
   type BomExploreDisplayNode,
 } from "@fabbit/components";
 import { useExportPartBomAction } from "@/features/parts/hooks/use-export-part-bom-action";
+import { buildPartBomPath, buildPartDetailPath } from "@/features/parts/lib/part-route";
 import { usePartBomTreeQuery } from "@/features/parts/hooks/use-part-bom-tree-query";
 import type {
   PartBomDirection,
@@ -61,8 +62,8 @@ export function BomExploreScreen({
       viewType={viewType}
       onDirectionChange={onDirectionChange}
       onExport={() => exportBomAction.mutate({ direction })}
-      onNavigateBom={(targetPartId) => navigate(`/parts/${targetPartId}/bom`)}
-      onNavigateDetail={(targetPartId) => navigate(`/parts/${targetPartId}`)}
+      onNavigateBom={(targetPartId) => navigate(buildPartBomPath(targetPartId))}
+      onNavigateDetail={(targetPartId) => navigate(buildPartDetailPath(targetPartId))}
       onSearchChange={onSearchChange}
       onSingleLevelRootKeyChange={onSingleLevelRootKeyChange}
       onViewTypeChange={onViewTypeChange}

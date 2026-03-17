@@ -24,7 +24,7 @@ const quickActions = [
   {
     href: "/changes",
     label: "변경 관리",
-    description: "이슈와 변경 요청 흐름을 확인합니다.",
+    description: "이슈와 변경관리 흐름을 확인합니다.",
     icon: GitPullRequestArrow,
   },
 ] satisfies DashboardScreenQuickAction[];
@@ -45,7 +45,7 @@ const myWorkItems = [
   {
     id: "request-15",
     title: "PCB 커넥터 핀 배열 변경",
-    href: "/changes/requests/15",
+    href: "/changes/engineering-changes/15",
     kind: "change",
     labels: [{ color: "#3b82f6", name: "설계변경" }],
     number: 15,

@@ -711,11 +711,13 @@ function LifecycleBadge({ state }: { state: string | null }) {
   }
 
   const className =
-    state === "양산"
+    state === "ACTIVE"
       ? "border-[var(--status-success-border)] bg-[var(--status-success-bg)] text-[var(--status-success)]"
-      : state === "개발"
-        ? "border-primary/20 bg-primary/10 text-primary"
-        : "border-border bg-muted/40 text-muted-foreground";
+      : state === "EOL"
+        ? "border-[var(--status-warning-border)] bg-[var(--status-warning-bg)] text-[var(--status-warning)]"
+        : state === "OBSOLETE"
+          ? "border-[var(--status-neutral-border)] bg-[var(--status-neutral-bg)] text-muted-foreground"
+          : "border-border bg-muted/40 text-muted-foreground";
 
   return (
     <Badge variant="outline" className={className}>

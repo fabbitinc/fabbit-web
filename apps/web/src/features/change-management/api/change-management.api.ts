@@ -1,7 +1,7 @@
-import { listChangeRequests as listChangeRequestsApiV1ChangesGet } from "@/api/generated/orval/changes/changes";
+import { listEngineeringChanges as listEngineeringChangesApiV1EngineeringChangesGet } from "@/api/generated/orval/engineering-changes/engineering-changes";
 import { listIssues as listIssuesApiV1IssuesGet } from "@/api/generated/orval/issues/issues";
 import type {
-  ChangeRequestListQueryDto,
+  EngineeringChangeListQueryDto,
   IssueListQueryDto,
 } from "@/features/change-management/api/change-management.types";
 import type {
@@ -33,7 +33,6 @@ interface ChangeManagementSourceItem {
   labels?: ChangeManagementSourceLabel[];
   assignees?: ChangeManagementSourceUser[];
   comments_count?: number;
-  cr_state?: string | null;
 }
 
 export async function fetchIssueList(query: IssueListQueryDto): Promise<ChangeManagementListModel> {
@@ -49,8 +48,8 @@ export async function fetchIssueList(query: IssueListQueryDto): Promise<ChangeMa
   };
 }
 
-export async function fetchChangeRequestList(query: ChangeRequestListQueryDto): Promise<ChangeManagementListModel> {
-  const response = await listChangeRequestsApiV1ChangesGet(query);
+export async function fetchEngineeringChangeList(query: EngineeringChangeListQueryDto): Promise<ChangeManagementListModel> {
+  const response = await listEngineeringChangesApiV1EngineeringChangesGet(query);
 
   return {
     openCount: response.open_count,
@@ -58,7 +57,7 @@ export async function fetchChangeRequestList(query: ChangeRequestListQueryDto): 
     total: response.total,
     offset: response.offset,
     limit: response.limit,
-    items: response.items.map((item) => toChangeManagementItemModel("requests", item)),
+    items: response.items.map((item) => toChangeManagementItemModel("engineering-changes", item)),
   };
 }
 
@@ -82,7 +81,7 @@ function toChangeManagementItemModel(
     kind,
     title: item.title,
     state: item.state,
-    crState: item.cr_state ?? null,
+    engineeringChangeState: kind === "engineering-changes" ? item.state : null,
     createdAt: item.created_at,
     updatedAt: item.updated_at,
     createdBy: item.created_by?.full_name ?? null,

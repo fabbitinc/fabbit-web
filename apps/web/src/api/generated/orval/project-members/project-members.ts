@@ -22,7 +22,7 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
   /**
  * 프로젝트 멤버 목록을 조회합니다
- * @summary GET /api/v1/projects/{projectId}/members
+ * @summary 프로젝트 멤버 목록을 조회합니다
  */
 export const listProjectMembers = (
     projectId: string,
@@ -34,7 +34,7 @@ export const listProjectMembers = (
     }
   /**
  * 프로젝트에 멤버를 배치 추가합니다
- * @summary POST /api/v1/projects/{projectId}/members
+ * @summary 프로젝트에 멤버를 배치 추가합니다
  */
 export const addProjectMembers = (
     projectId: string,
@@ -49,7 +49,7 @@ export const addProjectMembers = (
     }
   /**
  * 프로젝트에서 멤버를 배치 제거합니다
- * @summary DELETE /api/v1/projects/{projectId}/members
+ * @summary 프로젝트에서 멤버를 배치 제거합니다
  */
 export const removeProjectMembers = (
     projectId: string,
@@ -64,7 +64,7 @@ export const removeProjectMembers = (
     }
   /**
  * 프로젝트 멤버 picker용 lookup 목록을 조회합니다
- * @summary GET /api/v1/projects/{projectId}/members/lookup
+ * @summary 프로젝트 멤버 picker용 lookup 목록을 조회합니다
  */
 export const lookupMembers = (
     projectId: string,

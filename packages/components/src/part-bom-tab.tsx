@@ -1,4 +1,4 @@
-import { ExternalLink, Package } from "lucide-react";
+import { ExternalLink, Loader2, Package } from "lucide-react";
 import { Button } from "@fabbit/ui";
 
 export type PartBomTabDirection = "forward" | "reverse";
@@ -14,6 +14,7 @@ export interface PartBomTabProps {
   childrenItems: PartBomTabItem[];
   parentItems: PartBomTabItem[];
   isLoading?: boolean;
+  showLoadingIndicator?: boolean;
   onExploreDirectionChange?: (direction: PartBomTabDirection) => void;
   onPartClick?: (partId: string) => void;
 }
@@ -24,6 +25,7 @@ interface PartBomSectionProps {
   emptyLabel: string;
   items: PartBomTabItem[];
   isLoading: boolean;
+  showLoadingIndicator: boolean;
   title: string;
   onActionClick?: () => void;
   onPartClick?: (partId: string) => void;
@@ -35,17 +37,24 @@ function PartBomSection({
   emptyLabel,
   items,
   isLoading,
+  showLoadingIndicator,
   title,
   onActionClick,
   onPartClick,
 }: PartBomSectionProps) {
   return (
-    <section className="app-panel rounded-lg p-4">
+    <section aria-busy={isLoading} className="app-panel rounded-lg p-4">
       <div className="flex items-center justify-between gap-3">
         <div>
           <p className="text-lg font-semibold text-foreground">{title}</p>
           <p className="mt-1 text-sm text-muted-foreground">{description}</p>
         </div>
+        {showLoadingIndicator ? (
+          <div className="inline-flex items-center gap-2 text-sm text-muted-foreground">
+            <Loader2 className="size-4 animate-spin" />
+            불러오는 중
+          </div>
+        ) : null}
         {items.length > 0 && onActionClick ? (
           <Button type="button" variant="outline" onClick={onActionClick}>
             <ExternalLink className="size-4" />
@@ -55,8 +64,7 @@ function PartBomSection({
       </div>
 
       <div className="mt-4 space-y-2">
-        {isLoading ? <p className="text-sm text-muted-foreground">BOM을 불러오는 중입니다.</p> : null}
-        {!isLoading && items.length === 0 ? (
+        {items.length === 0 ? (
           <p className="rounded-md border border-border/70 bg-muted/20 px-4 py-4 text-sm text-muted-foreground">
             {emptyLabel}
           </p>
@@ -89,6 +97,7 @@ export function PartBomTab({
   childrenItems,
   parentItems,
   isLoading = false,
+  showLoadingIndicator = false,
   onExploreDirectionChange,
   onPartClick,
 }: PartBomTabProps) {
@@ -99,6 +108,7 @@ export function PartBomTab({
         description={`${childrenItems.length}개의 하위 부품이 연결되어 있습니다.`}
         emptyLabel="하위 부품이 없습니다."
         isLoading={isLoading}
+        showLoadingIndicator={showLoadingIndicator}
         items={childrenItems}
         title="하위 부품"
         onActionClick={onExploreDirectionChange ? () => onExploreDirectionChange("forward") : undefined}
@@ -110,6 +120,7 @@ export function PartBomTab({
         description={`${parentItems.length}개의 상위 부품이 이 부품을 사용합니다.`}
         emptyLabel="상위 부품이 없습니다."
         isLoading={isLoading}
+        showLoadingIndicator={showLoadingIndicator}
         items={parentItems}
         title="상위 부품"
         onActionClick={onExploreDirectionChange ? () => onExploreDirectionChange("reverse") : undefined}

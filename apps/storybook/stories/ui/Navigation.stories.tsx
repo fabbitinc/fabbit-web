@@ -35,7 +35,7 @@ export const Showcase: Story = {
           <TabsContent value="overview" className="pt-4">
             <div className="space-y-3">
               <p className="text-sm font-medium">프로젝트 개요</p>
-              <p className="text-muted-foreground text-sm">최신 변경 요청, 분석 상태, 검토 현황을 한 화면에서 확인합니다.</p>
+              <p className="text-muted-foreground text-sm">최신 변경관리, 분석 상태, 검토 현황을 한 화면에서 확인합니다.</p>
             </div>
           </TabsContent>
           <TabsContent value="timeline" className="pt-4">
@@ -84,7 +84,7 @@ export const ProjectWorkspace: Story = {
           <div className="space-y-3">
             <p className="text-sm font-medium">프로젝트 개요</p>
             <p className="text-muted-foreground text-sm">
-              최신 변경 요청, 분석 상태, 검토 현황을 한 화면에서 빠르게 확인합니다.
+              최신 변경관리, 분석 상태, 검토 현황을 한 화면에서 빠르게 확인합니다.
             </p>
           </div>
         </TabsContent>
@@ -95,7 +95,7 @@ export const ProjectWorkspace: Story = {
                 "도면 업로드",
                 "속성 매핑 검토",
                 "BOM 비교 완료",
-                "변경 요청 발행",
+                "변경관리 발행",
                 "최종 승인",
               ].map((item, index) => (
                 <div key={item} className="space-y-3">

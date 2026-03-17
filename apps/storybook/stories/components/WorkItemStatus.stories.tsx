@@ -1,8 +1,8 @@
 import type { ReactNode } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import {
-  ChangeRequestStatusBadge,
-  ChangeRequestStatusIcon,
+  EngineeringChangeStatusBadge,
+  EngineeringChangeStatusIcon,
   IssueStatusBadge,
   IssueStatusIcon,
 } from "@fabbit/components";
@@ -56,39 +56,39 @@ function WorkItemStatusShowcase() {
 
       <section className="space-y-3">
         <div>
-          <h2 className="text-lg font-semibold text-foreground">변경 요청 상태</h2>
+          <h2 className="text-lg font-semibold text-foreground">변경관리 상태</h2>
           <p className="text-sm text-muted-foreground">
             `OPEN`과 `SUBMITTED`는 동일한 제출 표현으로 수렴합니다.
           </p>
         </div>
         <StatusRow
-          badge={<ChangeRequestStatusBadge state="DRAFT" />}
+          badge={<EngineeringChangeStatusBadge state="DRAFT" />}
           description="`DRAFT`"
-          icon={<ChangeRequestStatusIcon state="DRAFT" className="h-4 w-4" />}
+          icon={<EngineeringChangeStatusIcon state="DRAFT" className="h-4 w-4" />}
           label="초안"
         />
         <StatusRow
-          badge={<ChangeRequestStatusBadge state="SUBMITTED" />}
+          badge={<EngineeringChangeStatusBadge state="SUBMITTED" />}
           description="`SUBMITTED`"
-          icon={<ChangeRequestStatusIcon state="SUBMITTED" className="h-4 w-4" />}
+          icon={<EngineeringChangeStatusIcon state="SUBMITTED" className="h-4 w-4" />}
           label="제출"
         />
         <StatusRow
-          badge={<ChangeRequestStatusBadge state="OPEN" />}
+          badge={<EngineeringChangeStatusBadge state="OPEN" />}
           description="`OPEN`"
-          icon={<ChangeRequestStatusIcon state="OPEN" className="h-4 w-4" />}
+          icon={<EngineeringChangeStatusIcon state="OPEN" className="h-4 w-4" />}
           label="제출"
         />
         <StatusRow
-          badge={<ChangeRequestStatusBadge state="MERGED" />}
+          badge={<EngineeringChangeStatusBadge state="MERGED" />}
           description="`MERGED`"
-          icon={<ChangeRequestStatusIcon state="MERGED" className="h-4 w-4" />}
+          icon={<EngineeringChangeStatusIcon state="MERGED" className="h-4 w-4" />}
           label="반영"
         />
         <StatusRow
-          badge={<ChangeRequestStatusBadge state="CLOSED" />}
+          badge={<EngineeringChangeStatusBadge state="CLOSED" />}
           description="`CLOSED`"
-          icon={<ChangeRequestStatusIcon state="CLOSED" className="h-4 w-4" />}
+          icon={<EngineeringChangeStatusIcon state="CLOSED" className="h-4 w-4" />}
           label="닫힘"
         />
       </section>

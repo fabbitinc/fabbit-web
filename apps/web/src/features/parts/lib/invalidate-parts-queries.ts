@@ -21,9 +21,9 @@ export async function invalidatePartsQueries(
       queryClient.invalidateQueries({ queryKey: partsKeys.detail(partId) }),
       queryClient.invalidateQueries({ queryKey: partsKeys.bom(partId) }),
       queryClient.invalidateQueries({ queryKey: partsKeys.files(partId) }),
+      queryClient.invalidateQueries({ queryKey: partsKeys.previewSources(partId) }),
       queryClient.invalidateQueries({ queryKey: partsKeys.projects(partId) }),
       queryClient.invalidateQueries({ queryKey: partsKeys.suppliers(partId) }),
-      queryClient.invalidateQueries({ queryKey: partsKeys.owner(partId) }),
     );
   }
 

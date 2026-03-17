@@ -14,8 +14,8 @@ export interface PartSummaryResponse {
   part_number?: string;
   name?: string;
   category?: string;
-  revision?: string;
+  revision_code?: string;
   lifecycle_state?: PartSummaryResponseLifecycleState;
-  drawing_id?: string;
+  has_drawing?: boolean;
   children_count?: number;
 }

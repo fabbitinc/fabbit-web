@@ -25,7 +25,7 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
   /**
  * 업로드 완료된 파일(file_id)을 조직 프로필 이미지로 설정합니다. ADMIN 이상 권한이 필요합니다
- * @summary PUT /api/v1/organizations/profile-image
+ * @summary 업로드 완료된 파일(file_id)을 조직 프로필 이미지로 설정합니다. ADMIN 이상 권한이 필요합니다
  */
 export const setProfileImage1 = (
     setProfileImageRequest: BodyType<SetProfileImageRequest>,
@@ -39,7 +39,7 @@ export const setProfileImage1 = (
     }
   /**
  * 조직 프로필 이미지를 제거하고 연결된 파일을 소프트 삭제합니다. ADMIN 이상 권한이 필요합니다
- * @summary DELETE /api/v1/organizations/profile-image
+ * @summary 조직 프로필 이미지를 제거하고 연결된 파일을 소프트 삭제합니다. ADMIN 이상 권한이 필요합니다
  */
 export const deleteProfileImage1 = (
     
@@ -51,7 +51,7 @@ export const deleteProfileImage1 = (
     }
   /**
  * 스코프 토큰(scope=create_org)으로 조직을 생성하고 access/refresh 토큰을 발급합니다
- * @summary POST /api/v1/organizations
+ * @summary 스코프 토큰(scope=create_org)으로 조직을 생성하고 access/refresh 토큰을 발급합니다
  */
 export const createOrganization = (
     createOrganizationRequest: BodyType<CreateOrganizationRequest>,
@@ -65,7 +65,7 @@ export const createOrganization = (
     }
   /**
  * 대상 워크스페이스 멤버십을 확인한 뒤 새 access/refresh 토큰을 발급합니다
- * @summary POST /api/v1/organizations/switch
+ * @summary 대상 워크스페이스 멤버십을 확인한 뒤 새 access/refresh 토큰을 발급합니다
  */
 export const switchOrganization = (
     switchOrgRequest: BodyType<SwitchOrgRequest>,
@@ -79,7 +79,7 @@ export const switchOrganization = (
     }
   /**
  * 관리자(ADMIN 이상)가 조직의 초대 목록(PENDING/ACCEPTED/CANCELLED)을 최신순으로 조회합니다
- * @summary GET /api/v1/organizations/invitations
+ * @summary 관리자(ADMIN 이상)가 조직의 초대 목록(PENDING/ACCEPTED/CANCELLED)을 최신순으로 조회합니다
  */
 export const listInvitations = (
     
@@ -91,7 +91,7 @@ export const listInvitations = (
     }
   /**
  * 관리자(ADMIN 이상)가 이메일로 조직 초대를 발송합니다
- * @summary POST /api/v1/organizations/invitations
+ * @summary 관리자(ADMIN 이상)가 이메일로 조직 초대를 발송합니다
  */
 export const createInvitation = (
     createInvitationRequest: BodyType<CreateInvitationRequest>,
@@ -105,7 +105,7 @@ export const createInvitation = (
     }
   /**
  * 관리자(ADMIN 이상)가 PENDING 상태 초대를 취소합니다
- * @summary DELETE /api/v1/organizations/invitations/{invitationId}
+ * @summary 관리자(ADMIN 이상)가 PENDING 상태 초대를 취소합니다
  */
 export const cancelInvitation = (
     invitationId: string,

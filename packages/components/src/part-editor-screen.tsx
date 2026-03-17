@@ -1,26 +1,31 @@
 import {
   ArrowLeft,
-  Boxes,
   Building2,
-  CheckCircle2,
-  FileStack,
+  Check,
+  ChevronsUpDown,
+  Clock,
   FolderKanban,
-  PackageSearch,
-  Sparkles,
+  Network,
+  Package,
+  PencilLine,
+  Paperclip,
 } from "lucide-react";
+import { type ComponentType, useState } from "react";
 import {
-  Badge,
   Button,
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
   Input,
-  Label,
-  Progress,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
   Select,
   SelectContent,
+  SelectEmptyState,
   SelectItem,
   SelectTrigger,
   SelectValue,
@@ -28,7 +33,11 @@ import {
   Textarea,
   cn,
 } from "@fabbit/ui";
-import { FormSection } from "./form-section";
+import {
+  PartDrawingPreview,
+  type PartDrawingPreviewDrawing,
+} from "./part-drawing-preview";
+import { PartPropertiesTable } from "./part-properties-table";
 
 export interface PartEditorScreenOption {
   value: string;
@@ -45,12 +54,20 @@ export interface PartEditorScreenExtendedField {
 
 export interface PartEditorScreenDrawingSummary {
   drawingNumber: string | null;
-  fileName: string;
-  note?: string;
+  name: string | null;
   revision: string | null;
-  statusLabel: string;
-  statusTone?: "accent" | "neutral" | "success" | "warning";
-  updatedAtLabel: string;
+  version: string | null;
+  status: string | null;
+  conversionStatus: string | null;
+  viewerType: "PDF" | "GLB" | null;
+  viewerUrl: string | null;
+  previewUrl: string | null;
+  originalFileUrl: string | null;
+  failureMessage?: string | null;
+  webViewRequirement?: {
+    title: string;
+    description?: string | null;
+  } | null;
 }
 
 export interface PartEditorScreenReferenceStats {
@@ -68,7 +85,6 @@ export interface PartEditorScreenFormValues {
   lifecycleState: string | null;
   material: string;
   name: string;
-  ownerTeamId: string | null;
   partNumber: string;
   revision: string;
   unit: string | null;
@@ -85,584 +101,533 @@ export interface PartEditorScreenProps {
   isSubmitting?: boolean;
   lastSavedLabel?: string;
   lifecycleOptions: PartEditorScreenOption[];
+  lockedFields?: {
+    lifecycleState?: boolean;
+    partNumber?: boolean;
+    revision?: boolean;
+  };
   mode: "create" | "edit";
   onBack: () => void;
   onChange: (values: PartEditorScreenFormValues) => void;
   onExtendedFieldsChange?: (fields: PartEditorScreenExtendedField[]) => void;
   onSaveDraft?: () => void;
   onSubmit: () => void;
-  ownerTeamOptions: PartEditorScreenOption[];
+  onOpenDrawingViewer?: (drawing: PartDrawingPreviewDrawing) => void;
   referenceStats?: PartEditorScreenReferenceStats;
   saveDraftLabel?: string;
   submitLabel?: string;
   unitOptions: PartEditorScreenOption[];
 }
 
-function getOptionLabel(options: PartEditorScreenOption[], value: string | null) {
-  return options.find((option) => option.value === value)?.label ?? "미정";
+interface EditorTabItem {
+  id: string;
+  icon: ComponentType<{ className?: string }>;
+  label: string;
+  value?: number | null;
 }
 
-function getBadgeVariant(
-  tone: PartEditorScreenDrawingSummary["statusTone"] = "neutral",
-) {
-  if (tone === "success") {
-    return "success";
-  }
-  if (tone === "warning") {
-    return "warning";
-  }
-  if (tone === "accent") {
-    return "accent";
-  }
-  return "neutral";
+interface CategoryComboboxProps {
+  className?: string;
+  options: PartEditorScreenOption[];
+  value: string | null;
+  onChange: (value: string | null) => void;
+}
+
+function CategoryCombobox({ className, options, value, onChange }: CategoryComboboxProps) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+
+  const displayValue = value ?? "";
+  const filtered = options.filter((o) =>
+    o.label.toLowerCase().includes(search.toLowerCase()),
+  );
+  const hasExactMatch = options.some((o) => o.value === search);
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          className={cn(
+            className,
+            "flex w-full items-center justify-between text-left",
+            !displayValue && "text-muted-foreground",
+          )}
+        >
+          <span className="truncate">{displayValue || "카테고리를 선택하거나 입력하세요"}</span>
+          <ChevronsUpDown className="ml-2 h-3.5 w-3.5 shrink-0 opacity-50" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
+        <Command shouldFilter={false}>
+          <CommandInput
+            placeholder="검색 또는 직접 입력"
+            value={search}
+            onValueChange={setSearch}
+          />
+          <CommandList>
+            {filtered.length === 0 && !search.trim() ? (
+              <CommandEmpty>등록된 카테고리가 없습니다.</CommandEmpty>
+            ) : null}
+            {search.trim() && !hasExactMatch ? (
+              <CommandGroup heading="직접 입력">
+                <CommandItem
+                  value={`__custom__${search}`}
+                  onSelect={() => {
+                    onChange(search.trim());
+                    setOpen(false);
+                    setSearch("");
+                  }}
+                >
+                  <span>&ldquo;{search.trim()}&rdquo; 추가</span>
+                </CommandItem>
+              </CommandGroup>
+            ) : null}
+            {filtered.length > 0 ? (
+              <CommandGroup heading="카테고리">
+                {filtered.map((option) => (
+                  <CommandItem
+                    key={option.value}
+                    value={option.value}
+                    onSelect={() => {
+                      onChange(option.value === value ? null : option.value);
+                      setOpen(false);
+                      setSearch("");
+                    }}
+                  >
+                    <Check
+                      className={cn(
+                        "mr-2 h-3.5 w-3.5",
+                        value === option.value ? "opacity-100" : "opacity-0",
+                      )}
+                    />
+                    {option.label}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            ) : null}
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
 }
 
 export function PartEditorScreen({
   backLabel = "부품 관리",
   categoryOptions,
   description,
-  drawing = null,
+  drawing,
   extendedFields = [],
   formValues,
   heading,
   isSubmitting = false,
   lastSavedLabel,
   lifecycleOptions,
+  lockedFields,
   mode,
   onBack,
   onChange,
   onExtendedFieldsChange,
+  onOpenDrawingViewer,
   onSaveDraft,
   onSubmit,
-  ownerTeamOptions,
-  referenceStats,
   saveDraftLabel,
   submitLabel,
   unitOptions,
 }: PartEditorScreenProps) {
-  const pageHeading = heading ?? (mode === "create" ? "새 부품 등록" : "부품 편집");
-  const pageDescription =
-    description ??
-    (mode === "create"
-      ? "식별 정보와 운영 속성을 먼저 고정하고, 생성 이후 도면과 프로젝트를 연결합니다."
-      : "변경 영향이 큰 필드를 한 화면에서 정리하고, 저장 전에 연결 현황을 다시 확인합니다.");
-  const primaryLabel = submitLabel ?? (mode === "create" ? "부품 생성" : "변경 저장");
-  const secondaryLabel = saveDraftLabel ?? (mode === "create" ? "초안 저장" : "임시 저장");
-  const stats = referenceStats ?? {
-    attachments: 0,
-    childParts: 0,
-    linkedProjects: 0,
-    linkedSuppliers: 0,
-  };
-  const requiredChecks = [
-    { label: "품번", complete: formValues.partNumber.trim() !== "" },
-    { label: "품명", complete: formValues.name.trim() !== "" },
-    { label: "리비전", complete: formValues.revision.trim() !== "" },
-    { label: "카테고리", complete: formValues.category !== null && formValues.category !== "" },
-    { label: "단위", complete: formValues.unit !== null && formValues.unit !== "" },
+  const createBreadcrumbLabel = heading ?? "새 부품";
+  const primaryLabel =
+    submitLabel ?? (mode === "create" ? "부품 생성" : "변경 저장");
+  const secondaryLabel =
+    saveDraftLabel ?? (mode === "create" ? "초안 저장" : "임시 저장");
+  const [submitted, setSubmitted] = useState(false);
+  const partNumberEmpty = formValues.partNumber.trim() === "";
+  const revisionLabel =
+    mode === "create" ? "자동 부여" : formValues.revision.trim() || "미정";
+  const headerDescription =
+    formValues.description.trim() || description?.trim() || "";
+  const showDrawingPreview = mode === "edit";
+  const tableFieldClassName =
+    "h-8 rounded-md border border-input bg-background px-2.5 text-sm shadow-xs";
+  const tableSelectTriggerClassName =
+    "h-8 rounded-md border border-input bg-background px-2.5 text-sm shadow-xs";
+  const tableTextareaClassName =
+    "min-h-24 rounded-md border border-input bg-background px-2.5 py-1.5 text-sm shadow-xs";
+  const editorTabs: EditorTabItem[] = [
+    { id: "properties", icon: Package, label: "속성" },
+    { id: "bom", icon: Network, label: "BOM" },
+    { id: "attachments", icon: Paperclip, label: "파일" },
+    { id: "suppliers", icon: Building2, label: "공급사" },
+    { id: "projects", icon: FolderKanban, label: "프로젝트" },
+    { id: "history", icon: Clock, label: "이력" },
   ];
-  const progressChecks = [
-    ...requiredChecks,
-    { label: "상태", complete: formValues.lifecycleState !== null && formValues.lifecycleState !== "" },
-    { label: "담당 팀", complete: formValues.ownerTeamId !== null && formValues.ownerTeamId !== "" },
-    { label: "설명", complete: formValues.description.trim() !== "" },
-  ];
-  const completedCount = progressChecks.filter((item) => item.complete).length;
-  const completionRate = Math.round((completedCount / progressChecks.length) * 100);
-  const missingRequired = requiredChecks.filter((item) => !item.complete).map((item) => item.label);
-  const canSubmit = missingRequired.length === 0 && !isSubmitting;
-  const categoryLabel = getOptionLabel(categoryOptions, formValues.category);
-  const lifecycleLabel = getOptionLabel(lifecycleOptions, formValues.lifecycleState);
-  const unitLabel = getOptionLabel(unitOptions, formValues.unit);
-  const ownerTeamLabel = getOptionLabel(ownerTeamOptions, formValues.ownerTeamId);
-  const referenceItems = [
-    { icon: FolderKanban, label: "연결 프로젝트", value: `${stats.linkedProjects}건` },
-    { icon: Building2, label: "공급사 연결", value: `${stats.linkedSuppliers}곳` },
-    { icon: FileStack, label: "첨부 파일", value: `${stats.attachments}개` },
-    { icon: Boxes, label: "하위 구성", value: `${stats.childParts}개` },
+  const tableRows = [
+    {
+      error: submitted && partNumberEmpty ? "품번을 입력해 주세요." : undefined,
+      label: "품번",
+      value: lockedFields?.partNumber ? (
+        <span className="font-mono text-xs">{formValues.partNumber}</span>
+      ) : (
+        <Input
+          className={tableFieldClassName}
+          id="part-editor-part-number"
+          placeholder="예: DRV-BASE-0142"
+          value={formValues.partNumber}
+          onChange={(event) =>
+            onChange({ ...formValues, partNumber: event.target.value })
+          }
+        />
+      ),
+    },
+    {
+      label: "품명",
+      value: (
+        <Input
+          className={tableFieldClassName}
+          id="part-editor-name"
+          placeholder="예: 드라이브 유닛 베이스 플레이트"
+          value={formValues.name}
+          onChange={(event) =>
+            onChange({ ...formValues, name: event.target.value })
+          }
+        />
+      ),
+    },
+    {
+      label: "리비전",
+      value:
+        mode === "create" ? (
+          <span className="text-sm text-muted-foreground">생성 시 자동 부여</span>
+        ) : lockedFields?.revision ? (
+          <span className="text-sm">{formValues.revision || <span className="text-muted-foreground/40">—</span>}</span>
+        ) : (
+          <Input
+            className={tableFieldClassName}
+            id="part-editor-revision"
+            placeholder="예: B"
+            value={formValues.revision}
+            onChange={(event) =>
+              onChange({ ...formValues, revision: event.target.value })
+            }
+          />
+        ),
+    },
+    {
+      label: "상태",
+      value: lockedFields?.lifecycleState ? (
+        <span className="text-sm">
+          {lifecycleOptions.find((o) => o.value === formValues.lifecycleState)?.label
+            ?? formValues.lifecycleState
+            ?? <span className="text-muted-foreground/40">—</span>}
+        </span>
+      ) : (
+        <Select
+          value={formValues.lifecycleState ?? undefined}
+          onValueChange={(value) =>
+            onChange({ ...formValues, lifecycleState: value })
+          }
+        >
+          <SelectTrigger className={tableSelectTriggerClassName}>
+            <SelectValue placeholder="상태를 선택하세요" />
+          </SelectTrigger>
+          <SelectContent>
+            {lifecycleOptions.length > 0 ? (
+              lifecycleOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))
+            ) : (
+              <SelectEmptyState>표시할 상태 옵션이 없습니다.</SelectEmptyState>
+            )}
+          </SelectContent>
+        </Select>
+      ),
+    },
+    {
+      label: "카테고리",
+      value: (
+        <CategoryCombobox
+          className={tableFieldClassName}
+          options={categoryOptions}
+          value={formValues.category}
+          onChange={(value) => onChange({ ...formValues, category: value })}
+        />
+      ),
+    },
+    {
+      label: "재질",
+      value: (
+        <Input
+          className={tableFieldClassName}
+          id="part-editor-material"
+          placeholder="예: AL6061-T6"
+          value={formValues.material}
+          onChange={(event) =>
+            onChange({ ...formValues, material: event.target.value })
+          }
+        />
+      ),
+    },
+    {
+      label: "단위",
+      value: (
+        <Select
+          value={formValues.unit ?? undefined}
+          onValueChange={(value) => onChange({ ...formValues, unit: value })}
+        >
+          <SelectTrigger className={tableSelectTriggerClassName}>
+            <SelectValue placeholder="단위를 선택하세요" />
+          </SelectTrigger>
+          <SelectContent>
+            {unitOptions.length > 0 ? (
+              unitOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))
+            ) : (
+              <SelectEmptyState>표시할 단위가 없습니다.</SelectEmptyState>
+            )}
+          </SelectContent>
+        </Select>
+      ),
+    },
+    {
+      label: "리드타임",
+      value: (
+        <Input
+          className={tableFieldClassName}
+          id="part-editor-lead-time"
+          inputMode="numeric"
+          placeholder="예: 14"
+          value={formValues.leadTimeDays}
+          onChange={(event) =>
+            onChange({ ...formValues, leadTimeDays: event.target.value })
+          }
+        />
+      ),
+    },
+    {
+      label: "팬텀",
+      value: (
+        <div className="flex min-h-8 items-center justify-between gap-3">
+          <span className="text-sm text-foreground">
+            상위 조립 계산에만 사용합니다.
+          </span>
+          <Switch
+            checked={formValues.isPhantom}
+            onCheckedChange={(checked) =>
+              onChange({ ...formValues, isPhantom: checked })
+            }
+          />
+        </div>
+      ),
+    },
+    {
+      alignTop: true,
+      label: "설명",
+      value: (
+        <Textarea
+          id="part-editor-description"
+          className={tableTextareaClassName}
+          placeholder="부품의 사용 맥락, 조립 유의사항, 공급 제약을 입력하세요"
+          value={formValues.description}
+          onChange={(event) =>
+            onChange({ ...formValues, description: event.target.value })
+          }
+        />
+      ),
+    },
+    ...extendedFields.map((field) => ({
+      alignTop: false,
+      label: field.label,
+      value: (
+        <div className="space-y-2">
+          <Input
+            className={tableFieldClassName}
+            id={`part-editor-extra-${field.id}`}
+            placeholder={field.placeholder}
+            value={field.value}
+            onChange={(event) => {
+              if (!onExtendedFieldsChange) {
+                return;
+              }
+
+              onExtendedFieldsChange(
+                extendedFields.map((item) =>
+                  item.id === field.id
+                    ? { ...item, value: event.target.value }
+                    : item,
+                ),
+              );
+            }}
+          />
+          {field.helperText ? (
+            <p className="text-xs leading-5 text-muted-foreground">
+              {field.helperText}
+            </p>
+          ) : null}
+        </div>
+      ),
+    })),
   ];
 
   return (
-    <div className="mx-auto max-w-[1440px] space-y-6 px-4 py-6 lg:px-6">
-      <div className="flex flex-col gap-4 xl:flex-row xl:items-start xl:justify-between">
-        <div className="space-y-3">
-          <button
-            className="inline-flex cursor-pointer items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-foreground"
-            type="button"
-            onClick={onBack}
-          >
-            <ArrowLeft className="size-4" />
-            {backLabel}
-          </button>
-          <div className="flex flex-wrap items-center gap-2">
-            <Badge variant={mode === "create" ? "accent" : "info"}>
-              {mode === "create" ? "등록 세션" : "편집 세션"}
-            </Badge>
-            <Badge variant="outline">{lifecycleLabel}</Badge>
-            {lastSavedLabel ? (
-              <span className="text-sm text-muted-foreground">{lastSavedLabel}</span>
-            ) : null}
-          </div>
-          <div>
-            <h1 className="text-3xl font-semibold tracking-tight text-foreground">
-              {pageHeading}
-            </h1>
-            <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
-              {pageDescription}
-            </p>
-          </div>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2">
-          <Badge variant="secondary">준비도 {completionRate}%</Badge>
-          <Badge variant="outline">필수 {requiredChecks.length - missingRequired.length}/{requiredChecks.length}</Badge>
-        </div>
+    <div className="min-h-full">
+      <div className="mb-4 flex items-center gap-1.5 text-sm">
+        <button
+          className="inline-flex cursor-pointer items-center gap-1.5 text-muted-foreground transition-colors hover:text-primary"
+          type="button"
+          onClick={onBack}
+        >
+          <ArrowLeft className="h-3.5 w-3.5" />
+          {backLabel}
+        </button>
+        <span className="text-muted-foreground/40">/</span>
+        {mode === "edit" ? (
+          <>
+            <span className="font-semibold text-foreground">
+              {formValues.partNumber.trim() || "부품"}
+            </span>
+            <span className="text-muted-foreground/40">/</span>
+            <span className="inline-flex items-center gap-1.5 font-medium text-primary">
+              <PencilLine className="h-3.5 w-3.5" />
+              편집 중
+            </span>
+          </>
+        ) : (
+          <span className="font-semibold text-foreground">
+            {createBreadcrumbLabel}
+          </span>
+        )}
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1.7fr)_22rem]">
-        <div className="space-y-6">
-          <Card className="overflow-hidden border-border/70">
-            <CardContent className="relative p-6">
-              <div className="absolute -left-12 top-0 h-32 w-32 rounded-full bg-primary/10 blur-3xl" />
-              <div className="absolute right-0 top-0 h-24 w-24 rounded-full bg-secondary/60 blur-3xl" />
-              <div className="relative space-y-5">
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                  <div>
-                    <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-muted-foreground">
-                      현재 식별 정보
-                    </p>
-                    <div className="mt-3 flex flex-wrap items-center gap-3">
-                      <p className="font-mono text-3xl font-semibold text-foreground">
-                        {formValues.partNumber.trim() || "PART-NUMBER"}
-                      </p>
-                      <Badge variant={mode === "create" ? "accent" : "outline"}>
-                        {mode === "create" ? "신규 초안" : "변경 반영 중"}
-                      </Badge>
-                    </div>
-                    <p className="mt-2 text-base text-foreground">
-                      {formValues.name.trim() || "품명이 아직 입력되지 않았습니다"}
-                    </p>
-                  </div>
-                  <div className="rounded-xl border border-border/70 bg-background/80 px-4 py-3 text-right shadow-sm">
-                    <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">
-                      리비전
-                    </p>
-                    <p className="mt-1 text-2xl font-semibold text-foreground">
-                      {formValues.revision.trim() || "A"}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                  <div className="rounded-xl border border-border/60 bg-background/70 p-3">
-                    <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">카테고리</p>
-                    <p className="mt-2 text-sm font-medium text-foreground">{categoryLabel}</p>
-                  </div>
-                  <div className="rounded-xl border border-border/60 bg-background/70 p-3">
-                    <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">단위</p>
-                    <p className="mt-2 text-sm font-medium text-foreground">{unitLabel}</p>
-                  </div>
-                  <div className="rounded-xl border border-border/60 bg-background/70 p-3">
-                    <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">재질</p>
-                    <p className="mt-2 text-sm font-medium text-foreground">
-                      {formValues.material.trim() || "미정"}
-                    </p>
-                  </div>
-                  <div className="rounded-xl border border-border/60 bg-background/70 p-3">
-                    <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">담당 팀</p>
-                    <p className="mt-2 text-sm font-medium text-foreground">{ownerTeamLabel}</p>
-                  </div>
-                </div>
+      <div className="mb-5 rounded-lg border bg-card">
+        <div className="p-5">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                <span className="font-mono text-xl font-bold text-foreground">
+                  {formValues.partNumber.trim() || "PART-NUMBER"}
+                </span>
+                <span className="text-muted-foreground/40">/</span>
+                <span className="font-medium text-foreground">
+                  REV {revisionLabel}
+                </span>
+                {lastSavedLabel ? (
+                  <>
+                    <span className="text-muted-foreground/40">/</span>
+                    <span>{lastSavedLabel}</span>
+                  </>
+                ) : null}
               </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-border/70">
-            <CardContent className="p-6">
-              <FormSection title="식별 정보" description="품번과 기본 식별 속성을 먼저 고정합니다.">
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="part-editor-part-number">품번 *</Label>
-                    <Input
-                      id="part-editor-part-number"
-                      placeholder="예: DRV-BASE-0142"
-                      value={formValues.partNumber}
-                      onChange={(event) =>
-                        onChange({ ...formValues, partNumber: event.target.value })
-                      }
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="part-editor-revision">리비전 *</Label>
-                    <Input
-                      id="part-editor-revision"
-                      placeholder="예: B"
-                      value={formValues.revision}
-                      onChange={(event) =>
-                        onChange({ ...formValues, revision: event.target.value })
-                      }
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="part-editor-name">품명 *</Label>
-                  <Input
-                    id="part-editor-name"
-                    placeholder="예: 드라이브 유닛 베이스 플레이트"
-                    value={formValues.name}
-                    onChange={(event) =>
-                      onChange({ ...formValues, name: event.target.value })
-                    }
-                  />
-                </div>
-
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label>카테고리 *</Label>
-                    <Select
-                      value={formValues.category ?? undefined}
-                      onValueChange={(value) => onChange({ ...formValues, category: value })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="카테고리를 선택하세요" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {categoryOptions.map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>상태</Label>
-                    <Select
-                      value={formValues.lifecycleState ?? undefined}
-                      onValueChange={(value) =>
-                        onChange({ ...formValues, lifecycleState: value })
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="상태를 선택하세요" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {lifecycleOptions.map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </FormSection>
-            </CardContent>
-          </Card>
-
-          <Card className="border-border/70">
-            <CardContent className="p-6">
-              <FormSection title="운영 속성" description="단위, 재질, 담당 정보를 연결해 후속 흐름을 준비합니다.">
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="part-editor-material">재질</Label>
-                    <Input
-                      id="part-editor-material"
-                      placeholder="예: AL6061-T6"
-                      value={formValues.material}
-                      onChange={(event) =>
-                        onChange({ ...formValues, material: event.target.value })
-                      }
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>단위 *</Label>
-                    <Select
-                      value={formValues.unit ?? undefined}
-                      onValueChange={(value) => onChange({ ...formValues, unit: value })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="단위를 선택하세요" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {unitOptions.map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="part-editor-lead-time">리드타임(일)</Label>
-                    <Input
-                      id="part-editor-lead-time"
-                      inputMode="numeric"
-                      placeholder="예: 14"
-                      value={formValues.leadTimeDays}
-                      onChange={(event) =>
-                        onChange({ ...formValues, leadTimeDays: event.target.value })
-                      }
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>담당 팀</Label>
-                    <Select
-                      value={formValues.ownerTeamId ?? undefined}
-                      onValueChange={(value) =>
-                        onChange({ ...formValues, ownerTeamId: value })
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="담당 팀을 선택하세요" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {ownerTeamOptions.map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
-                            {option.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <div className="flex items-start justify-between gap-4 rounded-xl border border-border/60 bg-muted/20 px-4 py-3">
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium text-foreground">팬텀 부품</p>
-                    <p className="text-sm leading-6 text-muted-foreground">
-                      재고를 보유하지 않고 상위 조립 안에서만 계산되는 부품으로 표시합니다.
-                    </p>
-                  </div>
-                  <Switch
-                    checked={formValues.isPhantom}
-                    onCheckedChange={(checked) =>
-                      onChange({ ...formValues, isPhantom: checked })
-                    }
-                  />
-                </div>
-              </FormSection>
-            </CardContent>
-          </Card>
-
-          <Card className="border-border/70">
-            <CardContent className="p-6">
-              <FormSection title="설명 및 확장 속성" description="도면 외 추가 검색 키와 운영 메모를 정리합니다.">
-                <div className="space-y-2">
-                  <Label htmlFor="part-editor-description">설명</Label>
-                  <Textarea
-                    id="part-editor-description"
-                    className="min-h-32"
-                    placeholder="부품의 사용 맥락, 조립 유의사항, 공급 제약을 입력하세요"
-                    value={formValues.description}
-                    onChange={(event) =>
-                      onChange({ ...formValues, description: event.target.value })
-                    }
-                  />
-                </div>
-
-                {extendedFields.length > 0 ? (
-                  <div className="grid gap-4 md:grid-cols-2">
-                    {extendedFields.map((field) => (
-                      <div key={field.id} className="space-y-2">
-                        <Label htmlFor={`part-editor-extra-${field.id}`}>{field.label}</Label>
-                        <Input
-                          id={`part-editor-extra-${field.id}`}
-                          placeholder={field.placeholder}
-                          value={field.value}
-                          onChange={(event) => {
-                            if (!onExtendedFieldsChange) {
-                              return;
-                            }
-                            onExtendedFieldsChange(
-                              extendedFields.map((item) =>
-                                item.id === field.id
-                                  ? { ...item, value: event.target.value }
-                                  : item,
-                              ),
-                            );
-                          }}
-                        />
-                        {field.helperText ? (
-                          <p className="text-xs text-muted-foreground">{field.helperText}</p>
-                        ) : null}
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="rounded-xl border border-dashed border-border/70 bg-muted/15 px-4 py-5 text-sm text-muted-foreground">
-                    추가 속성은 아직 정의되지 않았습니다. 템플릿 매핑이 확정되면 구매 코드, 표면 처리, 규격 키를 여기에 붙일 수 있습니다.
-                  </div>
-                )}
-              </FormSection>
-            </CardContent>
-          </Card>
-
-          <div className="flex flex-col gap-3 rounded-xl border bg-card/90 p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
-            <div className="space-y-1">
-              <p className="text-sm font-medium text-foreground">
-                {missingRequired.length === 0
-                  ? "필수 항목이 모두 채워졌습니다."
-                  : `아직 ${missingRequired.join(", ")} 항목이 필요합니다.`}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                {mode === "create"
-                  ? "생성 후에는 프로젝트, 공급사, 도면 연결을 이어서 진행하면 됩니다."
-                  : "저장 전에 연결 프로젝트와 도면 리비전이 변경 영향과 일치하는지 다시 확인하세요."}
-              </p>
+              <h1 className="mt-2 text-lg font-semibold text-foreground">
+                {formValues.name.trim() || "품명이 없습니다."}
+              </h1>
+              {headerDescription ? (
+                <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
+                  {headerDescription}
+                </p>
+              ) : null}
             </div>
-            <div className="flex flex-wrap items-center gap-2">
-              {onSaveDraft ? (
-                <Button type="button" variant="ghost" onClick={onSaveDraft}>
+
+            <div
+              className={cn(
+                "flex gap-2 lg:justify-end",
+                mode === "edit"
+                  ? "w-full flex-col items-stretch sm:w-[90px]"
+                  : "flex-wrap items-center",
+              )}
+            >
+              {onSaveDraft && mode !== "edit" ? (
+                <Button type="button" variant="outline" onClick={onSaveDraft}>
                   {secondaryLabel}
                 </Button>
               ) : null}
-              <Button type="button" variant="outline" onClick={onBack}>
+              <Button
+                className={cn(mode === "edit" && "w-full")}
+                size={mode === "edit" ? "sm" : undefined}
+                type="button"
+                variant="outline"
+                onClick={onBack}
+              >
                 취소
               </Button>
-              <Button type="button" disabled={!canSubmit} onClick={onSubmit}>
+              <Button
+                className={cn(mode === "edit" && "w-full")}
+                size={mode === "edit" ? "sm" : undefined}
+                type="button"
+                disabled={isSubmitting}
+                onClick={() => {
+                  setSubmitted(true);
+                  if (!partNumberEmpty) {
+                    onSubmit();
+                  }
+                }}
+              >
                 {isSubmitting ? "처리 중..." : primaryLabel}
               </Button>
             </div>
           </div>
         </div>
+      </div>
 
-        <div className="space-y-6 xl:sticky xl:top-6 xl:self-start">
-          <Card className="relative overflow-hidden border-primary/20">
-            <div className="absolute inset-x-6 top-0 h-24 rounded-full bg-primary/12 blur-3xl" />
-            <CardHeader className="relative pb-4">
-              <div className="flex items-center justify-between gap-3">
-                <Badge variant={mode === "create" ? "accent" : "info"}>
-                  {mode === "create" ? "신규 구성" : "변경 세션"}
-                </Badge>
-                <Sparkles className="size-4 text-primary" />
+      <div className="mb-5 border-b">
+        <div className="flex flex-wrap">
+          {(mode === "create"
+            ? editorTabs.filter((tab) => tab.id === "properties")
+            : editorTabs
+          ).map((tab) => {
+            const Icon = tab.icon;
+            const isActive = tab.id === "properties";
+
+            return (
+              <div
+                key={tab.id}
+                className={cn(
+                  "relative flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium",
+                  isActive ? "text-foreground" : "text-muted-foreground",
+                )}
+              >
+                <Icon className="h-3.5 w-3.5" />
+                {tab.label}
+                {tab.value != null && tab.value > 0 ? (
+                  <span className="inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-muted px-1 text-[10px] font-medium text-muted-foreground">
+                    {tab.value}
+                  </span>
+                ) : null}
+                {isActive ? (
+                  <span className="absolute inset-x-0 -bottom-px h-0.5 bg-primary" />
+                ) : null}
               </div>
-              <CardTitle>입력 준비도 {completionRate}%</CardTitle>
-              <CardDescription>
-                생성 전 필수 식별자와 운영 메타데이터가 얼마나 준비됐는지 한 눈에 봅니다.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="relative space-y-5">
-              <Progress className="h-2.5" value={completionRate} />
-              <div className="grid grid-cols-2 gap-3">
-                <div className="rounded-xl border border-border/60 bg-background/80 p-3">
-                  <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">필수 충족</p>
-                  <p className="mt-2 text-xl font-semibold text-foreground">
-                    {requiredChecks.length - missingRequired.length}/{requiredChecks.length}
-                  </p>
-                </div>
-                <div className="rounded-xl border border-border/60 bg-background/80 p-3">
-                  <p className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground">추천 항목</p>
-                  <p className="mt-2 text-xl font-semibold text-foreground">
-                    {completedCount - (requiredChecks.length - missingRequired.length)}/
-                    {progressChecks.length - requiredChecks.length}
-                  </p>
-                </div>
-              </div>
-              <div className="space-y-2">
-                {progressChecks.map((item) => (
-                  <div
-                    key={item.label}
-                    className={cn(
-                      "flex items-center justify-between rounded-lg border px-3 py-2 text-sm",
-                      item.complete
-                        ? "border-primary/20 bg-primary/5 text-foreground"
-                        : "border-border/60 bg-background/60 text-muted-foreground",
-                    )}
-                  >
-                    <span>{item.label}</span>
-                    {item.complete ? (
-                      <CheckCircle2 className="size-4 text-primary" />
-                    ) : (
-                      <span className="text-xs">대기</span>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+            );
+          })}
+        </div>
+      </div>
 
-          <Card className="border-border/70">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-base">도면 연결 상태</CardTitle>
-              <CardDescription>편집 중인 부품과 시각 산출물의 준비 상태입니다.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {drawing ? (
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between gap-3">
-                    <div>
-                      <p className="text-sm font-medium text-foreground">{drawing.fileName}</p>
-                      <p className="mt-1 text-xs text-muted-foreground">{drawing.updatedAtLabel}</p>
-                    </div>
-                    <Badge variant={getBadgeVariant(drawing.statusTone)}>
-                      {drawing.statusLabel}
-                    </Badge>
-                  </div>
-                  <div className="rounded-xl border border-border/60 bg-muted/20 p-3">
-                    <div className="flex items-center justify-between gap-3 text-sm">
-                      <span className="text-muted-foreground">도면 번호</span>
-                      <span className="font-mono text-foreground">
-                        {drawing.drawingNumber ?? "미등록"}
-                      </span>
-                    </div>
-                    <div className="mt-2 flex items-center justify-between gap-3 text-sm">
-                      <span className="text-muted-foreground">도면 리비전</span>
-                      <span className="font-medium text-foreground">
-                        {drawing.revision ?? "미정"}
-                      </span>
-                    </div>
-                  </div>
-                  {drawing.note ? (
-                    <p className="text-sm leading-6 text-muted-foreground">{drawing.note}</p>
-                  ) : null}
-                </div>
-              ) : (
-                <div className="rounded-xl border border-dashed border-border/70 bg-muted/15 px-4 py-5">
-                  <div className="flex items-start gap-3">
-                    <PackageSearch className="mt-0.5 size-5 text-muted-foreground" />
-                    <div>
-                      <p className="text-sm font-medium text-foreground">도면이 아직 연결되지 않았습니다</p>
-                      <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                        부품 생성 후 PDF, DWG, 3D 뷰어 산출물을 연결하면 상세 화면과 공급사 흐름에서 바로 재사용할 수 있습니다.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+      <div
+        className={cn(
+          "grid grid-cols-1 gap-5",
+          showDrawingPreview && "lg:grid-cols-5",
+        )}
+      >
+        {showDrawingPreview ? (
+          <div className="lg:col-span-3">
+            <PartDrawingPreview
+              activityState="idle"
+              part={{
+                drawing: drawing ?? null,
+                partNumber: formValues.partNumber.trim() || "PART-NUMBER",
+              }}
+              onOpenViewer={onOpenDrawingViewer}
+            />
+          </div>
+        ) : null}
 
-          <Card className="border-border/70">
-            <CardHeader className="pb-4">
-              <CardTitle className="text-base">연결 현황</CardTitle>
-              <CardDescription>편집 결과가 영향을 주는 주변 엔티티 범위입니다.</CardDescription>
-            </CardHeader>
-            <CardContent className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
-              {referenceItems.map((item) => {
-                const Icon = item.icon;
-
-                return (
-                  <div
-                    key={item.label}
-                    className="flex items-center justify-between rounded-xl border border-border/60 bg-background/70 px-4 py-3"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="rounded-lg bg-muted p-2 text-muted-foreground">
-                        <Icon className="size-4" />
-                      </div>
-                      <p className="text-sm text-foreground">{item.label}</p>
-                    </div>
-                    <span className="text-sm font-semibold text-foreground">{item.value}</span>
-                  </div>
-                );
-              })}
-            </CardContent>
-          </Card>
+        <div className={cn(showDrawingPreview && "lg:col-span-2")}>
+          <PartPropertiesTable rows={tableRows} />
         </div>
       </div>
     </div>

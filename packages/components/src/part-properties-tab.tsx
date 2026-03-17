@@ -4,7 +4,9 @@ import {
   PartDrawingPreview,
   type PartDrawingPreviewActivityState,
   type PartDrawingPreviewDrawing,
+  type PartDrawingPreviewProps,
 } from "./part-drawing-preview";
+import { PartPropertiesTable } from "./part-properties-table";
 
 export interface PartPropertiesTabPart {
   partNumber: string;
@@ -22,32 +24,48 @@ export interface PartPropertiesTabPart {
 
 export interface PartPropertiesTabProps {
   drawingActivityState: PartDrawingPreviewActivityState;
-  isDeletingDrawing: boolean;
   part: PartPropertiesTabPart;
-  onDeleteDrawing: () => void;
   onOpenDrawingViewer?: (drawing: PartDrawingPreviewDrawing) => void;
-  onUploadDrawing: (file: File) => void;
+  previewSettings?: PartDrawingPreviewProps["previewSettings"];
 }
 
 function getLifecycleVariant(lifecycleState: string | null): "outline" | "neutral" | "accent" | "success" {
-  if (lifecycleState === "양산") {
+  if (lifecycleState === "ACTIVE") {
     return "success";
   }
 
-  if (lifecycleState === "중단") {
+  if (lifecycleState === "EOL") {
+    return "accent";
+  }
+
+  if (lifecycleState === "OBSOLETE") {
     return "neutral";
   }
 
   return "outline";
 }
 
+function getLifecycleBadgeClassName(lifecycleState: string | null) {
+  if (lifecycleState === "ACTIVE") {
+    return "border-[var(--status-success-border)] bg-[var(--status-success-bg)] text-[var(--status-success)]";
+  }
+
+  if (lifecycleState === "EOL") {
+    return "border-[var(--status-warning-border)] bg-[var(--status-warning-bg)] text-[var(--status-warning)]";
+  }
+
+  if (lifecycleState === "OBSOLETE") {
+    return "border-[var(--status-neutral-border)] bg-[var(--status-neutral-bg)] text-muted-foreground";
+  }
+
+  return undefined;
+}
+
 export function PartPropertiesTab({
   drawingActivityState,
-  isDeletingDrawing,
   part,
-  onDeleteDrawing,
   onOpenDrawingViewer,
-  onUploadDrawing,
+  previewSettings,
 }: PartPropertiesTabProps) {
   const rows: { label: string; value: ReactNode }[] = [
     { label: "품번", value: <span className="font-mono text-xs">{part.partNumber}</span> },
@@ -56,7 +74,9 @@ export function PartPropertiesTab({
     {
       label: "상태",
       value: part.lifecycleState ? (
-        <Badge variant={getLifecycleVariant(part.lifecycleState)}>{part.lifecycleState}</Badge>
+        <Badge className={getLifecycleBadgeClassName(part.lifecycleState)} variant={getLifecycleVariant(part.lifecycleState)}>
+          {part.lifecycleState}
+        </Badge>
       ) : (
         <span className="text-muted-foreground/40">—</span>
       ),
@@ -72,6 +92,14 @@ export function PartPropertiesTab({
       label: "팬텀",
       value: part.isPhantom == null ? <span className="text-muted-foreground/40">—</span> : part.isPhantom ? "예" : "아니오",
     },
+    {
+      label: "설명",
+      value: part.description ? (
+        <p className="whitespace-pre-wrap leading-6 text-foreground/80">{part.description}</p>
+      ) : (
+        <span className="text-muted-foreground/40">—</span>
+      ),
+    },
   ];
 
   return (
@@ -80,33 +108,18 @@ export function PartPropertiesTab({
         <PartDrawingPreview
           activityState={drawingActivityState}
           part={{ drawing: part.drawing, partNumber: part.partNumber }}
-          isDeleting={isDeletingDrawing}
-          onDelete={onDeleteDrawing}
           onOpenViewer={onOpenDrawingViewer}
-          onUpload={onUploadDrawing}
+          previewSettings={previewSettings}
         />
       </div>
 
       <div className="space-y-4 lg:col-span-2">
-        <div className="rounded-lg border">
-          <table className="w-full">
-            <tbody>
-              {rows.map((row) => (
-                <tr key={row.label} className="border-b border-border/40 last:border-b-0">
-                  <td className="w-24 py-2.5 pl-4 pr-2 text-xs text-muted-foreground">{row.label}</td>
-                  <td className="py-2.5 pr-4 text-sm text-foreground">{row.value}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        {part.description ? (
-          <div>
-            <h4 className="mb-2 text-xs font-medium uppercase tracking-wider text-muted-foreground/70">설명</h4>
-            <p className="text-sm leading-relaxed text-foreground/80">{part.description}</p>
-          </div>
-        ) : null}
+        <PartPropertiesTable
+          rows={rows.map((row) => ({
+            ...row,
+            alignTop: row.label === "설명",
+          }))}
+        />
       </div>
     </div>
   );

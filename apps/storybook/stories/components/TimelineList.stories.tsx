@@ -83,7 +83,7 @@ export const Simple: Story = {
         items={[
           {
             id: "1",
-            title: "ECR-0045 변경 요청 승인",
+            title: "ECR-0045 변경관리 승인",
             timestamp: "2026-03-07 10:00",
             badge: "승인",
             badgeVariant: "success",
@@ -96,7 +96,7 @@ export const Simple: Story = {
           },
           {
             id: "3",
-            title: "ECR-0045 변경 요청 접수",
+            title: "ECR-0045 변경관리 접수",
             description: "브래킷 두께 2mm → 3mm 변경",
             timestamp: "2026-03-05 09:00",
           },

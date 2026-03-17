@@ -16,7 +16,7 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
   /**
  * 애플리케이션 기본 상태를 확인합니다
- * @summary GET /health
+ * @summary 애플리케이션 기본 상태를 확인합니다
  */
 export const health = (
     

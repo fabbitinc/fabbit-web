@@ -3,6 +3,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { authQueries } from "@/features/auth/api/auth.queries";
 import { toAuthSessionModel } from "@/features/auth/api/auth.api";
 import { useAuthStore } from "@/features/auth/stores/auth-store";
+import { settingsQueries } from "@/features/settings";
 import {
   clearAuthCookies,
   clearLogoutCookie,
@@ -45,6 +46,11 @@ export function useAuthBootstrapListener() {
       if (storedTokens.accessToken && storedTokens.refreshToken) {
         try {
           const meResponse = await queryClient.fetchQuery(authQueries.me());
+          try {
+            await queryClient.fetchQuery(settingsQueries.detail());
+          } catch {
+            queryClient.removeQueries({ queryKey: settingsQueries.detail().queryKey });
+          }
           if (!cancelled) {
             setSession(toAuthSessionModel(meResponse));
           }

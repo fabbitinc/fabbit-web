@@ -6,7 +6,7 @@
  */
 
 /**
- * 응답 DTO
+ * 사용자 요약
  */
 export interface UserSummaryResponse {
   user_id?: string;

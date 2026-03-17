@@ -24,7 +24,7 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
   /**
  * 매핑 ID로 최신 리비전을 조회합니다
- * @summary GET /api/v1/mappings/{mappingId}
+ * @summary 매핑 ID로 최신 리비전을 조회합니다
  */
 export const get1 = (
     mappingId: string,
@@ -36,7 +36,7 @@ export const get1 = (
     }
   /**
  * 매핑을 수정하고 새로운 리비전을 생성합니다
- * @summary PUT /api/v1/mappings/{mappingId}
+ * @summary 매핑을 수정하고 새로운 리비전을 생성합니다
  */
 export const update1 = (
     mappingId: string,
@@ -51,7 +51,7 @@ export const update1 = (
     }
   /**
  * 매핑을 비활성화(soft delete)합니다
- * @summary DELETE /api/v1/mappings/{mappingId}
+ * @summary 매핑을 비활성화(soft delete)합니다
  */
 export const delete1 = (
     mappingId: string,
@@ -63,7 +63,7 @@ export const delete1 = (
     }
   /**
  * 매핑을 정규화하고 파일 샘플 데이터 기준으로 오류/경고를 검증합니다
- * @summary POST /api/v1/mappings/validate
+ * @summary 매핑을 정규화하고 파일 샘플 데이터 기준으로 오류/경고를 검증합니다
  */
 export const validate1 = (
     mappingValidateRequest: BodyType<MappingValidateRequest>,
@@ -77,7 +77,7 @@ export const validate1 = (
     }
   /**
  * 업로드된 파일의 헤더/샘플 행을 기반으로 매핑 미리보기를 생성합니다
- * @summary POST /api/v1/mappings/preview
+ * @summary 업로드된 파일의 헤더/샘플 행을 기반으로 매핑 미리보기를 생성합니다
  */
 export const preview1 = (
     mappingPreviewRequest: BodyType<MappingPreviewRequest>,
@@ -91,7 +91,7 @@ export const preview1 = (
     }
   /**
  * 검토된 매핑을 확정하여 새 매핑 레코드(버전 1)를 생성합니다
- * @summary POST /api/v1/mappings/confirm
+ * @summary 검토된 매핑을 확정하여 새 매핑 레코드(버전 1)를 생성합니다
  */
 export const confirm1 = (
     mappingConfirmRequest: BodyType<MappingConfirmRequest>,
@@ -105,7 +105,7 @@ export const confirm1 = (
     }
   /**
  * 활성 매핑 목록을 최신순으로 조회합니다
- * @summary GET /api/v1/mappings
+ * @summary 활성 매핑 목록을 최신순으로 조회합니다
  */
 export const list1 = (
     

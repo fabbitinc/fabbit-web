@@ -7,7 +7,7 @@
 import type { SynthesisJobResponseStatus } from './synthesisJobResponseStatus';
 
 /**
- * 합성 작업 응답
+ * 합성 작업 상세 응답
  */
 export interface SynthesisJobResponse {
   /** 합성 작업 ID */

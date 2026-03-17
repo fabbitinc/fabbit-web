@@ -55,7 +55,7 @@ const views: Array<{
   { id: "overview", label: "개요", icon: LayoutDashboard },
   { id: "parts", label: "부품", count: (project) => project.partCount, icon: Package },
   { id: "issues", label: "이슈", count: (project) => project.issueCount, icon: AlertCircle },
-  { id: "change", label: "변경 요청", count: (project) => project.changeCount, icon: FilePen },
+  { id: "change", label: "변경관리", count: (project) => project.changeCount, icon: FilePen },
   { id: "activity", label: "활동", icon: Activity },
 ];
 

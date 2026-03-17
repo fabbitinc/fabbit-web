@@ -6,11 +6,10 @@
  */
 import type { FileItemResponse } from './fileItemResponse';
 import type { IssueSummaryResponseState } from './issueSummaryResponseState';
-import type { IssueSummaryResponseType } from './issueSummaryResponseType';
-import type { IssueUserSummaryResponse } from './issueUserSummaryResponse';
 import type { LabelBadgeResponse } from './labelBadgeResponse';
 import type { PartBadgeResponse } from './partBadgeResponse';
 import type { TeamBadgeResponse } from './teamBadgeResponse';
+import type { UserSummaryResponse } from './userSummaryResponse';
 
 /**
  * 이슈 목록 항목
@@ -18,15 +17,14 @@ import type { TeamBadgeResponse } from './teamBadgeResponse';
 export interface IssueSummaryResponse {
   id?: string;
   number?: number;
-  type?: IssueSummaryResponseType;
   title?: string;
   state?: IssueSummaryResponseState;
   closed_at?: string;
   created_at?: string;
   updated_at?: string;
-  created_by?: IssueUserSummaryResponse;
+  created_by?: UserSummaryResponse;
   labels?: LabelBadgeResponse[];
-  assignees?: IssueUserSummaryResponse[];
+  assignees?: UserSummaryResponse[];
   assigned_teams?: TeamBadgeResponse[];
   parts?: PartBadgeResponse[];
   files?: FileItemResponse[];

@@ -1,19 +1,20 @@
 import { queryOptions } from "@tanstack/react-query";
 import {
-  fetchChangeRequestList,
+  fetchEngineeringChangeList,
   fetchIssueList,
 } from "@/features/change-management/api/change-management.api";
 import type {
-  ChangeRequestListQueryDto,
+  EngineeringChangeListQueryDto,
   IssueListQueryDto,
 } from "@/features/change-management/api/change-management.types";
 
 export const changeManagementKeys = {
   all: ["change-management"] as const,
   issuesAll: ["change-management", "issues"] as const,
-  requestsAll: ["change-management", "requests"] as const,
+  engineeringChangesAll: ["change-management", "engineering-changes"] as const,
   issues: (query: IssueListQueryDto) => ["change-management", "issues", query] as const,
-  requests: (query: ChangeRequestListQueryDto) => ["change-management", "requests", query] as const,
+  engineeringChanges: (query: EngineeringChangeListQueryDto) =>
+    ["change-management", "engineering-changes", query] as const,
 };
 
 export const changeManagementQueries = {
@@ -23,10 +24,10 @@ export const changeManagementQueries = {
       queryFn: () => fetchIssueList(query),
       staleTime: 30_000,
     }),
-  requests: (query: ChangeRequestListQueryDto) =>
+  engineeringChanges: (query: EngineeringChangeListQueryDto) =>
     queryOptions({
-      queryKey: changeManagementKeys.requests(query),
-      queryFn: () => fetchChangeRequestList(query),
+      queryKey: changeManagementKeys.engineeringChanges(query),
+      queryFn: () => fetchEngineeringChangeList(query),
       staleTime: 30_000,
     }),
 };

@@ -19,7 +19,7 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
   /**
  * 알림 1건을 읽음 처리합니다
- * @summary PUT /api/v1/notifications/{notificationId}/read
+ * @summary 알림 1건을 읽음 처리합니다
  */
 export const readNotification = (
     notificationId: string,
@@ -31,7 +31,7 @@ export const readNotification = (
     }
   /**
  * 현재 사용자의 미읽음 알림을 모두 읽음 처리합니다
- * @summary PUT /api/v1/notifications/read-all
+ * @summary 현재 사용자의 미읽음 알림을 모두 읽음 처리합니다
  */
 export const readAllNotifications = (
     
@@ -43,7 +43,7 @@ export const readAllNotifications = (
     }
   /**
  * cursor 기반 페이지네이션으로 알림 목록을 조회합니다
- * @summary GET /api/v1/notifications
+ * @summary cursor 기반 페이지네이션으로 알림 목록을 조회합니다
  */
 export const listNotifications = (
     params?: ListNotificationsParams,
@@ -56,7 +56,7 @@ export const listNotifications = (
     }
   /**
  * 현재 사용자의 미읽음 알림 개수를 조회합니다
- * @summary GET /api/v1/notifications/unread-count
+ * @summary 현재 사용자의 미읽음 알림 개수를 조회합니다
  */
 export const getUnreadCount = (
     
@@ -68,7 +68,7 @@ export const getUnreadCount = (
     }
   /**
  * SSE 스트림으로 새 알림 이벤트를 실시간 수신합니다
- * @summary GET /api/v1/notifications/stream
+ * @summary SSE 스트림으로 새 알림 이벤트를 실시간 수신합니다
  */
 export const stream = (
     

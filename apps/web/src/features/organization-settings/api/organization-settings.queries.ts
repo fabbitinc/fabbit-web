@@ -6,12 +6,10 @@ import {
   createOrganizationInvitation,
   createOrganizationLabel,
   createOrganizationTeam,
-  deleteOrganizationDefaultOwner,
   deleteOrganizationLabel,
   deleteOrganizationProfileImage,
   deleteOrganizationTeam,
   fetchOrganizationCategories,
-  fetchOrganizationDefaultOwners,
   fetchOrganizationInvitations,
   fetchOrganizationLabels,
   fetchOrganizationMembers,
@@ -21,14 +19,12 @@ import {
   removeOrganizationTeamMembers,
   renameOrganizationCategory,
   setOrganizationProfileImage,
-  upsertOrganizationDefaultOwner,
 } from "@/features/organization-settings/api/organization-settings.api";
 import type {
   ChangeMemberRoleRequestDto,
   CreateInvitationRequestDto,
   CreateLabelRequestDto,
   CreateTeamRequestDto,
-  PartDefaultOwnerRequestDto,
   RenameCategoryRequestDto,
   SetProfileImageRequestDto,
 } from "@/features/organization-settings/api/organization-settings.types";
@@ -39,7 +35,6 @@ export const organizationSettingsKeys = {
   teams: ["organization-settings", "teams"] as const,
   teamMembers: (teamId: string) => ["organization-settings", "teams", teamId, "members"] as const,
   categories: ["organization-settings", "parts", "categories"] as const,
-  defaultOwners: ["organization-settings", "parts", "default-owners"] as const,
   labels: ["organization-settings", "change", "labels"] as const,
 };
 
@@ -72,12 +67,6 @@ export const organizationSettingsQueries = {
     queryOptions({
       queryKey: organizationSettingsKeys.categories,
       queryFn: fetchOrganizationCategories,
-      staleTime: 30_000,
-    }),
-  defaultOwners: () =>
-    queryOptions({
-      queryKey: organizationSettingsKeys.defaultOwners,
-      queryFn: fetchOrganizationDefaultOwners,
       staleTime: 30_000,
     }),
   labels: () =>
@@ -147,16 +136,6 @@ export const organizationSettingsMutations = {
       mutationKey: ["organization-settings", "rename-category"],
       mutationFn: ({ category, request }: { category: string; request: RenameCategoryRequestDto }) =>
         renameOrganizationCategory(category, request),
-    }),
-  upsertDefaultOwner: () =>
-    mutationOptions({
-      mutationKey: ["organization-settings", "upsert-default-owner"],
-      mutationFn: (request: PartDefaultOwnerRequestDto) => upsertOrganizationDefaultOwner(request),
-    }),
-  deleteDefaultOwner: () =>
-    mutationOptions({
-      mutationKey: ["organization-settings", "delete-default-owner"],
-      mutationFn: (category?: string) => deleteOrganizationDefaultOwner(category),
     }),
   createLabel: () =>
     mutationOptions({

@@ -6,13 +6,12 @@
  */
 import type { FileItemResponse } from './fileItemResponse';
 import type { IssueResponseState } from './issueResponseState';
-import type { IssueResponseType } from './issueResponseType';
-import type { IssueUserSummaryResponse } from './issueUserSummaryResponse';
 import type { JsonNode } from './jsonNode';
 import type { LabelBadgeResponse } from './labelBadgeResponse';
-import type { LinkedChangeRequestBadgeResponse } from './linkedChangeRequestBadgeResponse';
+import type { LinkedEngineeringChangeSummaryResponse } from './linkedEngineeringChangeSummaryResponse';
 import type { PartBadgeResponse } from './partBadgeResponse';
 import type { TeamBadgeResponse } from './teamBadgeResponse';
+import type { UserSummaryResponse } from './userSummaryResponse';
 
 /**
  * 이슈 상세 응답
@@ -20,7 +19,6 @@ import type { TeamBadgeResponse } from './teamBadgeResponse';
 export interface IssueResponse {
   id?: string;
   number?: number;
-  type?: IssueResponseType;
   title?: string;
   body?: JsonNode;
   state?: IssueResponseState;
@@ -28,12 +26,12 @@ export interface IssueResponse {
   created_at?: string;
   updated_at?: string;
   is_modified?: boolean;
-  created_by?: IssueUserSummaryResponse;
+  created_by?: UserSummaryResponse;
   labels?: LabelBadgeResponse[];
-  assignees?: IssueUserSummaryResponse[];
+  assignees?: UserSummaryResponse[];
   assigned_teams?: TeamBadgeResponse[];
   parts?: PartBadgeResponse[];
   files?: FileItemResponse[];
   comments_count?: number;
-  linked_changes?: LinkedChangeRequestBadgeResponse[];
+  linked_engineering_changes?: LinkedEngineeringChangeSummaryResponse[];
 }

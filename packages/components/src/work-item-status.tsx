@@ -72,7 +72,7 @@ export function getIssueStatusConfig(state: string): WorkItemStatusConfig {
     : ISSUE_STATUS_CONFIG.OPEN;
 }
 
-export function getChangeRequestStatusConfig(state: string): WorkItemStatusConfig {
+export function getEngineeringChangeStatusConfig(state: string): WorkItemStatusConfig {
   const normalized = state.toUpperCase();
 
   if (normalized === "DRAFT") {
@@ -100,14 +100,14 @@ export function IssueStatusIcon({
   return renderStatusIcon(getIssueStatusConfig(state), className);
 }
 
-export function ChangeRequestStatusIcon({
+export function EngineeringChangeStatusIcon({
   className = "h-4 w-4",
   state,
 }: {
   className?: string;
   state: string;
 }) {
-  return renderStatusIcon(getChangeRequestStatusConfig(state), className);
+  return renderStatusIcon(getEngineeringChangeStatusConfig(state), className);
 }
 
 export function IssueStatusBadge({
@@ -127,18 +127,18 @@ export function IssueStatusBadge({
   );
 }
 
-export function ChangeRequestStatusBadge({
+export function EngineeringChangeStatusBadge({
   className,
   state,
 }: {
   className?: string;
   state: string;
 }) {
-  const config = getChangeRequestStatusConfig(state);
+  const config = getEngineeringChangeStatusConfig(state);
 
   return (
     <Badge variant="outline" className={cn(config.badgeClassName, className)}>
-      <ChangeRequestStatusIcon state={state} className="h-4 w-4" />
+      <EngineeringChangeStatusIcon state={state} className="h-4 w-4" />
       {config.label}
     </Badge>
   );

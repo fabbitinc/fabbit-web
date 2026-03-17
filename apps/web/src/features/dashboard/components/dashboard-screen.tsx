@@ -40,7 +40,7 @@ const quickActions: QuickAction[] = [
   {
     href: "/changes",
     label: "변경 관리",
-    description: "이슈와 변경 요청 흐름을 확인합니다.",
+    description: "이슈와 변경관리 흐름을 확인합니다.",
     icon: GitPullRequestArrow,
   },
 ];
@@ -61,7 +61,7 @@ const myWorkItems: MyWorkItem[] = [
   {
     id: "2",
     title: "PCB 커넥터 핀 배열 변경",
-    href: "/changes/requests/15",
+    href: "/changes/engineering-changes/15",
     kind: "change",
     labels: [{ name: "설계변경", color: "#3b82f6" }],
     number: 15,
@@ -85,7 +85,7 @@ const myWorkItems: MyWorkItem[] = [
   {
     id: "4",
     title: "메인 하우징 도면 Rev.C 반영",
-    href: "/changes/requests/8",
+    href: "/changes/engineering-changes/8",
     kind: "change",
     labels: [],
     number: 8,

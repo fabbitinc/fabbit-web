@@ -75,6 +75,25 @@ function DropdownMenuItem({
   );
 }
 
+function DropdownMenuEmptyState({
+  children,
+  className,
+  ...props
+}: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="dropdown-menu-empty-state"
+      className={cn(
+        "px-2 py-2 text-sm leading-5 text-muted-foreground whitespace-normal break-keep",
+        className,
+      )}
+      {...props}
+    >
+      {children}
+    </div>
+  );
+}
+
 function DropdownMenuCheckboxItem({
   className,
   children,
@@ -227,6 +246,7 @@ export {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
+  DropdownMenuEmptyState,
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,

@@ -49,7 +49,7 @@ export const Showcase: Story = {
         <TooltipTrigger asChild>
           <Button variant="outline" size="icon"><span className="text-sm font-semibold">N</span></Button>
         </TooltipTrigger>
-        <TooltipContent sideOffset={8}>새로운 변경 요청 4건</TooltipContent>
+        <TooltipContent sideOffset={8}>새로운 변경관리 4건</TooltipContent>
       </Tooltip>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
@@ -93,7 +93,7 @@ export const TooltipPreview: Story = {
         </Button>
       </TooltipTrigger>
       <TooltipContent sideOffset={8}>
-        새로운 변경 요청 4건이 도착했습니다.
+        새로운 변경관리 4건이 도착했습니다.
       </TooltipContent>
     </Tooltip>
   ),

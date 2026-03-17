@@ -74,7 +74,7 @@ export const Showcase: Story = {
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex items-center justify-between rounded-2xl border border-border/70 px-4 py-3">
-                <span className="text-sm font-medium text-foreground">변경 요청 멘션 알림</span>
+                <span className="text-sm font-medium text-foreground">변경관리 멘션 알림</span>
                 <Badge variant="success">즉시 발송</Badge>
               </div>
               <div className="flex items-center justify-between rounded-2xl border border-border/70 px-4 py-3">

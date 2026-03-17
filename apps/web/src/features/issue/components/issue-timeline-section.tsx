@@ -22,7 +22,7 @@ function getActivityLabel(action: string) {
     "issue:part_changed": "관련 부품이 변경되었습니다.",
     "issue:file_attached": "첨부파일이 추가되었습니다.",
     "issue:file_detached": "첨부파일이 제거되었습니다.",
-    "issue:cr_changed": "연결된 변경 요청이 변경되었습니다.",
+    "issue:cr_changed": "연결된 변경관리가 변경되었습니다.",
     "issue:closed": "이슈가 닫혔습니다.",
     "issue:reopened": "이슈가 다시 열렸습니다.",
     "issue:mentioned": "멘션이 추가되었습니다.",
@@ -36,7 +36,7 @@ interface TimelineCommentItemProps {
   currentUserId: string | null;
   issueMentionFetcher: TiptapMentionFetcher;
   onDeleteComment: (commentId: string) => Promise<void>;
-  onNavigateToIssueMention: (issueNumber: number, issueType: "issue" | "change_request") => void;
+  onNavigateToIssueMention: (issueNumber: number, issueType: "issue" | "engineering_change") => void;
   onUpdateComment: (commentId: string, body: RichTextDocument) => Promise<void>;
   userMentionFetcher: TiptapMentionFetcher;
 }
@@ -169,7 +169,7 @@ interface IssueTimelineSectionProps {
   items: IssueTimelineItemModel[];
   onCreateComment: (body: RichTextDocument) => Promise<void>;
   onDeleteComment: (commentId: string) => Promise<void>;
-  onNavigateToIssueMention: (issueNumber: number, issueType: "issue" | "change_request") => void;
+  onNavigateToIssueMention: (issueNumber: number, issueType: "issue" | "engineering_change") => void;
   onUpdateComment: (commentId: string, body: RichTextDocument) => Promise<void>;
 }
 
@@ -204,7 +204,7 @@ export function IssueTimelineSection({
         <div className="space-y-3">
           <TiptapEditor
             content={body ?? undefined}
-            placeholder="댓글을 입력하세요. @로 멤버, #로 이슈/변경 요청을 멘션할 수 있습니다."
+            placeholder="댓글을 입력하세요. @로 멤버, #로 이슈/변경관리를 멘션할 수 있습니다."
             minHeight={140}
             issueMentionFetcher={issueMentionFetcher}
             onChangeJson={(content) => setBody(normalizeRichTextDocument(content))}

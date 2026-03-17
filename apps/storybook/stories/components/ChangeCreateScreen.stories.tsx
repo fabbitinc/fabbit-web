@@ -67,14 +67,14 @@ export const IssueCreate: Story = {
   },
 };
 
-export const ChangeRequestCreate: Story = {
+export const EngineeringChangeCreate: Story = {
   args: {
-    backLabel: "변경 요청 목록",
+    backLabel: "변경관리 목록",
     description: "설계 변경 내용을 등록하고 검토자를 지정합니다.",
-    heading: "새 변경 요청",
-    titlePlaceholder: "변경 요청 제목을 입력하세요",
-    editorPlaceholder: "변경 요청 설명을 입력하세요",
-    submitLabel: "변경 요청 생성",
+    heading: "새 변경관리",
+    titlePlaceholder: "변경관리 제목을 입력하세요",
+    editorPlaceholder: "변경관리 설명을 입력하세요",
+    submitLabel: "변경관리 생성",
     includeReviewers: true,
     linkedIssueNumber: 42,
     linkedIssueTitle: "센서 브래킷 간섭 확인",

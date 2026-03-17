@@ -11,14 +11,14 @@ export function useSyncIssueChangesAction(issueNumber: number) {
     mutationKey: ["issue", issueNumber, "sync-issue-changes-action"],
     mutationFn: (changeIds: string[]) =>
       syncIssueChanges(issueNumber, {
-        cr_ids: changeIds,
+        engineering_change_ids: changeIds,
       }),
     onSuccess: async () => {
-      toast.success("연결된 변경 요청을 갱신했습니다.");
+      toast.success("연결된 변경관리를 갱신했습니다.");
       await invalidateIssueQueries(queryClient, issueNumber);
     },
     onError: (error) => {
-      toast.error(extractApiError(error, "변경 요청 연결에 실패했습니다."));
+      toast.error(extractApiError(error, "변경관리 연결에 실패했습니다."));
     },
   });
 }

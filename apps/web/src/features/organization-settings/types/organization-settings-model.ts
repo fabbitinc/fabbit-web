@@ -10,8 +10,7 @@ export type OrganizationSettingsTab =
   | "advanced";
 
 export type OrganizationMembersSubTab = "users" | "teams";
-export type OrganizationPartsSubTab = "categories" | "assignment";
-export type OrganizationChangeSubTab = "labels";
+export type OrganizationChangeSubTab = "general" | "labels";
 export type MemberRoleModel = "MEMBER" | "ADMIN" | "OWNER";
 
 export interface OrganizationUserSummaryModel {
@@ -51,15 +50,6 @@ export interface OrganizationTeamModel {
 export interface OrganizationCategoryModel {
   category: string;
   partCount: number;
-}
-
-export interface OrganizationDefaultOwnerModel {
-  id: string;
-  category?: string | null;
-  defaultOwnerId?: string | null;
-  defaultOwner?: OrganizationUserSummaryModel | null;
-  defaultOwnerTeamId?: string | null;
-  defaultOwnerTeamName?: string | null;
 }
 
 export interface OrganizationLabelModel {

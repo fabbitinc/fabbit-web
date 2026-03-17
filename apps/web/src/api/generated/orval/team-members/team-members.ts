@@ -20,7 +20,7 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
   /**
  * 팀 멤버 목록을 조회합니다
- * @summary GET /api/v1/teams/{teamId}/members
+ * @summary 팀 멤버 목록을 조회합니다
  */
 export const listTeamMembers = (
     teamId: string,
@@ -32,7 +32,7 @@ export const listTeamMembers = (
     }
   /**
  * 팀에 멤버를 배치 추가합니다. 이미 추가된 멤버는 제외됩니다
- * @summary POST /api/v1/teams/{teamId}/members
+ * @summary 팀에 멤버를 배치 추가합니다. 이미 추가된 멤버는 제외됩니다
  */
 export const addTeamMembers = (
     teamId: string,
@@ -47,7 +47,7 @@ export const addTeamMembers = (
     }
   /**
  * 팀에서 멤버를 배치 제거합니다
- * @summary DELETE /api/v1/teams/{teamId}/members
+ * @summary 팀에서 멤버를 배치 제거합니다
  */
 export const removeTeamMembers = (
     teamId: string,

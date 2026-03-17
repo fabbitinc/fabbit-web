@@ -34,13 +34,11 @@ export interface IssueLinkedChangeModel {
   number: number;
   title: string;
   state: string;
-  crState: string;
 }
 
 export interface IssueDetailModel {
   id: string;
   number: number;
-  type: string;
   title: string;
   body: Record<string, unknown> | null;
   bodyText: string;

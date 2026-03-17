@@ -20,7 +20,7 @@ export interface EditableTimelineCommentProps {
   isModified?: boolean;
   issueMentionFetcher?: TiptapMentionFetcher;
   onDelete: () => Promise<void> | void;
-  onNavigateToIssueMention?: (issueNumber: number, issueType: "issue" | "change_request") => void;
+  onNavigateToIssueMention?: (issueNumber: number, issueType: "issue" | "engineering_change") => void;
   onUpdate: (body: TiptapEditorProps["content"] | null) => Promise<void>;
   userMentionFetcher?: TiptapMentionFetcher;
 }

@@ -17,7 +17,7 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
   /**
  * company_name 또는 code로 공급사를 검색해 페이징 목록을 조회합니다
- * @summary GET /api/v1/suppliers
+ * @summary company_name 또는 code로 공급사를 검색해 페이징 목록을 조회합니다
  */
 export const listSuppliers = (
     params?: ListSuppliersParams,

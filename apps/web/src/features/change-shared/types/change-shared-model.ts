@@ -22,7 +22,6 @@ export interface LookupIssueModel {
   number: number;
   title: string;
   state: string;
-  type: "issue" | "change_request";
 }
 
 export interface LookupChangeModel {
@@ -30,5 +29,4 @@ export interface LookupChangeModel {
   number: number;
   title: string;
   state: string;
-  crState: string;
 }

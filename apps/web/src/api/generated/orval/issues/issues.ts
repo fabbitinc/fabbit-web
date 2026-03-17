@@ -16,9 +16,9 @@ import type {
   ListIssuesParams,
   LookupIssuesParams,
   SyncAssigneesRequest,
-  SyncChangesRequest,
   SyncDiffResponse,
   SyncLabelsRequest,
+  SyncLinkedEngineeringChangesRequest,
   SyncPartsRequest,
   SyncTeamAssigneesRequest,
   TimelineResponse,
@@ -35,7 +35,7 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
   /**
  * 부품 목록을 동기화합니다
- * @summary PUT /api/v1/issues/{issueNumber}/parts
+ * @summary 부품 목록을 동기화합니다
  */
 export const syncParts = (
     issueNumber: number,
@@ -50,7 +50,7 @@ export const syncParts = (
     }
   /**
  * 라벨 목록을 동기화합니다
- * @summary PUT /api/v1/issues/{issueNumber}/labels
+ * @summary 라벨 목록을 동기화합니다
  */
 export const syncLabels = (
     issueNumber: number,
@@ -64,23 +64,23 @@ export const syncLabels = (
       options);
     }
   /**
- * 이슈에 연결된 변경요청 목록을 동기화합니다
- * @summary PUT /api/v1/issues/{issueNumber}/changes
+ * 이슈에 연결된 변경관리 목록을 동기화합니다
+ * @summary 이슈에 연결된 변경관리 목록을 동기화합니다
  */
-export const syncChanges = (
+export const syncLinkedEngineeringChanges = (
     issueNumber: number,
-    syncChangesRequest: BodyType<SyncChangesRequest>,
+    syncLinkedEngineeringChangesRequest: BodyType<SyncLinkedEngineeringChangesRequest>,
  options?: SecondParameter<typeof customInstance<SyncDiffResponse | Blob>>,) => {
       return customInstance<SyncDiffResponse | Blob>(
-      {url: `/api/v1/issues/${issueNumber}/changes`, method: 'PUT',
+      {url: `/api/v1/issues/${issueNumber}/engineering-changes`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
-      data: syncChangesRequest
+      data: syncLinkedEngineeringChangesRequest
     },
       options);
     }
   /**
  * 개인 담당자 목록을 동기화합니다
- * @summary PUT /api/v1/issues/{issueNumber}/assignees
+ * @summary 개인 담당자 목록을 동기화합니다
  */
 export const syncAssignees = (
     issueNumber: number,
@@ -95,7 +95,7 @@ export const syncAssignees = (
     }
   /**
  * 팀 담당자 목록을 동기화합니다
- * @summary PUT /api/v1/issues/{issueNumber}/assigned-teams
+ * @summary 팀 담당자 목록을 동기화합니다
  */
 export const syncTeamAssignees = (
     issueNumber: number,
@@ -109,8 +109,8 @@ export const syncTeamAssignees = (
       options);
     }
   /**
- * 일반 이슈(CHANGE_REQUEST 제외) 목록을 조회합니다
- * @summary GET /api/v1/issues
+ * 이슈 목록을 조회합니다
+ * @summary 이슈 목록을 조회합니다
  */
 export const listIssues = (
     params?: ListIssuesParams,
@@ -123,7 +123,7 @@ export const listIssues = (
     }
   /**
  * 이슈를 생성하고 연관 정보(부품/담당자/라벨/파일)를 일괄 연결합니다
- * @summary POST /api/v1/issues
+ * @summary 이슈를 생성하고 연관 정보(부품/담당자/라벨/파일)를 일괄 연결합니다
  */
 export const createIssue = (
     createIssueRequest: BodyType<CreateIssueRequest>,
@@ -137,7 +137,7 @@ export const createIssue = (
     }
   /**
  * 이슈를 다시 엽니다 (CLOSED -> OPEN)
- * @summary POST /api/v1/issues/{issueNumber}/reopen
+ * @summary 이슈를 다시 엽니다 (CLOSED -> OPEN)
  */
 export const reopenIssue = (
     issueNumber: number,
@@ -149,7 +149,7 @@ export const reopenIssue = (
     }
   /**
  * 첨부파일을 배치 연결합니다
- * @summary POST /api/v1/issues/{issueNumber}/files
+ * @summary 첨부파일을 배치 연결합니다
  */
 export const addFiles = (
     issueNumber: number,
@@ -164,7 +164,7 @@ export const addFiles = (
     }
   /**
  * 댓글을 생성합니다
- * @summary POST /api/v1/issues/{issueNumber}/comments
+ * @summary 댓글을 생성합니다
  */
 export const createComment = (
     issueNumber: number,
@@ -179,7 +179,7 @@ export const createComment = (
     }
   /**
  * 이슈를 닫습니다 (OPEN -> CLOSED)
- * @summary POST /api/v1/issues/{issueNumber}/close
+ * @summary 이슈를 닫습니다 (OPEN -> CLOSED)
  */
 export const closeIssue = (
     issueNumber: number,
@@ -191,7 +191,7 @@ export const closeIssue = (
     }
   /**
  * 이슈 번호로 상세 정보를 조회합니다
- * @summary GET /api/v1/issues/{issueNumber}
+ * @summary 이슈 번호로 상세 정보를 조회합니다
  */
 export const getIssue = (
     issueNumber: number,
@@ -203,7 +203,7 @@ export const getIssue = (
     }
   /**
  * 이슈 제목/본문을 수정합니다
- * @summary PATCH /api/v1/issues/{issueNumber}
+ * @summary 이슈 제목/본문을 수정합니다
  */
 export const updateIssue = (
     issueNumber: number,
@@ -218,7 +218,7 @@ export const updateIssue = (
     }
   /**
  * 댓글을 삭제합니다
- * @summary DELETE /api/v1/issues/{issueNumber}/comments/{commentId}
+ * @summary 댓글을 삭제합니다
  */
 export const deleteComment = (
     issueNumber: number,
@@ -231,7 +231,7 @@ export const deleteComment = (
     }
   /**
  * 댓글을 수정합니다
- * @summary PATCH /api/v1/issues/{issueNumber}/comments/{commentId}
+ * @summary 댓글을 수정합니다
  */
 export const updateComment = (
     issueNumber: number,
@@ -247,7 +247,7 @@ export const updateComment = (
     }
   /**
  * 댓글과 활동 이력을 시간순으로 병합 조회합니다
- * @summary GET /api/v1/issues/{issueNumber}/timeline
+ * @summary 댓글과 활동 이력을 시간순으로 병합 조회합니다
  */
 export const getTimeline = (
     issueNumber: number,
@@ -259,7 +259,7 @@ export const getTimeline = (
     }
   /**
  * 이슈 연결 picker UI용 경량 목록을 조회합니다
- * @summary GET /api/v1/issues/lookup
+ * @summary 이슈 연결 picker UI용 경량 목록을 조회합니다
  */
 export const lookupIssues = (
     params?: LookupIssuesParams,
@@ -272,9 +272,9 @@ export const lookupIssues = (
     }
   /**
  * 첨부파일 1건을 삭제(soft delete)합니다
- * @summary DELETE /api/v1/issues/{issueNumber}/files/{fileId}
+ * @summary 첨부파일 1건을 삭제(soft delete)합니다
  */
-export const deleteFile = (
+export const deleteFile2 = (
     issueNumber: number,
     fileId: string,
  options?: SecondParameter<typeof customInstance<void>>,) => {
@@ -285,7 +285,7 @@ export const deleteFile = (
     }
   export type SyncPartsResult = NonNullable<Awaited<ReturnType<typeof syncParts>>>
 export type SyncLabelsResult = NonNullable<Awaited<ReturnType<typeof syncLabels>>>
-export type SyncChangesResult = NonNullable<Awaited<ReturnType<typeof syncChanges>>>
+export type SyncLinkedEngineeringChangesResult = NonNullable<Awaited<ReturnType<typeof syncLinkedEngineeringChanges>>>
 export type SyncAssigneesResult = NonNullable<Awaited<ReturnType<typeof syncAssignees>>>
 export type SyncTeamAssigneesResult = NonNullable<Awaited<ReturnType<typeof syncTeamAssignees>>>
 export type ListIssuesResult = NonNullable<Awaited<ReturnType<typeof listIssues>>>
@@ -300,4 +300,4 @@ export type DeleteCommentResult = NonNullable<Awaited<ReturnType<typeof deleteCo
 export type UpdateCommentResult = NonNullable<Awaited<ReturnType<typeof updateComment>>>
 export type GetTimelineResult = NonNullable<Awaited<ReturnType<typeof getTimeline>>>
 export type LookupIssuesResult = NonNullable<Awaited<ReturnType<typeof lookupIssues>>>
-export type DeleteFileResult = NonNullable<Awaited<ReturnType<typeof deleteFile>>>
+export type DeleteFile2Result = NonNullable<Awaited<ReturnType<typeof deleteFile2>>>

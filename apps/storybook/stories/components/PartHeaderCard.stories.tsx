@@ -4,6 +4,7 @@ import { PartHeaderCard, type PartHeaderCardProps } from "@fabbit/components";
 const samplePart = {
   partNumber: "DRV-PLATE-0142",
   name: "드라이브 유닛 베이스 플레이트",
+  description: "서보 구동 모듈의 하부 베이스로 사용되는 기구 부품입니다.",
   revision: "C",
   material: "AL6061-T6",
   unit: "EA",

@@ -33,7 +33,7 @@ const sampleProps: IssueSidebarProps = {
   onEditAssignees: () => alert("담당자 편집"),
   onEditLabels: () => alert("라벨 편집"),
   onEditParts: () => alert("부품 편집"),
-  onEditLinkedChanges: () => alert("변경 요청 편집"),
+  onEditLinkedChanges: () => alert("변경관리 편집"),
 };
 
 const meta = {

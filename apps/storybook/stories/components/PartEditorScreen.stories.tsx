@@ -29,13 +29,6 @@ const unitOptions = [
   { value: "m", label: "M" },
 ];
 
-const ownerTeamOptions = [
-  { value: "me-team", label: "기구설계팀" },
-  { value: "ee-team", label: "전장설계팀" },
-  { value: "quality-team", label: "품질기획팀" },
-  { value: "sourcing-team", label: "구매운영팀" },
-];
-
 const createFormValues: PartEditorScreenFormValues = {
   category: "mechanical",
   description: "",
@@ -44,9 +37,8 @@ const createFormValues: PartEditorScreenFormValues = {
   lifecycleState: "draft",
   material: "AL6061-T6",
   name: "드라이브 유닛 베이스 플레이트",
-  ownerTeamId: "me-team",
   partNumber: "DRV-BASE-0142",
-  revision: "A",
+  revision: "",
   unit: "ea",
 };
 
@@ -59,7 +51,6 @@ const editFormValues: PartEditorScreenFormValues = {
   lifecycleState: "mass-production",
   material: "복합 조립품",
   name: "드라이브 모듈 메인 어셈블리",
-  ownerTeamId: "quality-team",
   partNumber: "DRV-ASSY-0104",
   revision: "D",
   unit: "assy",
@@ -111,22 +102,32 @@ const editExtendedFields: PartEditorScreenExtendedField[] = [
 
 const editDrawing: PartEditorScreenDrawingSummary = {
   drawingNumber: "DWG-DRV-0104-D",
-  fileName: "drv-assy-main-revD.pdf",
-  note: "도면 PDF와 3D 뷰어가 모두 최신 리비전으로 변환 완료된 상태입니다.",
+  name: "drv-assy-main-revD.pdf",
   revision: "D",
-  statusLabel: "검토 준비 완료",
-  statusTone: "success",
-  updatedAtLabel: "2026년 3월 7일 14:20 업데이트",
+  version: "D",
+  status: "ACTIVE",
+  conversionStatus: "COMPLETED",
+  viewerType: "PDF",
+  viewerUrl: "https://example.com/drawings/drv-assy-main-revD.pdf",
+  previewUrl: "https://picsum.photos/1200/900?random=12",
+  originalFileUrl: "https://example.com/drawings/drv-assy-main-revD-original.pdf",
 };
 
 const reviewDrawing: PartEditorScreenDrawingSummary = {
   drawingNumber: "DWG-DRV-0104-E",
-  fileName: "drv-assy-main-revE.pdf",
-  note: "센서 브래킷 간섭 수정본이 반영됐지만, 공급사 공유 전에 최종 릴리즈 승인 확인이 필요합니다.",
+  name: "drv-assy-main-revE.step",
   revision: "E",
-  statusLabel: "승인 대기",
-  statusTone: "warning",
-  updatedAtLabel: "2026년 3월 9일 09:30 업데이트",
+  version: "E",
+  status: "ACTIVE",
+  conversionStatus: "ACTION_REQUIRED",
+  viewerType: null,
+  viewerUrl: null,
+  previewUrl: null,
+  originalFileUrl: "https://example.com/drawings/drv-assy-main-revE.step",
+  webViewRequirement: {
+    title: "웹에서 보기 위한 파일이 필요합니다.",
+    description: "원본 파일은 저장되었습니다. 웹에서 확인하려면 PDF 또는 GLB 형식 파일을 올려 주세요.",
+  },
 };
 
 const createStats: PartEditorScreenReferenceStats = {
@@ -149,6 +150,7 @@ function PartEditorScreenStory({
   initialFormValues,
   initialStats,
   lastSavedLabel,
+  lockedFields,
   mode,
 }: {
   initialDrawing?: PartEditorScreenDrawingSummary | null;
@@ -156,6 +158,7 @@ function PartEditorScreenStory({
   initialFormValues: PartEditorScreenFormValues;
   initialStats: PartEditorScreenReferenceStats;
   lastSavedLabel?: string;
+  lockedFields?: { lifecycleState?: boolean; partNumber?: boolean; revision?: boolean };
   mode: "create" | "edit";
 }) {
   const [formValues, setFormValues] = useState(initialFormValues);
@@ -169,8 +172,8 @@ function PartEditorScreenStory({
       formValues={formValues}
       lastSavedLabel={lastSavedLabel}
       lifecycleOptions={lifecycleOptions}
+      lockedFields={lockedFields}
       mode={mode}
-      ownerTeamOptions={ownerTeamOptions}
       referenceStats={initialStats}
       unitOptions={unitOptions}
       onBack={() => undefined}
@@ -212,6 +215,19 @@ export const Edit: Story = {
     initialFormValues: editFormValues,
     initialStats: editStats,
     lastSavedLabel: "마지막 저장 12분 전",
+    mode: "edit",
+  },
+  render: (args) => <PartEditorScreenStory {...args} />,
+};
+
+export const EditWithLockedFields: Story = {
+  args: {
+    initialDrawing: editDrawing,
+    initialExtendedFields: editExtendedFields,
+    initialFormValues: editFormValues,
+    initialStats: editStats,
+    lastSavedLabel: "마지막 저장 12분 전",
+    lockedFields: { partNumber: true, revision: true, lifecycleState: true },
     mode: "edit",
   },
   render: (args) => <PartEditorScreenStory {...args} />,

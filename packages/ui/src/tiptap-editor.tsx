@@ -147,7 +147,7 @@ export interface TiptapEditorProps {
   className?: string;
   hideToolbar?: boolean;
   minHeight?: number;
-  onIssueMentionClick?: (issueNumber: number, issueType: "issue" | "change_request") => void;
+  onIssueMentionClick?: (issueNumber: number, issueType: "issue" | "engineering_change") => void;
   /** 사용자 멘션(@) 데이터 fetcher. editable 모드에서 필요 */
   userMentionFetcher?: TiptapMentionFetcher;
   /** 이슈 멘션(#) 데이터 fetcher. editable 모드에서 필요 */
@@ -216,7 +216,8 @@ export function TiptapEditor({
       if (!mentionEl) return;
 
       const rawType = mentionEl.getAttribute("data-issue-type");
-      const issueType: "issue" | "change_request" = rawType === "change_request" ? "change_request" : "issue";
+      const issueType: "issue" | "engineering_change" =
+        rawType && rawType !== "issue" ? "engineering_change" : "issue";
 
       const num = mentionEl.getAttribute("data-number");
       if (num) {

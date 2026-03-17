@@ -20,13 +20,12 @@ export interface OrganizationSettingsScreenProps {
   activeTab: string;
   changeTab: string;
   memberTab: string;
-  partsTab: string;
   usageTab: UsageSubTab;
   generalContent: ReactNode;
   membersUsersContent: ReactNode;
   membersTeamsContent: ReactNode;
   partsCategoriesContent: ReactNode;
-  partsAssignmentContent: ReactNode;
+  changeGeneralContent: ReactNode;
   labelsContent: ReactNode;
   billingContent: ReactNode;
   usageStorageContent: ReactNode;
@@ -38,7 +37,6 @@ export interface OrganizationSettingsScreenProps {
   onActiveTabChange: (tab: string) => void;
   onChangeTabChange: (tab: string) => void;
   onMemberTabChange: (tab: string) => void;
-  onPartsTabChange: (tab: string) => void;
   onUsageTabChange: (tab: UsageSubTab) => void;
 }
 
@@ -59,12 +57,8 @@ const memberTabs = [
   { key: "teams", label: "팀" },
 ] as const;
 
-const partsTabs = [
-  { key: "categories", label: "카테고리" },
-  { key: "assignment", label: "담당 설정" },
-] as const;
-
 const changeTabs = [
+  { key: "general", label: "일반" },
   { key: "labels", label: "라벨" },
 ] as const;
 
@@ -72,13 +66,12 @@ export function OrganizationSettingsScreen({
   activeTab,
   changeTab,
   memberTab,
-  partsTab,
   usageTab,
   generalContent,
   membersUsersContent,
   membersTeamsContent,
   partsCategoriesContent,
-  partsAssignmentContent,
+  changeGeneralContent,
   labelsContent,
   billingContent,
   usageStorageContent,
@@ -90,7 +83,6 @@ export function OrganizationSettingsScreen({
   onActiveTabChange,
   onChangeTabChange,
   onMemberTabChange,
-  onPartsTabChange,
   onUsageTabChange,
 }: OrganizationSettingsScreenProps) {
   return (
@@ -110,14 +102,13 @@ export function OrganizationSettingsScreen({
       ) : null}
       {activeTab === "parts" ? (
         <div className="space-y-6">
-          <InlineTabs activeKey={partsTab} items={partsTabs} onChange={onPartsTabChange} />
-          {partsTab === "categories" ? partsCategoriesContent : partsAssignmentContent}
+          {partsCategoriesContent}
         </div>
       ) : null}
       {activeTab === "change" ? (
         <div className="space-y-6">
           <InlineTabs activeKey={changeTab} items={changeTabs} onChange={onChangeTabChange} />
-          {labelsContent}
+          {changeTab === "general" ? changeGeneralContent : labelsContent}
         </div>
       ) : null}
       {activeTab === "billing" ? billingContent : null}

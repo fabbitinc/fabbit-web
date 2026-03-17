@@ -21,8 +21,14 @@ export interface UpdateIssueRequestDto
 export type SyncIssueAssigneesRequestDto = ApiRequestBody<"/api/v1/issues/{issueNumber}/assignees", "put">;
 export type SyncIssueAssigneesResponseDto = ResponseOf<"/api/v1/issues/{issueNumber}/assignees", "put">;
 
-export type SyncIssueChangesRequestDto = ApiRequestBody<"/api/v1/issues/{issueNumber}/changes", "put">;
-export type SyncIssueChangesResponseDto = ResponseOf<"/api/v1/issues/{issueNumber}/changes", "put">;
+export type SyncIssueChangesRequestDto = ApiRequestBody<
+  "/api/v1/issues/{issueNumber}/engineering-changes",
+  "put"
+>;
+export type SyncIssueChangesResponseDto = ResponseOf<
+  "/api/v1/issues/{issueNumber}/engineering-changes",
+  "put"
+>;
 
 export type SyncIssueLabelsRequestDto = ApiRequestBody<"/api/v1/issues/{issueNumber}/labels", "put">;
 export type SyncIssueLabelsResponseDto = ResponseOf<"/api/v1/issues/{issueNumber}/labels", "put">;

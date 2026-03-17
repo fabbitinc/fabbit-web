@@ -6,17 +6,18 @@
  */
 import type { PartDetailResponseExtendedProperties } from './partDetailResponseExtendedProperties';
 import type { PartDetailResponseLifecycleState } from './partDetailResponseLifecycleState';
-import type { PartOwnerUserSummaryResponse } from './partOwnerUserSummaryResponse';
-import type { RelatedDrawingResponse } from './relatedDrawingResponse';
+import type { PartPreviewResponse } from './partPreviewResponse';
 
 /**
  * 응답 DTO
  */
 export interface PartDetailResponse {
   id?: string;
+  revision_id?: string;
   part_number?: string;
   name?: string;
   revision?: string;
+  draft_key?: string;
   material?: string;
   unit?: string;
   description?: string;
@@ -25,11 +26,8 @@ export interface PartDetailResponse {
   is_phantom?: boolean;
   lead_time_days?: number;
   extended_properties?: PartDetailResponseExtendedProperties;
-  owner_id?: string;
-  owner?: PartOwnerUserSummaryResponse;
-  owner_team_id?: string;
-  owner_team_name?: string;
-  drawing?: RelatedDrawingResponse;
+  preview?: PartPreviewResponse;
+  draft_count?: number;
   children_count?: number;
   parents_count?: number;
   suppliers_count?: number;

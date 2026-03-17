@@ -65,7 +65,7 @@ function getChangeValue(
   return null;
 }
 
-function toIssueType(raw?: string): "change_request" | "issue" | undefined {
+function toIssueType(raw?: string): "engineering_change" | "issue" | undefined {
   if (!raw) {
     return undefined;
   }
@@ -73,7 +73,7 @@ function toIssueType(raw?: string): "change_request" | "issue" | undefined {
   const upper = raw.toUpperCase();
 
   if (upper === "CHANGE_REQUEST" || upper === "CR") {
-    return "change_request";
+    return "engineering_change";
   }
 
   return "issue";

@@ -64,7 +64,7 @@ export const CrChanged: Story = {
       author,
       createdAtLabel: "15분 전",
       linkedIssueCount: 1,
-      linkedIssues: [{ number: 42, title: "인버터 하우징 간섭 수정", type: "change_request" }],
+      linkedIssues: [{ number: 42, title: "인버터 하우징 간섭 수정", type: "engineering_change" }],
     },
   },
 };
@@ -104,7 +104,7 @@ export const ReviewApproved: Story = {
   },
 };
 
-export const ChangeRequestSubmitted: Story = {
+export const EngineeringChangeSubmitted: Story = {
   args: {
     event: {
       id: "9",
@@ -140,7 +140,7 @@ export const Showcase: Story = {
       { id: "3", type: "labels_changed", author, createdAtLabel: "2일 전", addedLabels: [{ name: "긴급", color: "#ef4444" }, { name: "설계변경", color: "#10b981" }] },
       { id: "4", type: "part_added", author, createdAtLabel: "1일 전", addedPartCount: 2, addedPartNumbers: ["DRV-PLATE-0142", "CTRL-PCB-0207"] },
       { id: "5", type: "file_attached", author, createdAtLabel: "5시간 전", fileNames: ["analysis.pdf"] },
-      { id: "6", type: "cr_changed", author, createdAtLabel: "2시간 전", linkedIssueCount: 1, linkedIssues: [{ number: 42, title: "인버터 하우징 간섭 수정", type: "change_request" }] },
+      { id: "6", type: "cr_changed", author, createdAtLabel: "2시간 전", linkedIssueCount: 1, linkedIssues: [{ number: 42, title: "인버터 하우징 간섭 수정", type: "engineering_change" }] },
       { id: "7", type: "review_approved", author: { name: "박도현", profileImageUrl: null }, createdAtLabel: "1시간 전" },
       { id: "8", type: "cr_state_changed", author, createdAtLabel: "40분 전", content: { from: "DRAFT", to: "SUBMITTED" } },
       { id: "9", type: "status_change", author, createdAtLabel: "방금", content: "closed" },

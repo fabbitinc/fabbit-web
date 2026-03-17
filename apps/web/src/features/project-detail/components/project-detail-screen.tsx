@@ -55,9 +55,9 @@ function getOverviewActivitySummary(action: string) {
     case "issue:created":
       return "이슈 생성";
     case "cr:created":
-      return "변경 요청 생성";
+      return "변경관리 생성";
     case "cr:merged":
-      return "변경 요청 반영";
+      return "변경관리 반영";
     default:
       return action;
   }
@@ -87,7 +87,8 @@ export function ProjectDetailScreen({
       ...projectQuery.data,
       issueCount: projectIssuesQuery.data?.total ?? 0,
       changeCount: projectChangesQuery.data?.total ?? 0,
-      mergedChangeCount: projectChangesQuery.data?.items.filter((item) => item.crState === "MERGED").length ?? 0,
+      mergedChangeCount:
+        projectChangesQuery.data?.items.filter((item) => item.engineeringChangeState === "MERGED").length ?? 0,
       overviewIssueCount: overviewSummary.issueCount,
       overviewChangeCount: overviewSummary.changeCount,
       overviewMergedChangeCount: overviewSummary.mergedChangeCount,
@@ -124,7 +125,7 @@ export function ProjectDetailScreen({
       activityContent={projectQuery.data ? <ProjectActivityTab projectId={projectQuery.data.id} /> : null}
       changeContent={(
         <ProjectWorkItemsPanel
-          createLabel="새 변경 요청"
+          createLabel="새 변경관리"
           isError={projectChangesQuery.isError}
           isLoading={projectChangesQuery.isLoading}
           items={(projectChangesQuery.data?.items ?? []).map((item) => ({
@@ -143,12 +144,12 @@ export function ProjectDetailScreen({
               name: label.name,
             })),
             number: item.number,
-            status: item.crState,
+            status: item.engineeringChangeState,
             title: item.title,
           }))}
           kind="change"
-          onCreateClick={() => navigate("/changes/requests/new")}
-          onItemClick={(itemNumber) => navigate(`/changes/requests/${itemNumber}`)}
+          onCreateClick={() => navigate("/changes/engineering-changes/new")}
+          onItemClick={(itemNumber) => navigate(`/changes/engineering-changes/${itemNumber}`)}
           onRetry={() => {
             void projectChangesQuery.refetch();
           }}

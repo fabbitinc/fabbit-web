@@ -87,7 +87,7 @@ export interface PartsTemplateMappingCanvasPropertyMoveRequest {
   target: PartsTemplateMappingCanvasPropertyOwner;
 }
 
-export interface PartsTemplateMappingCanvasFieldMappingChangeRequest {
+export interface PartsTemplateMappingCanvasFieldMappingEngineeringChange {
   owner: PartsTemplateMappingCanvasFieldOwner;
   fieldId: string;
   value: string | null;
@@ -179,7 +179,7 @@ export interface PartsTemplateMappingCanvasScreenProps {
   onDeleteEdge?: (edgeId: string) => void;
   onDeleteNode?: (nodeId: string) => void;
   onEdgePositionChange?: (edgeId: string, position: { x: number; y: number }) => void;
-  onFieldMappingChange?: (request: PartsTemplateMappingCanvasFieldMappingChangeRequest) => void;
+  onFieldMappingChange?: (request: PartsTemplateMappingCanvasFieldMappingEngineeringChange) => void;
   onMoveProperty?: (request: PartsTemplateMappingCanvasPropertyMoveRequest) => void;
   onNodePositionChange?: (nodeId: string, position: { x: number; y: number }) => void;
   onResetNodes?: () => void;

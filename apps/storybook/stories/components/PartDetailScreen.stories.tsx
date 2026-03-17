@@ -1,9 +1,11 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
+import type { ReactNode } from "react";
 import { useState } from "react";
 import {
   PartDetailScreen,
   type PartDetailScreenTab,
   type PartHeaderCardPart,
+  PartHistoryTab,
 } from "@fabbit/components";
 import { Badge, Card, CardContent, CardHeader, CardTitle } from "@fabbit/ui";
 
@@ -18,6 +20,18 @@ function panel(title: string, description: string) {
         <Badge variant="secondary">부품 상세</Badge>
       </CardContent>
     </Card>
+  );
+}
+
+function captureShell(content: ReactNode) {
+  return (
+    <div className="min-h-screen bg-[#f6f7fb]">
+      <div className="mx-auto max-w-[1360px] px-8 py-10">
+        <div className="rounded-[28px] border border-border/60 bg-background px-8 py-8 shadow-[0_24px_80px_-48px_rgba(15,23,42,0.25)]">
+          {content}
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -54,10 +68,9 @@ function PartDetailScreenStory({
       activeTab={activeTab}
       attachmentsContent={panel("첨부 파일", "도면, 데이터시트, CAD 산출물을 관리합니다.")}
       bomContent={panel("BOM", "부품 간 부모/자식 관계와 수량 정보를 표시합니다.")}
-      historyContent={panel("이력", "상태 변경과 업로드 이력을 시간순으로 확인합니다.")}
+      historyContent={<PartHistoryTab />}
       isError={isError}
       isLoading={isLoading}
-      ownerContent={panel("담당", "담당자와 팀 할당 정보를 관리합니다.")}
       part={part}
       projectsContent={panel("프로젝트", "해당 부품이 연결된 프로젝트 목록을 제공합니다.")}
       propertiesContent={panel("속성", "기본 정보, 리드타임, 카테고리, 도면 프리뷰를 확인합니다.")}
@@ -88,6 +101,17 @@ export const Default: Story = {
 
 export const Attachments: Story = {
   render: () => <PartDetailScreenStory initialTab="attachments" />,
+};
+
+export const History: Story = {
+  render: () => <PartDetailScreenStory initialTab="history" />,
+};
+
+export const HistoryCapture: Story = {
+  parameters: {
+    layout: "fullscreen",
+  },
+  render: () => captureShell(<PartDetailScreenStory initialTab="history" />),
 };
 
 export const ErrorState: Story = {

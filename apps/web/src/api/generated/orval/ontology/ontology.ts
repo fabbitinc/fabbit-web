@@ -18,7 +18,7 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
   /**
  * 온톨로지 스키마(노드/관계 정의)를 조회합니다
- * @summary GET /api/v1/ontology/schema
+ * @summary 온톨로지 스키마(노드/관계 정의)를 조회합니다
  */
 export const getOntologySchema = (
     
@@ -30,7 +30,7 @@ export const getOntologySchema = (
     }
   /**
  * 라벨(Part, Drawing, Supplier, Project)별 merge key 자동완성 목록을 조회합니다
- * @summary GET /api/v1/ontology/nodes/search
+ * @summary 라벨(Part, Drawing, Supplier, Project)별 merge key 자동완성 목록을 조회합니다
  */
 export const searchNodes = (
     params: SearchNodesParams,

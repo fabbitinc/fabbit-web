@@ -4,12 +4,12 @@
  * OpenAPI definition
  * OpenAPI spec version: v0
  */
-import type { FileItemResponse } from './fileItemResponse';
+import type { PartAttachmentItemResponse } from './partAttachmentItemResponse';
 
 /**
  * 응답 DTO
  */
 export interface PartFilesResponse {
   total?: number;
-  items?: FileItemResponse[];
+  items?: PartAttachmentItemResponse[];
 }

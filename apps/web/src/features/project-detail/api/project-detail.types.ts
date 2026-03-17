@@ -8,7 +8,7 @@ type ResponseOf<
 export type ProjectDetailResponseDto = ResponseOf<"/api/v1/projects/{projectId}", "get">;
 export type UpdateProjectRequestDto = ApiRequestBody<"/api/v1/projects/{projectId}", "patch">;
 type IssueListItemResponseDto = ResponseOf<"/api/v1/issues", "get">["items"][number];
-type ChangeRequestListItemResponseDto = ResponseOf<"/api/v1/changes", "get">["items"][number];
+type EngineeringChangeListItemResponseDto = ResponseOf<"/api/v1/engineering-changes", "get">["items"][number];
 
 export interface ProjectIssueListResponseDto {
   open_count?: number | null;
@@ -25,7 +25,7 @@ export interface ProjectChangeListResponseDto {
   total?: number | null;
   offset?: number | null;
   limit?: number | null;
-  items: ChangeRequestListItemResponseDto[];
+  items: EngineeringChangeListItemResponseDto[];
 }
 
 export type ProjectActivitiesQueryDto = NonNullable<

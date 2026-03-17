@@ -36,7 +36,7 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
   /**
  * 이메일 인증 코드 검증
- * @summary POST /api/v1/auth/verify-email
+ * @summary 이메일 인증 코드 검증
  */
 export const verifyEmail = (
     verifyEmailRequest: BodyType<VerifyEmailRequest>,
@@ -50,7 +50,7 @@ export const verifyEmail = (
     }
   /**
  * 이메일 인증 코드 발송
- * @summary POST /api/v1/auth/send-verification
+ * @summary 이메일 인증 코드 발송
  */
 export const sendVerification = (
     sendVerificationRequest: BodyType<SendVerificationRequest>,
@@ -64,7 +64,7 @@ export const sendVerification = (
     }
   /**
  * 회원가입
- * @summary POST /api/v1/auth/register
+ * @summary 회원가입
  */
 export const register = (
     registerRequest: BodyType<RegisterRequest>,
@@ -78,7 +78,7 @@ export const register = (
     }
   /**
  * 리프레시 토큰으로 액세스 토큰 재발급
- * @summary POST /api/v1/auth/refresh
+ * @summary 리프레시 토큰으로 액세스 토큰 재발급
  */
 export const refresh = (
     refreshRequest: BodyType<RefreshRequest>,
@@ -92,7 +92,7 @@ export const refresh = (
     }
   /**
  * 리프레시 토큰 폐기
- * @summary POST /api/v1/auth/logout
+ * @summary 리프레시 토큰 폐기
  */
 export const logout = (
     refreshRequest: BodyType<RefreshRequest>,
@@ -106,7 +106,7 @@ export const logout = (
     }
   /**
  * 로그인
- * @summary POST /api/v1/auth/login
+ * @summary 로그인
  */
 export const login = (
     loginRequest: BodyType<LoginRequest>,
@@ -120,7 +120,7 @@ export const login = (
     }
   /**
  * 조직 초대 수락
- * @summary POST /api/v1/auth/accept-invitation
+ * @summary 조직 초대 수락
  */
 export const acceptInvitation = (
     acceptInvitationRequest: BodyType<AcceptInvitationRequest>,
@@ -134,7 +134,7 @@ export const acceptInvitation = (
     }
   /**
  * Origin 기반 워크스페이스 정보 조회
- * @summary GET /api/v1/auth/site
+ * @summary Origin 기반 워크스페이스 정보 조회
  */
 export const getSite = (
     
@@ -146,7 +146,7 @@ export const getSite = (
     }
   /**
  * 플랜 목록 조회
- * @summary GET /api/v1/auth/plans
+ * @summary 플랜 목록 조회
  */
 export const getPlans = (
     
@@ -158,7 +158,7 @@ export const getPlans = (
     }
   /**
  * 초대 토큰 검증
- * @summary GET /api/v1/auth/invitations/verify
+ * @summary 초대 토큰 검증
  */
 export const verifyInvitation = (
     params: VerifyInvitationParams,
@@ -171,7 +171,7 @@ export const verifyInvitation = (
     }
   /**
  * 워크스페이스 slug 중복/형식 검사
- * @summary GET /api/v1/auth/check-slug
+ * @summary 워크스페이스 slug 중복/형식 검사
  */
 export const checkSlug = (
     params: CheckSlugParams,
@@ -184,7 +184,7 @@ export const checkSlug = (
     }
   /**
  * 이메일 중복 확인
- * @summary GET /api/v1/auth/check-email
+ * @summary 이메일 중복 확인
  */
 export const checkEmail = (
     params: CheckEmailParams,

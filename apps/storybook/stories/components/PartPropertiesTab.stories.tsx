@@ -103,10 +103,7 @@ const meta = {
   },
   args: {
     drawingActivityState: "idle",
-    isDeletingDrawing: false,
     part: readyPart,
-    onDeleteDrawing: () => undefined,
-    onUploadDrawing: () => undefined,
   },
 } satisfies Meta<typeof PartPropertiesTab>;
 

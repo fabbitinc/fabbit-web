@@ -22,7 +22,7 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
   /**
  * 테넌트에 등록된 전체 라벨 목록을 이름순으로 조회합니다
- * @summary GET /api/v1/labels
+ * @summary 테넌트에 등록된 전체 라벨 목록을 이름순으로 조회합니다
  */
 export const listLabels = (
     
@@ -34,7 +34,7 @@ export const listLabels = (
     }
   /**
  * 라벨을 생성합니다. 동일한 라벨 이름은 허용되지 않습니다
- * @summary POST /api/v1/labels
+ * @summary 라벨을 생성합니다. 동일한 라벨 이름은 허용되지 않습니다
  */
 export const createLabel = (
     createLabelRequest: BodyType<CreateLabelRequest>,
@@ -48,7 +48,7 @@ export const createLabel = (
     }
   /**
  * 라벨을 삭제합니다
- * @summary DELETE /api/v1/labels/{labelId}
+ * @summary 라벨을 삭제합니다
  */
 export const deleteLabel = (
     labelId: string,
@@ -60,7 +60,7 @@ export const deleteLabel = (
     }
   /**
  * 라벨의 일부 필드를 수정합니다. description을 null로 보내면 설명이 제거됩니다
- * @summary PATCH /api/v1/labels/{labelId}
+ * @summary 라벨의 일부 필드를 수정합니다. description을 null로 보내면 설명이 제거됩니다
  */
 export const updateLabel = (
     labelId: string,
@@ -75,7 +75,7 @@ export const updateLabel = (
     }
   /**
  * 라벨 picker/autocomplete 용 경량 목록(id, name, color)을 조회합니다
- * @summary GET /api/v1/labels/lookup
+ * @summary 라벨 picker/autocomplete 용 경량 목록(id, name, color)을 조회합니다
  */
 export const lookupLabels = (
     params?: LookupLabelsParams,

@@ -9,9 +9,7 @@ export type PartDetailResponseLifecycleState = typeof PartDetailResponseLifecycl
 
 
 export const PartDetailResponseLifecycleState = {
-  DESIGN: 'DESIGN',
-  PROTOTYPE: 'PROTOTYPE',
-  PRODUCTION: 'PRODUCTION',
+  ACTIVE: 'ACTIVE',
   EOL: 'EOL',
   OBSOLETE: 'OBSOLETE',
 } as const;

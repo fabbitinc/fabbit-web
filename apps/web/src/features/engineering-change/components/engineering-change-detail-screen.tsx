@@ -1,0 +1,309 @@
+import { useDeferredValue, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { type TiptapEditorProps } from "@fabbit/ui";
+import {
+  EngineeringChangeDetailScreen as EngineeringChangeDetailScreenView,
+  type EngineeringChangeDetailScreenProps as EngineeringChangeDetailScreenViewProps,
+} from "@fabbit/components";
+import { useAuthStore } from "@/features/auth";
+import type {
+  LookupIssueModel,
+  LookupMemberModel,
+} from "@/features/change-shared/types/change-shared-model";
+import { useTiptapMentionFetchers } from "@/features/change-shared/hooks/use-tiptap-mention-fetchers";
+import { useIssueLookupQuery } from "@/features/change-shared/hooks/use-issue-lookup-query";
+import { useMemberLookupQuery } from "@/features/change-shared/hooks/use-member-lookup-query";
+import { useAddEngineeringChangeFilesAction } from "@/features/engineering-change/hooks/use-add-engineering-change-files-action";
+import { useEngineeringChangeDetailQuery } from "@/features/engineering-change/hooks/use-engineering-change-detail-query";
+import { useEngineeringChangeTimelineQuery } from "@/features/engineering-change/hooks/use-engineering-change-timeline-query";
+import { useCloseEngineeringChangeAction } from "@/features/engineering-change/hooks/use-close-engineering-change-action";
+import { useCreateEngineeringChangeCommentAction } from "@/features/engineering-change/hooks/use-create-engineering-change-comment-action";
+import { useDeleteEngineeringChangeCommentAction } from "@/features/engineering-change/hooks/use-delete-engineering-change-comment-action";
+import { useDeleteEngineeringChangeFileAction } from "@/features/engineering-change/hooks/use-delete-engineering-change-file-action";
+import { useMergeEngineeringChangeAction } from "@/features/engineering-change/hooks/use-merge-engineering-change-action";
+import { useReopenEngineeringChangeAction } from "@/features/engineering-change/hooks/use-reopen-engineering-change-action";
+import { useSubmitEngineeringChangeAction } from "@/features/engineering-change/hooks/use-submit-engineering-change-action";
+import { useSyncEngineeringChangeIssuesAction } from "@/features/engineering-change/hooks/use-sync-engineering-change-issues-action";
+import { useSyncEngineeringChangeReviewersAction } from "@/features/engineering-change/hooks/use-sync-engineering-change-reviewers-action";
+import { useUpdateEngineeringChangeAction } from "@/features/engineering-change/hooks/use-update-engineering-change-action";
+import { useUpdateEngineeringChangeCommentAction } from "@/features/engineering-change/hooks/use-update-engineering-change-comment-action";
+import { mapTimelineActivityToEvent } from "@/features/change-shared/lib/timeline-event";
+import type {
+  EngineeringChangeDetailTab,
+  EngineeringChangeTimelineActivityModel,
+  EngineeringChangeTimelineCommentModel,
+} from "@/features/engineering-change/types/engineering-change-model";
+import { normalizeRichTextDocument } from "@/lib/rich-text";
+
+const detailTabs: { id: EngineeringChangeDetailTab; label: string }[] = [
+  { id: "conversation", label: "대화" },
+  { id: "changes", label: "변경 내용" },
+];
+
+interface EngineeringChangeDetailScreenProps {
+  activeTab: EngineeringChangeDetailTab;
+  changeNumber: number;
+  onTabChange: (tab: EngineeringChangeDetailTab) => void;
+}
+
+export function EngineeringChangeDetailScreen({
+  activeTab,
+  changeNumber,
+  onTabChange,
+}: EngineeringChangeDetailScreenProps) {
+  const navigate = useNavigate();
+  const currentUser = useAuthStore((state) => state.user);
+  const { userMentionFetcher, issueMentionFetcher } = useTiptapMentionFetchers();
+
+  const engineeringChangeQuery = useEngineeringChangeDetailQuery(changeNumber);
+  const timelineQuery = useEngineeringChangeTimelineQuery(changeNumber, activeTab === "conversation");
+  const updateEngineeringChangeAction = useUpdateEngineeringChangeAction(changeNumber);
+  const syncReviewersAction = useSyncEngineeringChangeReviewersAction(changeNumber);
+  const syncIssuesAction = useSyncEngineeringChangeIssuesAction(changeNumber);
+  const createCommentAction = useCreateEngineeringChangeCommentAction(changeNumber);
+  const updateCommentAction = useUpdateEngineeringChangeCommentAction(changeNumber);
+  const deleteCommentAction = useDeleteEngineeringChangeCommentAction(changeNumber);
+  const addFilesAction = useAddEngineeringChangeFilesAction(changeNumber);
+  const deleteFileAction = useDeleteEngineeringChangeFileAction(changeNumber);
+  const submitEngineeringChangeAction = useSubmitEngineeringChangeAction(changeNumber);
+  const mergeEngineeringChangeAction = useMergeEngineeringChangeAction(changeNumber);
+  const closeEngineeringChangeAction = useCloseEngineeringChangeAction(changeNumber);
+  const reopenEngineeringChangeAction = useReopenEngineeringChangeAction(changeNumber);
+
+  const engineeringChange = engineeringChangeQuery.data;
+
+  const [membersEnabled, setMembersEnabled] = useState(false);
+  const [membersSearch, setMembersSearch] = useState("");
+  const [issuesEnabled, setIssuesEnabled] = useState(false);
+  const [issuesSearch, setIssuesSearch] = useState("");
+
+  const deferredIssuesSearch = useDeferredValue(issuesSearch.trim());
+
+  const memberLookup = useMemberLookupQuery(
+    { search: membersSearch.trim() || undefined },
+    membersEnabled,
+  );
+  const issueLookup = useIssueLookupQuery(
+    { search: deferredIssuesSearch || undefined },
+    issuesEnabled,
+  );
+
+  const sortedTimeline = useMemo(() => {
+    const items = timelineQuery.data ?? [];
+    return [...items].sort((left, right) => new Date(left.createdAt).getTime() - new Date(right.createdAt).getTime());
+  }, [timelineQuery.data]);
+
+  const commentCount = useMemo(
+    () => sortedTimeline.filter((item) => item.type === "comment").length,
+    [sortedTimeline],
+  );
+
+  const timelineItems = useMemo<EngineeringChangeDetailScreenViewProps["timelineItems"]>(() => {
+    const next: EngineeringChangeDetailScreenViewProps["timelineItems"] = [];
+
+    sortedTimeline.forEach((item) => {
+      if (item.type === "comment") {
+        const commentItem = item as EngineeringChangeTimelineCommentModel;
+        next.push({
+          kind: "comment",
+          id: commentItem.id,
+          author: commentItem.author
+            ? {
+                fullName: commentItem.author.fullName ?? "알 수 없는 사용자",
+                profileImageUrl: commentItem.author.profileImageUrl,
+              }
+            : null,
+          authorId: commentItem.authorId,
+          body: normalizeRichTextDocument(commentItem.body),
+          createdAt: commentItem.createdAt,
+          isModified: commentItem.isModified,
+          updatedAt: commentItem.updatedAt,
+        });
+        return;
+      }
+
+      const event = mapTimelineActivityToEvent(item as EngineeringChangeTimelineActivityModel);
+      if (!event) {
+        return;
+      }
+
+      next.push({
+        kind: "event",
+        id: item.id,
+        event,
+      });
+    });
+
+    return next;
+  }, [sortedTimeline]);
+
+  const navigateToIssueMention = (targetIssueNumber: number, issueType: "issue" | "engineering_change") =>
+    navigate(
+      issueType === "engineering_change"
+        ? `/changes/engineering-changes/${targetIssueNumber}`
+        : `/changes/issues/${targetIssueNumber}`,
+    );
+
+  const engineeringChangeViewModel = engineeringChange
+    ? {
+        title: engineeringChange.title,
+        number: engineeringChange.number,
+        engineeringChangeState: engineeringChange.engineeringChangeState,
+        commentsCount: commentCount,
+        createdAt: engineeringChange.createdAt,
+        updatedAt: engineeringChange.updatedAt,
+        mergedAt: engineeringChange.mergedAt,
+        mergedBy: engineeringChange.mergedBy,
+        body: normalizeRichTextDocument(engineeringChange.body),
+        isModified: engineeringChange.isModified,
+        createdBy: engineeringChange.createdBy
+          ? {
+              fullName: engineeringChange.createdBy.fullName ?? "알 수 없음",
+              profileImageUrl: engineeringChange.createdBy.profileImageUrl,
+            }
+          : null,
+        assignees: [],
+        reviewers: engineeringChange.reviewers.map((reviewer) => ({
+          userId: reviewer.userId,
+          fullName: reviewer.fullName,
+          email: reviewer.email,
+          phone: reviewer.phone,
+          profileImageUrl: reviewer.profileImageUrl,
+          reviewStatus: reviewer.reviewStatus,
+          reviewedAt: reviewer.reviewedAt,
+        })),
+        labels: [],
+        parts: engineeringChange.parts.map((part) => ({
+          id: part.id,
+          partNumber: part.partNumber,
+          name: part.name,
+        })),
+        files: engineeringChange.files.map((file) => ({
+          fileId: file.fileId,
+          originalName: file.originalName,
+          contentType: file.contentType,
+          fileSize: file.fileSize,
+          fileUrl: file.fileUrl,
+          createdAt: file.createdAt,
+        })),
+        linkedIssues: engineeringChange.linkedIssues.map((linkedIssue) => ({
+          id: linkedIssue.id,
+          number: linkedIssue.number,
+          title: linkedIssue.title,
+          state: linkedIssue.state,
+        })),
+      }
+    : undefined;
+
+  return (
+    <EngineeringChangeDetailScreenView
+      engineeringChange={engineeringChangeViewModel}
+      activeTab={activeTab}
+      commentCount={commentCount}
+      currentUser={{
+        id: currentUser?.id ?? null,
+        name: currentUser?.name ?? null,
+        profileImageUrl: currentUser?.profileImageUrl ?? null,
+      }}
+      isAttachingFiles={addFilesAction.isPending}
+      isCreatingComment={createCommentAction.isPending}
+      isError={engineeringChangeQuery.isError || timelineQuery.isError}
+      isLoading={engineeringChangeQuery.isLoading}
+      isMergingEngineeringChange={mergeEngineeringChangeAction.isPending}
+      isNotFound={!engineeringChangeQuery.isLoading && !engineeringChangeQuery.isError && !engineeringChange}
+      isReopeningEngineeringChange={reopenEngineeringChangeAction.isPending}
+      isSavingEngineeringChange={updateEngineeringChangeAction.isPending}
+      isSubmittingEngineeringChange={submitEngineeringChangeAction.isPending}
+      isTimelineLoading={timelineQuery.isLoading}
+      mentionFetchers={{
+        user: userMentionFetcher,
+        issue: issueMentionFetcher,
+      }}
+      reviewerPicker={{
+        availableMembers: (memberLookup.data ?? []).map((member: LookupMemberModel) => ({
+          id: member.userId,
+          name: member.fullName,
+          email: member.email,
+        })),
+        selectedIds: engineeringChange?.reviewers.map((reviewer) => reviewer.userId) ?? [],
+        onRequest: () => setMembersEnabled(true),
+        onSearchChange: setMembersSearch,
+        onSync: async (userIds: string[]) => {
+          await syncReviewersAction.mutateAsync(userIds);
+        },
+        isSearching: memberLookup.isFetching,
+        isUpdating: syncReviewersAction.isPending,
+      }}
+      linkedIssuePicker={{
+        availableIssues: (issueLookup.data ?? []).map((item: LookupIssueModel) => ({
+          id: item.id,
+          number: item.number,
+          title: item.title,
+          state: item.state,
+        })),
+        selectedIds: engineeringChange?.linkedIssues.map((linkedIssue) => linkedIssue.id) ?? [],
+        onRequest: () => setIssuesEnabled(true),
+        onSearchChange: setIssuesSearch,
+        onSync: async (issueIds: string[]) => {
+          await syncIssuesAction.mutateAsync(issueIds);
+        },
+        isSearching: issueLookup.isFetching,
+        isUpdating: syncIssuesAction.isPending,
+      }}
+      onAttachFiles={async (files: File[]) => {
+        await addFilesAction.mutateAsync(files);
+      }}
+      onBack={() => navigate("/changes?view=engineering-changes")}
+      onCloseEngineeringChange={() => {
+        closeEngineeringChangeAction.mutate();
+      }}
+      onCreateComment={async (body: TiptapEditorProps["content"] | null) => {
+        const normalizedBody = normalizeRichTextDocument(body);
+        if (!normalizedBody) {
+          return;
+        }
+        await createCommentAction.mutateAsync(normalizedBody);
+      }}
+      onDeleteComment={async (commentId: string) => {
+        await deleteCommentAction.mutateAsync(commentId);
+      }}
+      onDeleteFile={async (fileId: string) => {
+        await deleteFileAction.mutateAsync(fileId);
+      }}
+      onMergeEngineeringChange={() => {
+        mergeEngineeringChangeAction.mutate();
+      }}
+      onNavigateToIssue={(issueNumber: number) => navigate(`/changes/issues/${issueNumber}`)}
+      onNavigateToIssueMention={navigateToIssueMention}
+      onReopenEngineeringChange={() => {
+        reopenEngineeringChangeAction.mutate();
+      }}
+      onRetry={() => {
+        void engineeringChangeQuery.refetch();
+        void timelineQuery.refetch();
+      }}
+      onSaveEngineeringChange={async ({ title, body }: { title: string; body: TiptapEditorProps["content"] | null }) => {
+        await updateEngineeringChangeAction.mutateAsync({
+          title,
+          body: normalizeRichTextDocument(body),
+        });
+      }}
+      onSubmitEngineeringChange={() => {
+        submitEngineeringChangeAction.mutate();
+      }}
+      onTabChange={(tab: string) => onTabChange(tab as EngineeringChangeDetailTab)}
+      onUpdateComment={async (commentId: string, body: TiptapEditorProps["content"] | null) => {
+        const normalizedBody = normalizeRichTextDocument(body);
+        if (!normalizedBody) {
+          return;
+        }
+        await updateCommentAction.mutateAsync({
+          commentId,
+          body: normalizedBody,
+        });
+      }}
+      tabs={detailTabs}
+      timelineItems={timelineItems}
+    />
+  );
+}

@@ -13,6 +13,8 @@ export interface BomChildResponse {
   id?: string;
   part_number?: string;
   name?: string;
+  revision_code?: string;
+  line_number?: string;
   quantity?: number;
   extended_properties?: BomChildResponseExtendedProperties;
 }

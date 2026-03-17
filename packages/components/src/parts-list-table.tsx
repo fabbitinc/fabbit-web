@@ -16,6 +16,7 @@ export type PartsListTableSortOrder = "asc" | "desc";
 
 export interface PartsListTableItem {
   id: string;
+  routeId?: string;
   partNumber: string;
   name: string | null;
   category: string | null;
@@ -26,16 +27,17 @@ export interface PartsListTableItem {
 }
 
 export interface PartsListTableProps {
+  hasNextPage?: boolean;
+  hasPreviousPage?: boolean;
   items: PartsListTableItem[];
   isLoading: boolean;
-  page: number;
   pageSize: number;
   sortKey: PartsListTableSortKey;
   sortOrder: PartsListTableSortOrder;
-  totalCount: number;
   selectedIds: Set<string>;
-  onPageChange: (page: number) => void;
+  onNextPage: () => void;
   onPageSizeChange: (pageSize: number) => void;
+  onPreviousPage: () => void;
   onRowClick: (partId: string) => void;
   onSortChange: (sortKey: PartsListTableSortKey) => void;
   onToggleSelectAll: () => void;
@@ -54,41 +56,35 @@ interface SortableHeaderProps {
 const pageSizeOptions = [15, 30, 50];
 
 function getLifecycleVariant(lifecycleState: string | null): "outline" | "neutral" | "accent" | "success" {
-  if (lifecycleState === "양산") {
+  if (lifecycleState === "ACTIVE") {
     return "success";
   }
 
-  if (lifecycleState === "개발") {
+  if (lifecycleState === "EOL") {
     return "accent";
+  }
+
+  if (lifecycleState === "OBSOLETE") {
+    return "neutral";
   }
 
   return "outline";
 }
 
-function getPageNumbers(current: number, total: number): (number | "...")[] {
-  if (total <= 7) {
-    return Array.from({ length: total }, (_, index) => index + 1);
+function getLifecycleBadgeClassName(lifecycleState: string | null) {
+  if (lifecycleState === "ACTIVE") {
+    return "border-[var(--status-success-border)] bg-[var(--status-success-bg)] text-[var(--status-success)]";
   }
 
-  const pages: (number | "...")[] = [1];
-
-  if (current > 3) {
-    pages.push("...");
+  if (lifecycleState === "EOL") {
+    return "border-[var(--status-warning-border)] bg-[var(--status-warning-bg)] text-[var(--status-warning)]";
   }
 
-  const start = Math.max(2, current - 1);
-  const end = Math.min(total - 1, current + 1);
-
-  for (let page = start; page <= end; page += 1) {
-    pages.push(page);
+  if (lifecycleState === "OBSOLETE") {
+    return "border-[var(--status-neutral-border)] bg-[var(--status-neutral-bg)] text-muted-foreground";
   }
 
-  if (current < total - 2) {
-    pages.push("...");
-  }
-
-  pages.push(total);
-  return pages;
+  return undefined;
 }
 
 function SortableHeader({
@@ -119,24 +115,26 @@ function SortableHeader({
 }
 
 export function PartsListTable({
+  hasNextPage,
+  hasPreviousPage,
   items,
   isLoading,
-  page,
   pageSize,
   sortKey,
   sortOrder,
-  totalCount,
   selectedIds,
-  onPageChange,
+  onNextPage,
   onPageSizeChange,
+  onPreviousPage,
   onRowClick,
   onSortChange,
   onToggleSelectAll,
   onToggleSelectOne,
 }: PartsListTableProps) {
-  const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
   const allChecked = items.length > 0 && items.every((item) => selectedIds.has(item.id));
   const someChecked = items.some((item) => selectedIds.has(item.id));
+  const canGoPrevious = hasPreviousPage ?? false;
+  const canGoNext = hasNextPage ?? false;
 
   return (
     <div className="overflow-hidden rounded-lg border bg-card shadow-sm">
@@ -223,7 +221,7 @@ export function PartsListTable({
               <tr
                 key={item.id}
                 className="group h-[45px] cursor-pointer border-b border-border/50 transition-colors hover:bg-muted/50"
-                onClick={() => onRowClick(item.id)}
+                  onClick={() => onRowClick(item.routeId ?? item.id)}
               >
                 <td className="px-2 py-2 text-center" onClick={(event) => event.stopPropagation()}>
                   <Checkbox
@@ -247,13 +245,7 @@ export function PartsListTable({
                 <td className="px-2 py-2 text-center">
                   {item.lifecycleState ? (
                     <Badge
-                      className={
-                        item.lifecycleState === "양산"
-                          ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-                          : item.lifecycleState === "개발"
-                            ? "border-blue-200 bg-blue-50 text-blue-700"
-                            : undefined
-                      }
+                      className={getLifecycleBadgeClassName(item.lifecycleState)}
                       variant={getLifecycleVariant(item.lifecycleState)}
                     >
                       {item.lifecycleState}
@@ -299,41 +291,31 @@ export function PartsListTable({
               ))}
             </SelectContent>
           </Select>
-          <span className="text-xs text-muted-foreground">
-            {totalCount > 0 ? `${(page - 1) * pageSize + 1}-${Math.min(page * pageSize, totalCount)} / ${totalCount}건` : "0건"}
-          </span>
         </div>
 
-        <div className="flex items-center gap-1">
-          <Button disabled={page <= 1} size="icon-sm" type="button" variant="ghost" onClick={() => onPageChange(page - 1)}>
-            <ChevronLeft className="size-4" />
-          </Button>
-          {getPageNumbers(page, totalPages).map((pageNumber, index) =>
-            pageNumber === "..." ? (
-              <span key={`ellipsis-${index}`} className="flex h-8 w-8 items-center justify-center text-xs text-muted-foreground">
-                ...
-              </span>
-            ) : (
-              <Button
-                className="text-xs"
-                key={pageNumber}
-                size="icon-sm"
-                type="button"
-                variant={pageNumber === page ? "default" : "ghost"}
-                onClick={() => onPageChange(pageNumber)}
-              >
-                {pageNumber}
-              </Button>
-            ),
-          )}
+        <div className="flex items-center gap-2">
           <Button
-            disabled={page >= totalPages}
-            size="icon-sm"
+            className="relative min-w-[80px] justify-center px-7"
+            disabled={!canGoPrevious}
+            size="sm"
             type="button"
-            variant="ghost"
-            onClick={() => onPageChange(page + 1)}
+            variant="outline"
+            onClick={onPreviousPage}
           >
-            <ChevronRight className="size-4" />
+            <ChevronLeft className="absolute left-3 size-4" />
+            <span>이전</span>
+            <ChevronRight className="absolute right-3 size-4 opacity-0" />
+          </Button>
+          <Button
+            className="relative min-w-[80px] justify-center px-7"
+            disabled={!canGoNext}
+            size="sm"
+            type="button"
+            onClick={onNextPage}
+          >
+            <ChevronLeft className="absolute left-3 size-4 opacity-0" />
+            <span>다음</span>
+            <ChevronRight className="absolute right-3 size-4" />
           </Button>
         </div>
       </div>

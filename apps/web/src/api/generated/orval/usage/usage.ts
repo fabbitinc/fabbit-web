@@ -19,7 +19,7 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
   /**
  * 스토리지 총 사용량/한도/초과분과 카테고리별 내역을 조회합니다
- * @summary GET /api/v1/usage/storage
+ * @summary 스토리지 총 사용량/한도/초과분과 카테고리별 내역을 조회합니다
  */
 export const getStorageUsage = (
     
@@ -31,7 +31,7 @@ export const getStorageUsage = (
     }
   /**
  * 스토리지 사용량 추이를 period(7d|30d|1y) 기준으로 조회합니다
- * @summary GET /api/v1/usage/storage/trend
+ * @summary 스토리지 사용량 추이를 period(7d|30d|1y) 기준으로 조회합니다
  */
 export const getStorageTrend = (
     params?: GetStorageTrendParams,
@@ -44,7 +44,7 @@ export const getStorageTrend = (
     }
   /**
  * AI 크레딧 잔여/사용량과 카테고리별 사용량을 조회합니다
- * @summary GET /api/v1/usage/credits
+ * @summary AI 크레딧 잔여/사용량과 카테고리별 사용량을 조회합니다
  */
 export const getCreditUsage = (
     

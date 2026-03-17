@@ -44,7 +44,7 @@ export const MemberSelection: Story = {
   render: () => (
     <StorySelectionDialog
       open
-      description="변경 요청 담당자로 지정할 멤버를 선택합니다."
+      description="변경관리 담당자로 지정할 멤버를 선택합니다."
       emptyMessage="검색 조건에 맞는 멤버가 없습니다."
       getItemId={(item) => item.id}
       isLoading={false}
@@ -76,7 +76,7 @@ export const Showcase: Story = {
     <div className="flex flex-col gap-8">
       <StorySelectionDialog
         open
-        description="변경 요청 담당자로 지정할 멤버를 선택합니다."
+        description="변경관리 담당자로 지정할 멤버를 선택합니다."
         emptyMessage="검색 조건에 맞는 멤버가 없습니다."
         getItemId={(item) => item.id}
         isLoading={false}
@@ -103,8 +103,8 @@ export const Showcase: Story = {
 
       <StorySelectionDialog
         open
-        description="연결할 변경 요청을 선택합니다."
-        emptyMessage="검색 조건에 맞는 변경 요청이 없습니다."
+        description="연결할 변경관리를 선택합니다."
+        emptyMessage="검색 조건에 맞는 변경관리가 없습니다."
         getItemId={(item) => item.id}
         isLoading={false}
         isPending={false}
@@ -112,7 +112,7 @@ export const Showcase: Story = {
         searchPlaceholder="번호 또는 제목으로 검색"
         searchValue="도면"
         selectedIds={["cr-102"]}
-        title="변경 요청 연결"
+        title="변경관리 연결"
         onConfirm={() => undefined}
         onOpenChange={() => undefined}
         onSearchChange={() => undefined}

@@ -20,7 +20,7 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
   /**
  * 소유자(OWNER) 권한으로 멤버 역할을 변경합니다
- * @summary PATCH /api/v1/members/{userId}/role
+ * @summary 소유자(OWNER) 권한으로 멤버 역할을 변경합니다
  */
 export const changeMemberRole = (
     userId: string,
@@ -35,7 +35,7 @@ export const changeMemberRole = (
     }
   /**
  * 현재 조직의 전체 멤버 목록을 조회합니다
- * @summary GET /api/v1/members
+ * @summary 현재 조직의 전체 멤버 목록을 조회합니다
  */
 export const listMembers = (
     
@@ -47,7 +47,7 @@ export const listMembers = (
     }
   /**
  * 조직 멤버 lookup 목록을 조회합니다 (autocomplete/picker 용도)
- * @summary GET /api/v1/members/lookup
+ * @summary 조직 멤버 lookup 목록을 조회합니다 (autocomplete/picker 용도)
  */
 export const lookupMembers1 = (
     params?: LookupMembers1Params,
@@ -60,7 +60,7 @@ export const lookupMembers1 = (
     }
   /**
  * 관리자(ADMIN 이상) 권한으로 조직 멤버를 제거합니다
- * @summary DELETE /api/v1/members/{userId}
+ * @summary 관리자(ADMIN 이상) 권한으로 조직 멤버를 제거합니다
  */
 export const removeMember = (
     userId: string,

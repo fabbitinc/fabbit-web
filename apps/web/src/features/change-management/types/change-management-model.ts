@@ -1,4 +1,4 @@
-export type ChangeManagementView = "issues" | "requests";
+export type ChangeManagementView = "issues" | "engineering-changes";
 export type ChangeManagementState = "open" | "closed";
 
 export interface ChangeManagementLabelModel {
@@ -19,7 +19,7 @@ export interface ChangeManagementItemModel {
   kind: ChangeManagementView;
   title: string;
   state: string;
-  crState: string | null;
+  engineeringChangeState: string | null;
   createdAt: string;
   updatedAt: string;
   createdBy: string | null;

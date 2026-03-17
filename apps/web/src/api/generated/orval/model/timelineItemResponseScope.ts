@@ -10,7 +10,7 @@ export type TimelineItemResponseScope = typeof TimelineItemResponseScope[keyof t
 
 export const TimelineItemResponseScope = {
   issue: 'issue',
-  cr: 'cr',
+  engineering_change: 'engineering_change',
   project: 'project',
   organization: 'organization',
 } as const;

@@ -1,105 +1,237 @@
-import { BEFORE_AFTER } from "@/constants/content";
-import { useIntersection } from "@/lib/use-intersection";
-import { SectionHeading } from "@/components/section-heading";
+import { motion, useInView } from "framer-motion";
+import { useRef } from "react";
+import { Check, Clock, FileEdit, Upload, UserCheck, AlertCircle } from "lucide-react";
+
+interface Change {
+  type: string;
+  label: string;
+  file: string;
+  detail?: string;
+}
+
+const revisions: {
+  rev: string;
+  date: string;
+  author: string;
+  status: "approved" | "pending";
+  statusLabel: string;
+  changes: Change[];
+  approver?: string;
+  approvedAt?: string;
+  reviewer?: string;
+}[] = [
+  {
+    rev: "Rev 1",
+    date: "2026.01.10",
+    author: "김설계",
+    status: "approved" as const,
+    statusLabel: "승인 완료",
+    changes: [
+      { type: "create", label: "초기 도면 등록", file: "SH-A100 하우징.dwg" },
+      { type: "create", label: "BOM 업로드", file: "BOM_자동화기기_v1.xlsx" },
+    ],
+    approver: "박과장",
+    approvedAt: "2026.01.11",
+  },
+  {
+    rev: "Rev 2",
+    date: "2026.02.03",
+    author: "이생산",
+    status: "approved" as const,
+    statusLabel: "승인 완료",
+    changes: [
+      { type: "modify", label: "규격 변경", file: "SH-A100 하우징.dwg", detail: "φ45×30 → φ48×32" },
+      { type: "modify", label: "재질 변경", file: "BOM 수량 2행", detail: "SUS304 → SUS316L" },
+    ],
+    approver: "박과장",
+    approvedAt: "2026.02.04",
+  },
+  {
+    rev: "Rev 3",
+    date: "2026.03.12",
+    author: "김설계",
+    status: "pending" as const,
+    statusLabel: "검토 중",
+    changes: [
+      { type: "modify", label: "베어링 사양 변경", file: "SH-C300 베어링", detail: "6205ZZ → 6206ZZ" },
+      { type: "create", label: "조립도 추가", file: "SH-ASM-001 조립도.pdf" },
+      { type: "modify", label: "BOM 수량 변경", file: "샤프트 수량", detail: "1 → 2" },
+    ],
+    reviewer: "박과장",
+  },
+];
+
+function StatusBadge({ status, label }: { status: "approved" | "pending" | "rejected"; label: string }) {
+  if (status === "approved") {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-1 text-[11px] font-semibold text-emerald-500">
+        <Check size={12} />
+        {label}
+      </span>
+    );
+  }
+  if (status === "pending") {
+    return (
+      <span className="inline-flex items-center gap-1 rounded-full bg-amber-500/10 px-2.5 py-1 text-[11px] font-semibold text-amber-500">
+        <Clock size={12} />
+        {label}
+      </span>
+    );
+  }
+  return (
+    <span className="inline-flex items-center gap-1 rounded-full bg-red-500/10 px-2.5 py-1 text-[11px] font-semibold text-red-500">
+      <AlertCircle size={12} />
+      {label}
+    </span>
+  );
+}
+
+function ChangeIcon({ type }: { type: string }) {
+  if (type === "create") return <Upload size={14} className="text-[var(--lp-brand)]" />;
+  return <FileEdit size={14} className="text-amber-500" />;
+}
 
 export function BeforeAfterSection() {
-  const { ref, visible } = useIntersection();
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, margin: "-100px" });
 
   return (
-    <section ref={ref} className="py-22 lg:py-30">
-      <div className="mx-auto max-w-[1440px] px-6 lg:px-10">
-        <SectionHeading
-          eyebrow="전환 구조"
-          title="흩어진 파일 중심 운영에서 기준본 중심 운영으로 전환합니다"
-          description={BEFORE_AFTER.summary}
-          className={visible ? "animate-fade-up" : "opacity-0"}
-        />
-
-        <div
-          className={`section-board mt-12 overflow-hidden rounded-[34px] p-5 lg:p-7 ${
-            visible ? "animate-scale-in" : "opacity-0"
-          }`}
-          style={{ animationDelay: "120ms" }}
+    <section className="section-padding relative" ref={ref}>
+      <div className="mx-auto max-w-7xl px-6">
+        {/* Section header */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.6 }}
+          className="mx-auto max-w-3xl text-center"
         >
-          <div className="grid gap-6 lg:grid-cols-[minmax(0,0.92fr)_auto_minmax(0,1.08fr)] lg:items-center">
-            <div className="rounded-[28px] border border-status-danger/18 bg-status-danger/5 p-5 lg:p-6">
-              <div className="flex items-center justify-between gap-3">
-                <div className="text-sm font-700 uppercase tracking-[0.24em] text-status-danger">
-                  이전
-                </div>
-                <div className="rounded-full border border-status-danger/12 bg-background/70 px-3 py-1 text-[11px] font-700 uppercase tracking-[0.16em] text-status-danger">
-                  분산 운영
-                </div>
-              </div>
+          <p className="mb-4 text-sm font-medium uppercase tracking-widest text-[var(--lp-text-muted)]">
+            Revision History
+          </p>
+          <h2 className="section-heading font-[Outfit,sans-serif] text-3xl font-semibold tracking-tight md:text-4xl lg:text-[2.75rem]">
+            모든 변경은
+            <br />
+            <span className="text-[var(--lp-brand)]">리비전으로 기록</span>됩니다
+          </h2>
+          <p className="mt-6 text-base leading-relaxed text-[var(--lp-text-tertiary)] md:text-lg">
+            누가, 언제, 무엇을, 왜 바꿨는지 — 검토와 승인까지 한 화면에서 추적합니다.
+          </p>
+        </motion.div>
 
-              <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                {BEFORE_AFTER.before.map((item) => (
-                  <div
-                    key={item.label}
-                    className="rounded-[22px] border border-status-danger/10 bg-background/86 p-4"
-                  >
-                    <div className="text-sm font-700 text-text-primary">{item.label}</div>
-                    <div className="mt-3 text-sm leading-relaxed text-status-danger">
-                      {item.value}
+        {/* Revision timeline mockup */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="mx-auto mt-16 max-w-3xl"
+        >
+          {/* Timeline */}
+          <div className="relative">
+            {/* Vertical line */}
+            <div className="absolute left-[23px] top-0 bottom-0 w-px bg-[var(--lp-border)] md:left-[27px]" />
+
+            <div className="space-y-6">
+              {revisions.map((rev, ri) => (
+                <motion.div
+                  key={rev.rev}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={isInView ? { opacity: 1, y: 0 } : {}}
+                  transition={{ duration: 0.4, delay: 0.3 + ri * 0.15 }}
+                >
+                  {/* Rev header */}
+                  <div className="flex items-center gap-4">
+                    <div
+                      className={`relative z-10 flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-xl md:h-14 md:w-14 ${
+                        rev.status === "pending"
+                          ? "border-2 border-amber-500/30 bg-[var(--lp-surface)]"
+                          : "bg-[var(--lp-brand)] shadow-md shadow-[var(--lp-brand)]/20"
+                      }`}
+                    >
+                      <span
+                        className={`font-[Outfit,sans-serif] text-xs font-bold ${
+                          rev.status === "pending"
+                            ? "text-amber-500"
+                            : "text-[var(--lp-on-brand)]"
+                        }`}
+                      >
+                        {rev.rev.replace("Rev ", "R")}
+                      </span>
                     </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="flex items-center justify-center">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full border border-border bg-background shadow-lg shadow-text-primary/6">
-                <svg width="22" height="22" viewBox="0 0 16 16" fill="none" className="text-brand-500">
-                  <path
-                    d="M3 8h10m0 0L9 4m4 4L9 12"
-                    stroke="currentColor"
-                    strokeWidth="1.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-                </svg>
-              </div>
-            </div>
-
-            <div className="rounded-[28px] border border-status-success/18 bg-status-success/5 p-5 lg:p-6">
-              <div className="flex items-center justify-between gap-3">
-                <div className="text-sm font-700 uppercase tracking-[0.24em] text-status-success">
-                  이후
-                </div>
-                <div className="rounded-full border border-status-success/12 bg-background/70 px-3 py-1 text-[11px] font-700 uppercase tracking-[0.16em] text-status-success">
-                  기준본 중심
-                </div>
-              </div>
-
-              <div className="mt-5 rounded-[26px] border border-status-success/10 bg-background/86 p-4 lg:p-5">
-                <div className="grid gap-3 sm:grid-cols-2">
-                  {BEFORE_AFTER.after.map((item, index) => (
-                    <div key={item.label} className="relative rounded-[22px] border border-border bg-surface p-4">
-                      <div className="text-xs font-700 uppercase tracking-[0.16em] text-text-secondary">
-                        {item.label}
+                    <div className="flex flex-1 items-center justify-between">
+                      <div>
+                        <span className="font-[Outfit,sans-serif] text-base font-semibold text-[var(--lp-text-strong)]">
+                          {rev.rev}
+                        </span>
+                        <span className="ml-2 text-sm text-[var(--lp-text-muted)]">
+                          {rev.date}
+                        </span>
+                        <span className="ml-2 text-sm text-[var(--lp-text-tertiary)]">
+                          {rev.author}
+                        </span>
                       </div>
-                      <div className="mt-3 text-base font-700 text-text-primary">{item.value}</div>
-                      {index < BEFORE_AFTER.after.length - 1 ? (
-                        <div className="mt-4 flex items-center gap-2 text-xs font-700 uppercase tracking-[0.14em] text-status-success">
-                          <div className="h-px flex-1 bg-status-success/25" />
-                          다음 단계
-                        </div>
-                      ) : null}
+                      <StatusBadge status={rev.status} label={rev.statusLabel} />
                     </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="mt-5 grid gap-3 sm:grid-cols-3">
-                {BEFORE_AFTER.checkpoints.map((item) => (
-                  <div key={item} className="rounded-[20px] border border-border bg-background/86 p-4">
-                    <div className="text-sm leading-relaxed text-text-secondary">{item}</div>
                   </div>
-                ))}
-              </div>
+
+                  {/* Changes */}
+                  <div className="ml-[23px] border-l border-transparent pl-8 md:ml-[27px]">
+                    <div className="mt-3 space-y-2">
+                      {rev.changes.map((change, ci) => (
+                        <motion.div
+                          key={ci}
+                          initial={{ opacity: 0, x: -8 }}
+                          animate={isInView ? { opacity: 1, x: 0 } : {}}
+                          transition={{ duration: 0.3, delay: 0.5 + ri * 0.15 + ci * 0.06 }}
+                          className="glass-card rounded-lg px-4 py-3"
+                        >
+                          <div className="flex items-start gap-2.5">
+                            <ChangeIcon type={change.type} />
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm font-medium text-[var(--lp-text-strong)]">
+                                  {change.label}
+                                </span>
+                              </div>
+                              <div className="mt-0.5 flex items-center gap-2 text-xs text-[var(--lp-text-muted)]">
+                                <span className="truncate">{change.file}</span>
+                                {change.detail && (
+                                  <>
+                                    <span className="text-[var(--lp-text-dim)]">·</span>
+                                    <span className="font-mono text-[var(--lp-brand)]">{change.detail}</span>
+                                  </>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </motion.div>
+                      ))}
+                    </div>
+
+                    {/* Approval info */}
+                    {rev.status === "approved" && rev.approver && (
+                      <div className="mt-3 flex items-center gap-2 rounded-lg bg-emerald-500/[0.05] px-4 py-2.5">
+                        <UserCheck size={14} className="text-emerald-500" />
+                        <span className="text-xs text-emerald-600 dark:text-emerald-400">
+                          {rev.approver} 승인
+                        </span>
+                        <span className="text-xs text-[var(--lp-text-dim)]">{rev.approvedAt}</span>
+                      </div>
+                    )}
+
+                    {rev.status === "pending" && rev.reviewer && (
+                      <div className="mt-3 flex items-center gap-2 rounded-lg bg-amber-500/[0.05] px-4 py-2.5">
+                        <Clock size={14} className="text-amber-500" />
+                        <span className="text-xs text-amber-600 dark:text-amber-400">
+                          {rev.reviewer} 검토 대기 중
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                </motion.div>
+              ))}
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </section>
   );

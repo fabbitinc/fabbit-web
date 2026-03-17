@@ -1,7 +1,7 @@
 import { useRef } from "react";
 import { Camera, Loader2, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { Avatar, AvatarFallback, AvatarImage, Badge, Button, Input, Label, Switch } from "@fabbit/ui";
+import { Avatar, AvatarFallback, AvatarImage, Button, Input, Label, Switch } from "@fabbit/ui";
 import { useAuthStore } from "@/features/auth";
 import { useDeleteOrganizationProfileImageAction } from "@/features/organization-settings/hooks/use-delete-organization-profile-image-action";
 import { useUploadOrganizationProfileImageAction } from "@/features/organization-settings/hooks/use-upload-organization-profile-image-action";
@@ -40,7 +40,6 @@ export function OrganizationGeneralSettingsTab() {
             <h2 className="text-base font-semibold text-foreground">기본 정보</h2>
             <p className="mt-1 text-sm text-muted-foreground">조직 이름, 슬러그, 프로필 이미지를 확인합니다.</p>
           </div>
-          <Badge variant="info">부분 연동</Badge>
         </div>
 
         <div className="flex flex-col gap-8 rounded-lg border border-border/70 bg-card p-4 xl:flex-row">
@@ -97,7 +96,6 @@ export function OrganizationGeneralSettingsTab() {
             <h2 className="text-base font-semibold text-foreground">초대 정책</h2>
             <p className="mt-1 text-sm text-muted-foreground">백엔드 계약이 준비되기 전까지 브라우저 로컬 정책으로 저장합니다.</p>
           </div>
-          <Badge variant="secondary">로컬 설정</Badge>
         </div>
 
         <div className="space-y-4 rounded-lg border border-border/70 bg-card p-4">

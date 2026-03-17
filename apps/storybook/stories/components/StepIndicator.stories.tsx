@@ -47,7 +47,7 @@ export const LastStep: Story = {
 export const WithDescription: Story = {
   args: {
     steps: [
-      { id: "request", label: "변경 요청", description: "ECR 접수" },
+      { id: "request", label: "변경관리", description: "ECR 접수" },
       { id: "review", label: "기술 검토", description: "영향도 분석" },
       { id: "approve", label: "승인", description: "CCB 결재" },
       { id: "execute", label: "실행", description: "BOM/도면 반영" },

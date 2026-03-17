@@ -9,9 +9,7 @@ export type BomTreeNodeResponseLifecycleState = typeof BomTreeNodeResponseLifecy
 
 
 export const BomTreeNodeResponseLifecycleState = {
-  DESIGN: 'DESIGN',
-  PROTOTYPE: 'PROTOTYPE',
-  PRODUCTION: 'PRODUCTION',
+  ACTIVE: 'ACTIVE',
   EOL: 'EOL',
   OBSOLETE: 'OBSOLETE',
 } as const;

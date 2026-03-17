@@ -1,365 +1,328 @@
-@import "tailwindcss";
-@import "@fabbit/theme/styles.css";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-@theme {
-  --font-display: "Plus Jakarta Sans", "Noto Sans KR", sans-serif;
-  --font-body: "Noto Sans KR", sans-serif;
+/* ============================================================
+   Landing Page Theme Tokens
+   — @fabbit/theme 의 CSS 변수에서 파생
+   — theme-primary-N → 브랜드 색 변경
+   — [data-landing="dark"] / [data-landing="light"] → 톤 전환
+   ============================================================ */
+:root {
+  /* Brand colors — theme에서 상속 */
+  --lp-brand: var(--brand-500);
+  --lp-brand-light: var(--brand-50);
+  --lp-brand-deep: var(--brand-600);
+  --lp-accent: var(--accent-500);
 
-  --color-brand-50: var(--brand-50);
-  --color-brand-500: var(--brand-500);
-  --color-brand-600: var(--brand-600);
-  --color-accent-500: var(--accent-500);
+  /* Gradient — AI action tokens에서 상속 */
+  --lp-gradient-from: var(--ai-from);
+  --lp-gradient-to: var(--ai-to);
+  --lp-gradient-from-hover: var(--ai-from-hover);
+  --lp-gradient-to-hover: var(--ai-to-hover);
 
-  --color-surface: var(--theme-surface);
-  --color-background: var(--theme-background);
-  --color-text-primary: var(--theme-text-primary);
-  --color-text-secondary: var(--theme-text-secondary);
-  --color-border: var(--theme-border);
+  /* Logo gradient */
+  --lp-logo-from: var(--logo-from);
+  --lp-logo-to: var(--logo-to);
 
-  --color-status-success: var(--status-success);
-  --color-status-warning: var(--status-warning);
-  --color-status-danger: var(--status-danger);
-  --color-status-info: var(--status-info);
-
-  --animate-fade-up: fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
-  --animate-fade-in: fade-in 0.6s ease both;
-  --animate-slide-left: slide-left 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
-  --animate-slide-right: slide-right 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
-  --animate-scale-in: scale-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
-  --animate-draw-line: draw-line 1.2s cubic-bezier(0.22, 1, 0.36, 1) both;
+  /* Status */
+  --lp-success: var(--status-success);
 }
 
-@keyframes fade-up {
-  from {
-    opacity: 0;
-    transform: translateY(32px);
-  }
+/* ============================================================
+   Dark Landing (기본값, 아카이브)
+   — data-landing="dark" 또는 기본
+   ============================================================ */
+[data-landing="dark"], :root:not([data-landing]) {
+  --lp-bg: #09090b;
+  --lp-surface: #141418;
+  --lp-surface-dim: #0f0f12;
+  --lp-surface-hover: #1c1c22;
 
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  --lp-text: #fafafa;
+  --lp-text-strong: #ffffff;
+  --lp-text-secondary: #d4d4d8;
+  --lp-text-tertiary: #a1a1aa;
+  --lp-text-muted: #71717a;
+  --lp-text-dim: #52525b;
+
+  --lp-border: rgba(255, 255, 255, 0.06);
+  --lp-border-hover: rgba(255, 255, 255, 0.1);
+
+  /* Glass card */
+  --lp-glass-bg: linear-gradient(135deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%);
+  --lp-glass-bg-hover: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%);
+
+  /* Grid pattern */
+  --lp-grid-line: rgba(255, 255, 255, 0.03);
+
+  /* Glow opacity */
+  --lp-glow-brand: 12%;
+  --lp-glow-accent: 8%;
+
+  /* Scrollbar */
+  --lp-scrollbar-thumb: #27272a;
+  --lp-scrollbar-thumb-hover: #3f3f46;
+
+  /* CTA button text on brand bg */
+  --lp-on-brand: #ffffff;
+
+  /* Noise overlay */
+  --lp-noise-opacity: 0.015;
+
+  /* Mockup */
+  --lp-mockup-shadow: 0 0 0 1px var(--lp-border), 0 25px 50px -12px rgba(0,0,0,0.5), 0 0 80px color-mix(in srgb, var(--lp-brand) 10%, transparent);
+  --lp-mockup-chrome: var(--lp-surface-dim);
+  --lp-mockup-dot-1: #ff5f57;
+  --lp-mockup-dot-2: #febc2e;
+  --lp-mockup-dot-3: #28c840;
+  --lp-mockup-url-bg: #1a1a1f;
 }
 
-@keyframes fade-in {
-  from {
-    opacity: 0;
-  }
+/* ============================================================
+   Light Landing
+   — data-landing="light"
+   ============================================================ */
+[data-landing="light"] {
+  --lp-bg: #ffffff;
+  --lp-surface: #f4f4f5;
+  --lp-surface-dim: #e4e4e7;
+  --lp-surface-hover: #d4d4d8;
 
-  to {
-    opacity: 1;
-  }
+  --lp-text: #18181b;
+  --lp-text-strong: #09090b;
+  --lp-text-secondary: #27272a;
+  --lp-text-tertiary: #3f3f46;
+  --lp-text-muted: #71717a;
+  --lp-text-dim: #a1a1aa;
+
+  --lp-border: rgba(0, 0, 0, 0.12);
+  --lp-border-hover: rgba(0, 0, 0, 0.2);
+
+  /* Glass card — 밝은 배경에선 그림자+보더로 구분 */
+  --lp-glass-bg: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.6) 100%);
+  --lp-glass-bg-hover: linear-gradient(135deg, rgba(255,255,255,1) 0%, rgba(255,255,255,0.8) 100%);
+  --lp-card-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+
+  /* Grid pattern */
+  --lp-grid-line: rgba(0, 0, 0, 0.05);
+
+  /* Glow — 밝은 배경에서는 더 약하게 */
+  --lp-glow-brand: 8%;
+  --lp-glow-accent: 5%;
+
+  /* Scrollbar */
+  --lp-scrollbar-thumb: #d4d4d8;
+  --lp-scrollbar-thumb-hover: #a1a1aa;
+
+  /* CTA */
+  --lp-on-brand: #ffffff;
+
+  /* Noise */
+  --lp-noise-opacity: 0.008;
+
+  /* Mockup — 제품 UI는 다크이므로 mockup 내부는 다크 유지 */
+  --lp-mockup-shadow: 0 0 0 1px var(--lp-border), 0 25px 50px -12px rgba(0,0,0,0.15), 0 0 40px color-mix(in srgb, var(--lp-brand) 5%, transparent);
+  --lp-mockup-chrome: #0f0f12;
+  --lp-mockup-dot-1: #ff5f57;
+  --lp-mockup-dot-2: #febc2e;
+  --lp-mockup-dot-3: #28c840;
+  --lp-mockup-url-bg: #e9ecef;
 }
 
-@keyframes slide-left {
-  from {
-    opacity: 0;
-    transform: translateX(40px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes slide-right {
-  from {
-    opacity: 0;
-    transform: translateX(-40px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes scale-in {
-  from {
-    opacity: 0;
-    transform: scale(0.92);
-  }
-
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-@keyframes draw-line {
-  from {
-    stroke-dashoffset: 100;
-  }
-
-  to {
-    stroke-dashoffset: 0;
-  }
+/* ============================================================
+   Base Reset
+   ============================================================ */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 html {
   scroll-behavior: smooth;
-  scroll-padding-top: 6.5rem;
-}
-
-section[id],
-div[id] {
-  scroll-margin-top: 6.5rem;
-}
-
-@media (min-width: 1024px) {
-  html {
-    scroll-padding-top: 7.25rem;
-  }
-
-  section[id],
-  div[id] {
-    scroll-margin-top: 7.25rem;
-  }
 }
 
 body {
-  font-family: "Noto Sans KR", sans-serif;
-  color: var(--theme-text-primary);
-  background:
-    radial-gradient(circle at top, color-mix(in srgb, var(--brand-500) 5%, transparent), transparent 42%),
-    radial-gradient(circle at 82% 18%, color-mix(in srgb, var(--accent-500) 5%, transparent), transparent 28%),
-    var(--theme-background);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  font-family: "DM Sans", sans-serif;
+  background-color: var(--lp-bg);
+  color: var(--lp-text);
+  overflow-x: hidden;
 }
 
-body::before {
+h1, h2, h3, h4, h5, h6 {
+  font-family: "Outfit", sans-serif;
+  line-height: 1.15;
+}
+
+/* ============================================================
+   Gradient Text Utilities
+   ============================================================ */
+.gradient-text {
+  background: linear-gradient(135deg, var(--lp-brand) 0%, var(--lp-accent) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  padding-bottom: 0.05em;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+.gradient-text-animated {
+  background: linear-gradient(135deg, var(--lp-brand) 0%, var(--lp-accent) 50%, var(--lp-brand) 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradient-shift 4s ease-in-out infinite;
+}
+
+@keyframes gradient-shift {
+  0%, 100% { background-position: 0% center; }
+  50% { background-position: 100% center; }
+}
+
+/* ============================================================
+   CTA Button Effects
+   ============================================================ */
+.cta-pulse {
+  position: relative;
+}
+
+.cta-pulse::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, var(--lp-brand), var(--lp-accent));
+  opacity: 0;
+  z-index: -1;
+  transition: opacity 0.3s;
+  filter: blur(12px);
+}
+
+.cta-pulse:hover::after {
+  opacity: 0.4;
+}
+
+/* ============================================================
+   Background Effects
+   ============================================================ */
+.grid-pattern {
+  background-image:
+    linear-gradient(var(--lp-grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--lp-grid-line) 1px, transparent 1px);
+  background-size: 64px 64px;
+}
+
+.hero-glow {
+  background: radial-gradient(
+    ellipse 80% 50% at 50% 0%,
+    color-mix(in srgb, var(--lp-brand) var(--lp-glow-brand), transparent) 0%,
+    color-mix(in srgb, var(--lp-accent) var(--lp-glow-accent), transparent) 40%,
+    transparent 70%
+  );
+}
+
+.section-glow-brand {
+  background: radial-gradient(
+    ellipse 60% 40% at 50% 0%,
+    color-mix(in srgb, var(--lp-brand) var(--lp-glow-accent), transparent) 0%,
+    transparent 60%
+  );
+}
+
+.section-glow-accent {
+  background: radial-gradient(
+    ellipse 60% 40% at 50% 0%,
+    color-mix(in srgb, var(--lp-accent) var(--lp-glow-accent), transparent) 0%,
+    transparent 60%
+  );
+}
+
+/* ============================================================
+   Glass Card
+   ============================================================ */
+.glass-card {
+  background: var(--lp-glass-bg);
+  border: 1px solid var(--lp-border);
+  backdrop-filter: blur(12px);
+  box-shadow: var(--lp-card-shadow, none);
+}
+
+.glass-card:hover {
+  border-color: color-mix(in srgb, var(--lp-brand) 20%, transparent);
+  background: var(--lp-glass-bg-hover);
+}
+
+/* ============================================================
+   Animated Border Gradient
+   ============================================================ */
+.border-gradient {
+  position: relative;
+}
+
+.border-gradient::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--lp-brand) 30%, transparent), color-mix(in srgb, var(--lp-accent) 30%, transparent));
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  pointer-events: none;
+}
+
+/* ============================================================
+   Product Mockup Shadow
+   ============================================================ */
+.product-shadow {
+  box-shadow: var(--lp-mockup-shadow);
+}
+
+/* ============================================================
+   Scrollbar
+   ============================================================ */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--lp-bg);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--lp-scrollbar-thumb);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--lp-scrollbar-thumb-hover);
+}
+
+/* ============================================================
+   Heading & Section Utilities
+   ============================================================ */
+.section-heading {
+  line-height: 1.15 !important;
+}
+
+.section-padding {
+  @apply py-24 md:py-32 lg:py-40;
+}
+
+/* ============================================================
+   Noise Texture Overlay
+   ============================================================ */
+.noise-overlay::after {
   content: "";
   position: fixed;
   inset: 0;
   pointer-events: none;
-  background-image:
-    linear-gradient(color-mix(in srgb, var(--theme-border) 55%, transparent) 1px, transparent 1px),
-    linear-gradient(90deg, color-mix(in srgb, var(--theme-border) 55%, transparent) 1px, transparent 1px);
-  background-size: 56px 56px;
-  opacity: 0.18;
-  mask-image: linear-gradient(to bottom, black 0%, black 24%, transparent 72%);
-}
-
-.landing-shell::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background:
-    radial-gradient(circle at 18% 10%, color-mix(in srgb, var(--brand-500) 10%, transparent), transparent 30%),
-    radial-gradient(circle at 78% 22%, color-mix(in srgb, var(--accent-500) 8%, transparent), transparent 26%),
-    radial-gradient(circle at 50% 60%, color-mix(in srgb, var(--status-info) 6%, transparent), transparent 34%);
-  opacity: 0.52;
-}
-
-.blueprint-grid {
-  background-image:
-    linear-gradient(color-mix(in srgb, var(--theme-border) 70%, transparent) 1px, transparent 1px),
-    linear-gradient(90deg, color-mix(in srgb, var(--theme-border) 70%, transparent) 1px, transparent 1px);
-  background-size: 40px 40px;
-  opacity: 0.34;
-}
-
-.gradient-text {
-  background: linear-gradient(135deg, var(--brand-500), var(--accent-500));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.section-board {
-  border: 1px solid color-mix(in srgb, var(--theme-border) 86%, transparent);
-  background:
-    linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--theme-surface) 94%, var(--theme-background)),
-      color-mix(in srgb, var(--theme-background) 96%, var(--brand-50))
-    );
-  box-shadow:
-    0 32px 90px color-mix(in srgb, var(--theme-text-primary) 8%, transparent),
-    inset 0 1px 0 color-mix(in srgb, var(--theme-background) 70%, transparent);
-  backdrop-filter: blur(18px);
-}
-
-.ink-board {
-  border: 1px solid color-mix(in srgb, var(--theme-text-primary) 10%, transparent);
-  background:
-    linear-gradient(
-      145deg,
-      color-mix(in srgb, var(--theme-text-primary) 96%, var(--brand-600)),
-      color-mix(in srgb, var(--theme-text-primary) 88%, var(--brand-500))
-    );
-  box-shadow: 0 36px 90px color-mix(in srgb, var(--theme-text-primary) 20%, transparent);
-}
-
-.midnight-board {
-  border: 1px solid color-mix(in srgb, var(--theme-text-primary) 10%, transparent);
-  background:
-    radial-gradient(circle at top right, color-mix(in srgb, var(--brand-500) 18%, transparent), transparent 32%),
-    radial-gradient(circle at bottom left, color-mix(in srgb, var(--accent-500) 16%, transparent), transparent 30%),
-    linear-gradient(
-      160deg,
-      color-mix(in srgb, var(--theme-text-primary) 98%, var(--brand-600)),
-      color-mix(in srgb, var(--theme-text-primary) 94%, var(--brand-500))
-    );
-  box-shadow:
-    0 40px 110px color-mix(in srgb, var(--theme-text-primary) 20%, transparent),
-    inset 0 1px 0 color-mix(in srgb, var(--theme-background) 14%, transparent);
-}
-
-.midnight-panel {
-  border: 1px solid color-mix(in srgb, var(--theme-background) 10%, transparent);
-  background:
-    linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--theme-background) 10%, transparent),
-      color-mix(in srgb, var(--theme-background) 6%, transparent)
-    );
-  backdrop-filter: blur(16px);
-}
-
-.floating-panel {
-  border: 1px solid color-mix(in srgb, var(--theme-border) 82%, transparent);
-  background: color-mix(in srgb, var(--theme-background) 84%, transparent);
-  box-shadow: 0 24px 60px color-mix(in srgb, var(--theme-text-primary) 10%, transparent);
-  backdrop-filter: blur(18px);
-}
-
-.workspace-shell {
-  border: 1px solid color-mix(in srgb, var(--theme-text-primary) 10%, transparent);
-  background:
-    linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--theme-text-primary) 97%, var(--brand-600)),
-      color-mix(in srgb, var(--theme-text-primary) 92%, var(--brand-500))
-    );
-  box-shadow:
-    0 40px 100px color-mix(in srgb, var(--theme-text-primary) 18%, transparent),
-    inset 0 1px 0 color-mix(in srgb, var(--theme-background) 12%, transparent);
-}
-
-.workspace-panel {
-  border: 1px solid color-mix(in srgb, var(--theme-background) 10%, transparent);
-  background:
-    linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--theme-background) 12%, transparent),
-      color-mix(in srgb, var(--theme-background) 6%, transparent)
-    );
-  backdrop-filter: blur(14px);
-}
-
-.workspace-soft {
-  border: 1px solid color-mix(in srgb, var(--theme-background) 10%, transparent);
-  background: color-mix(in srgb, var(--theme-background) 7%, transparent);
-}
-
-.workspace-divider {
-  height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    color-mix(in srgb, var(--theme-background) 18%, transparent),
-    transparent
-  );
-}
-
-.mock-block {
-  border: 1px solid color-mix(in srgb, var(--theme-border) 82%, transparent);
-  background:
-    linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--theme-surface) 88%, var(--theme-background)),
-      color-mix(in srgb, var(--theme-background) 94%, var(--brand-50))
-    );
-  border-radius: 1.2rem;
-}
-
-.mock-row,
-.mock-pill,
-.mock-field {
-  background:
-    linear-gradient(
-      90deg,
-      color-mix(in srgb, var(--theme-text-primary) 12%, transparent),
-      color-mix(in srgb, var(--brand-500) 18%, transparent),
-      color-mix(in srgb, var(--theme-text-primary) 10%, transparent)
-    );
-}
-
-.sample-tag {
-  border-radius: 999px;
-  border: 1px solid color-mix(in srgb, var(--theme-border) 78%, transparent);
-  background: color-mix(in srgb, var(--theme-surface) 88%, var(--theme-background));
-  padding: 0.375rem 0.75rem;
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: var(--theme-text-secondary);
-}
-
-.status-chip {
-  border-radius: 999px;
-  padding: 0.3rem 0.65rem;
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-}
-
-.status-chip[data-tone="success"] {
-  background: color-mix(in srgb, var(--status-success) 10%, transparent);
-  color: var(--status-success);
-}
-
-.status-chip[data-tone="info"] {
-  background: color-mix(in srgb, var(--status-info) 10%, transparent);
-  color: var(--status-info);
-}
-
-.status-chip[data-tone="warning"] {
-  background: color-mix(in srgb, var(--status-warning) 10%, transparent);
-  color: var(--status-warning);
-}
-
-.mock-row {
-  border-radius: 999px;
-}
-
-.mock-pill {
-  border-radius: 999px;
-  border: 1px solid color-mix(in srgb, var(--theme-border) 82%, transparent);
-}
-
-.mock-field {
-  border-radius: 1rem;
-  border: 1px solid color-mix(in srgb, var(--theme-border) 82%, transparent);
-}
-
-.dash-panel {
-  border: 1px dashed color-mix(in srgb, var(--theme-border) 88%, transparent);
-  background:
-    linear-gradient(
-      180deg,
-      color-mix(in srgb, var(--theme-background) 98%, var(--theme-surface)),
-      color-mix(in srgb, var(--theme-background) 94%, var(--theme-border))
-    );
-}
-
-.section-divider {
-  height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    color-mix(in srgb, var(--theme-border) 80%, transparent),
-    transparent
-  );
-}
-
-.field-label {
-  font-size: 0.8125rem;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: color-mix(in srgb, var(--theme-text-secondary) 84%, transparent);
+  opacity: var(--lp-noise-opacity);
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  z-index: 9999;
 }

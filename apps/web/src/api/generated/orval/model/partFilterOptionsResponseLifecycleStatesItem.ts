@@ -9,9 +9,7 @@ export type PartFilterOptionsResponseLifecycleStatesItem = typeof PartFilterOpti
 
 
 export const PartFilterOptionsResponseLifecycleStatesItem = {
-  DESIGN: 'DESIGN',
-  PROTOTYPE: 'PROTOTYPE',
-  PRODUCTION: 'PRODUCTION',
+  ACTIVE: 'ACTIVE',
   EOL: 'EOL',
   OBSOLETE: 'OBSOLETE',
 } as const;

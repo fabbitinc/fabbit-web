@@ -38,7 +38,7 @@ export function useTiptapMentionFetchers() {
         label: issue.title,
         number: issue.number,
         state: issue.state,
-        issueType: issue.type,
+        issueType: "issue" as const,
       }));
     },
     [queryClient],

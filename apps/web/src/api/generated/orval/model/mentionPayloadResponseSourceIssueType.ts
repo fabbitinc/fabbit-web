@@ -10,5 +10,5 @@ export type MentionPayloadResponseSourceIssueType = typeof MentionPayloadRespons
 
 export const MentionPayloadResponseSourceIssueType = {
   issue: 'issue',
-  change_request: 'change_request',
+  engineering_change: 'engineering_change',
 } as const;

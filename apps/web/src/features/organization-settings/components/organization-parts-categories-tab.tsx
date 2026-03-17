@@ -133,7 +133,6 @@ export function OrganizationPartsCategoriesTab() {
                     <p>
                       "{renameTarget?.category}" 카테고리에 속한 모든 부품({renameTarget?.partCount ?? 0}개)의 이름이 일괄 변경됩니다.
                     </p>
-                    <p>기본 담당 설정도 새 이름으로 함께 변경됩니다.</p>
                   </>
                 )}
               </div>

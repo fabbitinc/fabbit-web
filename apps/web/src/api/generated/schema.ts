@@ -12,18 +12,18 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * GET /api/v2/mappings/{mappingId}
+         * V2 매핑 ID로 최신 리비전을 조회합니다
          * @description V2 매핑 ID로 최신 리비전을 조회합니다
          */
         get: operations["get"];
         /**
-         * PUT /api/v2/mappings/{mappingId}
+         * V2 매핑을 수정하고 새로운 리비전을 생성합니다
          * @description V2 매핑을 수정하고 새로운 리비전을 생성합니다
          */
         put: operations["update"];
         post?: never;
         /**
-         * DELETE /api/v2/mappings/{mappingId}
+         * V2 매핑을 비활성화(soft delete)합니다
          * @description V2 매핑을 비활성화(soft delete)합니다
          */
         delete: operations["delete"];
@@ -41,13 +41,13 @@ export interface paths {
         };
         get?: never;
         /**
-         * PUT /api/v1/users/me/profile-image
+         * 업로드 완료된 파일(file_id)을 사용자 프로필 이미지로 설정합니다
          * @description 업로드 완료된 파일(file_id)을 사용자 프로필 이미지로 설정합니다
          */
         put: operations["setProfileImage"];
         post?: never;
         /**
-         * DELETE /api/v1/users/me/profile-image
+         * 사용자 프로필 이미지를 제거하고 연결된 파일을 소프트 삭제합니다
          * @description 사용자 프로필 이미지를 제거하고 연결된 파일을 소프트 삭제합니다
          */
         delete: operations["deleteProfileImage"];
@@ -65,7 +65,7 @@ export interface paths {
         };
         get?: never;
         /**
-         * PUT /api/v1/users/me/password
+         * 현재 비밀번호를 검증한 후 새 비밀번호로 변경합니다
          * @description 현재 비밀번호를 검증한 후 새 비밀번호로 변경합니다
          */
         put: operations["changePassword"];
@@ -76,29 +76,21 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/parts/owner/defaults": {
+    "/api/v1/settings/parts/workflow-policy": {
         parameters: {
             query?: never;
             header?: never;
             path?: never;
             cookie?: never;
         };
+        get?: never;
         /**
-         * GET /api/v1/parts/owner/defaults
-         * @description 카테고리별 기본 담당자/담당팀 설정 목록을 조회합니다 (category=null은 fallback)
+         * 부품 워크플로 정책을 변경합니다
+         * @description 부품 워크플로 정책을 변경합니다
          */
-        get: operations["listDefaultOwners"];
-        /**
-         * PUT /api/v1/parts/owner/defaults
-         * @description 카테고리 기본 담당자/담당팀 설정을 upsert합니다 (category=null은 fallback)
-         */
-        put: operations["upsertDefaultOwner"];
+        put: operations["updatePartWorkflowPolicy"];
         post?: never;
-        /**
-         * DELETE /api/v1/parts/owner/defaults
-         * @description 해당 카테고리의 기본 담당자/담당팀 설정을 삭제합니다 (미지정이면 fallback 삭제)
-         */
-        delete: operations["deleteDefaultOwner"];
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -113,13 +105,13 @@ export interface paths {
         };
         get?: never;
         /**
-         * PUT /api/v1/organizations/profile-image
+         * 업로드 완료된 파일(file_id)을 조직 프로필 이미지로 설정합니다. ADMIN 이상 권한이 필요합니다
          * @description 업로드 완료된 파일(file_id)을 조직 프로필 이미지로 설정합니다. ADMIN 이상 권한이 필요합니다
          */
         put: operations["setProfileImage_1"];
         post?: never;
         /**
-         * DELETE /api/v1/organizations/profile-image
+         * 조직 프로필 이미지를 제거하고 연결된 파일을 소프트 삭제합니다. ADMIN 이상 권한이 필요합니다
          * @description 조직 프로필 이미지를 제거하고 연결된 파일을 소프트 삭제합니다. ADMIN 이상 권한이 필요합니다
          */
         delete: operations["deleteProfileImage_1"];
@@ -137,7 +129,7 @@ export interface paths {
         };
         get?: never;
         /**
-         * PUT /api/v1/notifications/{notificationId}/read
+         * 알림 1건을 읽음 처리합니다
          * @description 알림 1건을 읽음 처리합니다
          */
         put: operations["readNotification"];
@@ -157,7 +149,7 @@ export interface paths {
         };
         get?: never;
         /**
-         * PUT /api/v1/notifications/read-all
+         * 현재 사용자의 미읽음 알림을 모두 읽음 처리합니다
          * @description 현재 사용자의 미읽음 알림을 모두 읽음 처리합니다
          */
         put: operations["readAllNotifications"];
@@ -176,18 +168,18 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * GET /api/v1/mappings/{mappingId}
+         * 매핑 ID로 최신 리비전을 조회합니다
          * @description 매핑 ID로 최신 리비전을 조회합니다
          */
         get: operations["get_1"];
         /**
-         * PUT /api/v1/mappings/{mappingId}
+         * 매핑을 수정하고 새로운 리비전을 생성합니다
          * @description 매핑을 수정하고 새로운 리비전을 생성합니다
          */
         put: operations["update_1"];
         post?: never;
         /**
-         * DELETE /api/v1/mappings/{mappingId}
+         * 매핑을 비활성화(soft delete)합니다
          * @description 매핑을 비활성화(soft delete)합니다
          */
         delete: operations["delete_1"];
@@ -205,7 +197,7 @@ export interface paths {
         };
         get?: never;
         /**
-         * PUT /api/v1/issues/{issueNumber}/parts
+         * 부품 목록을 동기화합니다
          * @description 부품 목록을 동기화합니다
          */
         put: operations["syncParts"];
@@ -225,7 +217,7 @@ export interface paths {
         };
         get?: never;
         /**
-         * PUT /api/v1/issues/{issueNumber}/labels
+         * 라벨 목록을 동기화합니다
          * @description 라벨 목록을 동기화합니다
          */
         put: operations["syncLabels"];
@@ -236,7 +228,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/issues/{issueNumber}/changes": {
+    "/api/v1/issues/{issueNumber}/engineering-changes": {
         parameters: {
             query?: never;
             header?: never;
@@ -245,10 +237,10 @@ export interface paths {
         };
         get?: never;
         /**
-         * PUT /api/v1/issues/{issueNumber}/changes
-         * @description 이슈에 연결된 변경요청 목록을 동기화합니다
+         * 이슈에 연결된 변경관리 목록을 동기화합니다
+         * @description 이슈에 연결된 변경관리 목록을 동기화합니다
          */
-        put: operations["syncChanges"];
+        put: operations["syncLinkedEngineeringChanges"];
         post?: never;
         delete?: never;
         options?: never;
@@ -265,7 +257,7 @@ export interface paths {
         };
         get?: never;
         /**
-         * PUT /api/v1/issues/{issueNumber}/assignees
+         * 개인 담당자 목록을 동기화합니다
          * @description 개인 담당자 목록을 동기화합니다
          */
         put: operations["syncAssignees"];
@@ -285,7 +277,7 @@ export interface paths {
         };
         get?: never;
         /**
-         * PUT /api/v1/issues/{issueNumber}/assigned-teams
+         * 팀 담당자 목록을 동기화합니다
          * @description 팀 담당자 목록을 동기화합니다
          */
         put: operations["syncTeamAssignees"];
@@ -296,7 +288,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/changes/{issueNumber}/reviewers": {
+    "/api/v1/engineering-changes/{engineeringChangeNumber}/steps": {
         parameters: {
             query?: never;
             header?: never;
@@ -305,10 +297,10 @@ export interface paths {
         };
         get?: never;
         /**
-         * PUT /api/v1/changes/{issueNumber}/reviewers
-         * @description 개인 검토자 목록을 동기화합니다
+         * 변경관리 단계 목록을 동기화합니다
+         * @description 변경관리 단계 목록을 동기화합니다
          */
-        put: operations["syncReviewers"];
+        put: operations["replaceSteps"];
         post?: never;
         delete?: never;
         options?: never;
@@ -316,7 +308,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/changes/{issueNumber}/reviewer-teams": {
+    "/api/v1/engineering-changes/{engineeringChangeNumber}/part-revisions": {
         parameters: {
             query?: never;
             header?: never;
@@ -325,10 +317,10 @@ export interface paths {
         };
         get?: never;
         /**
-         * PUT /api/v1/changes/{issueNumber}/reviewer-teams
-         * @description 팀 검토자 목록을 동기화합니다
+         * 변경관리에 연결할 부품 초안 목록을 동기화합니다
+         * @description 변경관리에 연결할 부품 초안 목록을 동기화합니다
          */
-        put: operations["syncTeamReviewers"];
+        put: operations["syncPartRevisions"];
         post?: never;
         delete?: never;
         options?: never;
@@ -336,7 +328,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/changes/{issueNumber}/parts": {
+    "/api/v1/engineering-changes/{engineeringChangeNumber}/issues": {
         parameters: {
             query?: never;
             header?: never;
@@ -345,90 +337,10 @@ export interface paths {
         };
         get?: never;
         /**
-         * PUT /api/v1/changes/{issueNumber}/parts
-         * @description 부품 목록을 동기화합니다
-         */
-        put: operations["syncParts_1"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/changes/{issueNumber}/labels": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        /**
-         * PUT /api/v1/changes/{issueNumber}/labels
-         * @description 라벨 목록을 동기화합니다
-         */
-        put: operations["syncLabels_1"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/changes/{issueNumber}/issues": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        /**
-         * PUT /api/v1/changes/{issueNumber}/issues
-         * @description 변경요청에 연결된 이슈 목록을 동기화합니다
+         * 변경관리에 연결된 이슈 목록을 동기화합니다
+         * @description 변경관리에 연결된 이슈 목록을 동기화합니다
          */
         put: operations["syncIssues"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/changes/{issueNumber}/assignees": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        /**
-         * PUT /api/v1/changes/{issueNumber}/assignees
-         * @description 개인 담당자 목록을 동기화합니다
-         */
-        put: operations["syncAssignees_1"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/changes/{issueNumber}/assigned-teams": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        /**
-         * PUT /api/v1/changes/{issueNumber}/assigned-teams
-         * @description 팀 담당자 목록을 동기화합니다
-         */
-        put: operations["syncTeamAssignees_1"];
         post?: never;
         delete?: never;
         options?: never;
@@ -444,13 +356,13 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * GET /api/v2/synthesis
+         * 전체 V2 합성 작업 이력을 최신순으로 조회합니다
          * @description 전체 V2 합성 작업 이력을 최신순으로 조회합니다
          */
         get: operations["listSynthesisJobs"];
         put?: never;
         /**
-         * POST /api/v2/synthesis
+         * V2 매핑 기반 합성 배치를 시작하고 batch/job 정보를 반환합니다
          * @description V2 매핑 기반 합성 배치를 시작하고 batch/job 정보를 반환합니다
          */
         post: operations["startSynthesis"];
@@ -470,7 +382,7 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * POST /api/v2/mappings/validate
+         * V2 매핑을 정규화하고 파일 샘플 데이터 기준으로 오류/경고를 검증합니다
          * @description V2 매핑을 정규화하고 파일 샘플 데이터 기준으로 오류/경고를 검증합니다
          */
         post: operations["validate"];
@@ -490,7 +402,7 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * POST /api/v2/mappings/preview
+         * 업로드된 파일을 nodes[] + relations[] 구조의 V2 매핑으로 미리보기합니다
          * @description 업로드된 파일을 nodes[] + relations[] 구조의 V2 매핑으로 미리보기합니다
          */
         post: operations["preview"];
@@ -510,7 +422,7 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * POST /api/v2/mappings/confirm
+         * 검토된 V2 매핑을 확정하여 새 V2 매핑 레코드(버전 1)를 생성합니다
          * @description 검토된 V2 매핑을 확정하여 새 V2 매핑 레코드(버전 1)를 생성합니다
          */
         post: operations["confirm"];
@@ -528,13 +440,13 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * GET /api/v1/teams
+         * 팀 목록을 조회합니다
          * @description 팀 목록을 조회합니다
          */
         get: operations["listTeams"];
         put?: never;
         /**
-         * POST /api/v1/teams
+         * 팀을 생성합니다. 생성 직후 팀 상세를 반환합니다
          * @description 팀을 생성합니다. 생성 직후 팀 상세를 반환합니다
          */
         post: operations["createTeam"];
@@ -552,18 +464,18 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * GET /api/v1/teams/{teamId}/members
+         * 팀 멤버 목록을 조회합니다
          * @description 팀 멤버 목록을 조회합니다
          */
         get: operations["listTeamMembers"];
         put?: never;
         /**
-         * POST /api/v1/teams/{teamId}/members
+         * 팀에 멤버를 배치 추가합니다. 이미 추가된 멤버는 제외됩니다
          * @description 팀에 멤버를 배치 추가합니다. 이미 추가된 멤버는 제외됩니다
          */
         post: operations["addTeamMembers"];
         /**
-         * DELETE /api/v1/teams/{teamId}/members
+         * 팀에서 멤버를 배치 제거합니다
          * @description 팀에서 멤버를 배치 제거합니다
          */
         delete: operations["removeTeamMembers"];
@@ -580,13 +492,13 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * GET /api/v1/synthesis
+         * 전체 합성 작업 이력을 최신순으로 조회합니다
          * @description 전체 합성 작업 이력을 최신순으로 조회합니다
          */
         get: operations["listSynthesisJobs_1"];
         put?: never;
         /**
-         * POST /api/v1/synthesis
+         * 매핑 기반 합성 배치를 시작하고 batch/job 정보를 반환합니다
          * @description 매핑 기반 합성 배치를 시작하고 batch/job 정보를 반환합니다
          */
         post: operations["startSynthesis_1"];
@@ -604,13 +516,13 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * GET /api/v1/projects
+         * 프로젝트 목록을 검색/페이징 조회합니다
          * @description 프로젝트 목록을 검색/페이징 조회합니다
          */
         get: operations["listProjects"];
         put?: never;
         /**
-         * POST /api/v1/projects
+         * 프로젝트를 생성하고 상세 정보를 반환합니다
          * @description 프로젝트를 생성하고 상세 정보를 반환합니다
          */
         post: operations["createProject"];
@@ -630,7 +542,7 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * POST /api/v1/projects/{projectId}/unarchive
+         * 프로젝트 보관을 해제합니다
          * @description 프로젝트 보관을 해제합니다
          */
         post: operations["unarchiveProject"];
@@ -648,18 +560,18 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * GET /api/v1/projects/{projectId}/parts
+         * 프로젝트에 연결된 부품 목록을 조회합니다
          * @description 프로젝트에 연결된 부품 목록을 조회합니다
          */
         get: operations["getProjectParts"];
         put?: never;
         /**
-         * POST /api/v1/projects/{projectId}/parts
+         * 프로젝트에 부품을 배치 연결합니다
          * @description 프로젝트에 부품을 배치 연결합니다
          */
         post: operations["linkParts"];
         /**
-         * DELETE /api/v1/projects/{projectId}/parts
+         * 프로젝트에서 부품을 배치 해제합니다
          * @description 프로젝트에서 부품을 배치 해제합니다
          */
         delete: operations["unlinkParts"];
@@ -676,18 +588,18 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * GET /api/v1/projects/{projectId}/members
+         * 프로젝트 멤버 목록을 조회합니다
          * @description 프로젝트 멤버 목록을 조회합니다
          */
         get: operations["listProjectMembers"];
         put?: never;
         /**
-         * POST /api/v1/projects/{projectId}/members
+         * 프로젝트에 멤버를 배치 추가합니다
          * @description 프로젝트에 멤버를 배치 추가합니다
          */
         post: operations["addProjectMembers"];
         /**
-         * DELETE /api/v1/projects/{projectId}/members
+         * 프로젝트에서 멤버를 배치 제거합니다
          * @description 프로젝트에서 멤버를 배치 제거합니다
          */
         delete: operations["removeProjectMembers"];
@@ -706,7 +618,7 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * POST /api/v1/projects/{projectId}/archive
+         * 프로젝트를 보관 상태로 전환합니다
          * @description 프로젝트를 보관 상태로 전환합니다
          */
         post: operations["archiveProject"];
@@ -716,7 +628,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/parts/{partId}/files": {
+    "/api/v1/parts": {
         parameters: {
             query?: never;
             header?: never;
@@ -724,23 +636,23 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * GET /api/v1/parts/{partId}/files
-         * @description Part에 연결된 업로드 완료 파일 목록을 조회합니다
+         * Part 목록을 검색/필터 조건과 함께 조회합니다
+         * @description Part 목록을 검색/필터 조건과 함께 조회합니다
          */
-        get: operations["getPartFiles"];
+        get: operations["listParts"];
         put?: never;
         /**
-         * POST /api/v1/parts/{partId}/files
-         * @description 업로드 완료 파일들을 Part에 배치 연결합니다
+         * 부품을 생성하고 생성 직후 상세 정보를 반환합니다
+         * @description 부품을 생성하고 생성 직후 상세 정보를 반환합니다
          */
-        post: operations["attachFiles"];
+        post: operations["createPart"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/v1/parts/{partId}/drawings": {
+    "/api/v1/parts/{partNumber}/revisions/{revisionCode}/release": {
         parameters: {
             query?: never;
             header?: never;
@@ -750,15 +662,343 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * POST /api/v1/parts/{partId}/drawings
-         * @description 업로드 완료 파일을 Drawing으로 등록하고 Part에 연결합니다
+         * 공식 리비전을 직접 릴리즈합니다
+         * @description 공식 리비전을 직접 릴리즈합니다
          */
-        post: operations["registerDrawingForPart"];
+        post: operations["release"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/parts/{partNumber}/revisions/{revisionCode}/preview/files": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
         /**
-         * DELETE /api/v1/parts/{partId}/drawings
-         * @description Part에 연결된 도면을 삭제합니다 (Drawing + 연결 파일 soft delete)
+         * 업로드 완료 파일을 대표 미리보기 전용 파일로 등록하고 현재 미리보기로 설정합니다
+         * @description 업로드 완료 파일을 대표 미리보기 전용 파일로 등록하고 현재 미리보기로 설정합니다
          */
-        delete: operations["deleteDrawingFromPart"];
+        post: operations["createPreviewFile"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/parts/{partNumber}/revisions/{revisionCode}/files": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Part에 연결된 업로드 완료 파일 목록을 조회합니다
+         * @description Part에 연결된 업로드 완료 파일 목록을 조회합니다
+         */
+        get: operations["getFiles"];
+        put?: never;
+        /**
+         * 업로드 완료 파일들을 Part에 배치 연결합니다
+         * @description 업로드 완료 파일들을 Part에 배치 연결합니다
+         */
+        post: operations["attachFiles"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/parts/{partNumber}/revisions/{revisionCode}/drawings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 업로드 완료 파일을 Drawing으로 등록하고 PartRevision에 연결합니다
+         * @description 업로드 완료 파일을 Drawing으로 등록하고 PartRevision에 연결합니다
+         */
+        post: operations["createDrawing"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/parts/{partNumber}/revisions/{revisionCode}/drafts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 기준 리비전에서 새 초안 리비전을 생성합니다
+         * @description 기준 리비전에서 새 초안 리비전을 생성합니다
+         */
+        post: operations["create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/parts/{partNumber}/revisions/{revisionCode}/drafts/{draftKey}/release": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 특정 공식 리비전에서 파생된 초안을 직접 릴리즈하고 새 공식 리비전으로 전환합니다
+         * @description 특정 공식 리비전에서 파생된 초안을 직접 릴리즈하고 새 공식 리비전으로 전환합니다
+         */
+        post: operations["releaseFromRevision"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/parts/{partNumber}/revisions/{revisionCode}/drafts/{draftKey}/preview/files": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 업로드 완료 파일을 특정 공식 리비전에서 파생된 DRAFT 상태의 부품 초안 대표 미리보기 전용 파일로 등록하고 현재 미리보기로 설정합니다
+         * @description 업로드 완료 파일을 특정 공식 리비전에서 파생된 DRAFT 상태의 부품 초안 대표 미리보기 전용 파일로 등록하고 현재 미리보기로 설정합니다
+         */
+        post: operations["uploadPreviewFileFromRevision"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/parts/{partNumber}/revisions/{revisionCode}/drafts/{draftKey}/files": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 특정 공식 리비전에서 파생된 DRAFT 상태의 부품 초안에 연결된 업로드 완료 파일 목록을 조회합니다
+         * @description 특정 공식 리비전에서 파생된 DRAFT 상태의 부품 초안에 연결된 업로드 완료 파일 목록을 조회합니다
+         */
+        get: operations["getFilesFromRevision"];
+        put?: never;
+        /**
+         * 업로드 완료 파일들을 특정 공식 리비전에서 파생된 DRAFT 상태의 부품 초안에 배치 연결합니다
+         * @description 업로드 완료 파일들을 특정 공식 리비전에서 파생된 DRAFT 상태의 부품 초안에 배치 연결합니다
+         */
+        post: operations["attachFilesFromRevision"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/parts/{partNumber}/revisions/{revisionCode}/drafts/{draftKey}/drawings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 특정 공식 리비전에서 파생된 DRAFT 상태의 초안에 도면을 업로드하고 등록합니다
+         * @description 특정 공식 리비전에서 파생된 DRAFT 상태의 초안에 도면을 업로드하고 등록합니다
+         */
+        post: operations["createDrawingFromRevision"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/parts/{partNumber}/revisions/{revisionCode}/drafts/{draftKey}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 특정 공식 리비전에서 파생된 초안을 직접 취소합니다
+         * @description 특정 공식 리비전에서 파생된 초안을 직접 취소합니다
+         */
+        post: operations["cancelFromRevision"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/parts/{partNumber}/revisions/{revisionCode}/drafts/{draftKey}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 특정 공식 리비전에서 파생된 초안을 직접 승인하고 새 공식 리비전으로 전환합니다
+         * @description 특정 공식 리비전에서 파생된 초안을 직접 승인하고 새 공식 리비전으로 전환합니다
+         */
+        post: operations["approveFromRevision"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/parts/{partNumber}/drafts/{draftKey}/release": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 초기 Part 초안을 직접 릴리즈하고 공식 리비전으로 전환합니다
+         * @description 초기 Part 초안을 직접 릴리즈하고 공식 리비전으로 전환합니다
+         */
+        post: operations["release_1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/parts/{partNumber}/drafts/{draftKey}/preview/files": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 업로드 완료 파일을 초기 DRAFT 상태의 부품 초안 대표 미리보기 전용 파일로 등록하고 현재 미리보기로 설정합니다
+         * @description 업로드 완료 파일을 초기 DRAFT 상태의 부품 초안 대표 미리보기 전용 파일로 등록하고 현재 미리보기로 설정합니다
+         */
+        post: operations["uploadPreviewFile"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/parts/{partNumber}/drafts/{draftKey}/files": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 초기 DRAFT 상태의 부품 초안에 연결된 업로드 완료 파일 목록을 조회합니다
+         * @description 초기 DRAFT 상태의 부품 초안에 연결된 업로드 완료 파일 목록을 조회합니다
+         */
+        get: operations["getFiles_1"];
+        put?: never;
+        /**
+         * 업로드 완료 파일들을 초기 DRAFT 상태의 부품 초안에 배치 연결합니다
+         * @description 업로드 완료 파일들을 초기 DRAFT 상태의 부품 초안에 배치 연결합니다
+         */
+        post: operations["attachFiles_1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/parts/{partNumber}/drafts/{draftKey}/drawings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 초기 DRAFT 상태의 부품 초안에 도면을 업로드하고 등록합니다
+         * @description 초기 DRAFT 상태의 부품 초안에 도면을 업로드하고 등록합니다
+         */
+        post: operations["createDrawing_1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/parts/{partNumber}/drafts/{draftKey}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 초기 Part 초안을 직접 취소합니다
+         * @description 초기 Part 초안을 직접 취소합니다
+         */
+        post: operations["cancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/parts/{partNumber}/drafts/{draftKey}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 초기 Part 초안을 직접 승인하고 공식 리비전으로 전환합니다
+         * @description 초기 Part 초안을 직접 승인하고 공식 리비전으로 전환합니다
+         */
+        post: operations["approve"];
+        delete?: never;
         options?: never;
         head?: never;
         patch?: never;
@@ -774,7 +1014,7 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * POST /api/v1/organizations
+         * 스코프 토큰(scope=create_org)으로 조직을 생성하고 access/refresh 토큰을 발급합니다
          * @description 스코프 토큰(scope=create_org)으로 조직을 생성하고 access/refresh 토큰을 발급합니다
          */
         post: operations["createOrganization"];
@@ -794,7 +1034,7 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * POST /api/v1/organizations/switch
+         * 대상 워크스페이스 멤버십을 확인한 뒤 새 access/refresh 토큰을 발급합니다
          * @description 대상 워크스페이스 멤버십을 확인한 뒤 새 access/refresh 토큰을 발급합니다
          */
         post: operations["switchOrganization"];
@@ -812,13 +1052,13 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * GET /api/v1/organizations/invitations
+         * 관리자(ADMIN 이상)가 조직의 초대 목록(PENDING/ACCEPTED/CANCELLED)을 최신순으로 조회합니다
          * @description 관리자(ADMIN 이상)가 조직의 초대 목록(PENDING/ACCEPTED/CANCELLED)을 최신순으로 조회합니다
          */
         get: operations["listInvitations"];
         put?: never;
         /**
-         * POST /api/v1/organizations/invitations
+         * 관리자(ADMIN 이상)가 이메일로 조직 초대를 발송합니다
          * @description 관리자(ADMIN 이상)가 이메일로 조직 초대를 발송합니다
          */
         post: operations["createInvitation"];
@@ -838,7 +1078,7 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * POST /api/v1/mappings/validate
+         * 매핑을 정규화하고 파일 샘플 데이터 기준으로 오류/경고를 검증합니다
          * @description 매핑을 정규화하고 파일 샘플 데이터 기준으로 오류/경고를 검증합니다
          */
         post: operations["validate_1"];
@@ -858,7 +1098,7 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * POST /api/v1/mappings/preview
+         * 업로드된 파일의 헤더/샘플 행을 기반으로 매핑 미리보기를 생성합니다
          * @description 업로드된 파일의 헤더/샘플 행을 기반으로 매핑 미리보기를 생성합니다
          */
         post: operations["preview_1"];
@@ -878,7 +1118,7 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * POST /api/v1/mappings/confirm
+         * 검토된 매핑을 확정하여 새 매핑 레코드(버전 1)를 생성합니다
          * @description 검토된 매핑을 확정하여 새 매핑 레코드(버전 1)를 생성합니다
          */
         post: operations["confirm_1"];
@@ -896,13 +1136,13 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * GET /api/v1/labels
+         * 테넌트에 등록된 전체 라벨 목록을 이름순으로 조회합니다
          * @description 테넌트에 등록된 전체 라벨 목록을 이름순으로 조회합니다
          */
         get: operations["listLabels"];
         put?: never;
         /**
-         * POST /api/v1/labels
+         * 라벨을 생성합니다. 동일한 라벨 이름은 허용되지 않습니다
          * @description 라벨을 생성합니다. 동일한 라벨 이름은 허용되지 않습니다
          */
         post: operations["createLabel"];
@@ -920,13 +1160,13 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * GET /api/v1/issues
-         * @description 일반 이슈(CHANGE_REQUEST 제외) 목록을 조회합니다
+         * 이슈 목록을 조회합니다
+         * @description 이슈 목록을 조회합니다
          */
         get: operations["listIssues"];
         put?: never;
         /**
-         * POST /api/v1/issues
+         * 이슈를 생성하고 연관 정보(부품/담당자/라벨/파일)를 일괄 연결합니다
          * @description 이슈를 생성하고 연관 정보(부품/담당자/라벨/파일)를 일괄 연결합니다
          */
         post: operations["createIssue"];
@@ -946,7 +1186,7 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * POST /api/v1/issues/{issueNumber}/reopen
+         * 이슈를 다시 엽니다 (CLOSED -> OPEN)
          * @description 이슈를 다시 엽니다 (CLOSED -> OPEN)
          */
         post: operations["reopenIssue"];
@@ -966,7 +1206,7 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * POST /api/v1/issues/{issueNumber}/files
+         * 첨부파일을 배치 연결합니다
          * @description 첨부파일을 배치 연결합니다
          */
         post: operations["addFiles"];
@@ -986,7 +1226,7 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * POST /api/v1/issues/{issueNumber}/comments
+         * 댓글을 생성합니다
          * @description 댓글을 생성합니다
          */
         post: operations["createComment"];
@@ -1006,7 +1246,7 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * POST /api/v1/issues/{issueNumber}/close
+         * 이슈를 닫습니다 (OPEN -> CLOSED)
          * @description 이슈를 닫습니다 (OPEN -> CLOSED)
          */
         post: operations["closeIssue"];
@@ -1026,7 +1266,7 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * POST /api/v1/files/upload
+         * 단건 파일 업로드를 위한 presigned URL을 발급합니다
          * @description 단건 파일 업로드를 위한 presigned URL을 발급합니다
          */
         post: operations["createFile"];
@@ -1046,7 +1286,7 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * POST /api/v1/files/upload/{fileId}/complete
+         * 단건 업로드 완료를 확인하고 파일 상태를 UPLOADED로 전이합니다
          * @description 단건 업로드 완료를 확인하고 파일 상태를 UPLOADED로 전이합니다
          */
         post: operations["completeFile"];
@@ -1066,7 +1306,7 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * POST /api/v1/files/upload/batch
+         * 최대 100건 파일 업로드를 위한 presigned URL을 일괄 발급합니다
          * @description 최대 100건 파일 업로드를 위한 presigned URL을 일괄 발급합니다
          */
         post: operations["batchCreateFiles"];
@@ -1086,7 +1326,7 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * POST /api/v1/files/upload/batch/complete
+         * 배치 업로드 완료를 확인하고 성공/실패 목록을 반환합니다
          * @description 배치 업로드 완료를 확인하고 성공/실패 목록을 반환합니다
          */
         post: operations["batchCompleteFiles"];
@@ -1096,7 +1336,31 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/drawings/{drawingId}/render-source": {
+    "/api/v1/engineering-changes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 변경관리 목록을 조회합니다
+         * @description 변경관리 목록을 조회합니다
+         */
+        get: operations["listEngineeringChanges"];
+        put?: never;
+        /**
+         * 변경관리를 생성하고 연관 정보(이슈/부품 리비전/단계/파일)를 일괄 연결합니다
+         * @description 변경관리를 생성하고 연관 정보(이슈/부품 리비전/단계/파일)를 일괄 연결합니다
+         */
+        post: operations["createEngineeringChange"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/engineering-changes/{engineeringChangeNumber}/submit": {
         parameters: {
             query?: never;
             header?: never;
@@ -1106,52 +1370,8 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * POST /api/v1/drawings/{drawingId}/render-source
-         * @description 도면 변환용 render source 파일을 등록하고 비동기 변환을 요청합니다
-         */
-        post: operations["registerRenderSource"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/changes": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * GET /api/v1/changes
-         * @description 변경요청 목록을 조회합니다
-         */
-        get: operations["listChangeRequests"];
-        put?: never;
-        /**
-         * POST /api/v1/changes
-         * @description 변경요청을 생성하고 연관 정보(이슈/담당자/검토자/파일)를 일괄 연결합니다
-         */
-        post: operations["createChangeRequest"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/changes/{issueNumber}/submit": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * POST /api/v1/changes/{issueNumber}/submit
-         * @description 변경요청을 제출합니다 (DRAFT -> SUBMITTED)
+         * 변경관리를 검토 대기로 전환합니다 (DRAFT -> REVIEW_PENDING)
+         * @description 변경관리를 검토 대기로 전환합니다 (DRAFT -> REVIEW_PENDING)
          */
         post: operations["submit"];
         delete?: never;
@@ -1160,7 +1380,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/changes/{issueNumber}/review": {
+    "/api/v1/engineering-changes/{engineeringChangeNumber}/review/approve": {
         parameters: {
             query?: never;
             header?: never;
@@ -1170,17 +1390,17 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * POST /api/v1/changes/{issueNumber}/review
-         * @description 검토자가 리뷰 상태(APPROVED|REJECTED)를 제출합니다
+         * 현재 검토 단계 담당자가 자신의 검토 단계를 승인합니다
+         * @description 현재 검토 단계 담당자가 자신의 검토 단계를 승인합니다
          */
-        post: operations["submitReview"];
+        post: operations["approveReview"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/v1/changes/{issueNumber}/reopen": {
+    "/api/v1/engineering-changes/{engineeringChangeNumber}/release": {
         parameters: {
             query?: never;
             header?: never;
@@ -1190,17 +1410,17 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * POST /api/v1/changes/{issueNumber}/reopen
-         * @description 변경요청을 다시 엽니다 (CLOSED -> SUBMITTED)
+         * 현재 반영 단계 담당자가 변경관리를 반영 완료합니다 (RELEASE_PENDING -> RELEASED)
+         * @description 현재 반영 단계 담당자가 변경관리를 반영 완료합니다 (RELEASE_PENDING -> RELEASED)
          */
-        post: operations["reopen"];
+        post: operations["release_2"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/v1/changes/{issueNumber}/merge": {
+    "/api/v1/engineering-changes/{engineeringChangeNumber}/reject": {
         parameters: {
             query?: never;
             header?: never;
@@ -1210,17 +1430,17 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * POST /api/v1/changes/{issueNumber}/merge
-         * @description 변경요청을 반영합니다 (SUBMITTED -> MERGED)
+         * 변경관리를 작성 단계로 되돌립니다 (*_PENDING -> DRAFT)
+         * @description 변경관리를 작성 단계로 되돌립니다 (*_PENDING -> DRAFT)
          */
-        post: operations["merge"];
+        post: operations["reject"];
         delete?: never;
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/v1/changes/{issueNumber}/files": {
+    "/api/v1/engineering-changes/{engineeringChangeNumber}/files": {
         parameters: {
             query?: never;
             header?: never;
@@ -1230,7 +1450,7 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * POST /api/v1/changes/{issueNumber}/files
+         * 첨부파일을 배치 연결합니다
          * @description 첨부파일을 배치 연결합니다
          */
         post: operations["addFiles_1"];
@@ -1240,7 +1460,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/changes/{issueNumber}/comments": {
+    "/api/v1/engineering-changes/{engineeringChangeNumber}/comments": {
         parameters: {
             query?: never;
             header?: never;
@@ -1250,7 +1470,7 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * POST /api/v1/changes/{issueNumber}/comments
+         * 댓글을 생성합니다
          * @description 댓글을 생성합니다
          */
         post: operations["createComment_1"];
@@ -1260,7 +1480,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/changes/{issueNumber}/close": {
+    "/api/v1/engineering-changes/{engineeringChangeNumber}/cancel": {
         parameters: {
             query?: never;
             header?: never;
@@ -1270,10 +1490,30 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * POST /api/v1/changes/{issueNumber}/close
-         * @description 변경요청을 닫습니다
+         * 변경관리를 폐기하고 미반영 리비전을 취소합니다
+         * @description 변경관리를 폐기하고 미반영 리비전을 취소합니다
          */
-        post: operations["close"];
+        post: operations["cancel_1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/engineering-changes/{engineeringChangeNumber}/approve": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 현재 승인 단계 담당자가 변경관리를 승인해 반영 대기로 전환합니다 (APPROVAL_PENDING -> RELEASE_PENDING)
+         * @description 현재 승인 단계 담당자가 변경관리를 승인해 반영 대기로 전환합니다 (APPROVAL_PENDING -> RELEASE_PENDING)
+         */
+        post: operations["approve_1"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1290,7 +1530,7 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * POST /api/v1/auth/verify-email
+         * 이메일 인증 코드 검증
          * @description 이메일 인증 코드 검증
          */
         post: operations["verifyEmail"];
@@ -1310,7 +1550,7 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * POST /api/v1/auth/send-verification
+         * 이메일 인증 코드 발송
          * @description 이메일 인증 코드 발송
          */
         post: operations["sendVerification"];
@@ -1330,7 +1570,7 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * POST /api/v1/auth/register
+         * 회원가입
          * @description 회원가입
          */
         post: operations["register"];
@@ -1350,7 +1590,7 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * POST /api/v1/auth/refresh
+         * 리프레시 토큰으로 액세스 토큰 재발급
          * @description 리프레시 토큰으로 액세스 토큰 재발급
          */
         post: operations["refresh"];
@@ -1370,7 +1610,7 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * POST /api/v1/auth/logout
+         * 리프레시 토큰 폐기
          * @description 리프레시 토큰 폐기
          */
         post: operations["logout"];
@@ -1390,7 +1630,7 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * POST /api/v1/auth/login
+         * 로그인
          * @description 로그인
          */
         post: operations["login"];
@@ -1410,7 +1650,7 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * POST /api/v1/auth/accept-invitation
+         * 조직 초대 수락
          * @description 조직 초대 수락
          */
         post: operations["acceptInvitation"];
@@ -1430,7 +1670,7 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * POST /api/v1/activation/query
+         * 자연어 질문을 실행해 탐색 결과와 요약 답변을 반환합니다
          * @description 자연어 질문을 실행해 탐색 결과와 요약 답변을 반환합니다
          */
         post: operations["queryGraph"];
@@ -1450,7 +1690,7 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * POST /api/v1/activation/health-check
+         * 그래프/관계 데이터 상태를 점검하여 이슈를 반환합니다
          * @description 그래프/관계 데이터 상태를 점검하여 이슈를 반환합니다
          */
         post: operations["healthCheck"];
@@ -1468,7 +1708,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * GET /api/v1/users/me
+         * 현재 인증된 사용자의 프로필과 소속 조직 목록을 조회합니다
          * @description 현재 인증된 사용자의 프로필과 소속 조직 목록을 조회합니다
          */
         get: operations["getMe"];
@@ -1478,7 +1718,7 @@ export interface paths {
         options?: never;
         head?: never;
         /**
-         * PATCH /api/v1/users/me
+         * 내 프로필을 부분 수정합니다
          * @description 내 프로필을 부분 수정합니다
          */
         patch: operations["updateProfile"];
@@ -1492,21 +1732,21 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * GET /api/v1/teams/{teamId}
+         * 팀 상세를 조회합니다
          * @description 팀 상세를 조회합니다
          */
         get: operations["getTeam"];
         put?: never;
         post?: never;
         /**
-         * DELETE /api/v1/teams/{teamId}
+         * 팀을 삭제합니다. 팀 멤버 관계도 함께 제거됩니다
          * @description 팀을 삭제합니다. 팀 멤버 관계도 함께 제거됩니다
          */
         delete: operations["deleteTeam"];
         options?: never;
         head?: never;
         /**
-         * PATCH /api/v1/teams/{teamId}
+         * 팀 이름/설명을 부분 수정하고 최신 팀 상세를 반환합니다
          * @description 팀 이름/설명을 부분 수정하고 최신 팀 상세를 반환합니다
          */
         patch: operations["updateTeam"];
@@ -1520,27 +1760,51 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * GET /api/v1/projects/{projectId}
+         * 프로젝트 상세를 조회합니다
          * @description 프로젝트 상세를 조회합니다
          */
         get: operations["getProject"];
         put?: never;
         post?: never;
         /**
-         * DELETE /api/v1/projects/{projectId}
+         * 프로젝트를 소프트 삭제합니다
          * @description 프로젝트를 소프트 삭제합니다
          */
         delete: operations["deleteProject"];
         options?: never;
         head?: never;
         /**
-         * PATCH /api/v1/projects/{projectId}
+         * 프로젝트 이름/설명을 수정합니다
          * @description 프로젝트 이름/설명을 수정합니다
          */
         patch: operations["updateProject"];
         trace?: never;
     };
-    "/api/v1/parts/{partId}/owner": {
+    "/api/v1/parts/{partNumber}/revisions/{revisionCode}/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Part 대표 미리보기를 해제합니다
+         * @description Part 대표 미리보기를 해제합니다
+         */
+        delete: operations["delete_2"];
+        options?: never;
+        head?: never;
+        /**
+         * Part 대표 미리보기 소스를 도면 또는 미리보기 전용 파일로 변경합니다
+         * @description Part 대표 미리보기 소스를 도면 또는 미리보기 전용 파일로 변경합니다
+         */
+        patch: operations["update_2"];
+        trace?: never;
+    };
+    "/api/v1/parts/{partNumber}/revisions/{revisionCode}/drafts/{draftKey}": {
         parameters: {
             query?: never;
             header?: never;
@@ -1548,20 +1812,92 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * GET /api/v1/parts/{partId}/owner
-         * @description Part에 설정된 담당자(owner)와 담당팀(owner_team)을 조회합니다
+         * 특정 공식 리비전에서 파생된 Part 초안 상세를 조회합니다
+         * @description 특정 공식 리비전에서 파생된 Part 초안 상세를 조회합니다
          */
-        get: operations["getPartOwner"];
+        get: operations["getFromRevision"];
         put?: never;
         post?: never;
         delete?: never;
         options?: never;
         head?: never;
         /**
-         * PATCH /api/v1/parts/{partId}/owner
-         * @description 포함된 필드만 부분 변경하며 null은 해제, 미포함 필드는 유지합니다
+         * 특정 공식 리비전에서 파생된 DRAFT 상태의 부품 초안을 수정합니다
+         * @description 특정 공식 리비전에서 파생된 DRAFT 상태의 부품 초안을 수정합니다
          */
-        patch: operations["updatePartOwner"];
+        patch: operations["updateFromRevision"];
+        trace?: never;
+    };
+    "/api/v1/parts/{partNumber}/revisions/{revisionCode}/drafts/{draftKey}/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * 특정 공식 리비전에서 파생된 DRAFT 상태의 부품 초안 대표 미리보기를 해제합니다
+         * @description 특정 공식 리비전에서 파생된 DRAFT 상태의 부품 초안 대표 미리보기를 해제합니다
+         */
+        delete: operations["deletePreviewFromRevision"];
+        options?: never;
+        head?: never;
+        /**
+         * 특정 공식 리비전에서 파생된 DRAFT 상태의 부품 초안 대표 미리보기 소스를 도면 또는 미리보기 전용 파일로 변경합니다
+         * @description 특정 공식 리비전에서 파생된 DRAFT 상태의 부품 초안 대표 미리보기 소스를 도면 또는 미리보기 전용 파일로 변경합니다
+         */
+        patch: operations["updatePreviewFromRevision"];
+        trace?: never;
+    };
+    "/api/v1/parts/{partNumber}/drafts/{draftKey}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 초기 Part 초안 상세 정보와 관계 카운트를 조회합니다
+         * @description 초기 Part 초안 상세 정보와 관계 카운트를 조회합니다
+         */
+        get: operations["get_2"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * 초기 DRAFT 상태의 부품 초안을 수정합니다
+         * @description 초기 DRAFT 상태의 부품 초안을 수정합니다
+         */
+        patch: operations["update_3"];
+        trace?: never;
+    };
+    "/api/v1/parts/{partNumber}/drafts/{draftKey}/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * 초기 DRAFT 상태의 부품 초안 대표 미리보기를 해제합니다
+         * @description 초기 DRAFT 상태의 부품 초안 대표 미리보기를 해제합니다
+         */
+        delete: operations["deletePreview"];
+        options?: never;
+        head?: never;
+        /**
+         * 초기 DRAFT 상태의 부품 초안 대표 미리보기 소스를 도면 또는 미리보기 전용 파일로 변경합니다
+         * @description 초기 DRAFT 상태의 부품 초안 대표 미리보기 소스를 도면 또는 미리보기 전용 파일로 변경합니다
+         */
+        patch: operations["updatePreview"];
         trace?: never;
     };
     "/api/v1/parts/categories/{category}": {
@@ -1578,7 +1914,7 @@ export interface paths {
         options?: never;
         head?: never;
         /**
-         * PATCH /api/v1/parts/categories/{category}
+         * 카테고리 이름을 일괄 변경하고 변경 건수를 반환합니다
          * @description 카테고리 이름을 일괄 변경하고 변경 건수를 반환합니다
          */
         patch: operations["renameCategory"];
@@ -1598,7 +1934,7 @@ export interface paths {
         options?: never;
         head?: never;
         /**
-         * PATCH /api/v1/members/{userId}/role
+         * 소유자(OWNER) 권한으로 멤버 역할을 변경합니다
          * @description 소유자(OWNER) 권한으로 멤버 역할을 변경합니다
          */
         patch: operations["changeMemberRole"];
@@ -1615,14 +1951,14 @@ export interface paths {
         put?: never;
         post?: never;
         /**
-         * DELETE /api/v1/labels/{labelId}
+         * 라벨을 삭제합니다
          * @description 라벨을 삭제합니다
          */
         delete: operations["deleteLabel"];
         options?: never;
         head?: never;
         /**
-         * PATCH /api/v1/labels/{labelId}
+         * 라벨의 일부 필드를 수정합니다. description을 null로 보내면 설명이 제거됩니다
          * @description 라벨의 일부 필드를 수정합니다. description을 null로 보내면 설명이 제거됩니다
          */
         patch: operations["updateLabel"];
@@ -1636,7 +1972,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * GET /api/v1/issues/{issueNumber}
+         * 이슈 번호로 상세 정보를 조회합니다
          * @description 이슈 번호로 상세 정보를 조회합니다
          */
         get: operations["getIssue"];
@@ -1646,7 +1982,7 @@ export interface paths {
         options?: never;
         head?: never;
         /**
-         * PATCH /api/v1/issues/{issueNumber}
+         * 이슈 제목/본문을 수정합니다
          * @description 이슈 제목/본문을 수정합니다
          */
         patch: operations["updateIssue"];
@@ -1663,20 +1999,20 @@ export interface paths {
         put?: never;
         post?: never;
         /**
-         * DELETE /api/v1/issues/{issueNumber}/comments/{commentId}
+         * 댓글을 삭제합니다
          * @description 댓글을 삭제합니다
          */
         delete: operations["deleteComment"];
         options?: never;
         head?: never;
         /**
-         * PATCH /api/v1/issues/{issueNumber}/comments/{commentId}
+         * 댓글을 수정합니다
          * @description 댓글을 수정합니다
          */
         patch: operations["updateComment"];
         trace?: never;
     };
-    "/api/v1/changes/{issueNumber}": {
+    "/api/v1/engineering-changes/{engineeringChangeNumber}": {
         parameters: {
             query?: never;
             header?: never;
@@ -1684,23 +2020,23 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * GET /api/v1/changes/{issueNumber}
-         * @description 변경요청 번호로 상세 정보를 조회합니다
+         * 변경관리 번호로 상세 정보를 조회합니다
+         * @description 변경관리 번호로 상세 정보를 조회합니다
          */
-        get: operations["getChangeRequest"];
+        get: operations["getEngineeringChange"];
         put?: never;
         post?: never;
         delete?: never;
         options?: never;
         head?: never;
         /**
-         * PATCH /api/v1/changes/{issueNumber}
-         * @description 변경요청 제목/본문을 수정합니다
+         * 변경관리 제목/본문을 수정합니다
+         * @description 변경관리 제목/본문을 수정합니다
          */
-        patch: operations["updateChangeRequest"];
+        patch: operations["updateEngineeringChange"];
         trace?: never;
     };
-    "/api/v1/changes/{issueNumber}/comments/{commentId}": {
+    "/api/v1/engineering-changes/{engineeringChangeNumber}/comments/{commentId}": {
         parameters: {
             query?: never;
             header?: never;
@@ -1711,14 +2047,14 @@ export interface paths {
         put?: never;
         post?: never;
         /**
-         * DELETE /api/v1/changes/{issueNumber}/comments/{commentId}
+         * 댓글을 삭제합니다
          * @description 댓글을 삭제합니다
          */
         delete: operations["deleteComment_1"];
         options?: never;
         head?: never;
         /**
-         * PATCH /api/v1/changes/{issueNumber}/comments/{commentId}
+         * 댓글을 수정합니다
          * @description 댓글을 수정합니다
          */
         patch: operations["updateComment_1"];
@@ -1732,7 +2068,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * GET /health
+         * 애플리케이션 기본 상태를 확인합니다
          * @description 애플리케이션 기본 상태를 확인합니다
          */
         get: operations["health"];
@@ -1752,7 +2088,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * GET /api/v2/synthesis/{jobId}
+         * 개별 V2 합성 작업 상태를 조회합니다
          * @description 개별 V2 합성 작업 상태를 조회합니다
          */
         get: operations["getSynthesisJob"];
@@ -1772,7 +2108,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * GET /api/v2/synthesis/batches/{batchId}
+         * V2 합성 배치 진행 상태를 조회합니다
          * @description V2 합성 배치 진행 상태를 조회합니다
          */
         get: operations["getSynthesisBatch"];
@@ -1792,7 +2128,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * GET /api/v2/mappings
+         * 활성 V2 매핑 목록을 최신순으로 조회합니다
          * @description 활성 V2 매핑 목록을 최신순으로 조회합니다
          */
         get: operations["list"];
@@ -1812,7 +2148,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * GET /api/v1/usage/storage
+         * 스토리지 총 사용량/한도/초과분과 카테고리별 내역을 조회합니다
          * @description 스토리지 총 사용량/한도/초과분과 카테고리별 내역을 조회합니다
          */
         get: operations["getStorageUsage"];
@@ -1832,7 +2168,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * GET /api/v1/usage/storage/trend
+         * 스토리지 사용량 추이를 period(7d|30d|1y) 기준으로 조회합니다
          * @description 스토리지 사용량 추이를 period(7d|30d|1y) 기준으로 조회합니다
          */
         get: operations["getStorageTrend"];
@@ -1852,7 +2188,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * GET /api/v1/usage/credits
+         * AI 크레딧 잔여/사용량과 카테고리별 사용량을 조회합니다
          * @description AI 크레딧 잔여/사용량과 카테고리별 사용량을 조회합니다
          */
         get: operations["getCreditUsage"];
@@ -1872,7 +2208,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * GET /api/v1/teams/lookup
+         * 팀 picker/autocomplete용 경량 목록을 조회합니다
          * @description 팀 picker/autocomplete용 경량 목록을 조회합니다
          */
         get: operations["lookupTeams"];
@@ -1892,7 +2228,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * GET /api/v1/synthesis/{jobId}
+         * 개별 합성 작업 상태를 조회합니다
          * @description 개별 합성 작업 상태를 조회합니다
          */
         get: operations["getSynthesisJob_1"];
@@ -1912,7 +2248,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * GET /api/v1/synthesis/batches/{batchId}
+         * 합성 배치 진행 상태를 조회합니다
          * @description 합성 배치 진행 상태를 조회합니다
          */
         get: operations["getSynthesisBatch_1"];
@@ -1932,10 +2268,30 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * GET /api/v1/suppliers
+         * company_name 또는 code로 공급사를 검색해 페이징 목록을 조회합니다
          * @description company_name 또는 code로 공급사를 검색해 페이징 목록을 조회합니다
          */
         get: operations["listSuppliers"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 초기 렌더에 필요한 설정 값을 조회합니다
+         * @description 초기 렌더에 필요한 설정 값을 조회합니다
+         */
+        get: operations["getSettings"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1952,7 +2308,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * GET /api/v1/projects/{projectId}/parts/lookup
+         * 부품 picker용 lookup 목록을 조회합니다
          * @description 부품 picker용 lookup 목록을 조회합니다
          */
         get: operations["lookupParts"];
@@ -1972,7 +2328,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * GET /api/v1/projects/{projectId}/members/lookup
+         * 프로젝트 멤버 picker용 lookup 목록을 조회합니다
          * @description 프로젝트 멤버 picker용 lookup 목록을 조회합니다
          */
         get: operations["lookupMembers"];
@@ -1984,7 +2340,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/projects/{projectId}/activities": {
+    "/api/v1/projects/{projectId}/histories": {
         parameters: {
             query?: never;
             header?: never;
@@ -1992,7 +2348,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * GET /api/v1/projects/{projectId}/activities
+         * 프로젝트 활동 피드를 cursor 기반으로 조회합니다
          * @description 프로젝트 활동 피드를 cursor 기반으로 조회합니다
          */
         get: operations["getProjectActivities"];
@@ -2004,7 +2360,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/parts": {
+    "/api/v1/parts/{partNumber}/revisions/{revisionCode}": {
         parameters: {
             query?: never;
             header?: never;
@@ -2012,10 +2368,10 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * GET /api/v1/parts
-         * @description Part 목록을 검색/필터 조건과 함께 조회합니다
+         * Part 상세 정보와 관계 카운트를 조회합니다
+         * @description Part 상세 정보와 관계 카운트를 조회합니다
          */
-        get: operations["listParts"];
+        get: operations["get_3"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2024,7 +2380,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/parts/{partId}": {
+    "/api/v1/parts/{partNumber}/revisions/{revisionCode}/suppliers": {
         parameters: {
             query?: never;
             header?: never;
@@ -2032,30 +2388,10 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * GET /api/v1/parts/{partId}
-         * @description Part 상세 정보와 관계 카운트(children/parents/suppliers/files/projects)를 조회합니다
-         */
-        get: operations["getPart"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/parts/{partId}/suppliers": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * GET /api/v1/parts/{partId}/suppliers
+         * Part에 연결된 공급사 목록을 조회합니다
          * @description Part에 연결된 공급사 목록을 조회합니다
          */
-        get: operations["getPartSuppliers"];
+        get: operations["getSuppliers"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2064,7 +2400,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/parts/{partId}/projects": {
+    "/api/v1/parts/{partNumber}/revisions/{revisionCode}/projects": {
         parameters: {
             query?: never;
             header?: never;
@@ -2072,10 +2408,10 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * GET /api/v1/parts/{partId}/projects
+         * 해당 Part가 소속된 프로젝트 목록을 조회합니다
          * @description 해당 Part가 소속된 프로젝트 목록을 조회합니다
          */
-        get: operations["getPartProjects"];
+        get: operations["getProjects"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2084,7 +2420,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/parts/{partId}/bom": {
+    "/api/v1/parts/{partNumber}/revisions/{revisionCode}/preview/sources": {
         parameters: {
             query?: never;
             header?: never;
@@ -2092,10 +2428,10 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * GET /api/v1/parts/{partId}/bom
-         * @description Part의 직접 자식/직접 부모 BOM 관계(1-depth)를 조회합니다
+         * 대표 미리보기 선택 모달에 필요한 선택 가능 소스 목록을 조회합니다
+         * @description 대표 미리보기 선택 모달에 필요한 선택 가능 소스 목록을 조회합니다
          */
-        get: operations["getPartBom"];
+        get: operations["getSources"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2104,7 +2440,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/parts/{partId}/bom/tree": {
+    "/api/v1/parts/{partNumber}/revisions/{revisionCode}/preview/processing": {
         parameters: {
             query?: never;
             header?: never;
@@ -2112,8 +2448,108 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * GET /api/v1/parts/{partId}/bom/tree
-         * @description Part BOM 트리를 정전개(forward) 또는 역전개(reverse)로 조회합니다
+         * Part 대표 미리보기 비동기 처리 상태와 산출물 준비 여부를 조회합니다
+         * @description Part 대표 미리보기 비동기 처리 상태와 산출물 준비 여부를 조회합니다
+         */
+        get: operations["getProcessing"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/parts/{partNumber}/revisions/{revisionCode}/drafts/{draftKey}/preview/sources": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 특정 공식 리비전에서 파생된 DRAFT 상태의 부품 초안 대표 미리보기 선택 모달에 필요한 선택 가능 소스 목록을 조회합니다
+         * @description 특정 공식 리비전에서 파생된 DRAFT 상태의 부품 초안 대표 미리보기 선택 모달에 필요한 선택 가능 소스 목록을 조회합니다
+         */
+        get: operations["getPreviewSourcesFromRevision"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/parts/{partNumber}/revisions/{revisionCode}/drafts/{draftKey}/preview/processing": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 특정 공식 리비전에서 파생된 DRAFT 상태의 부품 초안 대표 미리보기 비동기 처리 상태와 산출물 준비 여부를 조회합니다
+         * @description 특정 공식 리비전에서 파생된 DRAFT 상태의 부품 초안 대표 미리보기 비동기 처리 상태와 산출물 준비 여부를 조회합니다
+         */
+        get: operations["getPreviewProcessingFromRevision"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/parts/{partNumber}/revisions/{revisionCode}/diff": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 이전 또는 지정한 기준 리비전 대비 상세 diff를 조회합니다
+         * @description 이전 또는 지정한 기준 리비전 대비 상세 diff를 조회합니다
+         */
+        get: operations["getDiff"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/parts/{partNumber}/revisions/{revisionCode}/bom": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Part의 직접 자식/직접 부모 BOM 관계를 조회합니다
+         * @description Part의 직접 자식/직접 부모 BOM 관계를 조회합니다
+         */
+        get: operations["getBom"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/parts/{partNumber}/revisions/{revisionCode}/bom/tree": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Part BOM 트리를 정전개 또는 역전개로 조회합니다
+         * @description Part BOM 트리를 정전개 또는 역전개로 조회합니다
          */
         get: operations["getBomTree"];
         put?: never;
@@ -2124,7 +2560,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/parts/{partId}/bom/tree/export": {
+    "/api/v1/parts/{partNumber}/revisions/{revisionCode}/bom/tree/export": {
         parameters: {
             query?: never;
             header?: never;
@@ -2132,10 +2568,70 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * GET /api/v1/parts/{partId}/bom/tree/export
+         * Part BOM 트리를 Excel(.xlsx) 파일로 내보냅니다
          * @description Part BOM 트리를 Excel(.xlsx) 파일로 내보냅니다
          */
         get: operations["exportBomTree"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/parts/{partNumber}/history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 공식 리비전 이력 목록과 이전 리비전 대비 요약 diff를 조회합니다
+         * @description 공식 리비전 이력 목록과 이전 리비전 대비 요약 diff를 조회합니다
+         */
+        get: operations["getHistory"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/parts/{partNumber}/drafts/{draftKey}/preview/sources": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 초기 DRAFT 상태의 부품 초안 대표 미리보기 선택 모달에 필요한 선택 가능 소스 목록을 조회합니다
+         * @description 초기 DRAFT 상태의 부품 초안 대표 미리보기 선택 모달에 필요한 선택 가능 소스 목록을 조회합니다
+         */
+        get: operations["getPreviewSources"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/parts/{partNumber}/drafts/{draftKey}/preview/processing": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 초기 DRAFT 상태의 부품 초안 대표 미리보기 비동기 처리 상태와 산출물 준비 여부를 조회합니다
+         * @description 초기 DRAFT 상태의 부품 초안 대표 미리보기 비동기 처리 상태와 산출물 준비 여부를 조회합니다
+         */
+        get: operations["getPreviewProcessing"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2152,10 +2648,30 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * GET /api/v1/parts/lookup
+         * 품번/품명으로 경량 Part 목록을 조회합니다
          * @description 품번/품명으로 경량 Part 목록을 조회합니다
          */
         get: operations["lookupParts_1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/parts/in-progress": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 진행중 부품 작업함 목록을 검색/필터 조건과 함께 조회합니다
+         * @description 진행중 부품 작업함 목록을 검색/필터 조건과 함께 조회합니다
+         */
+        get: operations["listInProgressParts"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2172,7 +2688,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * GET /api/v1/parts/filter-options
+         * Part 목록 필터 옵션(카테고리/수명주기 상태)을 조회합니다
          * @description Part 목록 필터 옵션(카테고리/수명주기 상태)을 조회합니다
          */
         get: operations["getFilterOptions"];
@@ -2192,10 +2708,30 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * GET /api/v1/parts/export
+         * 필터링된 Part 목록을 Excel(.xlsx) 파일로 내보냅니다
          * @description 필터링된 Part 목록을 Excel(.xlsx) 파일로 내보냅니다
          */
         get: operations["exportParts"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/parts/drafts/lookup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 현재 사용자가 만든 변경관리 연결 가능 초안 목록을 조회합니다
+         * @description 현재 사용자가 만든 변경관리 연결 가능 초안 목록을 조회합니다
+         */
+        get: operations["lookupDrafts"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2212,7 +2748,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * GET /api/v1/parts/categories
+         * 카테고리별 부품 개수를 조회합니다
          * @description 카테고리별 부품 개수를 조회합니다
          */
         get: operations["listCategories"];
@@ -2232,7 +2768,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * GET /api/v1/parts/categories/lookup
+         * 카테고리 문자열 목록을 경량 조회합니다
          * @description 카테고리 문자열 목록을 경량 조회합니다
          */
         get: operations["lookupCategories"];
@@ -2252,7 +2788,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * GET /api/v1/ontology/schema
+         * 온톨로지 스키마(노드/관계 정의)를 조회합니다
          * @description 온톨로지 스키마(노드/관계 정의)를 조회합니다
          */
         get: operations["getOntologySchema"];
@@ -2272,7 +2808,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * GET /api/v1/ontology/nodes/search
+         * 라벨(Part, Drawing, Supplier, Project)별 merge key 자동완성 목록을 조회합니다
          * @description 라벨(Part, Drawing, Supplier, Project)별 merge key 자동완성 목록을 조회합니다
          */
         get: operations["searchNodes"];
@@ -2292,7 +2828,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * GET /api/v1/notifications
+         * cursor 기반 페이지네이션으로 알림 목록을 조회합니다
          * @description cursor 기반 페이지네이션으로 알림 목록을 조회합니다
          */
         get: operations["listNotifications"];
@@ -2312,7 +2848,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * GET /api/v1/notifications/unread-count
+         * 현재 사용자의 미읽음 알림 개수를 조회합니다
          * @description 현재 사용자의 미읽음 알림 개수를 조회합니다
          */
         get: operations["getUnreadCount"];
@@ -2332,7 +2868,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * GET /api/v1/notifications/stream
+         * SSE 스트림으로 새 알림 이벤트를 실시간 수신합니다
          * @description SSE 스트림으로 새 알림 이벤트를 실시간 수신합니다
          */
         get: operations["stream"];
@@ -2352,7 +2888,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * GET /api/v1/members
+         * 현재 조직의 전체 멤버 목록을 조회합니다
          * @description 현재 조직의 전체 멤버 목록을 조회합니다
          */
         get: operations["listMembers"];
@@ -2372,7 +2908,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * GET /api/v1/members/lookup
+         * 조직 멤버 lookup 목록을 조회합니다 (autocomplete/picker 용도)
          * @description 조직 멤버 lookup 목록을 조회합니다 (autocomplete/picker 용도)
          */
         get: operations["lookupMembers_1"];
@@ -2392,7 +2928,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * GET /api/v1/mappings
+         * 활성 매핑 목록을 최신순으로 조회합니다
          * @description 활성 매핑 목록을 최신순으로 조회합니다
          */
         get: operations["list_1"];
@@ -2412,7 +2948,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * GET /api/v1/labels/lookup
+         * 라벨 picker/autocomplete 용 경량 목록(id, name, color)을 조회합니다
          * @description 라벨 picker/autocomplete 용 경량 목록(id, name, color)을 조회합니다
          */
         get: operations["lookupLabels"];
@@ -2432,7 +2968,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * GET /api/v1/issues/{issueNumber}/timeline
+         * 댓글과 활동 이력을 시간순으로 병합 조회합니다
          * @description 댓글과 활동 이력을 시간순으로 병합 조회합니다
          */
         get: operations["getTimeline"];
@@ -2452,7 +2988,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * GET /api/v1/issues/lookup
+         * 이슈 연결 picker UI용 경량 목록을 조회합니다
          * @description 이슈 연결 picker UI용 경량 목록을 조회합니다
          */
         get: operations["lookupIssues"];
@@ -2464,7 +3000,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/drawings/{drawingId}/processing": {
+    "/api/v1/engineering-changes/{engineeringChangeNumber}/timeline": {
         parameters: {
             query?: never;
             header?: never;
@@ -2472,10 +3008,30 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * GET /api/v1/drawings/{drawingId}/processing
-         * @description 도면 비동기 처리 상태와 산출물 준비 여부를 조회합니다
+         * 댓글과 활동 이력을 시간순으로 병합 조회합니다
+         * @description 댓글과 활동 이력을 시간순으로 병합 조회합니다
          */
-        get: operations["getProcessing"];
+        get: operations["getTimeline_1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/engineering-changes/lookup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 변경관리 연결 picker UI용 경량 목록을 조회합니다
+         * @description 변경관리 연결 picker UI용 경량 목록을 조회합니다
+         */
+        get: operations["lookupEngineeringChanges"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2492,50 +3048,10 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * GET /api/v1/dashboard/stats
+         * Part 총 수, 금주 추가 수, BOM 링크 수, 최근 합성 작업 상태를 조회합니다
          * @description Part 총 수, 금주 추가 수, BOM 링크 수, 최근 합성 작업 상태를 조회합니다
          */
         get: operations["getStats"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/changes/{issueNumber}/timeline": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * GET /api/v1/changes/{issueNumber}/timeline
-         * @description 댓글과 활동 이력을 시간순으로 병합 조회합니다
-         */
-        get: operations["getTimeline_1"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/changes/lookup": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * GET /api/v1/changes/lookup
-         * @description 변경요청 연결 picker UI용 경량 목록을 조회합니다
-         */
-        get: operations["lookupChangeRequests"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2552,7 +3068,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * GET /api/v1/auth/site
+         * Origin 기반 워크스페이스 정보 조회
          * @description Origin 기반 워크스페이스 정보 조회
          */
         get: operations["getSite"];
@@ -2572,7 +3088,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * GET /api/v1/auth/plans
+         * 플랜 목록 조회
          * @description 플랜 목록 조회
          */
         get: operations["getPlans"];
@@ -2592,7 +3108,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * GET /api/v1/auth/invitations/verify
+         * 초대 토큰 검증
          * @description 초대 토큰 검증
          */
         get: operations["verifyInvitation"];
@@ -2612,7 +3128,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * GET /api/v1/auth/check-slug
+         * 워크스페이스 slug 중복/형식 검사
          * @description 워크스페이스 slug 중복/형식 검사
          */
         get: operations["checkSlug"];
@@ -2632,7 +3148,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * GET /api/v1/auth/check-email
+         * 이메일 중복 확인
          * @description 이메일 중복 확인
          */
         get: operations["checkEmail"];
@@ -2652,7 +3168,7 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * GET /api/v1/activation/starters
+         * 초기 탐색용 추천 질문 목록을 조회합니다
          * @description 초기 탐색용 추천 질문 목록을 조회합니다
          */
         get: operations["getStarters"];
@@ -2664,7 +3180,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/parts/{partId}/files/{fileId}": {
+    "/api/v1/parts/{partNumber}/revisions/{revisionCode}/preview/files/{previewFileId}": {
         parameters: {
             query?: never;
             header?: never;
@@ -2675,10 +3191,170 @@ export interface paths {
         put?: never;
         post?: never;
         /**
-         * DELETE /api/v1/parts/{partId}/files/{fileId}
-         * @description Part에 연결된 첨부파일 1건을 제거(소프트 삭제)합니다
+         * 대표 미리보기 전용 파일 1건을 삭제합니다
+         * @description 대표 미리보기 전용 파일 1건을 삭제합니다
          */
-        delete: operations["detachFile"];
+        delete: operations["deletePreviewFile"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/parts/{partNumber}/revisions/{revisionCode}/files/{fileId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Part에 연결된 첨부파일 1건을 제거합니다
+         * @description Part에 연결된 첨부파일 1건을 제거합니다
+         */
+        delete: operations["deleteFile"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/parts/{partNumber}/revisions/{revisionCode}/drawings/{drawingId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * PartRevision에 연결된 도면 1건을 삭제합니다
+         * @description PartRevision에 연결된 도면 1건을 삭제합니다
+         */
+        delete: operations["deleteDrawing"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/parts/{partNumber}/revisions/{revisionCode}/drafts/{draftKey}/preview/files/{previewFileId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * 특정 공식 리비전에서 파생된 DRAFT 상태의 부품 초안 대표 미리보기 전용 파일 1건을 삭제합니다
+         * @description 특정 공식 리비전에서 파생된 DRAFT 상태의 부품 초안 대표 미리보기 전용 파일 1건을 삭제합니다
+         */
+        delete: operations["deletePreviewFileFromRevision"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/parts/{partNumber}/revisions/{revisionCode}/drafts/{draftKey}/files/{fileId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * 특정 공식 리비전에서 파생된 DRAFT 상태의 부품 초안에 연결된 첨부파일 1건을 제거합니다
+         * @description 특정 공식 리비전에서 파생된 DRAFT 상태의 부품 초안에 연결된 첨부파일 1건을 제거합니다
+         */
+        delete: operations["deleteFileFromRevision"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/parts/{partNumber}/revisions/{revisionCode}/drafts/{draftKey}/drawings/{drawingId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * 특정 공식 리비전에서 파생된 DRAFT 상태의 부품 초안에 연결된 도면 1건을 삭제합니다
+         * @description 특정 공식 리비전에서 파생된 DRAFT 상태의 부품 초안에 연결된 도면 1건을 삭제합니다
+         */
+        delete: operations["deleteDrawingFromRevision"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/parts/{partNumber}/drafts/{draftKey}/preview/files/{previewFileId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * 초기 DRAFT 상태의 부품 초안 대표 미리보기 전용 파일 1건을 삭제합니다
+         * @description 초기 DRAFT 상태의 부품 초안 대표 미리보기 전용 파일 1건을 삭제합니다
+         */
+        delete: operations["deletePreviewFile_1"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/parts/{partNumber}/drafts/{draftKey}/files/{fileId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * 초기 DRAFT 상태의 부품 초안에 연결된 첨부파일 1건을 제거합니다
+         * @description 초기 DRAFT 상태의 부품 초안에 연결된 첨부파일 1건을 제거합니다
+         */
+        delete: operations["deleteFile_1"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/parts/{partNumber}/drafts/{draftKey}/drawings/{drawingId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * 초기 DRAFT 상태의 부품 초안에 연결된 도면 1건을 삭제합니다
+         * @description 초기 DRAFT 상태의 부품 초안에 연결된 도면 1건을 삭제합니다
+         */
+        delete: operations["deleteDrawing_1"];
         options?: never;
         head?: never;
         patch?: never;
@@ -2695,7 +3371,7 @@ export interface paths {
         put?: never;
         post?: never;
         /**
-         * DELETE /api/v1/organizations/invitations/{invitationId}
+         * 관리자(ADMIN 이상)가 PENDING 상태 초대를 취소합니다
          * @description 관리자(ADMIN 이상)가 PENDING 상태 초대를 취소합니다
          */
         delete: operations["cancelInvitation"];
@@ -2715,7 +3391,7 @@ export interface paths {
         put?: never;
         post?: never;
         /**
-         * DELETE /api/v1/members/{userId}
+         * 관리자(ADMIN 이상) 권한으로 조직 멤버를 제거합니다
          * @description 관리자(ADMIN 이상) 권한으로 조직 멤버를 제거합니다
          */
         delete: operations["removeMember"];
@@ -2735,16 +3411,16 @@ export interface paths {
         put?: never;
         post?: never;
         /**
-         * DELETE /api/v1/issues/{issueNumber}/files/{fileId}
+         * 첨부파일 1건을 삭제(soft delete)합니다
          * @description 첨부파일 1건을 삭제(soft delete)합니다
          */
-        delete: operations["deleteFile"];
+        delete: operations["deleteFile_2"];
         options?: never;
         head?: never;
         patch?: never;
         trace?: never;
     };
-    "/api/v1/changes/{issueNumber}/files/{fileId}": {
+    "/api/v1/engineering-changes/{engineeringChangeNumber}/files/{fileId}": {
         parameters: {
             query?: never;
             header?: never;
@@ -2755,10 +3431,10 @@ export interface paths {
         put?: never;
         post?: never;
         /**
-         * DELETE /api/v1/changes/{issueNumber}/files/{fileId}
+         * 첨부파일 1건을 삭제(soft delete)합니다
          * @description 첨부파일 1건을 삭제(soft delete)합니다
          */
-        delete: operations["deleteFile_1"];
+        delete: operations["deleteFile_3"];
         options?: never;
         head?: never;
         patch?: never;
@@ -2947,34 +3623,23 @@ export interface components {
              */
             new_password: string;
         };
-        /** @description 기본 담당자 upsert 요청 */
-        PartDefaultOwnerRequest: {
-            category?: string;
-            /** Format: uuid */
-            default_owner_id?: string;
-            /** Format: uuid */
-            default_owner_team_id?: string;
+        /** @description 부품 워크플로 정책 변경 요청 */
+        SettingsPartWorkflowPolicyRequest: {
+            /**
+             * @description 부품 리비전 워크플로 모드
+             * @example DIRECT
+             * @enum {string}
+             */
+            mode: "DIRECT" | "CHANGE_REQUEST_REQUIRED";
         };
-        /** @description 응답 DTO */
-        PartDefaultOwnerItemResponse: {
-            /** Format: uuid */
-            id?: string;
-            category?: string;
-            /** Format: uuid */
-            default_owner_id?: string;
-            default_owner?: components["schemas"]["PartOwnerUserSummaryResponse"];
-            /** Format: uuid */
-            default_owner_team_id?: string;
-            default_owner_team_name?: string;
-        };
-        /** @description 응답 DTO */
-        PartOwnerUserSummaryResponse: {
-            /** Format: uuid */
-            user_id?: string;
-            full_name?: string;
-            email?: string;
-            phone?: string;
-            profile_image_url?: string;
+        /** @description 설정 부품 워크플로 정책 응답 DTO */
+        SettingsPartWorkflowPolicyResponse: {
+            /**
+             * @description 부품 리비전 워크플로 모드
+             * @example DIRECT
+             * @enum {string}
+             */
+            mode?: "DIRECT" | "ENGINEERING_CHANGE_REQUIRED";
         };
         /** @description 매핑 결과 */
         MappingResultDto: {
@@ -3137,10 +3802,10 @@ export interface components {
             /** @description 최종 라벨 ID 목록 */
             label_ids?: string[];
         };
-        /** @description Issue-CR 동기화 요청 */
-        SyncChangesRequest: {
-            /** @description 최종 변경요청 ID 목록 */
-            cr_ids?: string[];
+        /** @description 연결 변경관리 동기화 요청 */
+        SyncLinkedEngineeringChangesRequest: {
+            /** @description 최종 변경관리 ID 목록 */
+            engineering_change_ids?: string[];
         };
         /** @description 개인 담당자 동기화 요청 */
         SyncAssigneesRequest: {
@@ -3152,17 +3817,233 @@ export interface components {
             /** @description 최종 팀 ID 목록 */
             team_ids?: string[];
         };
-        /** @description 검토자 동기화 요청 */
-        SyncReviewersRequest: {
-            /** @description 최종 검토자 ID 목록 */
-            user_ids?: string[];
+        /** @description 변경관리 단계 지정 요청 */
+        EngineeringChangeStepRequest: {
+            /**
+             * @description 단계 타입
+             * @example REVIEW
+             * @enum {string}
+             */
+            step_type: "REVIEW" | "APPROVAL" | "RELEASE";
+            /**
+             * @description 담당자 타입
+             * @example USER
+             * @enum {string}
+             */
+            assignee_type: "USER" | "TEAM";
+            /**
+             * Format: uuid
+             * @description 담당자 ID
+             */
+            assignee_id: string;
+            /**
+             * Format: int32
+             * @description 단계 순서
+             * @example 1
+             */
+            sequence?: number;
         };
-        /** @description 팀 검토자 동기화 요청 */
-        SyncTeamReviewersRequest: {
-            /** @description 최종 팀 ID 목록 */
-            team_ids?: string[];
+        /** @description 변경관리 단계 동기화 요청 */
+        SyncEngineeringChangeStepsRequest: {
+            /** @description 변경관리 단계 목록 */
+            steps: components["schemas"]["EngineeringChangeStepRequest"][];
         };
-        /** @description CR-이슈 동기화 요청 */
+        /** @description 변경관리에 연결된 부품 초안 */
+        EngineeringChangePartRevisionResponse: {
+            /**
+             * Format: uuid
+             * @description 리비전 ID
+             */
+            revision_id?: string;
+            /**
+             * Format: uuid
+             * @description 부품 ID
+             */
+            part_id?: string;
+            /**
+             * @description 품번
+             * @example AES-100
+             */
+            part_number?: string;
+            /**
+             * @description 기준 공식 리비전 코드
+             * @example 1
+             */
+            base_revision_code?: string;
+            /**
+             * @description 초안 키
+             * @example D1
+             */
+            draft_key?: string;
+            /**
+             * @description 초안 이름
+             * @example 메인 하우징
+             */
+            name?: string;
+            /**
+             * @description 초안 상태
+             * @example DRAFT
+             * @enum {string}
+             */
+            status?: "DRAFT" | "RELEASED" | "SUPERSEDED" | "CANCELED";
+        };
+        /** @description 변경관리 상세 응답 */
+        EngineeringChangeResponse: {
+            /** Format: uuid */
+            id?: string;
+            /** Format: int32 */
+            number?: number;
+            title?: string;
+            body?: components["schemas"]["JsonNode"];
+            /** @enum {string} */
+            state?: "DRAFT" | "REVIEW_PENDING" | "APPROVAL_PENDING" | "RELEASE_PENDING" | "RELEASED" | "CANCELED";
+            /** Format: date-time */
+            closed_at?: string;
+            /** Format: date-time */
+            created_at?: string;
+            /** Format: date-time */
+            updated_at?: string;
+            is_modified?: boolean;
+            created_by?: components["schemas"]["UserSummaryResponse"];
+            steps?: components["schemas"]["EngineeringChangeStepResponse"][];
+            part_revisions?: components["schemas"]["EngineeringChangePartRevisionResponse"][];
+            files?: components["schemas"]["FileItemResponse"][];
+            /** Format: int32 */
+            comments_count?: number;
+            /** Format: date-time */
+            merged_at?: string;
+            /** Format: uuid */
+            merged_by?: string;
+            linked_issues?: components["schemas"]["LinkedIssueSummaryResponse"][];
+        };
+        /** @description 변경관리 단계 요약 */
+        EngineeringChangeStepResponse: {
+            /**
+             * Format: uuid
+             * @description 단계 ID
+             */
+            step_id?: string;
+            /**
+             * @description 단계 타입
+             * @enum {string}
+             */
+            step_type?: "REVIEW" | "APPROVAL" | "RELEASE";
+            /**
+             * @description 담당자 타입
+             * @enum {string}
+             */
+            assignee_type?: "USER" | "TEAM";
+            /**
+             * Format: int32
+             * @description 단계 순서
+             */
+            sequence?: number;
+            /**
+             * @description 단계 처리 상태
+             * @enum {string}
+             */
+            status?: "PENDING" | "APPROVED" | "REJECTED";
+            /** @description 사용자 담당자 */
+            assignee_user?: components["schemas"]["UserSummaryResponse"];
+            /** @description 팀 담당자 */
+            assignee_team?: components["schemas"]["TeamBadgeResponse"];
+            /** @description 실제 처리자 */
+            acted_by?: components["schemas"]["UserSummaryResponse"];
+            /**
+             * Format: date-time
+             * @description 처리 시각
+             */
+            acted_at?: string;
+        };
+        /** @description 응답 DTO */
+        FileItemResponse: {
+            /** Format: uuid */
+            file_id?: string;
+            original_name?: string;
+            content_type?: string;
+            /** Format: int64 */
+            file_size?: number;
+            file_url?: string;
+            /** Format: date-time */
+            created_at?: string;
+        };
+        JsonNode: {
+            /** @enum {string} */
+            node_type?: "ARRAY" | "BINARY" | "BOOLEAN" | "MISSING" | "NULL" | "NUMBER" | "OBJECT" | "POJO" | "STRING";
+            string?: boolean;
+            value_node?: boolean;
+            missing_node?: boolean;
+            object?: boolean;
+            short?: boolean;
+            double?: boolean;
+            big_decimal?: boolean;
+            big_integer?: boolean;
+            /** @deprecated */
+            textual?: boolean;
+            boolean?: boolean;
+            binary?: boolean;
+            integral_number?: boolean;
+            floating_point_number?: boolean;
+            pojo?: boolean;
+            int?: boolean;
+            long?: boolean;
+            container?: boolean;
+            number?: boolean;
+            array?: boolean;
+            empty?: boolean;
+            null?: boolean;
+            float?: boolean;
+            embedded_value?: boolean;
+        };
+        /** @description 연결 이슈 요약 */
+        LinkedIssueSummaryResponse: {
+            /** Format: uuid */
+            id?: string;
+            /** Format: int32 */
+            number?: number;
+            title?: string;
+            /** @enum {string} */
+            state?: "OPEN" | "CLOSED";
+        };
+        /** @description 팀 배지 */
+        TeamBadgeResponse: {
+            /** Format: uuid */
+            id?: string;
+            name?: string;
+        };
+        /** @description 사용자 요약 */
+        UserSummaryResponse: {
+            /** Format: uuid */
+            user_id?: string;
+            full_name?: string;
+            email?: string;
+            phone?: string;
+            profile_image_url?: string;
+        };
+        /** @description 변경관리에 연결할 부품 초안 식별자 */
+        EngineeringChangePartRevisionTargetRequest: {
+            /**
+             * @description 품번
+             * @example AES-100
+             */
+            part_number: string;
+            /**
+             * @description 기준 공식 리비전 코드. 초기 초안이면 null
+             * @example 1
+             */
+            base_revision_code?: string;
+            /**
+             * @description 초안 키
+             * @example D1
+             */
+            draft_key: string;
+        };
+        /** @description 변경관리 부품 초안 동기화 요청 */
+        SyncPartRevisionsRequest: {
+            /** @description 최종 초안 목록 */
+            items?: components["schemas"]["EngineeringChangePartRevisionTargetRequest"][];
+        };
+        /** @description 연결 이슈 동기화 요청 */
         SyncIssuesRequest: {
             /** @description 최종 이슈 ID 목록 */
             issue_ids?: string[];
@@ -3236,7 +4117,7 @@ export interface components {
             /** @description 시작 실패 항목 목록 */
             failed?: components["schemas"]["SynthesisBatchFailure"][];
         };
-        /** @description 합성 작업 응답 */
+        /** @description 합성 작업 상세 응답 */
         SynthesisJobResponse: {
             /**
              * Format: uuid
@@ -3255,7 +4136,7 @@ export interface components {
             file_id?: string;
             /**
              * @description 작업 상태
-             * @example PROCESSING
+             * @example COMPLETED
              * @enum {string}
              */
             status?: "PENDING" | "PROCESSING" | "COMPLETED" | "FAILED";
@@ -3268,7 +4149,7 @@ export interface components {
             /**
              * Format: int32
              * @description 처리된 행 수
-             * @example 80
+             * @example 100
              */
             processed_rows?: number;
             /**
@@ -3361,34 +4242,6 @@ export interface components {
             file_id: string;
             /** @description Excel 시트명 (미지정 시 전체 시트 시도) */
             sheet_name?: string;
-        };
-        JsonNode: {
-            number?: boolean;
-            pojo?: boolean;
-            int?: boolean;
-            long?: boolean;
-            container?: boolean;
-            value_node?: boolean;
-            missing_node?: boolean;
-            object?: boolean;
-            /** @enum {string} */
-            node_type?: "ARRAY" | "BINARY" | "BOOLEAN" | "MISSING" | "NULL" | "NUMBER" | "OBJECT" | "POJO" | "STRING";
-            string?: boolean;
-            short?: boolean;
-            double?: boolean;
-            big_decimal?: boolean;
-            big_integer?: boolean;
-            /** @deprecated */
-            textual?: boolean;
-            boolean?: boolean;
-            binary?: boolean;
-            integral_number?: boolean;
-            floating_point_number?: boolean;
-            array?: boolean;
-            empty?: boolean;
-            null?: boolean;
-            float?: boolean;
-            embedded_value?: boolean;
         };
         /** @description V2 매핑 미리보기 응답 */
         MappingV2PreviewResponse: {
@@ -3553,20 +4406,209 @@ export interface components {
              */
             count?: number;
         };
+        /** @description 부품 생성 요청 */
+        CreatePartRequest: {
+            /**
+             * @description 품번
+             * @example P-100
+             */
+            part_number: string;
+            /**
+             * @description 품명
+             * @example M3 볼트
+             */
+            name?: string;
+            /**
+             * @description 재질
+             * @example SUS304
+             */
+            material?: string;
+            /**
+             * @description 단위
+             * @example EA
+             */
+            unit?: string;
+            /**
+             * @description 설명
+             * @example 체결용 표준 부품
+             */
+            description?: string;
+            /**
+             * @description 카테고리
+             * @example FASTENER
+             */
+            category?: string;
+            /**
+             * @description 팬텀 부품 여부
+             * @example false
+             */
+            is_phantom?: boolean;
+            /**
+             * @description 수명주기 상태
+             * @example ACTIVE
+             * @enum {string}
+             */
+            lifecycle_state?: "ACTIVE" | "EOL" | "OBSOLETE";
+            /**
+             * Format: int32
+             * @description 리드타임(일)
+             * @example 7
+             */
+            lead_time_days?: number;
+            /**
+             * @description 확장 속성 JSON 객체
+             * @example {
+             *       "weight": 1.2,
+             *       "color": "silver"
+             *     }
+             */
+            extended_properties?: {
+                [key: string]: unknown;
+            };
+            /**
+             * @description 생성 사유
+             * @example 신규 고객 프로젝트 대응을 위해 부품을 등록합니다
+             */
+            reason?: string;
+        };
+        /** @description 응답 DTO */
+        PartDetailResponse: {
+            /** Format: uuid */
+            id?: string;
+            /** Format: uuid */
+            revision_id?: string;
+            part_number?: string;
+            name?: string;
+            revision?: string;
+            draft_key?: string;
+            material?: string;
+            unit?: string;
+            description?: string;
+            category?: string;
+            /** @enum {string} */
+            lifecycle_state?: "ACTIVE" | "EOL" | "OBSOLETE";
+            is_phantom?: boolean;
+            /** Format: int32 */
+            lead_time_days?: number;
+            extended_properties?: {
+                [key: string]: unknown;
+            };
+            preview?: components["schemas"]["PartPreviewResponse"];
+            /** Format: int64 */
+            draft_count?: number;
+            /** Format: int64 */
+            children_count?: number;
+            /** Format: int64 */
+            parents_count?: number;
+            /** Format: int64 */
+            suppliers_count?: number;
+            /** Format: int64 */
+            files_count?: number;
+            /** Format: int64 */
+            projects_count?: number;
+        };
+        /** @description 부품 대표 미리보기 응답 */
+        PartPreviewResponse: {
+            /**
+             * Format: uuid
+             * @description 대표 미리보기 ID
+             */
+            id?: string;
+            /**
+             * @description 대표 미리보기 소스 타입
+             * @example DRAWING
+             * @enum {string}
+             */
+            source_type?: "DRAWING" | "PREVIEW_FILE";
+            /**
+             * Format: uuid
+             * @description 대표 미리보기 소스 ID
+             */
+            source_id?: string;
+            /**
+             * @description 미리보기 처리 상태
+             * @enum {string}
+             */
+            processing_status?: "PENDING" | "PROCESSING" | "COMPLETED" | "FAILED";
+            /**
+             * @description 뷰어 타입
+             * @example PDF
+             * @enum {string}
+             */
+            viewer_type?: "PDF" | "GLB";
+            /** @description 뷰어 본문 URL */
+            viewer_url?: string;
+            /** @description 미리보기 이미지 URL */
+            preview_url?: string;
+            /** @description 원본 파일 URL */
+            original_file_url?: string;
+        };
+        /** @description 부품 리비전 승인/릴리즈 요청 */
+        PartRevisionChangeReasonRequest: {
+            /**
+             * @description 변경 사유
+             * @example 도면/사양 검토를 마치고 공식 개정본으로 확정합니다
+             */
+            reason: string;
+        };
+        /** @description 공통 API 오류 응답 */
+        ApiErrorResponse: {
+            /**
+             * @description 오류 코드
+             * @example bad_request
+             */
+            code?: string;
+            /**
+             * @description 오류 메시지
+             * @example 잘못된 요청입니다
+             */
+            message?: string;
+        };
+        /** @description 부품 대표 미리보기 전용 파일 등록 요청 */
+        UploadPartPreviewFileRequest: {
+            /**
+             * Format: uuid
+             * @description 업로드 완료된 파일 ID
+             */
+            file_id: string;
+        };
         /** @description 요청 DTO */
         AttachFilesRequest: {
             file_ids: string[];
         };
-        /** @description 응답 DTO */
-        FileItemResponse: {
-            /** Format: uuid */
+        /** @description 부품 첨부 항목 */
+        PartAttachmentItemResponse: {
+            /**
+             * @description 첨부 타입
+             * @example DRAWING
+             * @enum {string}
+             */
+            attachment_type?: "FILE" | "DRAWING" | "PREVIEW_FILE";
+            /**
+             * Format: uuid
+             * @description 일반 첨부파일 ID
+             */
             file_id?: string;
+            /**
+             * Format: uuid
+             * @description 도면 ID
+             */
+            drawing_id?: string;
+            /** @description 원본 파일명 */
             original_name?: string;
+            /** @description 콘텐츠 타입 */
             content_type?: string;
-            /** Format: int64 */
+            /**
+             * Format: int64
+             * @description 파일 크기(byte)
+             */
             file_size?: number;
+            /** @description 다운로드 URL */
             file_url?: string;
-            /** Format: date-time */
+            /**
+             * Format: date-time
+             * @description 생성 시각
+             */
             created_at?: string;
         };
         /** @description 요청 DTO */
@@ -3580,8 +4622,14 @@ export interface components {
             drawing_id?: string;
             drawing_number?: string;
             name?: string;
-            /** @enum {string} */
-            conversion_status?: "ACTION_REQUIRED" | "PENDING" | "COMPLETED" | "FAILED";
+        };
+        /** @description 부품 초안 생성 요청 */
+        CreatePartDraftRequest: {
+            /**
+             * @description 초안 생성 사유
+             * @example Rev 2 기반으로 고객 요청 변경안을 검토합니다
+             */
+            reason?: string;
         };
         /** @description 조직 생성 요청 */
         CreateOrganizationRequest: {
@@ -3898,8 +4946,6 @@ export interface components {
             id?: string;
             /** Format: int32 */
             number?: number;
-            /** @enum {string} */
-            type?: "ISSUE" | "CHANGE_REQUEST";
             title?: string;
             body?: components["schemas"]["JsonNode"];
             /** @enum {string} */
@@ -3911,24 +4957,15 @@ export interface components {
             /** Format: date-time */
             updated_at?: string;
             is_modified?: boolean;
-            created_by?: components["schemas"]["IssueUserSummaryResponse"];
+            created_by?: components["schemas"]["UserSummaryResponse"];
             labels?: components["schemas"]["LabelBadgeResponse"][];
-            assignees?: components["schemas"]["IssueUserSummaryResponse"][];
+            assignees?: components["schemas"]["UserSummaryResponse"][];
             assigned_teams?: components["schemas"]["TeamBadgeResponse"][];
             parts?: components["schemas"]["PartBadgeResponse"][];
             files?: components["schemas"]["FileItemResponse"][];
             /** Format: int32 */
             comments_count?: number;
-            linked_changes?: components["schemas"]["LinkedChangeRequestBadgeResponse"][];
-        };
-        /** @description 사용자 요약 */
-        IssueUserSummaryResponse: {
-            /** Format: uuid */
-            user_id?: string;
-            full_name?: string;
-            email?: string;
-            phone?: string;
-            profile_image_url?: string;
+            linked_engineering_changes?: components["schemas"]["LinkedEngineeringChangeSummaryResponse"][];
         };
         /** @description 라벨 배지 */
         LabelBadgeResponse: {
@@ -3937,29 +4974,21 @@ export interface components {
             name?: string;
             color?: string;
         };
-        /** @description 연결 변경요청 배지 */
-        LinkedChangeRequestBadgeResponse: {
+        /** @description 연결 변경관리 요약 */
+        LinkedEngineeringChangeSummaryResponse: {
             /** Format: uuid */
             id?: string;
             /** Format: int32 */
             number?: number;
             title?: string;
             /** @enum {string} */
-            state?: "OPEN" | "CLOSED";
-            /** @enum {string} */
-            cr_state?: "DRAFT" | "SUBMITTED" | "MERGED" | "CLOSED";
+            state?: "DRAFT" | "REVIEW_PENDING" | "APPROVAL_PENDING" | "RELEASE_PENDING" | "RELEASED" | "CANCELED";
         };
         /** @description 부품 배지 */
         PartBadgeResponse: {
             /** Format: uuid */
             id?: string;
             part_number?: string;
-            name?: string;
-        };
-        /** @description 팀 배지 */
-        TeamBadgeResponse: {
-            /** Format: uuid */
-            id?: string;
             name?: string;
         };
         /** @description 댓글 생성 요청 */
@@ -3972,7 +5001,7 @@ export interface components {
             /** Format: uuid */
             id?: string;
             /** Format: uuid */
-            issue_id?: string;
+            target_id?: string;
             body?: components["schemas"]["JsonNode"];
             /** Format: date-time */
             created_at?: string;
@@ -4049,128 +5078,23 @@ export interface components {
             items?: components["schemas"]["FileCompleteResponse"][];
             failed?: components["schemas"]["BatchCompleteFailure"][];
         };
-        /** @description 도면 render source 등록 요청 DTO */
-        RegisterDrawingRenderSourceRequest: {
-            /**
-             * Format: uuid
-             * @description 업로드 완료된 render source 파일 ID
-             */
-            file_id: string;
-        };
-        /** @description 도면 render source 등록 응답 DTO */
-        RegisterDrawingRenderSourceResponse: {
-            /**
-             * Format: uuid
-             * @description 도면 ID
-             */
-            drawing_id?: string;
-            /**
-             * @description 도면 변환 상태
-             * @example PENDING
-             * @enum {string}
-             */
-            conversion_status?: "ACTION_REQUIRED" | "PENDING" | "COMPLETED" | "FAILED";
-        };
-        /** @description 변경요청 생성 요청 */
-        CreateChangeRequestRequest: {
-            /** @description 변경요청 제목 */
+        /** @description 변경관리 생성 요청 */
+        CreateEngineeringChangeRequest: {
+            /** @description 변경관리 제목 */
             title: string;
-            /** @description 변경요청 본문(TipTap JSON) */
+            /** @description 변경관리 본문(TipTap JSON) */
             body?: components["schemas"]["JsonNode"];
             /**
              * Format: int32
-             * @description 연결할 이슈 번호
+             * @description 연결할 원본 이슈 번호
              */
-            issue_number?: number;
-            /** @description 연결 부품 ID 목록 */
-            part_ids?: string[];
-            /** @description 담당자 ID 목록 */
-            assignee_user_ids?: string[];
-            /** @description 팀 담당자 ID 목록 */
-            team_assignee_ids?: string[];
-            /** @description 라벨 ID 목록 */
-            label_ids?: string[];
+            source_issue_number?: number;
+            /** @description 연결할 부품 초안 목록 */
+            part_revisions?: components["schemas"]["EngineeringChangePartRevisionTargetRequest"][];
             /** @description 첨부 파일 ID 목록(최대 20) */
             file_ids?: string[];
-            /** @description 검토자 ID 목록 */
-            reviewer_user_ids?: string[];
-            /** @description 팀 검토자 ID 목록 */
-            team_reviewer_ids?: string[];
-        };
-        /** @description 변경요청 상세 응답 */
-        ChangeRequestResponse: {
-            /** Format: uuid */
-            id?: string;
-            /** Format: int32 */
-            number?: number;
-            /** @enum {string} */
-            type?: "ISSUE" | "CHANGE_REQUEST";
-            title?: string;
-            body?: components["schemas"]["JsonNode"];
-            /** @enum {string} */
-            state?: "OPEN" | "CLOSED";
-            /** Format: date-time */
-            closed_at?: string;
-            /** Format: date-time */
-            created_at?: string;
-            /** Format: date-time */
-            updated_at?: string;
-            is_modified?: boolean;
-            created_by?: components["schemas"]["IssueUserSummaryResponse"];
-            labels?: components["schemas"]["LabelBadgeResponse"][];
-            assignees?: components["schemas"]["IssueUserSummaryResponse"][];
-            assigned_teams?: components["schemas"]["TeamBadgeResponse"][];
-            reviewers?: components["schemas"]["ReviewerSummaryResponse"][];
-            reviewer_teams?: components["schemas"]["TeamBadgeResponse"][];
-            parts?: components["schemas"]["PartBadgeResponse"][];
-            files?: components["schemas"]["FileItemResponse"][];
-            /** Format: int32 */
-            comments_count?: number;
-            /** @enum {string} */
-            cr_state?: "DRAFT" | "SUBMITTED" | "MERGED" | "CLOSED";
-            /** Format: date-time */
-            merged_at?: string;
-            /** Format: uuid */
-            merged_by?: string;
-            linked_issues?: components["schemas"]["LinkedIssueBadgeResponse"][];
-        };
-        /** @description 연결 이슈 배지 */
-        LinkedIssueBadgeResponse: {
-            /** Format: uuid */
-            id?: string;
-            /** Format: int32 */
-            number?: number;
-            title?: string;
-            /** @enum {string} */
-            state?: "OPEN" | "CLOSED";
-        };
-        /** @description 검토자 요약 */
-        ReviewerSummaryResponse: {
-            /** Format: uuid */
-            user_id?: string;
-            full_name?: string;
-            email?: string;
-            phone?: string;
-            profile_image_url?: string;
-            /** @enum {string} */
-            review_status?: "PENDING" | "APPROVED" | "REJECTED";
-            /** Format: date-time */
-            reviewed_at?: string;
-        };
-        /** @description 리뷰 제출 요청 */
-        SubmitReviewRequest: {
-            /**
-             * @description APPROVED 또는 REJECTED
-             * @enum {string}
-             */
-            status: "PENDING" | "APPROVED" | "REJECTED";
-        };
-        /** @description 리뷰 제출 응답 */
-        SubmitReviewResponse: {
-            /** @enum {string} */
-            review_status?: "PENDING" | "APPROVED" | "REJECTED";
-            /** Format: date-time */
-            reviewed_at?: string;
+            /** @description 변경관리 단계 목록 */
+            steps?: components["schemas"]["EngineeringChangeStepRequest"][];
         };
         /** @description 이메일 인증코드 검증 요청 */
         VerifyEmailRequest: {
@@ -4507,23 +5431,76 @@ export interface components {
              */
             description?: string;
         };
-        /** @description 부품 담당자 수정 요청 */
-        UpdatePartOwnerRequest: {
-            owner_id_set?: boolean;
-            owner_team_id_set?: boolean;
-            /** Format: uuid */
-            owner_id?: string;
-            /** Format: uuid */
-            owner_team_id?: string;
+        /** @description 부품 대표 미리보기 변경 요청 */
+        ChangePartPreviewRequest: {
+            /**
+             * @description 대표 미리보기 소스 타입
+             * @example DRAWING
+             * @enum {string}
+             */
+            source_type: "DRAWING" | "PREVIEW_FILE";
+            /**
+             * Format: uuid
+             * @description 대표 미리보기 소스 ID
+             */
+            source_id: string;
         };
-        /** @description 응답 DTO */
-        PartOwnerResponse: {
-            /** Format: uuid */
-            owner_id?: string;
-            owner?: components["schemas"]["PartOwnerUserSummaryResponse"];
-            /** Format: uuid */
-            owner_team_id?: string;
-            owner_team_name?: string;
+        /** @description 부품 리비전 수정 요청 */
+        UpdatePartRevisionRequest: {
+            name_set?: boolean;
+            material_set?: boolean;
+            unit_set?: boolean;
+            description_set?: boolean;
+            category_set?: boolean;
+            phantom_set?: boolean;
+            lead_time_days_set?: boolean;
+            extended_properties_set?: boolean;
+            /**
+             * @description 품명
+             * @example M3 볼트
+             */
+            name?: string;
+            /**
+             * @description 재질
+             * @example SUS304
+             */
+            material?: string;
+            /**
+             * @description 단위
+             * @example EA
+             */
+            unit?: string;
+            /**
+             * @description 설명
+             * @example 체결용 표준 부품
+             */
+            description?: string;
+            /**
+             * @description 카테고리
+             * @example FASTENER
+             */
+            category?: string;
+            /**
+             * @description 팬텀 부품 여부
+             * @example false
+             */
+            is_phantom?: boolean;
+            /**
+             * Format: int32
+             * @description 리드타임(일)
+             * @example 7
+             */
+            lead_time_days?: number;
+            /**
+             * @description 확장 속성 JSON 객체
+             * @example {
+             *       "weight": 1.2,
+             *       "color": "silver"
+             *     }
+             */
+            extended_properties?: {
+                [key: string]: unknown;
+            };
         };
         /** @description 요청 DTO */
         RenameCategoryRequest: {
@@ -4550,7 +5527,7 @@ export interface components {
             description?: string;
             color?: string;
         };
-        /** @description 변경요청 수정 요청 */
+        /** @description 이슈 수정 요청 */
         UpdateIssueRequest: {
             /** @description 이슈 제목 */
             title?: string;
@@ -4561,6 +5538,15 @@ export interface components {
         UpdateCommentRequest: {
             /** @description 댓글 본문(TipTap JSON) */
             body: components["schemas"]["JsonNode"];
+        };
+        /** @description 변경관리 수정 요청 */
+        UpdateEngineeringChangeRequest: {
+            /** @description 변경관리 제목 */
+            title?: string;
+            /** @description 변경관리 본문(TipTap JSON) */
+            body?: components["schemas"]["JsonNode"];
+            /** @description 변경관리 단계 목록 */
+            steps?: components["schemas"]["EngineeringChangeStepRequest"][];
         };
         /** @description 헬스체크 응답 */
         HealthResponse: {
@@ -4977,6 +5963,15 @@ export interface components {
              */
             country?: string;
         };
+        /** @description 설정 응답 DTO */
+        SettingsResponse: {
+            /**
+             * @description 부품 리비전 워크플로 모드
+             * @example DIRECT
+             * @enum {string}
+             */
+            part_workflow_mode?: "DIRECT" | "ENGINEERING_CHANGE_REQUIRED";
+        };
         /** @description 프로젝트 목록 응답 */
         ProjectListResponse: {
             /**
@@ -5167,9 +6162,9 @@ export interface components {
             /** Format: uuid */
             id?: string;
             /** @enum {string} */
-            action?: "issue:created" | "issue:state_changed" | "issue:assignee_changed" | "issue:reviewer_changed" | "issue:label_changed" | "issue:part_changed" | "issue:file_attached" | "issue:file_detached" | "issue:cr_changed" | "issue:mentioned" | "cr:state_changed" | "cr:issue_changed";
+            action?: "issue:created" | "issue:state_changed" | "issue:assignee_changed" | "issue:reviewer_changed" | "issue:label_changed" | "issue:part_changed" | "issue:file_attached" | "issue:file_detached" | "issue:engineering_change_changed" | "issue:mentioned" | "engineering_change:state_changed" | "engineering_change:issue_changed" | "engineering_change:step_changed" | "engineering_change:file_attached" | "engineering_change:file_detached" | "engineering_change:mentioned" | "engineering_change:part_revision_changed";
             /** @enum {string} */
-            scope?: "issue" | "cr" | "project" | "organization";
+            scope?: "issue" | "engineering_change" | "project" | "organization";
             /** Format: uuid */
             actor_id?: string;
             detail?: string;
@@ -5177,22 +6172,9 @@ export interface components {
             created_at?: string;
         };
         /** @description 응답 DTO */
-        UserSummaryResponse: {
-            /** Format: uuid */
-            user_id?: string;
-            full_name?: string;
-            email?: string;
-            phone?: string;
-            profile_image_url?: string;
-        };
-        /** @description 응답 DTO */
         PartListResponse: {
-            /** Format: int64 */
-            total?: number;
-            /** Format: int32 */
-            offset?: number;
-            /** Format: int32 */
-            limit?: number;
+            next_cursor?: string;
+            prev_cursor?: string;
             items?: components["schemas"]["PartSummaryResponse"][];
         };
         /** @description 응답 DTO */
@@ -5202,94 +6184,12 @@ export interface components {
             part_number?: string;
             name?: string;
             category?: string;
-            revision?: string;
+            revision_code?: string;
             /** @enum {string} */
-            lifecycle_state?: "DESIGN" | "PROTOTYPE" | "PRODUCTION" | "EOL" | "OBSOLETE";
-            /** Format: uuid */
-            drawing_id?: string;
+            lifecycle_state?: "ACTIVE" | "EOL" | "OBSOLETE";
+            has_drawing?: boolean;
             /** Format: int64 */
             children_count?: number;
-        };
-        /** @description 응답 DTO */
-        PartDetailResponse: {
-            /** Format: uuid */
-            id?: string;
-            part_number?: string;
-            name?: string;
-            revision?: string;
-            material?: string;
-            unit?: string;
-            description?: string;
-            category?: string;
-            /** @enum {string} */
-            lifecycle_state?: "DESIGN" | "PROTOTYPE" | "PRODUCTION" | "EOL" | "OBSOLETE";
-            is_phantom?: boolean;
-            /** Format: int32 */
-            lead_time_days?: number;
-            extended_properties?: {
-                [key: string]: unknown;
-            };
-            /** Format: uuid */
-            owner_id?: string;
-            owner?: components["schemas"]["PartOwnerUserSummaryResponse"];
-            /** Format: uuid */
-            owner_team_id?: string;
-            owner_team_name?: string;
-            drawing?: components["schemas"]["RelatedDrawingResponse"];
-            /** Format: int64 */
-            children_count?: number;
-            /** Format: int64 */
-            parents_count?: number;
-            /** Format: int64 */
-            suppliers_count?: number;
-            /** Format: int64 */
-            files_count?: number;
-            /** Format: int64 */
-            projects_count?: number;
-        };
-        /** @description 관련 도면 응답 */
-        RelatedDrawingResponse: {
-            /**
-             * Format: uuid
-             * @description 도면 ID
-             */
-            id?: string;
-            /** @description 도면 번호 */
-            drawing_number?: string;
-            /** @description 도면명 */
-            name?: string;
-            /** @description 버전 */
-            version?: string;
-            /**
-             * @description 도면 상태
-             * @enum {string}
-             */
-            status?: "DRAFT" | "IN_REVIEW" | "APPROVED" | "RELEASED" | "OBSOLETE";
-            /**
-             * @description 도면 변환 상태
-             * @enum {string}
-             */
-            conversion_status?: "ACTION_REQUIRED" | "PENDING" | "COMPLETED" | "FAILED";
-            /**
-             * @description 뷰어 타입
-             * @example PDF
-             * @enum {string}
-             */
-            viewer_type?: "PDF" | "GLB";
-            /** @description 뷰어 본문 URL */
-            viewer_url?: string;
-            /** @description 미리보기 이미지 URL */
-            preview_url?: string;
-            /** @description 원본 파일 URL */
-            original_file_url?: string;
-            /**
-             * @description 추가 업로드 가능한 render source 확장자 목록
-             * @example [
-             *       "pdf",
-             *       "dxf"
-             *     ]
-             */
-            allowed_render_source_extensions?: string[];
         };
         /** @description 응답 DTO */
         PartSuppliersResponse: {
@@ -5320,11 +6220,165 @@ export interface components {
             total?: number;
             items?: components["schemas"]["PartProjectSummaryResponse"][];
         };
+        /** @description 부품 대표 미리보기 선택 항목 */
+        PartPreviewSourceItemResponse: {
+            /**
+             * @description 첨부 타입
+             * @example DRAWING
+             * @enum {string}
+             */
+            attachment_type?: "FILE" | "DRAWING" | "PREVIEW_FILE";
+            /**
+             * @description 대표 미리보기 소스 타입
+             * @example DRAWING
+             * @enum {string}
+             */
+            source_type?: "DRAWING" | "PREVIEW_FILE";
+            /**
+             * Format: uuid
+             * @description 대표 미리보기 소스 ID. DRAWING이면 drawingId, PREVIEW_FILE이면 previewFileId입니다
+             */
+            source_id?: string;
+            /**
+             * Format: uuid
+             * @description 미리보기 원본 파일 ID
+             */
+            file_id?: string;
+            /**
+             * Format: uuid
+             * @description 도면 ID
+             */
+            drawing_id?: string;
+            /** @description 원본 파일명 */
+            original_name?: string;
+            /** @description 콘텐츠 타입 */
+            content_type?: string;
+            /**
+             * Format: int64
+             * @description 파일 크기(byte)
+             */
+            file_size?: number;
+            /** @description 다운로드 URL */
+            file_url?: string;
+            /** @description 현재 대표 미리보기 선택 여부 */
+            selected?: boolean;
+            /** @description 삭제 가능 여부 */
+            deletable?: boolean;
+            /**
+             * Format: date-time
+             * @description 생성 시각
+             */
+            created_at?: string;
+        };
+        /** @description 부품 대표 미리보기 선택 항목 목록 */
+        PartPreviewSourcesResponse: {
+            /** Format: int64 */
+            total?: number;
+            items?: components["schemas"]["PartPreviewSourceItemResponse"][];
+        };
+        /** @description 부품 대표 미리보기 처리 상태 응답 */
+        PartPreviewProcessingResponse: {
+            /**
+             * @description 대표 미리보기 처리 상태
+             * @example PROCESSING
+             * @enum {string}
+             */
+            status?: "PENDING" | "PROCESSING" | "COMPLETED" | "FAILED";
+            /**
+             * @description 대표 미리보기 처리 실패 코드
+             * @example TIMEOUT
+             * @enum {string}
+             */
+            failure_code?: "TIMEOUT" | "UNSUPPORTED_FORMAT" | "CONVERTER_UNAVAILABLE" | "CONVERSION_FAILED" | "UNKNOWN";
+            /** @description 대표 미리보기 처리 실패 메시지 */
+            failure_message?: string;
+            /**
+             * @description PDF 산출물 준비 여부
+             * @example true
+             */
+            pdf_ready?: boolean;
+            /**
+             * @description WEBP 산출물 준비 여부
+             * @example true
+             */
+            webp_ready?: boolean;
+            /**
+             * @description GLB 산출물 준비 여부
+             * @example false
+             */
+            glb_ready?: boolean;
+        };
         /** @description 응답 DTO */
         PartFilesResponse: {
             /** Format: int64 */
             total?: number;
-            items?: components["schemas"]["FileItemResponse"][];
+            items?: components["schemas"]["PartAttachmentItemResponse"][];
+        };
+        /** @description 속성 변경 응답 */
+        PartRevisionDiffAttributeChangeResponse: {
+            field_key?: string;
+            field_label?: string;
+            /** @enum {string} */
+            change_type?: "ADDED" | "REMOVED" | "CHANGED";
+            before_value?: string;
+            after_value?: string;
+        };
+        /** @description BOM 변경 응답 */
+        PartRevisionDiffBomChangeResponse: {
+            line_number?: string;
+            before_part_number?: string;
+            before_name?: string;
+            before_quantity?: number;
+            after_part_number?: string;
+            after_name?: string;
+            after_quantity?: number;
+            /** @enum {string} */
+            change_type?: "ADDED" | "REMOVED" | "CHANGED";
+        };
+        /** @description 파일 변경 응답 */
+        PartRevisionDiffFileChangeResponse: {
+            item_type?: string;
+            display_name?: string;
+            /** @enum {string} */
+            change_type?: "ADDED" | "REMOVED" | "CHANGED";
+        };
+        /** @description 리비전 상세 diff 응답 */
+        PartRevisionDiffResponse: {
+            base_revision?: components["schemas"]["PartRevisionDiffRevisionResponse"];
+            target_revision?: components["schemas"]["PartRevisionDiffRevisionResponse"];
+            summary?: components["schemas"]["PartRevisionDiffSummaryResponse"];
+            attributes?: components["schemas"]["PartRevisionDiffAttributeChangeResponse"][];
+            files?: components["schemas"]["PartRevisionDiffFileChangeResponse"][];
+            bom?: components["schemas"]["PartRevisionDiffBomChangeResponse"][];
+        };
+        /** @description diff 비교 리비전 응답 */
+        PartRevisionDiffRevisionResponse: {
+            /** Format: uuid */
+            revision_id?: string;
+            revision_code?: string;
+            /** @enum {string} */
+            status?: "DRAFT" | "RELEASED" | "SUPERSEDED" | "CANCELED";
+            /** Format: date-time */
+            created_at?: string;
+            created_by?: components["schemas"]["PartUserSummaryResponse"];
+        };
+        /** @description 리비전 diff 요약 */
+        PartRevisionDiffSummaryResponse: {
+            /** Format: int64 */
+            attribute_changes?: number;
+            /** Format: int64 */
+            file_changes?: number;
+            /** Format: int64 */
+            bom_changes?: number;
+        };
+        /** @description 부품 사용자 요약 응답 */
+        PartUserSummaryResponse: {
+            /** Format: uuid */
+            user_id?: string;
+            full_name?: string;
+            email?: string;
+            phone?: string;
+            profile_image_url?: string;
         };
         /** @description 응답 DTO */
         BomChildResponse: {
@@ -5332,7 +6386,8 @@ export interface components {
             id?: string;
             part_number?: string;
             name?: string;
-            /** Format: int32 */
+            revision_code?: string;
+            line_number?: string;
             quantity?: number;
             extended_properties?: {
                 [key: string]: unknown;
@@ -5344,7 +6399,8 @@ export interface components {
             id?: string;
             part_number?: string;
             name?: string;
-            /** Format: int32 */
+            revision_code?: string;
+            line_number?: string;
             quantity?: number;
             extended_properties?: {
                 [key: string]: unknown;
@@ -5366,8 +6422,7 @@ export interface components {
             unit?: string;
             category?: string;
             /** @enum {string} */
-            lifecycle_state?: "DESIGN" | "PROTOTYPE" | "PRODUCTION" | "EOL" | "OBSOLETE";
-            /** Format: int32 */
+            lifecycle_state?: "ACTIVE" | "EOL" | "OBSOLETE";
             quantity?: number;
             children?: components["schemas"]["BomTreeNodeResponse"][];
         };
@@ -5379,9 +6434,39 @@ export interface components {
             /** Format: int32 */
             total_count?: number;
         };
-        /** @description 응답 DTO */
-        PartDefaultOwnerListResponse: {
-            items?: components["schemas"]["PartDefaultOwnerItemResponse"][];
+        /** @description 공식 리비전에서 파생된 초안 이력 응답 */
+        PartRevisionHistoryDraftResponse: {
+            /** Format: uuid */
+            revision_id?: string;
+            name?: string;
+            /** @enum {string} */
+            status?: "DRAFT" | "RELEASED" | "SUPERSEDED" | "CANCELED";
+            /** Format: date-time */
+            created_at?: string;
+            created_by?: components["schemas"]["PartUserSummaryResponse"];
+            /** Format: date-time */
+            completed_at?: string;
+            completed_by?: components["schemas"]["PartUserSummaryResponse"];
+            released_revision_code?: string;
+            reason?: string;
+        };
+        /** @description 리비전 이력 항목 응답 */
+        PartRevisionHistoryItemResponse: {
+            /** Format: uuid */
+            revision_id?: string;
+            revision_code?: string;
+            /** @enum {string} */
+            status?: "DRAFT" | "RELEASED" | "SUPERSEDED" | "CANCELED";
+            name?: string;
+            /** Format: date-time */
+            released_at?: string;
+            released_by?: components["schemas"]["PartUserSummaryResponse"];
+            summary?: components["schemas"]["PartRevisionDiffSummaryResponse"];
+            drafts?: components["schemas"]["PartRevisionHistoryDraftResponse"][];
+        };
+        /** @description 리비전 이력 목록 응답 */
+        PartRevisionHistoryResponse: {
+            items?: components["schemas"]["PartRevisionHistoryItemResponse"][];
         };
         /** @description 응답 DTO */
         PartLookupItemResponse: {
@@ -5394,10 +6479,106 @@ export interface components {
         PartLookupResponse: {
             items?: components["schemas"]["PartLookupItemResponse"][];
         };
+        /** @description 진행중 부품 항목 응답 DTO */
+        PartInProgressItemResponse: {
+            /**
+             * Format: uuid
+             * @description 부품 ID
+             */
+            part_id?: string;
+            /**
+             * Format: uuid
+             * @description 리비전 ID
+             */
+            revision_id?: string;
+            /** @description 품번 */
+            part_number?: string;
+            /** @description 품명 */
+            name?: string;
+            /** @description 카테고리 */
+            category?: string;
+            /**
+             * @description 리비전 상태
+             * @enum {string}
+             */
+            status?: "DRAFT" | "RELEASED" | "SUPERSEDED" | "CANCELED";
+            /** @description 공식 리비전 코드 */
+            revision_code?: string;
+            /** @description 초안 키 */
+            draft_key?: string;
+            /** @description 기준 리비전 코드 */
+            base_revision_code?: string;
+            /**
+             * @description 라이프사이클 상태
+             * @enum {string}
+             */
+            lifecycle_state?: "ACTIVE" | "EOL" | "OBSOLETE";
+            /** @description 도면 첨부 여부 */
+            has_drawing?: boolean;
+            /**
+             * Format: int64
+             * @description 자식 BOM 개수
+             */
+            children_count?: number;
+            /**
+             * Format: date-time
+             * @description 마지막 수정 시각
+             */
+            updated_at?: string;
+        };
+        /** @description 진행중 부품 목록 응답 DTO */
+        PartInProgressListResponse: {
+            /** @description 다음 페이지 조회 기준 커서 */
+            next_cursor?: string;
+            /** @description 이전 페이지 조회 기준 커서 */
+            prev_cursor?: string;
+            /** @description 목록 항목 */
+            items?: components["schemas"]["PartInProgressItemResponse"][];
+        };
         /** @description 응답 DTO */
         PartFilterOptionsResponse: {
             categories?: string[];
-            lifecycle_states?: ("DESIGN" | "PROTOTYPE" | "PRODUCTION" | "EOL" | "OBSOLETE")[];
+            lifecycle_states?: ("ACTIVE" | "EOL" | "OBSOLETE")[];
+        };
+        /** @description 부품 초안 lookup 항목 */
+        PartDraftLookupItemResponse: {
+            /**
+             * Format: uuid
+             * @description 리비전 ID
+             */
+            revision_id?: string;
+            /**
+             * Format: uuid
+             * @description 부품 ID
+             */
+            part_id?: string;
+            /**
+             * @description 품번
+             * @example AES-100
+             */
+            part_number?: string;
+            /**
+             * @description 기준 공식 리비전 코드
+             * @example 1
+             */
+            base_revision_code?: string;
+            /**
+             * @description 초안 키
+             * @example D1
+             */
+            draft_key?: string;
+            /**
+             * @description 초안 이름
+             * @example 메인 하우징
+             */
+            name?: string;
+            /** @description 초안 작성자 */
+            created_by?: components["schemas"]["PartUserSummaryResponse"];
+        };
+        /** @description 부품 초안 lookup 응답 */
+        PartDraftLookupResponse: {
+            /** @description 초안 목록 */
+            items?: components["schemas"]["PartDraftLookupItemResponse"][];
         };
         /** @description 응답 DTO */
         CategoryStatsItemResponse: {
@@ -5524,7 +6705,7 @@ export interface components {
             source_number?: number;
             source_title?: string;
             /** @enum {string} */
-            source_issue_type?: "issue" | "change_request";
+            source_issue_type?: "issue" | "engineering_change";
             is_comment?: boolean;
         };
         NotificationItemResponse: {
@@ -5655,8 +6836,6 @@ export interface components {
             id?: string;
             /** Format: int32 */
             number?: number;
-            /** @enum {string} */
-            type?: "ISSUE" | "CHANGE_REQUEST";
             title?: string;
             /** @enum {string} */
             state?: "OPEN" | "CLOSED";
@@ -5666,9 +6845,9 @@ export interface components {
             created_at?: string;
             /** Format: date-time */
             updated_at?: string;
-            created_by?: components["schemas"]["IssueUserSummaryResponse"];
+            created_by?: components["schemas"]["UserSummaryResponse"];
             labels?: components["schemas"]["LabelBadgeResponse"][];
-            assignees?: components["schemas"]["IssueUserSummaryResponse"][];
+            assignees?: components["schemas"]["UserSummaryResponse"][];
             assigned_teams?: components["schemas"]["TeamBadgeResponse"][];
             parts?: components["schemas"]["PartBadgeResponse"][];
             files?: components["schemas"]["FileItemResponse"][];
@@ -5682,9 +6861,9 @@ export interface components {
             /** Format: uuid */
             id?: string;
             /** @enum {string} */
-            action?: "issue:created" | "issue:state_changed" | "issue:assignee_changed" | "issue:reviewer_changed" | "issue:label_changed" | "issue:part_changed" | "issue:file_attached" | "issue:file_detached" | "issue:cr_changed" | "issue:mentioned" | "cr:state_changed" | "cr:issue_changed";
+            action?: "issue:created" | "issue:state_changed" | "issue:assignee_changed" | "issue:reviewer_changed" | "issue:label_changed" | "issue:part_changed" | "issue:file_attached" | "issue:file_detached" | "issue:engineering_change_changed" | "issue:mentioned" | "engineering_change:state_changed" | "engineering_change:issue_changed" | "engineering_change:step_changed" | "engineering_change:file_attached" | "engineering_change:file_detached" | "engineering_change:mentioned" | "engineering_change:part_revision_changed";
             /** @enum {string} */
-            scope?: "issue" | "cr" | "project" | "organization";
+            scope?: "issue" | "engineering_change" | "project" | "organization";
             /** Format: uuid */
             actor_id?: string;
             detail?: components["schemas"]["JsonNode"];
@@ -5701,7 +6880,7 @@ export interface components {
         TimelineResponse: {
             items?: components["schemas"]["TimelineItemResponse"][];
             users?: {
-                [key: string]: components["schemas"]["IssueUserSummaryResponse"];
+                [key: string]: components["schemas"]["UserSummaryResponse"];
             };
         };
         /** @description 이슈 lookup 항목 */
@@ -5713,61 +6892,63 @@ export interface components {
             title?: string;
             /** @enum {string} */
             state?: "OPEN" | "CLOSED";
-            /** @enum {string} */
-            type?: "ISSUE" | "CHANGE_REQUEST";
         };
         /** @description 이슈 lookup 응답 */
         IssueLookupResponse: {
             items?: components["schemas"]["IssueLookupItemResponse"][];
         };
-        /** @description 도면 처리 상태 응답 DTO */
-        DrawingProcessingResponse: {
-            /**
-             * @description 도면 처리 상태
-             * @example PENDING
-             * @enum {string}
-             */
-            status?: "ACTION_REQUIRED" | "PENDING" | "PROCESSING" | "COMPLETED" | "FAILED";
-            /**
-             * @description 도면 처리 실패 코드
-             * @example TIMEOUT
-             * @enum {string}
-             */
-            failure_code?: "TIMEOUT" | "UNSUPPORTED_FORMAT" | "CONVERTER_UNAVAILABLE" | "CONVERSION_FAILED" | "UNKNOWN";
-            /**
-             * @description 도면 처리 실패 메시지
-             * @example 도면 변환 시간이 초과되었습니다.
-             */
-            failure_message?: string;
-            /**
-             * @description PDF 산출물 준비 여부
-             * @example true
-             */
-            pdf_ready?: boolean;
-            /**
-             * @description WEBP 산출물 준비 여부
-             * @example true
-             */
-            webp_ready?: boolean;
-            /**
-             * @description GLB 산출물 준비 여부
-             * @example false
-             */
-            glb_ready?: boolean;
-            /**
-             * @description 추가 사용자 조치 사유
-             * @example RENDER_SOURCE_REQUIRED
-             * @enum {string}
-             */
-            action_required_reason?: "RENDER_SOURCE_REQUIRED";
-            /**
-             * @description 추가 업로드 가능한 render source 확장자 목록
-             * @example [
-             *       "pdf",
-             *       "dxf"
-             *     ]
-             */
-            allowed_render_source_extensions?: string[];
+        /** @description 변경관리 목록 응답 */
+        EngineeringChangeListResponse: {
+            /** Format: int64 */
+            open_count?: number;
+            /** Format: int64 */
+            closed_count?: number;
+            /** Format: int64 */
+            total?: number;
+            /** Format: int32 */
+            offset?: number;
+            /** Format: int32 */
+            limit?: number;
+            items?: components["schemas"]["EngineeringChangeSummaryResponse"][];
+        };
+        /** @description 변경관리 목록 항목 */
+        EngineeringChangeSummaryResponse: {
+            /** Format: uuid */
+            id?: string;
+            /** Format: int32 */
+            number?: number;
+            title?: string;
+            /** @enum {string} */
+            state?: "DRAFT" | "REVIEW_PENDING" | "APPROVAL_PENDING" | "RELEASE_PENDING" | "RELEASED" | "CANCELED";
+            /** Format: date-time */
+            closed_at?: string;
+            /** Format: date-time */
+            created_at?: string;
+            /** Format: date-time */
+            updated_at?: string;
+            created_by?: components["schemas"]["UserSummaryResponse"];
+            steps?: components["schemas"]["EngineeringChangeStepResponse"][];
+            files?: components["schemas"]["FileItemResponse"][];
+            /** Format: int32 */
+            comments_count?: number;
+            /** Format: date-time */
+            merged_at?: string;
+            /** Format: uuid */
+            merged_by?: string;
+        };
+        /** @description 변경관리 lookup 항목 */
+        EngineeringChangeLookupItemResponse: {
+            /** Format: uuid */
+            id?: string;
+            /** Format: int32 */
+            number?: number;
+            title?: string;
+            /** @enum {string} */
+            state?: "DRAFT" | "REVIEW_PENDING" | "APPROVAL_PENDING" | "RELEASE_PENDING" | "RELEASED" | "CANCELED";
+        };
+        /** @description 변경관리 lookup 응답 */
+        EngineeringChangeLookupResponse: {
+            items?: components["schemas"]["EngineeringChangeLookupItemResponse"][];
         };
         /** @description BOM 링크 통계 */
         BomStatsResponse: {
@@ -5832,70 +7013,6 @@ export interface components {
              * @example 42
              */
             added_this_week?: number;
-        };
-        /** @description 변경요청 목록 응답 */
-        ChangeRequestListResponse: {
-            /** Format: int64 */
-            open_count?: number;
-            /** Format: int64 */
-            closed_count?: number;
-            /** Format: int64 */
-            total?: number;
-            /** Format: int32 */
-            offset?: number;
-            /** Format: int32 */
-            limit?: number;
-            items?: components["schemas"]["ChangeRequestSummaryResponse"][];
-        };
-        /** @description 변경요청 목록 항목 */
-        ChangeRequestSummaryResponse: {
-            /** Format: uuid */
-            id?: string;
-            /** Format: int32 */
-            number?: number;
-            /** @enum {string} */
-            type?: "ISSUE" | "CHANGE_REQUEST";
-            title?: string;
-            /** @enum {string} */
-            state?: "OPEN" | "CLOSED";
-            /** Format: date-time */
-            closed_at?: string;
-            /** Format: date-time */
-            created_at?: string;
-            /** Format: date-time */
-            updated_at?: string;
-            created_by?: components["schemas"]["IssueUserSummaryResponse"];
-            labels?: components["schemas"]["LabelBadgeResponse"][];
-            assignees?: components["schemas"]["IssueUserSummaryResponse"][];
-            assigned_teams?: components["schemas"]["TeamBadgeResponse"][];
-            reviewers?: components["schemas"]["ReviewerSummaryResponse"][];
-            reviewer_teams?: components["schemas"]["TeamBadgeResponse"][];
-            parts?: components["schemas"]["PartBadgeResponse"][];
-            files?: components["schemas"]["FileItemResponse"][];
-            /** Format: int32 */
-            comments_count?: number;
-            /** @enum {string} */
-            cr_state?: "DRAFT" | "SUBMITTED" | "MERGED" | "CLOSED";
-            /** Format: date-time */
-            merged_at?: string;
-            /** Format: uuid */
-            merged_by?: string;
-        };
-        /** @description 변경요청 lookup 항목 */
-        ChangeRequestLookupItemResponse: {
-            /** Format: uuid */
-            id?: string;
-            /** Format: int32 */
-            number?: number;
-            title?: string;
-            /** @enum {string} */
-            state?: "OPEN" | "CLOSED";
-            /** @enum {string} */
-            cr_state?: "DRAFT" | "SUBMITTED" | "MERGED" | "CLOSED";
-        };
-        /** @description 변경요청 lookup 응답 */
-        ChangeRequestLookupResponse: {
-            items?: components["schemas"]["ChangeRequestLookupItemResponse"][];
         };
         SiteResponse: {
             /**
@@ -6374,72 +7491,7 @@ export interface operations {
             };
         };
     };
-    listDefaultOwners: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description 요청 성공 */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PartDefaultOwnerListResponse"];
-                };
-            };
-            /** @description 삭제 성공 */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["PartDefaultOwnerListResponse"];
-                };
-            };
-            /** @description 잘못된 요청 */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PartDefaultOwnerListResponse"];
-                };
-            };
-            /** @description 인증 필요 */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PartDefaultOwnerListResponse"];
-                };
-            };
-            /** @description 권한 없음 */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PartDefaultOwnerListResponse"];
-                };
-            };
-            /** @description 리소스를 찾을 수 없음 */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PartDefaultOwnerListResponse"];
-                };
-            };
-        };
-    };
-    upsertDefaultOwner: {
+    updatePartWorkflowPolicy: {
         parameters: {
             query?: never;
             header?: never;
@@ -6448,7 +7500,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["PartDefaultOwnerRequest"];
+                "application/json": components["schemas"]["SettingsPartWorkflowPolicyRequest"];
             };
         };
         responses: {
@@ -6458,16 +7510,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartDefaultOwnerItemResponse"];
-                };
-            };
-            /** @description 삭제 성공 */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["PartDefaultOwnerItemResponse"];
+                    "application/json": components["schemas"]["SettingsPartWorkflowPolicyResponse"];
                 };
             };
             /** @description 잘못된 요청 */
@@ -6476,7 +7519,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartDefaultOwnerItemResponse"];
+                    "application/json": components["schemas"]["SettingsPartWorkflowPolicyResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -6485,7 +7528,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartDefaultOwnerItemResponse"];
+                    "application/json": components["schemas"]["SettingsPartWorkflowPolicyResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -6494,7 +7537,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartDefaultOwnerItemResponse"];
+                    "application/json": components["schemas"]["SettingsPartWorkflowPolicyResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -6503,67 +7546,8 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartDefaultOwnerItemResponse"];
+                    "application/json": components["schemas"]["SettingsPartWorkflowPolicyResponse"];
                 };
-            };
-        };
-    };
-    deleteDefaultOwner: {
-        parameters: {
-            query?: {
-                /**
-                 * @description 삭제할 기본 담당자 카테고리
-                 * @example MECHANICAL
-                 */
-                category?: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description 요청 성공 */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description 삭제 성공 */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description 잘못된 요청 */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description 인증 필요 */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description 권한 없음 */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description 리소스를 찾을 수 없음 */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
             };
         };
     };
@@ -7113,7 +8097,7 @@ export interface operations {
             };
         };
     };
-    syncChanges: {
+    syncLinkedEngineeringChanges: {
         parameters: {
             query?: never;
             header?: never;
@@ -7124,7 +8108,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["SyncChangesRequest"];
+                "application/json": components["schemas"]["SyncLinkedEngineeringChangesRequest"];
             };
         };
         responses: {
@@ -7353,18 +8337,18 @@ export interface operations {
             };
         };
     };
-    syncReviewers: {
+    replaceSteps: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                issueNumber: number;
+                engineeringChangeNumber: number;
             };
             cookie?: never;
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["SyncReviewersRequest"];
+                "application/json": components["schemas"]["SyncEngineeringChangeStepsRequest"];
             };
         };
         responses: {
@@ -7374,7 +8358,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SyncDiffResponse"];
+                    "application/json": components["schemas"]["EngineeringChangeResponse"];
                 };
             };
             /** @description 생성 성공 */
@@ -7383,7 +8367,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SyncDiffResponse"];
+                    "application/json": components["schemas"]["EngineeringChangeResponse"];
                 };
             };
             /** @description 삭제 성공 */
@@ -7392,7 +8376,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["SyncDiffResponse"];
+                    "*/*": components["schemas"]["EngineeringChangeResponse"];
                 };
             };
             /** @description 잘못된 요청 */
@@ -7401,7 +8385,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SyncDiffResponse"];
+                    "application/json": components["schemas"]["EngineeringChangeResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -7410,7 +8394,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SyncDiffResponse"];
+                    "application/json": components["schemas"]["EngineeringChangeResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -7419,7 +8403,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SyncDiffResponse"];
+                    "application/json": components["schemas"]["EngineeringChangeResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -7428,183 +8412,23 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SyncDiffResponse"];
+                    "application/json": components["schemas"]["EngineeringChangeResponse"];
                 };
             };
         };
     };
-    syncTeamReviewers: {
+    syncPartRevisions: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                issueNumber: number;
+                engineeringChangeNumber: number;
             };
             cookie?: never;
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["SyncTeamReviewersRequest"];
-            };
-        };
-        responses: {
-            /** @description 요청 성공 */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SyncDiffResponse"];
-                };
-            };
-            /** @description 생성 성공 */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SyncDiffResponse"];
-                };
-            };
-            /** @description 삭제 성공 */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["SyncDiffResponse"];
-                };
-            };
-            /** @description 잘못된 요청 */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SyncDiffResponse"];
-                };
-            };
-            /** @description 인증 필요 */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SyncDiffResponse"];
-                };
-            };
-            /** @description 권한 없음 */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SyncDiffResponse"];
-                };
-            };
-            /** @description 리소스를 찾을 수 없음 */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SyncDiffResponse"];
-                };
-            };
-        };
-    };
-    syncParts_1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                issueNumber: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["SyncPartsRequest"];
-            };
-        };
-        responses: {
-            /** @description 요청 성공 */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SyncDiffResponse"];
-                };
-            };
-            /** @description 생성 성공 */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SyncDiffResponse"];
-                };
-            };
-            /** @description 삭제 성공 */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["SyncDiffResponse"];
-                };
-            };
-            /** @description 잘못된 요청 */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SyncDiffResponse"];
-                };
-            };
-            /** @description 인증 필요 */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SyncDiffResponse"];
-                };
-            };
-            /** @description 권한 없음 */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SyncDiffResponse"];
-                };
-            };
-            /** @description 리소스를 찾을 수 없음 */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SyncDiffResponse"];
-                };
-            };
-        };
-    };
-    syncLabels_1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                issueNumber: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["SyncLabelsRequest"];
+                "application/json": components["schemas"]["SyncPartRevisionsRequest"];
             };
         };
         responses: {
@@ -7678,173 +8502,13 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                issueNumber: number;
+                engineeringChangeNumber: number;
             };
             cookie?: never;
         };
         requestBody: {
             content: {
                 "application/json": components["schemas"]["SyncIssuesRequest"];
-            };
-        };
-        responses: {
-            /** @description 요청 성공 */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SyncDiffResponse"];
-                };
-            };
-            /** @description 생성 성공 */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SyncDiffResponse"];
-                };
-            };
-            /** @description 삭제 성공 */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["SyncDiffResponse"];
-                };
-            };
-            /** @description 잘못된 요청 */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SyncDiffResponse"];
-                };
-            };
-            /** @description 인증 필요 */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SyncDiffResponse"];
-                };
-            };
-            /** @description 권한 없음 */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SyncDiffResponse"];
-                };
-            };
-            /** @description 리소스를 찾을 수 없음 */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SyncDiffResponse"];
-                };
-            };
-        };
-    };
-    syncAssignees_1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                issueNumber: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["SyncAssigneesRequest"];
-            };
-        };
-        responses: {
-            /** @description 요청 성공 */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SyncDiffResponse"];
-                };
-            };
-            /** @description 생성 성공 */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SyncDiffResponse"];
-                };
-            };
-            /** @description 삭제 성공 */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["SyncDiffResponse"];
-                };
-            };
-            /** @description 잘못된 요청 */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SyncDiffResponse"];
-                };
-            };
-            /** @description 인증 필요 */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SyncDiffResponse"];
-                };
-            };
-            /** @description 권한 없음 */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SyncDiffResponse"];
-                };
-            };
-            /** @description 리소스를 찾을 수 없음 */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SyncDiffResponse"];
-                };
-            };
-        };
-    };
-    syncTeamAssignees_1: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                issueNumber: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["SyncTeamAssigneesRequest"];
             };
         };
         responses: {
@@ -9298,12 +9962,369 @@ export interface operations {
             };
         };
     };
-    getPartFiles: {
+    listParts: {
+        parameters: {
+            query?: {
+                search?: string;
+                category?: string;
+                lifecycle_state?: string;
+                has_drawing?: boolean;
+                has_children?: boolean;
+                project_id?: string;
+                /**
+                 * @description 다음 페이지 조회 기준 커서
+                 * @example QUVTLTEwMHw1NTBlODQwMC1lMjliLTQxZDQtYTcxNi00NDY2NTU0NDAwMDA
+                 */
+                next_cursor?: string;
+                /**
+                 * @description 이전 페이지 조회 기준 커서
+                 * @example QUVTLTEwMHw1NTBlODQwMC1lMjliLTQxZDQtYTcxNi00NDY2NTU0NDAwMDA
+                 */
+                prev_cursor?: string;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartListResponse"];
+                };
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartListResponse"];
+                };
+            };
+            /** @description 삭제 성공 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PartListResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartListResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartListResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartListResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartListResponse"];
+                };
+            };
+        };
+    };
+    createPart: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreatePartRequest"];
+            };
+        };
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartDetailResponse"];
+                };
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartDetailResponse"];
+                };
+            };
+            /** @description 삭제 성공 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PartDetailResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartDetailResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartDetailResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartDetailResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartDetailResponse"];
+                };
+            };
+            /** @description 리소스 충돌 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartDetailResponse"];
+                };
+            };
+            /** @description 입력값 검증 실패 */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartDetailResponse"];
+                };
+            };
+        };
+    };
+    release: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                partId: string;
+                /** @description 품번 */
+                partNumber: string;
+                /** @description 리비전 코드 */
+                revisionCode: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PartRevisionChangeReasonRequest"];
+            };
+        };
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartDetailResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartDetailResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartDetailResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartDetailResponse"];
+                };
+            };
+            /** @description 이미 릴리즈됨, 최신 승인 리비전 아님, 현재 상태에서 릴리즈 불가 등 리소스 상태 충돌 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 입력값 검증 실패 */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartDetailResponse"];
+                };
+            };
+        };
+    };
+    createPreviewFile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 품번 */
+                partNumber: string;
+                /** @description 리비전 코드 */
+                revisionCode: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UploadPartPreviewFileRequest"];
+            };
+        };
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartPreviewResponse"];
+                };
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartPreviewResponse"];
+                };
+            };
+            /** @description 삭제 성공 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PartPreviewResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartPreviewResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartPreviewResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartPreviewResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartPreviewResponse"];
+                };
+            };
+        };
+    };
+    getFiles: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 품번 */
+                partNumber: string;
+                /** @description 리비전 코드 */
+                revisionCode: string;
             };
             cookie?: never;
         };
@@ -9379,7 +10400,10 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                partId: string;
+                /** @description 품번 */
+                partNumber: string;
+                /** @description 리비전 코드 */
+                revisionCode: string;
             };
             cookie?: never;
         };
@@ -9395,7 +10419,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["FileItemResponse"][];
+                    "application/json": components["schemas"]["PartAttachmentItemResponse"][];
                 };
             };
             /** @description 생성 성공 */
@@ -9404,7 +10428,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["FileItemResponse"][];
+                    "application/json": components["schemas"]["PartAttachmentItemResponse"][];
                 };
             };
             /** @description 삭제 성공 */
@@ -9413,7 +10437,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["FileItemResponse"][];
+                    "*/*": components["schemas"]["PartAttachmentItemResponse"][];
                 };
             };
             /** @description 잘못된 요청 */
@@ -9422,7 +10446,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["FileItemResponse"][];
+                    "application/json": components["schemas"]["PartAttachmentItemResponse"][];
                 };
             };
             /** @description 인증 필요 */
@@ -9431,7 +10455,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["FileItemResponse"][];
+                    "application/json": components["schemas"]["PartAttachmentItemResponse"][];
                 };
             };
             /** @description 권한 없음 */
@@ -9440,7 +10464,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["FileItemResponse"][];
+                    "application/json": components["schemas"]["PartAttachmentItemResponse"][];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -9449,17 +10473,20 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["FileItemResponse"][];
+                    "application/json": components["schemas"]["PartAttachmentItemResponse"][];
                 };
             };
         };
     };
-    registerDrawingForPart: {
+    createDrawing: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                partId: string;
+                /** @description 품번 */
+                partNumber: string;
+                /** @description 리비전 코드 */
+                revisionCode: string;
             };
             cookie?: never;
         };
@@ -9534,16 +10561,556 @@ export interface operations {
             };
         };
     };
-    deleteDrawingFromPart: {
+    create: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                partId: string;
+                /** @description 기준 품번 */
+                partNumber: string;
+                /** @description 기준 리비전 코드 */
+                revisionCode: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["CreatePartDraftRequest"];
+            };
+        };
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartDetailResponse"];
+                };
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartDetailResponse"];
+                };
+            };
+            /** @description 삭제 성공 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PartDetailResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartDetailResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartDetailResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartDetailResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartDetailResponse"];
+                };
+            };
+            /** @description 리소스 충돌 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartDetailResponse"];
+                };
+            };
+            /** @description 입력값 검증 실패 */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartDetailResponse"];
+                };
+            };
+        };
+    };
+    releaseFromRevision: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 품번 */
+                partNumber: string;
+                /** @description 기준 리비전 코드 */
+                revisionCode: string;
+                /** @description 초안 키 */
+                draftKey: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PartRevisionChangeReasonRequest"];
+            };
+        };
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartDetailResponse"];
+                };
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartDetailResponse"];
+                };
+            };
+            /** @description 삭제 성공 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PartDetailResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartDetailResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartDetailResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartDetailResponse"];
+                };
+            };
+            /** @description 입력값 검증 실패 */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartDetailResponse"];
+                };
+            };
+        };
+    };
+    uploadPreviewFileFromRevision: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 품번 */
+                partNumber: string;
+                /** @description 기준 리비전 코드 */
+                revisionCode: string;
+                /** @description 초안 키 */
+                draftKey: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UploadPartPreviewFileRequest"];
+            };
+        };
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartPreviewResponse"];
+                };
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartPreviewResponse"];
+                };
+            };
+            /** @description 삭제 성공 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PartPreviewResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartPreviewResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartPreviewResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartPreviewResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartPreviewResponse"];
+                };
+            };
+        };
+    };
+    getFilesFromRevision: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 품번 */
+                partNumber: string;
+                /** @description 기준 리비전 코드 */
+                revisionCode: string;
+                /** @description 초안 키 */
+                draftKey: string;
             };
             cookie?: never;
         };
         requestBody?: never;
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartFilesResponse"];
+                };
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartFilesResponse"];
+                };
+            };
+            /** @description 삭제 성공 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PartFilesResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartFilesResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartFilesResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartFilesResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartFilesResponse"];
+                };
+            };
+        };
+    };
+    attachFilesFromRevision: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 품번 */
+                partNumber: string;
+                /** @description 기준 리비전 코드 */
+                revisionCode: string;
+                /** @description 초안 키 */
+                draftKey: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AttachFilesRequest"];
+            };
+        };
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartAttachmentItemResponse"][];
+                };
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartAttachmentItemResponse"][];
+                };
+            };
+            /** @description 삭제 성공 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PartAttachmentItemResponse"][];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartAttachmentItemResponse"][];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartAttachmentItemResponse"][];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartAttachmentItemResponse"][];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartAttachmentItemResponse"][];
+                };
+            };
+        };
+    };
+    createDrawingFromRevision: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 품번 */
+                partNumber: string;
+                /** @description 기준 리비전 코드 */
+                revisionCode: string;
+                /** @description 초안 키 */
+                draftKey: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegisterDrawingRequest"];
+            };
+        };
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegisterDrawingResponse"];
+                };
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegisterDrawingResponse"];
+                };
+            };
+            /** @description 삭제 성공 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["RegisterDrawingResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegisterDrawingResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegisterDrawingResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegisterDrawingResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegisterDrawingResponse"];
+                };
+            };
+        };
+    };
+    cancelFromRevision: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 품번 */
+                partNumber: string;
+                /** @description 기준 리비전 코드 */
+                revisionCode: string;
+                /** @description 초안 키 */
+                draftKey: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PartRevisionChangeReasonRequest"];
+            };
+        };
         responses: {
             /** @description 요청 성공 */
             200: {
@@ -9585,7 +11152,9 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 리소스를 찾을 수 없음 */
             404: {
@@ -9593,6 +11162,697 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description 입력값 검증 실패 */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    approveFromRevision: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 품번 */
+                partNumber: string;
+                /** @description 기준 리비전 코드 */
+                revisionCode: string;
+                /** @description 초안 키 */
+                draftKey: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PartRevisionChangeReasonRequest"];
+            };
+        };
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartDetailResponse"];
+                };
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartDetailResponse"];
+                };
+            };
+            /** @description 삭제 성공 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PartDetailResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartDetailResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartDetailResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartDetailResponse"];
+                };
+            };
+            /** @description 입력값 검증 실패 */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartDetailResponse"];
+                };
+            };
+        };
+    };
+    release_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 품번 */
+                partNumber: string;
+                /** @description 초안 키 */
+                draftKey: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PartRevisionChangeReasonRequest"];
+            };
+        };
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartDetailResponse"];
+                };
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartDetailResponse"];
+                };
+            };
+            /** @description 삭제 성공 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PartDetailResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartDetailResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartDetailResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartDetailResponse"];
+                };
+            };
+            /** @description 입력값 검증 실패 */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartDetailResponse"];
+                };
+            };
+        };
+    };
+    uploadPreviewFile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 품번 */
+                partNumber: string;
+                /** @description 초안 키 */
+                draftKey: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UploadPartPreviewFileRequest"];
+            };
+        };
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartPreviewResponse"];
+                };
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartPreviewResponse"];
+                };
+            };
+            /** @description 삭제 성공 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PartPreviewResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartPreviewResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartPreviewResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartPreviewResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartPreviewResponse"];
+                };
+            };
+        };
+    };
+    getFiles_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 품번 */
+                partNumber: string;
+                /** @description 초안 키 */
+                draftKey: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartFilesResponse"];
+                };
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartFilesResponse"];
+                };
+            };
+            /** @description 삭제 성공 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PartFilesResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartFilesResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartFilesResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartFilesResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartFilesResponse"];
+                };
+            };
+        };
+    };
+    attachFiles_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 품번 */
+                partNumber: string;
+                /** @description 초안 키 */
+                draftKey: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AttachFilesRequest"];
+            };
+        };
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartAttachmentItemResponse"][];
+                };
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartAttachmentItemResponse"][];
+                };
+            };
+            /** @description 삭제 성공 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PartAttachmentItemResponse"][];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartAttachmentItemResponse"][];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartAttachmentItemResponse"][];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartAttachmentItemResponse"][];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartAttachmentItemResponse"][];
+                };
+            };
+        };
+    };
+    createDrawing_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 품번 */
+                partNumber: string;
+                /** @description 초안 키 */
+                draftKey: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RegisterDrawingRequest"];
+            };
+        };
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegisterDrawingResponse"];
+                };
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegisterDrawingResponse"];
+                };
+            };
+            /** @description 삭제 성공 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["RegisterDrawingResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegisterDrawingResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegisterDrawingResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegisterDrawingResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegisterDrawingResponse"];
+                };
+            };
+        };
+    };
+    cancel: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 품번 */
+                partNumber: string;
+                /** @description 초안 키 */
+                draftKey: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PartRevisionChangeReasonRequest"];
+            };
+        };
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 삭제 성공 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 입력값 검증 실패 */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    approve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 품번 */
+                partNumber: string;
+                /** @description 초안 키 */
+                draftKey: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PartRevisionChangeReasonRequest"];
+            };
+        };
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartDetailResponse"];
+                };
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartDetailResponse"];
+                };
+            };
+            /** @description 삭제 성공 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PartDetailResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartDetailResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartDetailResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartDetailResponse"];
+                };
+            };
+            /** @description 입력값 검증 실패 */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartDetailResponse"];
+                };
             };
         };
     };
@@ -10944,79 +13204,15 @@ export interface operations {
             };
         };
     };
-    registerRenderSource: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description render source를 등록할 도면 ID */
-                drawingId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["RegisterDrawingRenderSourceRequest"];
-            };
-        };
-        responses: {
-            /** @description 요청 성공 */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["RegisterDrawingRenderSourceResponse"];
-                };
-            };
-            /** @description 잘못된 요청 */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["RegisterDrawingRenderSourceResponse"];
-                };
-            };
-            /** @description 인증 필요 */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["RegisterDrawingRenderSourceResponse"];
-                };
-            };
-            /** @description 권한 없음 */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["RegisterDrawingRenderSourceResponse"];
-                };
-            };
-            /** @description 리소스를 찾을 수 없음 */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["RegisterDrawingRenderSourceResponse"];
-                };
-            };
-        };
-    };
-    listChangeRequests: {
+    listEngineeringChanges: {
         parameters: {
             query?: {
                 /**
-                 * @description 변경요청 제목 검색어
+                 * @description 변경관리 제목 검색어
                  * @example 품번
                  */
                 search?: string;
                 state?: string;
-                cr_state?: string;
                 offset?: number;
                 limit?: number;
             };
@@ -11032,7 +13228,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ChangeRequestListResponse"];
+                    "application/json": components["schemas"]["EngineeringChangeListResponse"];
                 };
             };
             /** @description 생성 성공 */
@@ -11041,7 +13237,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ChangeRequestListResponse"];
+                    "application/json": components["schemas"]["EngineeringChangeListResponse"];
                 };
             };
             /** @description 삭제 성공 */
@@ -11050,7 +13246,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["ChangeRequestListResponse"];
+                    "*/*": components["schemas"]["EngineeringChangeListResponse"];
                 };
             };
             /** @description 잘못된 요청 */
@@ -11059,7 +13255,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ChangeRequestListResponse"];
+                    "application/json": components["schemas"]["EngineeringChangeListResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -11068,7 +13264,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ChangeRequestListResponse"];
+                    "application/json": components["schemas"]["EngineeringChangeListResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -11077,7 +13273,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ChangeRequestListResponse"];
+                    "application/json": components["schemas"]["EngineeringChangeListResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -11086,12 +13282,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ChangeRequestListResponse"];
+                    "application/json": components["schemas"]["EngineeringChangeListResponse"];
                 };
             };
         };
     };
-    createChangeRequest: {
+    createEngineeringChange: {
         parameters: {
             query?: never;
             header?: never;
@@ -11100,7 +13296,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["CreateChangeRequestRequest"];
+                "application/json": components["schemas"]["CreateEngineeringChangeRequest"];
             };
         };
         responses: {
@@ -11110,7 +13306,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ChangeRequestResponse"];
+                    "application/json": components["schemas"]["EngineeringChangeResponse"];
                 };
             };
             /** @description 생성 성공 */
@@ -11119,7 +13315,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ChangeRequestResponse"];
+                    "application/json": components["schemas"]["EngineeringChangeResponse"];
                 };
             };
             /** @description 삭제 성공 */
@@ -11128,7 +13324,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["ChangeRequestResponse"];
+                    "*/*": components["schemas"]["EngineeringChangeResponse"];
                 };
             };
             /** @description 잘못된 요청 */
@@ -11137,7 +13333,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ChangeRequestResponse"];
+                    "application/json": components["schemas"]["EngineeringChangeResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -11146,7 +13342,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ChangeRequestResponse"];
+                    "application/json": components["schemas"]["EngineeringChangeResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -11155,7 +13351,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ChangeRequestResponse"];
+                    "application/json": components["schemas"]["EngineeringChangeResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -11164,7 +13360,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ChangeRequestResponse"];
+                    "application/json": components["schemas"]["EngineeringChangeResponse"];
                 };
             };
         };
@@ -11174,7 +13370,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                issueNumber: number;
+                engineeringChangeNumber: number;
             };
             cookie?: never;
         };
@@ -11186,7 +13382,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ChangeRequestResponse"];
+                    "application/json": components["schemas"]["EngineeringChangeResponse"];
                 };
             };
             /** @description 생성 성공 */
@@ -11195,7 +13391,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ChangeRequestResponse"];
+                    "application/json": components["schemas"]["EngineeringChangeResponse"];
                 };
             };
             /** @description 삭제 성공 */
@@ -11204,7 +13400,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["ChangeRequestResponse"];
+                    "*/*": components["schemas"]["EngineeringChangeResponse"];
                 };
             };
             /** @description 잘못된 요청 */
@@ -11213,7 +13409,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ChangeRequestResponse"];
+                    "application/json": components["schemas"]["EngineeringChangeResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -11222,7 +13418,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ChangeRequestResponse"];
+                    "application/json": components["schemas"]["EngineeringChangeResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -11231,7 +13427,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ChangeRequestResponse"];
+                    "application/json": components["schemas"]["EngineeringChangeResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -11240,97 +13436,17 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ChangeRequestResponse"];
+                    "application/json": components["schemas"]["EngineeringChangeResponse"];
                 };
             };
         };
     };
-    submitReview: {
+    approveReview: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                issueNumber: number;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["SubmitReviewRequest"];
-            };
-        };
-        responses: {
-            /** @description 요청 성공 */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SubmitReviewResponse"];
-                };
-            };
-            /** @description 생성 성공 */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SubmitReviewResponse"];
-                };
-            };
-            /** @description 삭제 성공 */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["SubmitReviewResponse"];
-                };
-            };
-            /** @description 잘못된 요청 */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SubmitReviewResponse"];
-                };
-            };
-            /** @description 인증 필요 */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SubmitReviewResponse"];
-                };
-            };
-            /** @description 권한 없음 */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SubmitReviewResponse"];
-                };
-            };
-            /** @description 리소스를 찾을 수 없음 */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SubmitReviewResponse"];
-                };
-            };
-        };
-    };
-    reopen: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                issueNumber: number;
+                engineeringChangeNumber: number;
             };
             cookie?: never;
         };
@@ -11342,7 +13458,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ChangeRequestResponse"];
+                    "application/json": components["schemas"]["EngineeringChangeResponse"];
                 };
             };
             /** @description 생성 성공 */
@@ -11351,7 +13467,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ChangeRequestResponse"];
+                    "application/json": components["schemas"]["EngineeringChangeResponse"];
                 };
             };
             /** @description 삭제 성공 */
@@ -11360,7 +13476,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["ChangeRequestResponse"];
+                    "*/*": components["schemas"]["EngineeringChangeResponse"];
                 };
             };
             /** @description 잘못된 요청 */
@@ -11369,7 +13485,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ChangeRequestResponse"];
+                    "application/json": components["schemas"]["EngineeringChangeResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -11378,7 +13494,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ChangeRequestResponse"];
+                    "application/json": components["schemas"]["EngineeringChangeResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -11387,7 +13503,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ChangeRequestResponse"];
+                    "application/json": components["schemas"]["EngineeringChangeResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -11396,17 +13512,17 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ChangeRequestResponse"];
+                    "application/json": components["schemas"]["EngineeringChangeResponse"];
                 };
             };
         };
     };
-    merge: {
+    release_2: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                issueNumber: number;
+                engineeringChangeNumber: number;
             };
             cookie?: never;
         };
@@ -11418,7 +13534,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ChangeRequestResponse"];
+                    "application/json": components["schemas"]["EngineeringChangeResponse"];
                 };
             };
             /** @description 생성 성공 */
@@ -11427,7 +13543,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ChangeRequestResponse"];
+                    "application/json": components["schemas"]["EngineeringChangeResponse"];
                 };
             };
             /** @description 삭제 성공 */
@@ -11436,7 +13552,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["ChangeRequestResponse"];
+                    "*/*": components["schemas"]["EngineeringChangeResponse"];
                 };
             };
             /** @description 잘못된 요청 */
@@ -11445,7 +13561,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ChangeRequestResponse"];
+                    "application/json": components["schemas"]["EngineeringChangeResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -11454,7 +13570,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ChangeRequestResponse"];
+                    "application/json": components["schemas"]["EngineeringChangeResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -11463,7 +13579,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ChangeRequestResponse"];
+                    "application/json": components["schemas"]["EngineeringChangeResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -11472,7 +13588,83 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ChangeRequestResponse"];
+                    "application/json": components["schemas"]["EngineeringChangeResponse"];
+                };
+            };
+        };
+    };
+    reject: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                engineeringChangeNumber: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EngineeringChangeResponse"];
+                };
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EngineeringChangeResponse"];
+                };
+            };
+            /** @description 삭제 성공 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["EngineeringChangeResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EngineeringChangeResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EngineeringChangeResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EngineeringChangeResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EngineeringChangeResponse"];
                 };
             };
         };
@@ -11482,7 +13674,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                issueNumber: number;
+                engineeringChangeNumber: number;
             };
             cookie?: never;
         };
@@ -11562,7 +13754,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                issueNumber: number;
+                engineeringChangeNumber: number;
             };
             cookie?: never;
         };
@@ -11637,12 +13829,12 @@ export interface operations {
             };
         };
     };
-    close: {
+    cancel_1: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                issueNumber: number;
+                engineeringChangeNumber: number;
             };
             cookie?: never;
         };
@@ -11654,7 +13846,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ChangeRequestResponse"];
+                    "application/json": components["schemas"]["EngineeringChangeResponse"];
                 };
             };
             /** @description 생성 성공 */
@@ -11663,7 +13855,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ChangeRequestResponse"];
+                    "application/json": components["schemas"]["EngineeringChangeResponse"];
                 };
             };
             /** @description 삭제 성공 */
@@ -11672,7 +13864,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["ChangeRequestResponse"];
+                    "*/*": components["schemas"]["EngineeringChangeResponse"];
                 };
             };
             /** @description 잘못된 요청 */
@@ -11681,7 +13873,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ChangeRequestResponse"];
+                    "application/json": components["schemas"]["EngineeringChangeResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -11690,7 +13882,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ChangeRequestResponse"];
+                    "application/json": components["schemas"]["EngineeringChangeResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -11699,7 +13891,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ChangeRequestResponse"];
+                    "application/json": components["schemas"]["EngineeringChangeResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -11708,7 +13900,83 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ChangeRequestResponse"];
+                    "application/json": components["schemas"]["EngineeringChangeResponse"];
+                };
+            };
+        };
+    };
+    approve_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                engineeringChangeNumber: number;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EngineeringChangeResponse"];
+                };
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EngineeringChangeResponse"];
+                };
+            };
+            /** @description 삭제 성공 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["EngineeringChangeResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EngineeringChangeResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EngineeringChangeResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EngineeringChangeResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EngineeringChangeResponse"];
                 };
             };
         };
@@ -12771,13 +15039,165 @@ export interface operations {
             };
         };
     };
-    getPartOwner: {
+    delete_2: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                /** @description 담당자를 조회할 부품 ID */
-                partId: string;
+                /** @description 품번 */
+                partNumber: string;
+                /** @description 리비전 코드 */
+                revisionCode: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 삭제 성공 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    update_2: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 품번 */
+                partNumber: string;
+                /** @description 리비전 코드 */
+                revisionCode: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChangePartPreviewRequest"];
+            };
+        };
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartPreviewResponse"];
+                };
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartPreviewResponse"];
+                };
+            };
+            /** @description 삭제 성공 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PartPreviewResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartPreviewResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartPreviewResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartPreviewResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartPreviewResponse"];
+                };
+            };
+        };
+    };
+    getFromRevision: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 품번 */
+                partNumber: string;
+                /** @description 기준 리비전 코드 */
+                revisionCode: string;
+                /** @description 초안 키 */
+                draftKey: string;
             };
             cookie?: never;
         };
@@ -12789,7 +15209,16 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartOwnerResponse"];
+                    "application/json": components["schemas"]["PartDetailResponse"];
+                };
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartDetailResponse"];
                 };
             };
             /** @description 삭제 성공 */
@@ -12798,7 +15227,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["PartOwnerResponse"];
+                    "*/*": components["schemas"]["PartDetailResponse"];
                 };
             };
             /** @description 잘못된 요청 */
@@ -12807,7 +15236,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartOwnerResponse"];
+                    "application/json": components["schemas"]["PartDetailResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -12816,7 +15245,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartOwnerResponse"];
+                    "application/json": components["schemas"]["PartDetailResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -12825,7 +15254,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartOwnerResponse"];
+                    "application/json": components["schemas"]["PartDetailResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -12834,24 +15263,28 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartOwnerResponse"];
+                    "application/json": components["schemas"]["PartDetailResponse"];
                 };
             };
         };
     };
-    updatePartOwner: {
+    updateFromRevision: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                /** @description 담당자를 수정할 부품 ID */
-                partId: string;
+                /** @description 품번 */
+                partNumber: string;
+                /** @description 기준 리비전 코드 */
+                revisionCode: string;
+                /** @description 초안 키 */
+                draftKey: string;
             };
             cookie?: never;
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["UpdatePartOwnerRequest"];
+                "application/json": components["schemas"]["UpdatePartRevisionRequest"];
             };
         };
         responses: {
@@ -12861,7 +15294,16 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartOwnerResponse"];
+                    "application/json": components["schemas"]["PartDetailResponse"];
+                };
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartDetailResponse"];
                 };
             };
             /** @description 삭제 성공 */
@@ -12870,7 +15312,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["PartOwnerResponse"];
+                    "*/*": components["schemas"]["PartDetailResponse"];
                 };
             };
             /** @description 잘못된 요청 */
@@ -12879,7 +15321,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartOwnerResponse"];
+                    "application/json": components["schemas"]["PartDetailResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -12888,7 +15330,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartOwnerResponse"];
+                    "application/json": components["schemas"]["PartDetailResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -12897,7 +15339,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartOwnerResponse"];
+                    "application/json": components["schemas"]["PartDetailResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -12906,7 +15348,469 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartOwnerResponse"];
+                    "application/json": components["schemas"]["PartDetailResponse"];
+                };
+            };
+        };
+    };
+    deletePreviewFromRevision: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 품번 */
+                partNumber: string;
+                /** @description 기준 리비전 코드 */
+                revisionCode: string;
+                /** @description 초안 키 */
+                draftKey: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 삭제 성공 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    updatePreviewFromRevision: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 품번 */
+                partNumber: string;
+                /** @description 기준 리비전 코드 */
+                revisionCode: string;
+                /** @description 초안 키 */
+                draftKey: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChangePartPreviewRequest"];
+            };
+        };
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartPreviewResponse"];
+                };
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartPreviewResponse"];
+                };
+            };
+            /** @description 삭제 성공 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PartPreviewResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartPreviewResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartPreviewResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartPreviewResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartPreviewResponse"];
+                };
+            };
+        };
+    };
+    get_2: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 품번 */
+                partNumber: string;
+                /** @description 초안 키 */
+                draftKey: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartDetailResponse"];
+                };
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartDetailResponse"];
+                };
+            };
+            /** @description 삭제 성공 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PartDetailResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartDetailResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartDetailResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartDetailResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartDetailResponse"];
+                };
+            };
+        };
+    };
+    update_3: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 품번 */
+                partNumber: string;
+                /** @description 초안 키 */
+                draftKey: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdatePartRevisionRequest"];
+            };
+        };
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartDetailResponse"];
+                };
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartDetailResponse"];
+                };
+            };
+            /** @description 삭제 성공 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PartDetailResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartDetailResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartDetailResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartDetailResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartDetailResponse"];
+                };
+            };
+        };
+    };
+    deletePreview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 품번 */
+                partNumber: string;
+                /** @description 초안 키 */
+                draftKey: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 삭제 성공 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    updatePreview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 품번 */
+                partNumber: string;
+                /** @description 초안 키 */
+                draftKey: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChangePartPreviewRequest"];
+            };
+        };
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartPreviewResponse"];
+                };
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartPreviewResponse"];
+                };
+            };
+            /** @description 삭제 성공 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PartPreviewResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartPreviewResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartPreviewResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartPreviewResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartPreviewResponse"];
                 };
             };
         };
@@ -13496,16 +16400,16 @@ export interface operations {
             };
         };
     };
-    getChangeRequest: {
+    getEngineeringChange: {
         parameters: {
             query?: never;
             header?: never;
             path: {
                 /**
-                 * @description 조회할 변경요청 번호
+                 * @description 조회할 변경관리 번호
                  * @example 201
                  */
-                issueNumber: number;
+                engineeringChangeNumber: number;
             };
             cookie?: never;
         };
@@ -13517,7 +16421,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ChangeRequestResponse"];
+                    "application/json": components["schemas"]["EngineeringChangeResponse"];
                 };
             };
             /** @description 생성 성공 */
@@ -13526,7 +16430,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ChangeRequestResponse"];
+                    "application/json": components["schemas"]["EngineeringChangeResponse"];
                 };
             };
             /** @description 삭제 성공 */
@@ -13535,7 +16439,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["ChangeRequestResponse"];
+                    "*/*": components["schemas"]["EngineeringChangeResponse"];
                 };
             };
             /** @description 잘못된 요청 */
@@ -13544,7 +16448,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ChangeRequestResponse"];
+                    "application/json": components["schemas"]["EngineeringChangeResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -13553,7 +16457,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ChangeRequestResponse"];
+                    "application/json": components["schemas"]["EngineeringChangeResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -13562,7 +16466,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ChangeRequestResponse"];
+                    "application/json": components["schemas"]["EngineeringChangeResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -13571,27 +16475,27 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ChangeRequestResponse"];
+                    "application/json": components["schemas"]["EngineeringChangeResponse"];
                 };
             };
         };
     };
-    updateChangeRequest: {
+    updateEngineeringChange: {
         parameters: {
             query?: never;
             header?: never;
             path: {
                 /**
-                 * @description 수정할 변경요청 번호
+                 * @description 수정할 변경관리 번호
                  * @example 201
                  */
-                issueNumber: number;
+                engineeringChangeNumber: number;
             };
             cookie?: never;
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["UpdateIssueRequest"];
+                "application/json": components["schemas"]["UpdateEngineeringChangeRequest"];
             };
         };
         responses: {
@@ -13601,7 +16505,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ChangeRequestResponse"];
+                    "application/json": components["schemas"]["EngineeringChangeResponse"];
                 };
             };
             /** @description 생성 성공 */
@@ -13610,7 +16514,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ChangeRequestResponse"];
+                    "application/json": components["schemas"]["EngineeringChangeResponse"];
                 };
             };
             /** @description 삭제 성공 */
@@ -13619,7 +16523,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["ChangeRequestResponse"];
+                    "*/*": components["schemas"]["EngineeringChangeResponse"];
                 };
             };
             /** @description 잘못된 요청 */
@@ -13628,7 +16532,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ChangeRequestResponse"];
+                    "application/json": components["schemas"]["EngineeringChangeResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -13637,7 +16541,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ChangeRequestResponse"];
+                    "application/json": components["schemas"]["EngineeringChangeResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -13646,7 +16550,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ChangeRequestResponse"];
+                    "application/json": components["schemas"]["EngineeringChangeResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -13655,7 +16559,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ChangeRequestResponse"];
+                    "application/json": components["schemas"]["EngineeringChangeResponse"];
                 };
             };
         };
@@ -13665,7 +16569,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                issueNumber: number;
+                engineeringChangeNumber: number;
                 commentId: string;
             };
             cookie?: never;
@@ -13728,7 +16632,7 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                issueNumber: number;
+                engineeringChangeNumber: number;
                 commentId: string;
             };
             cookie?: never;
@@ -14447,6 +17351,62 @@ export interface operations {
             };
         };
     };
+    getSettings: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SettingsResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SettingsResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SettingsResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SettingsResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SettingsResponse"];
+                };
+            };
+        };
+    };
     lookupParts: {
         parameters: {
             query?: {
@@ -14669,96 +17629,521 @@ export interface operations {
             };
         };
     };
-    listParts: {
+    get_3: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 품번 */
+                partNumber: string;
+                /** @description 리비전 코드 */
+                revisionCode: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartDetailResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartDetailResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartDetailResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartDetailResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartDetailResponse"];
+                };
+            };
+        };
+    };
+    getSuppliers: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 품번 */
+                partNumber: string;
+                /** @description 리비전 코드 */
+                revisionCode: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartSuppliersResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartSuppliersResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartSuppliersResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartSuppliersResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartSuppliersResponse"];
+                };
+            };
+        };
+    };
+    getProjects: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 품번 */
+                partNumber: string;
+                /** @description 리비전 코드 */
+                revisionCode: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartProjectsResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartProjectsResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartProjectsResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartProjectsResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartProjectsResponse"];
+                };
+            };
+        };
+    };
+    getSources: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 품번 */
+                partNumber: string;
+                /** @description 리비전 코드 */
+                revisionCode: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartPreviewSourcesResponse"];
+                };
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartPreviewSourcesResponse"];
+                };
+            };
+            /** @description 삭제 성공 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PartPreviewSourcesResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartPreviewSourcesResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartPreviewSourcesResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartPreviewSourcesResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartPreviewSourcesResponse"];
+                };
+            };
+        };
+    };
+    getProcessing: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 품번 */
+                partNumber: string;
+                /** @description 리비전 코드 */
+                revisionCode: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartPreviewProcessingResponse"];
+                };
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartPreviewProcessingResponse"];
+                };
+            };
+            /** @description 삭제 성공 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PartPreviewProcessingResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartPreviewProcessingResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartPreviewProcessingResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartPreviewProcessingResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartPreviewProcessingResponse"];
+                };
+            };
+        };
+    };
+    getPreviewSourcesFromRevision: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 품번 */
+                partNumber: string;
+                /** @description 기준 리비전 코드 */
+                revisionCode: string;
+                /** @description 초안 키 */
+                draftKey: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartPreviewSourcesResponse"];
+                };
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartPreviewSourcesResponse"];
+                };
+            };
+            /** @description 삭제 성공 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PartPreviewSourcesResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartPreviewSourcesResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartPreviewSourcesResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartPreviewSourcesResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartPreviewSourcesResponse"];
+                };
+            };
+        };
+    };
+    getPreviewProcessingFromRevision: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 품번 */
+                partNumber: string;
+                /** @description 기준 리비전 코드 */
+                revisionCode: string;
+                /** @description 초안 키 */
+                draftKey: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartPreviewProcessingResponse"];
+                };
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartPreviewProcessingResponse"];
+                };
+            };
+            /** @description 삭제 성공 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PartPreviewProcessingResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartPreviewProcessingResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartPreviewProcessingResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartPreviewProcessingResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartPreviewProcessingResponse"];
+                };
+            };
+        };
+    };
+    getDiff: {
         parameters: {
             query?: {
-                search?: string;
-                category?: string;
-                lifecycle_state?: string;
-                has_drawing?: boolean;
-                has_children?: boolean;
-                project_id?: string;
-                offset?: number;
-                limit?: number;
+                /** @description 비교 기준 리비전 코드 */
+                base_revision_code?: string;
             };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description 요청 성공 */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PartListResponse"];
-                };
-            };
-            /** @description 생성 성공 */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PartListResponse"];
-                };
-            };
-            /** @description 삭제 성공 */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["PartListResponse"];
-                };
-            };
-            /** @description 잘못된 요청 */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PartListResponse"];
-                };
-            };
-            /** @description 인증 필요 */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PartListResponse"];
-                };
-            };
-            /** @description 권한 없음 */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PartListResponse"];
-                };
-            };
-            /** @description 리소스를 찾을 수 없음 */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PartListResponse"];
-                };
-            };
-        };
-    };
-    getPart: {
-        parameters: {
-            query?: never;
             header?: never;
             path: {
-                /** @description 조회할 부품 ID */
-                partId: string;
+                /** @description 품번 */
+                partNumber: string;
+                /** @description 리비전 코드 */
+                revisionCode: string;
             };
             cookie?: never;
         };
@@ -14770,25 +18155,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartDetailResponse"];
-                };
-            };
-            /** @description 생성 성공 */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PartDetailResponse"];
-                };
-            };
-            /** @description 삭제 성공 */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["PartDetailResponse"];
+                    "application/json": components["schemas"]["PartRevisionDiffResponse"];
                 };
             };
             /** @description 잘못된 요청 */
@@ -14797,7 +18164,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartDetailResponse"];
+                    "application/json": components["schemas"]["PartRevisionDiffResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -14806,7 +18173,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartDetailResponse"];
+                    "application/json": components["schemas"]["PartRevisionDiffResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -14815,7 +18182,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartDetailResponse"];
+                    "application/json": components["schemas"]["PartRevisionDiffResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -14824,170 +18191,20 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartDetailResponse"];
+                    "application/json": components["schemas"]["PartRevisionDiffResponse"];
                 };
             };
         };
     };
-    getPartSuppliers: {
+    getBom: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                partId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description 요청 성공 */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PartSuppliersResponse"];
-                };
-            };
-            /** @description 생성 성공 */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PartSuppliersResponse"];
-                };
-            };
-            /** @description 삭제 성공 */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["PartSuppliersResponse"];
-                };
-            };
-            /** @description 잘못된 요청 */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PartSuppliersResponse"];
-                };
-            };
-            /** @description 인증 필요 */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PartSuppliersResponse"];
-                };
-            };
-            /** @description 권한 없음 */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PartSuppliersResponse"];
-                };
-            };
-            /** @description 리소스를 찾을 수 없음 */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PartSuppliersResponse"];
-                };
-            };
-        };
-    };
-    getPartProjects: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                partId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description 요청 성공 */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PartProjectsResponse"];
-                };
-            };
-            /** @description 생성 성공 */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PartProjectsResponse"];
-                };
-            };
-            /** @description 삭제 성공 */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["PartProjectsResponse"];
-                };
-            };
-            /** @description 잘못된 요청 */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PartProjectsResponse"];
-                };
-            };
-            /** @description 인증 필요 */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PartProjectsResponse"];
-                };
-            };
-            /** @description 권한 없음 */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PartProjectsResponse"];
-                };
-            };
-            /** @description 리소스를 찾을 수 없음 */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PartProjectsResponse"];
-                };
-            };
-        };
-    };
-    getPartBom: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description BOM을 조회할 부품 ID */
-                partId: string;
+                /** @description 품번 */
+                partNumber: string;
+                /** @description 리비전 코드 */
+                revisionCode: string;
             };
             cookie?: never;
         };
@@ -15000,24 +18217,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PartBomResponse"];
-                };
-            };
-            /** @description 생성 성공 */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PartBomResponse"];
-                };
-            };
-            /** @description 삭제 성공 */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["PartBomResponse"];
                 };
             };
             /** @description 잘못된 요청 */
@@ -15061,16 +18260,15 @@ export interface operations {
     getBomTree: {
         parameters: {
             query?: {
-                /**
-                 * @description 정전개/역전개 방향
-                 * @example FORWARD
-                 */
+                /** @description 전개 방향 */
                 direction?: string;
             };
             header?: never;
             path: {
-                /** @description BOM 트리를 조회할 부품 ID */
-                partId: string;
+                /** @description 품번 */
+                partNumber: string;
+                /** @description 리비전 코드 */
+                revisionCode: string;
             };
             cookie?: never;
         };
@@ -15083,24 +18281,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["BomTreeResponse"];
-                };
-            };
-            /** @description 생성 성공 */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["BomTreeResponse"];
-                };
-            };
-            /** @description 삭제 성공 */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["BomTreeResponse"];
                 };
             };
             /** @description 잘못된 요청 */
@@ -15144,12 +18324,17 @@ export interface operations {
     exportBomTree: {
         parameters: {
             query?: {
+                /** @description 전개 방향 */
                 direction?: string;
+                /** @description 매핑 ID */
                 mapping_id?: string;
             };
             header?: never;
             path: {
-                partId: string;
+                /** @description 품번 */
+                partNumber: string;
+                /** @description 리비전 코드 */
+                revisionCode: string;
             };
             cookie?: never;
         };
@@ -15157,24 +18342,6 @@ export interface operations {
         responses: {
             /** @description 요청 성공 */
             200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": string;
-                };
-            };
-            /** @description 생성 성공 */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": string;
-                };
-            };
-            /** @description 삭제 성공 */
-            204: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -15216,6 +18383,223 @@ export interface operations {
                 };
                 content: {
                     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": string;
+                };
+            };
+        };
+    };
+    getHistory: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 품번 */
+                partNumber: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartRevisionHistoryResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartRevisionHistoryResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartRevisionHistoryResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartRevisionHistoryResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartRevisionHistoryResponse"];
+                };
+            };
+        };
+    };
+    getPreviewSources: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 품번 */
+                partNumber: string;
+                /** @description 초안 키 */
+                draftKey: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartPreviewSourcesResponse"];
+                };
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartPreviewSourcesResponse"];
+                };
+            };
+            /** @description 삭제 성공 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PartPreviewSourcesResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartPreviewSourcesResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartPreviewSourcesResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartPreviewSourcesResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartPreviewSourcesResponse"];
+                };
+            };
+        };
+    };
+    getPreviewProcessing: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 품번 */
+                partNumber: string;
+                /** @description 초안 키 */
+                draftKey: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartPreviewProcessingResponse"];
+                };
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartPreviewProcessingResponse"];
+                };
+            };
+            /** @description 삭제 성공 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PartPreviewProcessingResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartPreviewProcessingResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartPreviewProcessingResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartPreviewProcessingResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartPreviewProcessingResponse"];
                 };
             };
         };
@@ -15301,6 +18685,108 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PartLookupResponse"];
+                };
+            };
+        };
+    };
+    listInProgressParts: {
+        parameters: {
+            query?: {
+                search?: string;
+                category?: string;
+                lifecycle_state?: string;
+                /**
+                 * @description 조회할 리비전 상태 목록
+                 * @example DRAFT
+                 */
+                statuses?: "DRAFT"[];
+                /**
+                 * @description 현재 사용자가 만든 작업만 조회할지 여부
+                 * @example true
+                 */
+                mine_only?: boolean;
+                has_drawing?: boolean;
+                has_children?: boolean;
+                project_id?: string;
+                /**
+                 * @description 다음 페이지 조회 기준 커서
+                 * @example NTUwZTg0MDAtZTI5Yi00MWQ0LWE3MTYtNDQ2NjU1NDQwMDAw
+                 */
+                next_cursor?: string;
+                /**
+                 * @description 이전 페이지 조회 기준 커서
+                 * @example NTUwZTg0MDAtZTI5Yi00MWQ0LWE3MTYtNDQ2NjU1NDQwMDAw
+                 */
+                prev_cursor?: string;
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartInProgressListResponse"];
+                };
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartInProgressListResponse"];
+                };
+            };
+            /** @description 삭제 성공 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PartInProgressListResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartInProgressListResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartInProgressListResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartInProgressListResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartInProgressListResponse"];
                 };
             };
         };
@@ -15458,6 +18944,91 @@ export interface operations {
                 };
                 content: {
                     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": string;
+                };
+            };
+        };
+    };
+    lookupDrafts: {
+        parameters: {
+            query?: {
+                /**
+                 * @description 품번/품명 검색어
+                 * @example AES
+                 */
+                search?: string;
+                /**
+                 * @description 조회 건수
+                 * @example 10
+                 */
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartDraftLookupResponse"];
+                };
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartDraftLookupResponse"];
+                };
+            };
+            /** @description 삭제 성공 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PartDraftLookupResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartDraftLookupResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartDraftLookupResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartDraftLookupResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartDraftLookupResponse"];
                 };
             };
         };
@@ -16280,11 +19851,6 @@ export interface operations {
                  */
                 search?: string;
                 /**
-                 * @description 조회할 이슈 타입
-                 * @example ISSUE
-                 */
-                type?: string;
-                /**
                  * @description 조회 건수
                  * @example 10
                  */
@@ -16361,127 +19927,12 @@ export interface operations {
             };
         };
     };
-    getProcessing: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description 조회할 도면 ID */
-                drawingId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description 요청 성공 */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["DrawingProcessingResponse"];
-                };
-            };
-            /** @description 잘못된 요청 */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["DrawingProcessingResponse"];
-                };
-            };
-            /** @description 인증 필요 */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["DrawingProcessingResponse"];
-                };
-            };
-            /** @description 권한 없음 */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["DrawingProcessingResponse"];
-                };
-            };
-            /** @description 리소스를 찾을 수 없음 */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["DrawingProcessingResponse"];
-                };
-            };
-        };
-    };
-    getStats: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description 조회 성공 */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["DashboardStatsResponse"];
-                };
-            };
-            /** @description 잘못된 요청 */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["DashboardStatsResponse"];
-                };
-            };
-            /** @description 인증 필요 */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["DashboardStatsResponse"];
-                };
-            };
-            /** @description 권한 없음 */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["DashboardStatsResponse"];
-                };
-            };
-            /** @description 리소스를 찾을 수 없음 */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["DashboardStatsResponse"];
-                };
-            };
-        };
-    };
     getTimeline_1: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                issueNumber: number;
+                engineeringChangeNumber: number;
             };
             cookie?: never;
         };
@@ -16552,7 +20003,7 @@ export interface operations {
             };
         };
     };
-    lookupChangeRequests: {
+    lookupEngineeringChanges: {
         parameters: {
             query?: {
                 search?: string;
@@ -16570,7 +20021,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ChangeRequestLookupResponse"];
+                    "application/json": components["schemas"]["EngineeringChangeLookupResponse"];
                 };
             };
             /** @description 생성 성공 */
@@ -16579,7 +20030,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ChangeRequestLookupResponse"];
+                    "application/json": components["schemas"]["EngineeringChangeLookupResponse"];
                 };
             };
             /** @description 삭제 성공 */
@@ -16588,7 +20039,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "*/*": components["schemas"]["ChangeRequestLookupResponse"];
+                    "*/*": components["schemas"]["EngineeringChangeLookupResponse"];
                 };
             };
             /** @description 잘못된 요청 */
@@ -16597,7 +20048,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ChangeRequestLookupResponse"];
+                    "application/json": components["schemas"]["EngineeringChangeLookupResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -16606,7 +20057,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ChangeRequestLookupResponse"];
+                    "application/json": components["schemas"]["EngineeringChangeLookupResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -16615,7 +20066,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ChangeRequestLookupResponse"];
+                    "application/json": components["schemas"]["EngineeringChangeLookupResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -16624,7 +20075,63 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ChangeRequestLookupResponse"];
+                    "application/json": components["schemas"]["EngineeringChangeLookupResponse"];
+                };
+            };
+        };
+    };
+    getStats: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 조회 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DashboardStatsResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DashboardStatsResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DashboardStatsResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DashboardStatsResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DashboardStatsResponse"];
                 };
             };
         };
@@ -16989,13 +20496,559 @@ export interface operations {
             };
         };
     };
-    detachFile: {
+    deletePreviewFile: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                partId: string;
+                /** @description 품번 */
+                partNumber: string;
+                /** @description 리비전 코드 */
+                revisionCode: string;
+                /** @description 미리보기 파일 ID */
+                previewFileId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 삭제 성공 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    deleteFile: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 품번 */
+                partNumber: string;
+                /** @description 리비전 코드 */
+                revisionCode: string;
+                /** @description 파일 ID */
                 fileId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 삭제 성공 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    deleteDrawing: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 품번 */
+                partNumber: string;
+                /** @description 리비전 코드 */
+                revisionCode: string;
+                /** @description 도면 ID */
+                drawingId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 삭제 성공 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    deletePreviewFileFromRevision: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 품번 */
+                partNumber: string;
+                /** @description 기준 리비전 코드 */
+                revisionCode: string;
+                /** @description 초안 키 */
+                draftKey: string;
+                /** @description 미리보기 파일 ID */
+                previewFileId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 삭제 성공 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    deleteFileFromRevision: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 품번 */
+                partNumber: string;
+                /** @description 기준 리비전 코드 */
+                revisionCode: string;
+                /** @description 초안 키 */
+                draftKey: string;
+                /** @description 파일 ID */
+                fileId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 삭제 성공 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    deleteDrawingFromRevision: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 품번 */
+                partNumber: string;
+                /** @description 기준 리비전 코드 */
+                revisionCode: string;
+                /** @description 초안 키 */
+                draftKey: string;
+                /** @description 도면 ID */
+                drawingId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 삭제 성공 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    deletePreviewFile_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 품번 */
+                partNumber: string;
+                /** @description 초안 키 */
+                draftKey: string;
+                /** @description 미리보기 파일 ID */
+                previewFileId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 삭제 성공 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    deleteFile_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 품번 */
+                partNumber: string;
+                /** @description 초안 키 */
+                draftKey: string;
+                /** @description 파일 ID */
+                fileId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 삭제 성공 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    deleteDrawing_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 품번 */
+                partNumber: string;
+                /** @description 초안 키 */
+                draftKey: string;
+                /** @description 도면 ID */
+                drawingId: string;
             };
             cookie?: never;
         };
@@ -17143,7 +21196,7 @@ export interface operations {
             };
         };
     };
-    deleteFile: {
+    deleteFile_2: {
         parameters: {
             query?: never;
             header?: never;
@@ -17206,12 +21259,12 @@ export interface operations {
             };
         };
     };
-    deleteFile_1: {
+    deleteFile_3: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                issueNumber: number;
+                engineeringChangeNumber: number;
                 fileId: string;
             };
             cookie?: never;

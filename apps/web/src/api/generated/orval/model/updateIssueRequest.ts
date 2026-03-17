@@ -7,7 +7,7 @@
 import type { JsonNode } from './jsonNode';
 
 /**
- * 변경요청 수정 요청
+ * 이슈 수정 요청
  */
 export interface UpdateIssueRequest {
   /**

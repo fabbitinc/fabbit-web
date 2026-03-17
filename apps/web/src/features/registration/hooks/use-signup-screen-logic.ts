@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from "react";
+import type { SignupScreenEmailStatus } from "@fabbit/components";
 import { useNavigate } from "react-router-dom";
 import type { TurnstileInstance } from "@marsidev/react-turnstile";
 import { useSendVerificationAction } from "@/features/auth/hooks/use-send-verification-action";
@@ -76,7 +77,7 @@ export function useSignupScreenLogic() {
     return () => window.clearInterval(timer);
   }, [cooldown]);
 
-  const emailStatus = useMemo(() => {
+  const emailStatus = useMemo<SignupScreenEmailStatus>(() => {
     if (!normalizedEmail) {
       return "idle";
     }

@@ -4,7 +4,6 @@
  * OpenAPI definition
  * OpenAPI spec version: v0
  */
-import type { RegisterDrawingResponseConversionStatus } from './registerDrawingResponseConversionStatus';
 
 /**
  * 응답 DTO
@@ -13,5 +12,4 @@ export interface RegisterDrawingResponse {
   drawing_id?: string;
   drawing_number?: string;
   name?: string;
-  conversion_status?: RegisterDrawingResponseConversionStatus;
 }

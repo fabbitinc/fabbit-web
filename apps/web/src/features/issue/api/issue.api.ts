@@ -9,7 +9,7 @@ import {
   getTimeline as getTimelineApiV1IssuesIssueNumberTimelineGet,
   reopenIssue as reopenIssueApiV1IssuesIssueNumberReopenPost,
   syncAssignees as syncAssigneesApiV1IssuesIssueNumberAssigneesPut,
-  syncChanges as syncChangesApiV1IssuesIssueNumberChangesPut,
+  syncLinkedEngineeringChanges as syncChangesApiV1IssuesIssueNumberEngineeringChangesPut,
   syncLabels as syncLabelsApiV1IssuesIssueNumberLabelsPut,
   syncParts as syncPartsApiV1IssuesIssueNumberPartsPut,
   updateComment as updateCommentApiV1IssuesIssueNumberCommentsCommentIdPatch,
@@ -75,7 +75,7 @@ export async function syncIssueChanges(
   issueNumber: number,
   request: SyncIssueChangesRequestDto,
 ): Promise<SyncIssueChangesResponseDto> {
-  return syncChangesApiV1IssuesIssueNumberChangesPut(issueNumber, request);
+  return syncChangesApiV1IssuesIssueNumberEngineeringChangesPut(issueNumber, request);
 }
 
 export async function syncIssueLabels(
@@ -163,7 +163,6 @@ function toIssueDetailModel(issue: IssueDetailResponseDto): IssueDetailModel {
   return {
     id: issue.id,
     number: issue.number,
-    type: issue.type,
     title: issue.title,
     body: isObjectLike(issue.body) ? issue.body : null,
     bodyText: getPlainTextFromRichText(issue.body),
@@ -178,7 +177,7 @@ function toIssueDetailModel(issue: IssueDetailResponseDto): IssueDetailModel {
     parts: issue.parts.map(toIssuePartModel),
     files: issue.files.map(toIssueFileModel),
     commentsCount: issue.comments_count,
-    linkedChanges: issue.linked_changes.map(toIssueLinkedChangeModel),
+    linkedChanges: issue.linked_engineering_changes.map(toIssueLinkedChangeModel),
   };
 }
 
@@ -220,14 +219,13 @@ function toIssueFileModel(file: IssueDetailResponseDto["files"][number]): IssueF
 }
 
 function toIssueLinkedChangeModel(
-  change: IssueDetailResponseDto["linked_changes"][number],
+  change: IssueDetailResponseDto["linked_engineering_changes"][number],
 ): IssueLinkedChangeModel {
   return {
     id: change.id,
     number: change.number,
     title: change.title,
     state: change.state,
-    crState: change.cr_state,
   };
 }
 

@@ -72,9 +72,9 @@ export function ProjectPartsTab({ isReadonly, projectId }: ProjectPartsTabProps)
           {partsQuery.data?.items.map((part) => (
             <div key={part.id} className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <a className="font-medium text-foreground hover:text-primary" href={`/parts/${part.id}`}>
+                <p className="font-medium text-foreground">
                   {part.partNumber}
-                </a>
+                </p>
                 <p className="mt-1 text-sm text-muted-foreground">{part.name || "이름 없음"}</p>
               </div>
               <Button

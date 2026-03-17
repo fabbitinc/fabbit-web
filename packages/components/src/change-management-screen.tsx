@@ -8,11 +8,11 @@ import {
 } from "lucide-react";
 import { Button, LabelBadge, UserAvatar } from "@fabbit/ui";
 import {
-  getChangeRequestStatusConfig,
+  getEngineeringChangeStatusConfig,
   getIssueStatusConfig,
 } from "./work-item-status";
 
-export type ChangeManagementScreenView = "issues" | "requests";
+export type ChangeManagementScreenView = "issues" | "engineering-changes";
 export type ChangeManagementScreenState = "open" | "closed";
 
 export interface ChangeManagementScreenLabel {
@@ -33,7 +33,7 @@ export interface ChangeManagementScreenItem {
   kind: ChangeManagementScreenView;
   title: string;
   state: string;
-  crState: string | null;
+  engineeringChangeState: string | null;
   createdAt?: string;
   createdBy: string | null;
   updatedAt: string;
@@ -103,8 +103,8 @@ function timeAgo(iso: string) {
 }
 
 function getStatusConfig(item: ChangeManagementScreenItem) {
-  return item.kind === "requests"
-    ? getChangeRequestStatusConfig(item.crState ?? item.state)
+  return item.kind === "engineering-changes"
+    ? getEngineeringChangeStatusConfig(item.engineeringChangeState ?? item.state)
     : getIssueStatusConfig(item.state);
 }
 
@@ -151,13 +151,13 @@ export function ChangeManagementScreen({
         </button>
         <button
           className={`relative px-1 pb-2 text-sm font-medium transition-colors ${
-            queryState.view === "requests" ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+            queryState.view === "engineering-changes" ? "text-foreground" : "text-muted-foreground hover:text-foreground"
           }`}
           type="button"
-          onClick={() => onViewChange("requests")}
+          onClick={() => onViewChange("engineering-changes")}
         >
-          변경 요청
-          {queryState.view === "requests" ? (
+          변경관리
+          {queryState.view === "engineering-changes" ? (
             <span className="absolute inset-x-0 bottom-0 h-0.5 rounded-full bg-foreground" />
           ) : null}
         </button>
@@ -189,7 +189,7 @@ export function ChangeManagementScreen({
           </div>
           <Button size="sm" type="button" onClick={onCreateClick}>
             <Plus className="size-3.5" />
-            {queryState.view === "issues" ? "새 이슈" : "새 변경 요청"}
+            {queryState.view === "issues" ? "새 이슈" : "새 변경관리"}
           </Button>
         </div>
 
@@ -223,8 +223,8 @@ export function ChangeManagementScreen({
                   ? "열린 이슈가 없습니다"
                   : "닫힌 이슈가 없습니다"
                 : queryState.state === "open"
-                  ? "열린 변경 요청이 없습니다"
-                  : "닫힌 변경 요청이 없습니다"}
+                  ? "열린 변경관리가 없습니다"
+                  : "닫힌 변경관리가 없습니다"}
             </p>
           </div>
         ) : null}

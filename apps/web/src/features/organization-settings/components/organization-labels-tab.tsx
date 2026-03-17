@@ -60,7 +60,7 @@ export function OrganizationLabelsTab() {
                 <AlertDialogHeader>
                   <AlertDialogTitle>라벨을 영구 삭제</AlertDialogTitle>
                   <AlertDialogDescription>
-                    이 라벨을 삭제하면 다시 복구할 수 없으며 연결된 이슈와 변경 요청에서 제거됩니다.
+                    이 라벨을 삭제하면 다시 복구할 수 없으며 연결된 이슈와 변경관리에서 제거됩니다.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>

@@ -22,7 +22,7 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
   /**
  * 팀 목록을 조회합니다
- * @summary GET /api/v1/teams
+ * @summary 팀 목록을 조회합니다
  */
 export const listTeams = (
     
@@ -34,7 +34,7 @@ export const listTeams = (
     }
   /**
  * 팀을 생성합니다. 생성 직후 팀 상세를 반환합니다
- * @summary POST /api/v1/teams
+ * @summary 팀을 생성합니다. 생성 직후 팀 상세를 반환합니다
  */
 export const createTeam = (
     createTeamRequest: BodyType<CreateTeamRequest>,
@@ -48,7 +48,7 @@ export const createTeam = (
     }
   /**
  * 팀 상세를 조회합니다
- * @summary GET /api/v1/teams/{teamId}
+ * @summary 팀 상세를 조회합니다
  */
 export const getTeam = (
     teamId: string,
@@ -60,7 +60,7 @@ export const getTeam = (
     }
   /**
  * 팀을 삭제합니다. 팀 멤버 관계도 함께 제거됩니다
- * @summary DELETE /api/v1/teams/{teamId}
+ * @summary 팀을 삭제합니다. 팀 멤버 관계도 함께 제거됩니다
  */
 export const deleteTeam = (
     teamId: string,
@@ -72,7 +72,7 @@ export const deleteTeam = (
     }
   /**
  * 팀 이름/설명을 부분 수정하고 최신 팀 상세를 반환합니다
- * @summary PATCH /api/v1/teams/{teamId}
+ * @summary 팀 이름/설명을 부분 수정하고 최신 팀 상세를 반환합니다
  */
 export const updateTeam = (
     teamId: string,
@@ -87,7 +87,7 @@ export const updateTeam = (
     }
   /**
  * 팀 picker/autocomplete용 경량 목록을 조회합니다
- * @summary GET /api/v1/teams/lookup
+ * @summary 팀 picker/autocomplete용 경량 목록을 조회합니다
  */
 export const lookupTeams = (
     params?: LookupTeamsParams,

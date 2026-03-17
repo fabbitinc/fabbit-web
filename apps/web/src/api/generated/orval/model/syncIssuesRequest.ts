@@ -6,7 +6,7 @@
  */
 
 /**
- * CR-이슈 동기화 요청
+ * 연결 이슈 동기화 요청
  */
 export interface SyncIssuesRequest {
   /** 최종 이슈 ID 목록 */

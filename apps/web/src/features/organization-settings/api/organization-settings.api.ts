@@ -16,11 +16,6 @@ import {
   removeMember as removeMemberApiV1MembersUserIdDelete,
 } from "@/api/generated/orval/members/members";
 import {
-  deleteDefaultOwner as deleteDefaultOwnerApiV1PartsOwnerDefaultsDelete,
-  listDefaultOwners as listDefaultOwnersApiV1PartsOwnerDefaultsGet,
-  upsertDefaultOwner as upsertDefaultOwnerApiV1PartsOwnerDefaultsPut,
-} from "@/api/generated/orval/part-owner/part-owner";
-import {
   listCategories as listCategoriesApiV1PartsCategoriesGet,
   renameCategory as renameCategoryApiV1PartsCategoriesCategoryPatch,
 } from "@/api/generated/orval/parts/parts";
@@ -47,9 +42,6 @@ import type {
   LabelResponseDto,
   MemberListResponseDto,
   MemberSummaryDto,
-  PartDefaultOwnerItemDto,
-  PartDefaultOwnerListResponseDto,
-  PartDefaultOwnerRequestDto,
   RemoveTeamMembersRequestDto,
   RenameCategoryRequestDto,
   SetProfileImageRequestDto,
@@ -61,7 +53,6 @@ import type {
 } from "@/features/organization-settings/api/organization-settings.types";
 import type {
   OrganizationCategoryModel,
-  OrganizationDefaultOwnerModel,
   OrganizationInvitationModel,
   OrganizationLabelModel,
   OrganizationMemberModel,
@@ -147,20 +138,6 @@ export async function renameOrganizationCategory(category: string, request: Rena
   await renameCategoryApiV1PartsCategoriesCategoryPatch(encodeURIComponent(category), request);
 }
 
-export async function fetchOrganizationDefaultOwners() {
-  const response = await listDefaultOwnersApiV1PartsOwnerDefaultsGet();
-  return (response as PartDefaultOwnerListResponseDto).items.map(toOrganizationDefaultOwnerModel);
-}
-
-export async function upsertOrganizationDefaultOwner(request: PartDefaultOwnerRequestDto) {
-  const response = await upsertDefaultOwnerApiV1PartsOwnerDefaultsPut(request);
-  return toOrganizationDefaultOwnerModel(response as PartDefaultOwnerItemDto);
-}
-
-export async function deleteOrganizationDefaultOwner(category?: string) {
-  await deleteDefaultOwnerApiV1PartsOwnerDefaultsDelete(category ? { category } : undefined);
-}
-
 export async function fetchOrganizationLabels() {
   const response = await listLabelsApiV1LabelsGet();
   return (response as LabelListResponseDto).items.map(toOrganizationLabelModel);
@@ -215,17 +192,6 @@ function toOrganizationTeamModel(team: TeamSummaryDto): OrganizationTeamModel {
     memberCount: team.member_count,
     createdBy: team.created_by,
     createdAt: team.created_at,
-  };
-}
-
-function toOrganizationDefaultOwnerModel(item: PartDefaultOwnerItemDto): OrganizationDefaultOwnerModel {
-  return {
-    id: item.id,
-    category: item.category ?? null,
-    defaultOwnerId: item.default_owner_id ?? null,
-    defaultOwner: item.default_owner ? toOrganizationUserSummaryModel(item.default_owner) : null,
-    defaultOwnerTeamId: item.default_owner_team_id ?? null,
-    defaultOwnerTeamName: item.default_owner_team_name ?? null,
   };
 }
 

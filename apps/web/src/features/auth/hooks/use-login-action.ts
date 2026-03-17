@@ -3,6 +3,7 @@ import { authQueries } from "@/features/auth/api/auth.queries";
 import { loginScoped, loginWorkspace, toAuthSessionModel } from "@/features/auth/api/auth.api";
 import { useAuthStore } from "@/features/auth/stores/auth-store";
 import { useRegistrationStore } from "@/features/registration/stores/registration-store";
+import { settingsQueries } from "@/features/settings";
 import { setStoredTokens } from "@/lib/auth-cookies";
 import { isRootDomain } from "@/lib/subdomain";
 
@@ -35,6 +36,11 @@ export function useLoginAction() {
 
       const meResponse = await queryClient.fetchQuery(authQueries.me());
       setSession(toAuthSessionModel(meResponse));
+      try {
+        await queryClient.fetchQuery(settingsQueries.detail());
+      } catch {
+        queryClient.removeQueries({ queryKey: settingsQueries.detail().queryKey });
+      }
 
       return { destination: "/" };
     },

@@ -19,7 +19,7 @@ export interface TiptapMentionItem {
   profileImageUrl?: string | null;
   state?: string;
   number?: number;
-  issueType?: "issue" | "change_request";
+  issueType?: "issue" | "engineering_change";
 }
 
 interface DropdownHandle {
@@ -118,7 +118,7 @@ const MentionDropdown = forwardRef<DropdownHandle, DropdownProps>(
                 <span className="ml-auto flex shrink-0 items-center gap-1.5">
                   {item.issueType && (
                     <span className="text-[10px] text-muted-foreground">
-                      {item.issueType === "issue" ? "이슈" : "변경 요청"}
+                      {item.issueType === "issue" ? "이슈" : "변경관리"}
                     </span>
                   )}
                   {item.state && (

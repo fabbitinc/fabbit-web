@@ -7,7 +7,7 @@
 
 export type GetBomTreeParams = {
 /**
- * 정전개/역전개 방향
+ * 전개 방향
  */
 direction?: string;
 };

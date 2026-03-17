@@ -1,24 +1,40 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { PartsListScreen as PartsListScreenView } from "@fabbit/components";
+import type {
+  PartsListScreenMode,
+  PartsListScreenPrimaryTab,
+  PartsListScreenWorkbenchFilter,
+} from "@fabbit/components";
+import { ListInProgressPartsStatusesItem } from "@/api/generated/orval/model/listInProgressPartsStatusesItem";
 import { LinkPartsToProjectDialog } from "@/features/parts/components/link-parts-to-project-dialog";
 import { useExportPartsAction } from "@/features/parts/hooks/use-export-parts-action";
 import { usePartFilterOptionsQuery } from "@/features/parts/hooks/use-part-filter-options-query";
 import { usePartsListQuery } from "@/features/parts/hooks/use-parts-list-query";
+import { buildPartDetailPath } from "@/features/parts/lib/part-route";
 import { usePartsUploadStore } from "@/features/parts/stores/parts-upload-store";
-import type { PartListItemModel, PartsListQueryState, PartListSortKey } from "@/features/parts/types/parts-model";
+import type {
+  PartListItemModel,
+  PartsListQueryState,
+  PartListSortKey,
+} from "@/features/parts/types/parts-model";
 
 interface PartsListScreenProps {
+  activePrimaryTab: PartsListScreenPrimaryTab;
+  activeWorkbenchFilter: PartsListScreenWorkbenchFilter;
+  mode: PartsListScreenMode;
   queryState: PartsListQueryState;
-  onFiltersApply: (queryState: PartsListQueryState) => void;
   onCategoryChange: (category: string | null) => void;
   onHasChildrenChange: (hasChildren: boolean | null) => void;
   onHasDrawingChange: (hasDrawing: boolean | null) => void;
   onLifecycleStateChange: (lifecycleState: string | null) => void;
-  onPageChange: (page: number) => void;
+  onCursorChange: (cursor: string | null, direction: "next" | "prev" | null) => void;
+  onMineOnlyChange: (mineOnly: boolean) => void;
   onPageSizeChange: (pageSize: number) => void;
+  onPrimaryTabChange: (tab: PartsListScreenPrimaryTab) => void;
   onQueryChange: (query: string) => void;
   onSortChange: (sortKey: PartListSortKey) => void;
+  onWorkbenchFilterChange: (filter: PartsListScreenWorkbenchFilter) => void;
 }
 
 function sortParts(
@@ -54,42 +70,86 @@ function sortParts(
 }
 
 export function PartsListScreen({
+  activePrimaryTab,
+  activeWorkbenchFilter,
+  mode,
   queryState,
-  onFiltersApply,
   onCategoryChange,
   onHasChildrenChange,
   onHasDrawingChange,
   onLifecycleStateChange,
-  onPageChange,
+  onCursorChange,
+  onMineOnlyChange,
   onPageSizeChange,
+  onPrimaryTabChange,
   onQueryChange,
   onSortChange,
+  onWorkbenchFilterChange,
 }: PartsListScreenProps) {
   const navigate = useNavigate();
+  const [draftQuery, setDraftQuery] = useState(queryState.query);
+  const [pendingSearchQuery, setPendingSearchQuery] = useState<string | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isLinkDialogOpen, setIsLinkDialogOpen] = useState(false);
+  const onQueryChangeRef = useRef(onQueryChange);
   const openPartsUploadDialog = usePartsUploadStore((state) => state.openDialog);
+
+  useEffect(() => {
+    onQueryChangeRef.current = onQueryChange;
+  }, [onQueryChange]);
+
+  useEffect(() => {
+    setDraftQuery(queryState.query);
+    setPendingSearchQuery((current) => (current !== null && current !== queryState.query ? null : current));
+  }, [queryState.query]);
+
+  useEffect(() => {
+    const normalizedDraftQuery = draftQuery.trim();
+
+    if (normalizedDraftQuery === queryState.query) {
+      setPendingSearchQuery((current) => (current === normalizedDraftQuery ? null : current));
+      return;
+    }
+
+    const timerId = window.setTimeout(() => {
+      setPendingSearchQuery(normalizedDraftQuery);
+      onQueryChangeRef.current(draftQuery);
+    }, 400);
+
+    return () => {
+      window.clearTimeout(timerId);
+    };
+  }, [draftQuery, queryState.query]);
+
+  const workbenchStatuses = useMemo(() => {
+    if (activePrimaryTab !== "workbench") {
+      return undefined;
+    }
+
+    return [ListInProgressPartsStatusesItem.DRAFT];
+  }, [activePrimaryTab]);
 
   const filterOptionsQuery = usePartFilterOptionsQuery();
   const partsQuery = usePartsListQuery({
+    source: activePrimaryTab === "workbench" ? "workbench" : "master",
     search: queryState.query || undefined,
     category: queryState.category || undefined,
     lifecycle_state: queryState.lifecycleState || undefined,
+    statuses: workbenchStatuses,
+    mine_only: activePrimaryTab === "workbench" ? queryState.mineOnly : undefined,
     has_drawing: queryState.hasDrawing ?? undefined,
     has_children: queryState.hasChildren ?? undefined,
-    offset: (queryState.page - 1) * queryState.pageSize,
+    next_cursor: queryState.cursorDirection === "next" ? queryState.cursor ?? undefined : undefined,
+    prev_cursor: queryState.cursorDirection === "prev" ? queryState.cursor ?? undefined : undefined,
     limit: queryState.pageSize,
   });
   const exportPartsAction = useExportPartsAction();
 
-  const totalCount = partsQuery.data?.total ?? 0;
-  const totalPages = Math.max(1, Math.ceil(totalCount / queryState.pageSize));
-
   useEffect(() => {
-    if (partsQuery.isSuccess && queryState.page > totalPages) {
-      onPageChange(totalPages);
+    if (pendingSearchQuery !== null && queryState.query === pendingSearchQuery && !partsQuery.isFetching) {
+      setPendingSearchQuery(null);
     }
-  }, [onPageChange, partsQuery.isSuccess, queryState.page, totalPages]);
+  }, [partsQuery.isFetching, pendingSearchQuery, queryState.query]);
 
   const sortedItems = useMemo(
     () => sortParts(partsQuery.data?.items ?? [], queryState.sortKey, queryState.sortOrder),
@@ -102,12 +162,17 @@ export function PartsListScreen({
 
   return (
     <PartsListScreenView
+      activePrimaryTab={activePrimaryTab}
+      activeWorkbenchFilter={activeWorkbenchFilter}
       filterOptions={{
         categories: filterOptionsQuery.data?.categories ?? [],
         lifecycleStates: filterOptionsQuery.data?.lifecycleStates ?? [],
       }}
+      hasNextPage={Boolean(partsQuery.data?.nextCursor)}
+      hasPreviousPage={Boolean(partsQuery.data?.prevCursor)}
       isExporting={exportPartsAction.isPending}
-      isLoading={partsQuery.isLoading}
+      isLoading={partsQuery.isLoading && !partsQuery.data}
+      isSearchPending={pendingSearchQuery !== null}
       items={sortedItems}
       linkDialogContent={(
         <LinkPartsToProjectDialog
@@ -117,10 +182,14 @@ export function PartsListScreen({
           onOpenChange={setIsLinkDialogOpen}
         />
       )}
-      onFiltersApply={onFiltersApply}
+      mode={mode}
+      onNextPage={() => onCursorChange(partsQuery.data?.nextCursor ?? null, "next")}
+      onPrimaryTabChange={onPrimaryTabChange}
+      onPreviousPage={() => onCursorChange(partsQuery.data?.prevCursor ?? null, "prev")}
+      onWorkbenchFilterChange={onWorkbenchFilterChange}
       queryState={queryState}
+      searchValue={draftQuery}
       selectedIds={selectedIds}
-      totalCount={totalCount}
       onAllExportClick={() => exportPartsAction.mutate({})}
       onCategoryChange={onCategoryChange}
       onClearSelection={() => setSelectedIds(new Set())}
@@ -137,11 +206,12 @@ export function PartsListScreen({
       onHasDrawingChange={onHasDrawingChange}
       onLifecycleStateChange={onLifecycleStateChange}
       onLinkClick={() => setIsLinkDialogOpen(true)}
-      onPageChange={onPageChange}
+      onMineOnlyChange={onMineOnlyChange}
       onPageSizeChange={onPageSizeChange}
       onQueryChange={onQueryChange}
-      onRowClick={(partId) => navigate(`/parts/${partId}`)}
-      onCreateClick={() => {}}
+      onRowClick={(partId) => navigate(buildPartDetailPath(partId))}
+      onSearchValueChange={setDraftQuery}
+      onCreateClick={() => navigate("/parts/new")}
       onSelectedExportClick={() => exportPartsAction.mutate({ part_ids: selectedPartIds })}
       onSortChange={onSortChange}
       onTemplateAnalysisClick={() => navigate("/parts/templates")}

@@ -27,9 +27,6 @@ const meta = {
   args: {
     activityState: "idle",
     part: samplePart,
-    isDeleting: false,
-    onDelete: () => undefined,
-    onUpload: () => undefined,
   },
 } satisfies Meta<typeof PartDrawingPreview>;
 

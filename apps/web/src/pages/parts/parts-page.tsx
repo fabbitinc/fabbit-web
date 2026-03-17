@@ -1,14 +1,20 @@
 import { useSearchParams } from "react-router-dom";
+import {
+  PartDetailResponseLifecycleState,
+} from "@/api/generated/orval/model/partDetailResponseLifecycleState";
 import { PartsListScreen } from "@/features/parts/components/parts-list-screen";
 import type { PartsListQueryState, PartListSortKey, PartListSortOrder } from "@/features/parts/types/parts-model";
+import { useSettingsQuery } from "@/features/settings";
 
 const defaultQueryState: PartsListQueryState = {
   query: "",
+  cursor: null,
+  cursorDirection: null,
+  mineOnly: false,
   category: null,
   lifecycleState: null,
   hasDrawing: null,
   hasChildren: null,
-  page: 1,
   pageSize: 15,
   sortKey: "partNumber",
   sortOrder: "asc",
@@ -17,6 +23,8 @@ const defaultQueryState: PartsListQueryState = {
 const validSortKeys = new Set<PartListSortKey>(["partNumber", "name", "category", "revision", "lifecycleState"]);
 const validSortOrders = new Set<PartListSortOrder>(["asc", "desc"]);
 const validPageSizes = new Set([15, 30, 50]);
+const validPrimaryTabs = new Set(["master", "workbench"]);
+const validLifecycleStates = new Set(Object.values(PartDetailResponseLifecycleState));
 
 function parsePositiveInteger(value: string | null, fallback: number) {
   if (!value) {
@@ -39,29 +47,48 @@ function parseTriState(value: string | null) {
   return null;
 }
 
-function setOptionalSearchParam(searchParams: URLSearchParams, key: string, value: string | null) {
-  if (!value) {
-    searchParams.delete(key);
-    return;
+function parseLifecycleState(value: string | null): PartsListQueryState["lifecycleState"] {
+  if (
+    !value ||
+    !validLifecycleStates.has(value as NonNullable<PartsListQueryState["lifecycleState"]>)
+  ) {
+    return null;
   }
 
-  searchParams.set(key, value);
+  return value as PartsListQueryState["lifecycleState"];
 }
 
 export function PartsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const settingsQuery = useSettingsQuery();
 
   const sortKeyParam = searchParams.get("sort");
   const sortOrderParam = searchParams.get("order");
   const pageSizeParam = parsePositiveInteger(searchParams.get("pageSize"), defaultQueryState.pageSize);
+  const partWorkflowMode = settingsQuery.data?.partWorkflowMode ?? "DIRECT";
+  const isDirectMode = partWorkflowMode === "DIRECT";
+  const menuParam = searchParams.get("menu");
+  const activePrimaryTab =
+    menuParam && validPrimaryTabs.has(menuParam)
+      ? (menuParam as "master" | "workbench")
+      : "master";
+  const activeWorkbenchFilter =
+    activePrimaryTab !== "workbench"
+      ? "draft"
+      : "draft";
 
   const queryState: PartsListQueryState = {
     query: searchParams.get("q") ?? defaultQueryState.query,
+    cursor: searchParams.get("cursor"),
+    cursorDirection:
+      searchParams.get("cursorDir") === "next" || searchParams.get("cursorDir") === "prev"
+        ? (searchParams.get("cursorDir") as PartsListQueryState["cursorDirection"])
+        : defaultQueryState.cursorDirection,
+    mineOnly: searchParams.get("mine") === "1",
     category: searchParams.get("category"),
-    lifecycleState: searchParams.get("lifecycle"),
+    lifecycleState: parseLifecycleState(searchParams.get("lifecycle")),
     hasDrawing: parseTriState(searchParams.get("drawing")),
     hasChildren: parseTriState(searchParams.get("children")),
-    page: parsePositiveInteger(searchParams.get("page"), defaultQueryState.page),
     pageSize: validPageSizes.has(pageSizeParam) ? pageSizeParam : defaultQueryState.pageSize,
     sortKey: sortKeyParam && validSortKeys.has(sortKeyParam as PartListSortKey)
       ? (sortKeyParam as PartListSortKey)
@@ -73,26 +100,36 @@ export function PartsPage() {
 
   return (
     <PartsListScreen
+      activePrimaryTab={activePrimaryTab}
+      activeWorkbenchFilter={activeWorkbenchFilter}
+      mode={isDirectMode ? "direct" : "change-managed"}
       queryState={queryState}
-      onFiltersApply={(nextQueryState) => {
+      onPrimaryTabChange={(tab) => {
         setSearchParams((previous) => {
           const next = new URLSearchParams(previous);
-          const normalizedQuery = nextQueryState.query.trim();
-
-          setOptionalSearchParam(next, "q", normalizedQuery || null);
-          setOptionalSearchParam(next, "category", nextQueryState.category);
-          setOptionalSearchParam(next, "lifecycle", nextQueryState.lifecycleState);
-          setOptionalSearchParam(
-            next,
-            "drawing",
-            nextQueryState.hasDrawing == null ? null : nextQueryState.hasDrawing ? "with" : "without",
-          );
-          setOptionalSearchParam(
-            next,
-            "children",
-            nextQueryState.hasChildren == null ? null : nextQueryState.hasChildren ? "with" : "without",
-          );
-          next.delete("page");
+          if (tab === "master") {
+            next.delete("menu");
+            next.delete("tab");
+          } else {
+            next.set("menu", tab);
+            next.delete("tab");
+          }
+          next.delete("cursor");
+          next.delete("cursorDir");
+          return next;
+        });
+      }}
+      onWorkbenchFilterChange={(filter) => {
+        setSearchParams((previous) => {
+          const next = new URLSearchParams(previous);
+          if (activePrimaryTab !== "workbench") {
+            next.set("menu", "workbench");
+          }
+          if (filter === "draft") {
+            next.delete("tab");
+          }
+          next.delete("cursor");
+          next.delete("cursorDir");
           return next;
         });
       }}
@@ -104,7 +141,8 @@ export function PartsPage() {
           } else {
             next.set("category", category);
           }
-          next.delete("page");
+          next.delete("cursor");
+          next.delete("cursorDir");
           return next;
         });
       }}
@@ -116,7 +154,8 @@ export function PartsPage() {
           } else {
             next.set("children", hasChildren ? "with" : "without");
           }
-          next.delete("page");
+          next.delete("cursor");
+          next.delete("cursorDir");
           return next;
         });
       }}
@@ -128,29 +167,35 @@ export function PartsPage() {
           } else {
             next.set("drawing", hasDrawing ? "with" : "without");
           }
-          next.delete("page");
+          next.delete("cursor");
+          next.delete("cursorDir");
           return next;
         });
       }}
       onLifecycleStateChange={(lifecycleState) => {
         setSearchParams((previous) => {
           const next = new URLSearchParams(previous);
-          if (!lifecycleState) {
+          const normalizedLifecycleState = parseLifecycleState(lifecycleState);
+
+          if (!normalizedLifecycleState) {
             next.delete("lifecycle");
           } else {
-            next.set("lifecycle", lifecycleState);
+            next.set("lifecycle", normalizedLifecycleState);
           }
-          next.delete("page");
+          next.delete("cursor");
+          next.delete("cursorDir");
           return next;
         });
       }}
-      onPageChange={(page) => {
+      onCursorChange={(cursor, direction) => {
         setSearchParams((previous) => {
           const next = new URLSearchParams(previous);
-          if (page <= 1) {
-            next.delete("page");
+          if (!cursor || !direction) {
+            next.delete("cursor");
+            next.delete("cursorDir");
           } else {
-            next.set("page", String(page));
+            next.set("cursor", cursor);
+            next.set("cursorDir", direction);
           }
           return next;
         });
@@ -163,7 +208,21 @@ export function PartsPage() {
           } else {
             next.set("pageSize", String(pageSize));
           }
-          next.delete("page");
+          next.delete("cursor");
+          next.delete("cursorDir");
+          return next;
+        });
+      }}
+      onMineOnlyChange={(mineOnly) => {
+        setSearchParams((previous) => {
+          const next = new URLSearchParams(previous);
+          if (mineOnly) {
+            next.set("mine", "1");
+          } else {
+            next.delete("mine");
+          }
+          next.delete("cursor");
+          next.delete("cursorDir");
           return next;
         });
       }}
@@ -176,7 +235,8 @@ export function PartsPage() {
           } else {
             next.set("q", normalized);
           }
-          next.delete("page");
+          next.delete("cursor");
+          next.delete("cursorDir");
           return next;
         });
       }}
@@ -199,6 +259,9 @@ export function PartsPage() {
           } else {
             next.set("order", nextOrder);
           }
+
+          next.delete("cursor");
+          next.delete("cursorDir");
 
           return next;
         });

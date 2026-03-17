@@ -5,7 +5,6 @@
  * OpenAPI spec version: v0
  */
 import type { IssueLookupItemResponseState } from './issueLookupItemResponseState';
-import type { IssueLookupItemResponseType } from './issueLookupItemResponseType';
 
 /**
  * 이슈 lookup 항목
@@ -15,5 +14,4 @@ export interface IssueLookupItemResponse {
   number?: number;
   title?: string;
   state?: IssueLookupItemResponseState;
-  type?: IssueLookupItemResponseType;
 }

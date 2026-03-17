@@ -5,7 +5,7 @@ import {
   PartsTemplateMappingCanvasScreen,
   resolvePartsTemplateMappingCanvasRelationLabel,
   type PartsTemplateMappingCanvasEdge,
-  type PartsTemplateMappingCanvasFieldMappingChangeRequest,
+  type PartsTemplateMappingCanvasFieldMappingEngineeringChange,
   type PartsTemplateMappingCanvasFieldOption,
   type PartsTemplateMappingCanvasNode,
   type PartsTemplateMappingCanvasNodeTone,
@@ -1075,7 +1075,7 @@ function movePropertyInGraph(
 
 function updateFieldMappingInGraph(
   graph: CanvasDatasetGraph,
-  request: PartsTemplateMappingCanvasFieldMappingChangeRequest,
+  request: PartsTemplateMappingCanvasFieldMappingEngineeringChange,
   headerOrder: string[],
 ) {
   if (request.owner.kind === "node") {

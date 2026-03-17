@@ -19,8 +19,8 @@ import { LabelPickerSection } from "./label-picker-section";
 import { MemberPickerSection } from "./member-picker-section";
 import { PartPickerSection } from "./part-picker-section";
 import {
-  ChangeRequestStatusIcon,
-  getChangeRequestStatusConfig,
+  EngineeringChangeStatusIcon,
+  getEngineeringChangeStatusConfig,
 } from "./work-item-status";
 
 export interface IssueSidebarUser {
@@ -206,7 +206,7 @@ function LinkedChangesSection({
   return (
     <div>
       <div className="flex items-center justify-between">
-        <h3 className="text-xs font-medium text-muted-foreground">연결된 변경 요청</h3>
+        <h3 className="text-xs font-medium text-muted-foreground">연결된 변경관리</h3>
         {picker ? (
           <Popover
             open={popoverOpen}
@@ -232,7 +232,7 @@ function LinkedChangesSection({
             </PopoverTrigger>
             <PopoverContent className="w-80 p-3" align="end">
               <div className="space-y-2">
-                <p className="text-xs font-medium text-foreground">변경 요청 연결</p>
+                <p className="text-xs font-medium text-foreground">변경관리 연결</p>
                 <div className="relative">
                   <Input
                     value={query}
@@ -252,7 +252,7 @@ function LinkedChangesSection({
                 <div className="max-h-48 space-y-1 overflow-auto">
                   {filteredChanges.length === 0 ? (
                     <p className="px-1 py-2 text-xs text-muted-foreground">
-                      {query.trim() ? "검색 결과가 없습니다." : "연결 가능한 변경 요청이 없습니다."}
+                      {query.trim() ? "검색 결과가 없습니다." : "연결 가능한 변경관리가 없습니다."}
                     </p>
                   ) : (
                     filteredChanges.map((change) => (
@@ -270,7 +270,7 @@ function LinkedChangesSection({
                             );
                           }}
                         />
-                        <ChangeRequestStatusIcon
+                        <EngineeringChangeStatusIcon
                           state={change.state}
                           className="h-3.5 w-3.5 shrink-0"
                         />
@@ -279,7 +279,7 @@ function LinkedChangesSection({
                             #{change.number} {change.title}
                           </p>
                           <p className="text-[11px] text-muted-foreground">
-                            {getChangeRequestStatusConfig(change.state).label}
+                            {getEngineeringChangeStatusConfig(change.state).label}
                           </p>
                         </div>
                       </label>
@@ -297,7 +297,7 @@ function LinkedChangesSection({
                     setQuery("");
                   }}
                 >
-                  변경 요청 적용
+                  변경관리 적용
                 </Button>
               </div>
             </PopoverContent>
@@ -314,7 +314,7 @@ function LinkedChangesSection({
               key={change.id}
               className="group flex w-full items-center gap-2 rounded-md px-2 py-1.5 transition-colors hover:bg-muted"
             >
-              <ChangeRequestStatusIcon
+              <EngineeringChangeStatusIcon
                 state={change.state}
                 className="h-3.5 w-3.5 shrink-0"
               />
@@ -327,7 +327,7 @@ function LinkedChangesSection({
                   #{change.number} {change.title}
                 </p>
                 <p className="text-[11px] text-muted-foreground">
-                  {getChangeRequestStatusConfig(change.state).label}
+                  {getEngineeringChangeStatusConfig(change.state).label}
                 </p>
               </button>
               {picker ? (
@@ -346,7 +346,7 @@ function LinkedChangesSection({
           ))}
         </div>
       ) : (
-        <p className="mt-2 text-xs text-muted-foreground/50">연결된 변경 요청 없음</p>
+        <p className="mt-2 text-xs text-muted-foreground/50">연결된 변경관리 없음</p>
       )}
 
       {onCreateLinkedChange ? (
@@ -355,7 +355,7 @@ function LinkedChangesSection({
           className="mt-2 cursor-pointer text-xs text-primary hover:underline"
           onClick={onCreateLinkedChange}
         >
-          변경 요청 생성
+          변경관리 생성
         </button>
       ) : null}
     </div>

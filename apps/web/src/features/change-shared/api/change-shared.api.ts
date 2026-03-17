@@ -1,4 +1,4 @@
-import { lookupChangeRequests as lookupChangeRequestsApiV1ChangesLookupGet } from "@/api/generated/orval/changes/changes";
+import { lookupEngineeringChanges as lookupEngineeringChangesApiV1EngineeringChangesLookupGet } from "@/api/generated/orval/engineering-changes/engineering-changes";
 import { lookupIssues as lookupIssuesApiV1IssuesLookupGet } from "@/api/generated/orval/issues/issues";
 import { lookupLabels as lookupLabelsApiV1LabelsLookupGet } from "@/api/generated/orval/labels/labels";
 import { lookupMembers1 as lookupMembersApiV1MembersLookupGet } from "@/api/generated/orval/members/members";
@@ -66,18 +66,18 @@ export async function lookupIssues(query: IssueLookupQueryDto): Promise<LookupIs
     number: issue.number,
     title: issue.title,
     state: issue.state,
-    type: issue.type === "CHANGE_REQUEST" ? "change_request" : "issue",
   }));
 }
 
 export async function lookupChanges(query: ChangeLookupQueryDto): Promise<LookupChangeModel[]> {
-  const response = await lookupChangeRequestsApiV1ChangesLookupGet(withDefaultLookupLimit(query));
+  const response = await lookupEngineeringChangesApiV1EngineeringChangesLookupGet(
+    withDefaultLookupLimit(query),
+  );
 
   return response.items.map((change) => ({
     id: change.id,
     number: change.number,
     title: change.title,
     state: change.state,
-    crState: change.cr_state,
   }));
 }
