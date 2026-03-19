@@ -4,9 +4,9 @@ import { partsKeys, partsMutations } from "@/features/parts/api/parts.queries";
 import { invalidatePartsQueries } from "@/features/parts/lib/invalidate-parts-queries";
 import { extractApiError } from "@/lib/api-error";
 
-export function useClearPartPreviewAction(partId: string) {
+export function useClearPartPreviewAction(partId: string, revisionId: string) {
   const queryClient = useQueryClient();
-  const mutation = partsMutations.clearPreview(partId);
+  const mutation = partsMutations.clearPreview(partId, revisionId);
 
   return useMutation({
     mutationKey: mutation.mutationKey,
@@ -22,8 +22,8 @@ export function useClearPartPreviewAction(partId: string) {
     onSuccess: async () => {
       toast.success("대표 미리보기를 해제했습니다.");
       await Promise.all([
-        invalidatePartsQueries(queryClient, partId),
-        queryClient.invalidateQueries({ queryKey: partsKeys.drawingProcessing(partId) }),
+        invalidatePartsQueries(queryClient, partId, revisionId),
+        queryClient.invalidateQueries({ queryKey: partsKeys.drawingProcessing(partId, revisionId) }),
       ]);
     },
     onError: (error) => {

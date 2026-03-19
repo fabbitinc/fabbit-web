@@ -7,12 +7,12 @@ interface InvalidateIssueQueriesOptions {
 
 export async function invalidateIssueQueries(
   queryClient: QueryClient,
-  issueNumber: number,
+  issueId: string,
   options?: InvalidateIssueQueriesOptions,
 ) {
   await Promise.all([
-    queryClient.invalidateQueries({ queryKey: issueKeys.detail(issueNumber) }),
-    queryClient.invalidateQueries({ queryKey: issueKeys.timeline(issueNumber) }),
+    queryClient.invalidateQueries({ queryKey: issueKeys.detail(issueId) }),
+    queryClient.invalidateQueries({ queryKey: issueKeys.timeline(issueId) }),
     options?.includeList
       ? queryClient.invalidateQueries({ queryKey: ["change-management"] })
       : Promise.resolve(),

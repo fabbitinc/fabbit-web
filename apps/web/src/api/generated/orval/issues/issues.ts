@@ -38,11 +38,11 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
  * @summary 부품 목록을 동기화합니다
  */
 export const syncParts = (
-    issueNumber: number,
+    issueId: string,
     syncPartsRequest: BodyType<SyncPartsRequest>,
  options?: SecondParameter<typeof customInstance<SyncDiffResponse | Blob>>,) => {
       return customInstance<SyncDiffResponse | Blob>(
-      {url: `/api/v1/issues/${issueNumber}/parts`, method: 'PUT',
+      {url: `/api/v1/issues/${issueId}/parts`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
       data: syncPartsRequest
     },
@@ -53,11 +53,11 @@ export const syncParts = (
  * @summary 라벨 목록을 동기화합니다
  */
 export const syncLabels = (
-    issueNumber: number,
+    issueId: string,
     syncLabelsRequest: BodyType<SyncLabelsRequest>,
  options?: SecondParameter<typeof customInstance<SyncDiffResponse | Blob>>,) => {
       return customInstance<SyncDiffResponse | Blob>(
-      {url: `/api/v1/issues/${issueNumber}/labels`, method: 'PUT',
+      {url: `/api/v1/issues/${issueId}/labels`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
       data: syncLabelsRequest
     },
@@ -68,11 +68,11 @@ export const syncLabels = (
  * @summary 이슈에 연결된 변경관리 목록을 동기화합니다
  */
 export const syncLinkedEngineeringChanges = (
-    issueNumber: number,
+    issueId: string,
     syncLinkedEngineeringChangesRequest: BodyType<SyncLinkedEngineeringChangesRequest>,
  options?: SecondParameter<typeof customInstance<SyncDiffResponse | Blob>>,) => {
       return customInstance<SyncDiffResponse | Blob>(
-      {url: `/api/v1/issues/${issueNumber}/engineering-changes`, method: 'PUT',
+      {url: `/api/v1/issues/${issueId}/engineering-changes`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
       data: syncLinkedEngineeringChangesRequest
     },
@@ -83,11 +83,11 @@ export const syncLinkedEngineeringChanges = (
  * @summary 개인 담당자 목록을 동기화합니다
  */
 export const syncAssignees = (
-    issueNumber: number,
+    issueId: string,
     syncAssigneesRequest: BodyType<SyncAssigneesRequest>,
  options?: SecondParameter<typeof customInstance<SyncDiffResponse | Blob>>,) => {
       return customInstance<SyncDiffResponse | Blob>(
-      {url: `/api/v1/issues/${issueNumber}/assignees`, method: 'PUT',
+      {url: `/api/v1/issues/${issueId}/assignees`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
       data: syncAssigneesRequest
     },
@@ -98,11 +98,11 @@ export const syncAssignees = (
  * @summary 팀 담당자 목록을 동기화합니다
  */
 export const syncTeamAssignees = (
-    issueNumber: number,
+    issueId: string,
     syncTeamAssigneesRequest: BodyType<SyncTeamAssigneesRequest>,
  options?: SecondParameter<typeof customInstance<SyncDiffResponse | Blob>>,) => {
       return customInstance<SyncDiffResponse | Blob>(
-      {url: `/api/v1/issues/${issueNumber}/assigned-teams`, method: 'PUT',
+      {url: `/api/v1/issues/${issueId}/assigned-teams`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
       data: syncTeamAssigneesRequest
     },
@@ -140,10 +140,10 @@ export const createIssue = (
  * @summary 이슈를 다시 엽니다 (CLOSED -> OPEN)
  */
 export const reopenIssue = (
-    issueNumber: number,
+    issueId: string,
  options?: SecondParameter<typeof customInstance<IssueResponse | Blob>>,) => {
       return customInstance<IssueResponse | Blob>(
-      {url: `/api/v1/issues/${issueNumber}/reopen`, method: 'POST'
+      {url: `/api/v1/issues/${issueId}/reopen`, method: 'POST'
     },
       options);
     }
@@ -152,11 +152,11 @@ export const reopenIssue = (
  * @summary 첨부파일을 배치 연결합니다
  */
 export const addFiles = (
-    issueNumber: number,
+    issueId: string,
     attachFilesRequest: BodyType<AttachFilesRequest>,
  options?: SecondParameter<typeof customInstance<FileItemResponse[] | Blob>>,) => {
       return customInstance<FileItemResponse[] | Blob>(
-      {url: `/api/v1/issues/${issueNumber}/files`, method: 'POST',
+      {url: `/api/v1/issues/${issueId}/files`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: attachFilesRequest
     },
@@ -167,11 +167,11 @@ export const addFiles = (
  * @summary 댓글을 생성합니다
  */
 export const createComment = (
-    issueNumber: number,
+    issueId: string,
     createCommentRequest: BodyType<CreateCommentRequest>,
  options?: SecondParameter<typeof customInstance<CommentResponse | Blob>>,) => {
       return customInstance<CommentResponse | Blob>(
-      {url: `/api/v1/issues/${issueNumber}/comments`, method: 'POST',
+      {url: `/api/v1/issues/${issueId}/comments`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: createCommentRequest
     },
@@ -182,22 +182,22 @@ export const createComment = (
  * @summary 이슈를 닫습니다 (OPEN -> CLOSED)
  */
 export const closeIssue = (
-    issueNumber: number,
+    issueId: string,
  options?: SecondParameter<typeof customInstance<IssueResponse | Blob>>,) => {
       return customInstance<IssueResponse | Blob>(
-      {url: `/api/v1/issues/${issueNumber}/close`, method: 'POST'
+      {url: `/api/v1/issues/${issueId}/close`, method: 'POST'
     },
       options);
     }
   /**
- * 이슈 번호로 상세 정보를 조회합니다
- * @summary 이슈 번호로 상세 정보를 조회합니다
+ * 이슈 ID로 상세 정보를 조회합니다
+ * @summary 이슈 상세 정보를 조회합니다
  */
 export const getIssue = (
-    issueNumber: number,
+    issueId: string,
  options?: SecondParameter<typeof customInstance<IssueResponse | Blob>>,) => {
       return customInstance<IssueResponse | Blob>(
-      {url: `/api/v1/issues/${issueNumber}`, method: 'GET'
+      {url: `/api/v1/issues/${issueId}`, method: 'GET'
     },
       options);
     }
@@ -206,11 +206,11 @@ export const getIssue = (
  * @summary 이슈 제목/본문을 수정합니다
  */
 export const updateIssue = (
-    issueNumber: number,
+    issueId: string,
     updateIssueRequest: BodyType<UpdateIssueRequest>,
  options?: SecondParameter<typeof customInstance<IssueResponse | Blob>>,) => {
       return customInstance<IssueResponse | Blob>(
-      {url: `/api/v1/issues/${issueNumber}`, method: 'PATCH',
+      {url: `/api/v1/issues/${issueId}`, method: 'PATCH',
       headers: {'Content-Type': 'application/json', },
       data: updateIssueRequest
     },
@@ -221,11 +221,11 @@ export const updateIssue = (
  * @summary 댓글을 삭제합니다
  */
 export const deleteComment = (
-    issueNumber: number,
+    issueId: string,
     commentId: string,
  options?: SecondParameter<typeof customInstance<void>>,) => {
       return customInstance<void>(
-      {url: `/api/v1/issues/${issueNumber}/comments/${commentId}`, method: 'DELETE'
+      {url: `/api/v1/issues/${issueId}/comments/${commentId}`, method: 'DELETE'
     },
       options);
     }
@@ -234,12 +234,12 @@ export const deleteComment = (
  * @summary 댓글을 수정합니다
  */
 export const updateComment = (
-    issueNumber: number,
+    issueId: string,
     commentId: string,
     updateCommentRequest: BodyType<UpdateCommentRequest>,
  options?: SecondParameter<typeof customInstance<CommentResponse | Blob>>,) => {
       return customInstance<CommentResponse | Blob>(
-      {url: `/api/v1/issues/${issueNumber}/comments/${commentId}`, method: 'PATCH',
+      {url: `/api/v1/issues/${issueId}/comments/${commentId}`, method: 'PATCH',
       headers: {'Content-Type': 'application/json', },
       data: updateCommentRequest
     },
@@ -250,10 +250,10 @@ export const updateComment = (
  * @summary 댓글과 활동 이력을 시간순으로 병합 조회합니다
  */
 export const getTimeline = (
-    issueNumber: number,
+    issueId: string,
  options?: SecondParameter<typeof customInstance<TimelineResponse | Blob>>,) => {
       return customInstance<TimelineResponse | Blob>(
-      {url: `/api/v1/issues/${issueNumber}/timeline`, method: 'GET'
+      {url: `/api/v1/issues/${issueId}/timeline`, method: 'GET'
     },
       options);
     }
@@ -274,12 +274,12 @@ export const lookupIssues = (
  * 첨부파일 1건을 삭제(soft delete)합니다
  * @summary 첨부파일 1건을 삭제(soft delete)합니다
  */
-export const deleteFile2 = (
-    issueNumber: number,
+export const deleteFile1 = (
+    issueId: string,
     fileId: string,
  options?: SecondParameter<typeof customInstance<void>>,) => {
       return customInstance<void>(
-      {url: `/api/v1/issues/${issueNumber}/files/${fileId}`, method: 'DELETE'
+      {url: `/api/v1/issues/${issueId}/files/${fileId}`, method: 'DELETE'
     },
       options);
     }
@@ -300,4 +300,4 @@ export type DeleteCommentResult = NonNullable<Awaited<ReturnType<typeof deleteCo
 export type UpdateCommentResult = NonNullable<Awaited<ReturnType<typeof updateComment>>>
 export type GetTimelineResult = NonNullable<Awaited<ReturnType<typeof getTimeline>>>
 export type LookupIssuesResult = NonNullable<Awaited<ReturnType<typeof lookupIssues>>>
-export type DeleteFile2Result = NonNullable<Awaited<ReturnType<typeof deleteFile2>>>
+export type DeleteFile1Result = NonNullable<Awaited<ReturnType<typeof deleteFile1>>>

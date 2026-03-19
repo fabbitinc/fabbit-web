@@ -1,19 +1,19 @@
 import {
-  addFiles as addFilesApiV1IssuesIssueNumberFilesPost,
-  closeIssue as closeIssueApiV1IssuesIssueNumberClosePost,
-  createComment as createCommentApiV1IssuesIssueNumberCommentsPost,
-  createIssue as createIssueApiV1IssuesPost,
-  deleteComment as deleteCommentApiV1IssuesIssueNumberCommentsCommentIdDelete,
-  deleteFile as deleteFileApiV1IssuesIssueNumberFilesFileIdDelete,
-  getIssue as getIssueApiV1IssuesIssueNumberGet,
-  getTimeline as getTimelineApiV1IssuesIssueNumberTimelineGet,
-  reopenIssue as reopenIssueApiV1IssuesIssueNumberReopenPost,
-  syncAssignees as syncAssigneesApiV1IssuesIssueNumberAssigneesPut,
-  syncLinkedEngineeringChanges as syncChangesApiV1IssuesIssueNumberEngineeringChangesPut,
-  syncLabels as syncLabelsApiV1IssuesIssueNumberLabelsPut,
-  syncParts as syncPartsApiV1IssuesIssueNumberPartsPut,
-  updateComment as updateCommentApiV1IssuesIssueNumberCommentsCommentIdPatch,
-  updateIssue as updateIssueApiV1IssuesIssueNumberPatch,
+  addFiles as addIssueFilesApi,
+  closeIssue as closeIssueApi,
+  createComment as createIssueCommentApi,
+  createIssue as createIssueApi,
+  deleteComment as deleteIssueCommentApi,
+  deleteFile1 as deleteIssueFileApi,
+  getIssue as getIssueApi,
+  getTimeline as getIssueTimelineApi,
+  reopenIssue as reopenIssueApi,
+  syncAssignees as syncIssueAssigneesApi,
+  syncLabels as syncIssueLabelsApi,
+  syncLinkedEngineeringChanges as syncIssueChangesApi,
+  syncParts as syncIssuePartsApi,
+  updateComment as updateIssueCommentApi,
+  updateIssue as updateIssueApi,
 } from "@/api/generated/orval/issues/issues";
 import type {
   AddIssueFilesRequestDto,
@@ -48,62 +48,62 @@ import type {
 import { getPlainTextFromRichText } from "@/lib/rich-text";
 
 export async function createIssue(request: CreateIssueRequestDto) {
-  return createIssueApiV1IssuesPost(request as Parameters<typeof createIssueApiV1IssuesPost>[0]);
+  return createIssueApi(request as Parameters<typeof createIssueApi>[0]);
 }
 
-export async function fetchIssueDetail(issueNumber: number): Promise<IssueDetailModel> {
-  const response = await getIssueApiV1IssuesIssueNumberGet(issueNumber);
+export async function fetchIssueDetail(issueId: string): Promise<IssueDetailModel> {
+  const response = await getIssueApi(issueId);
   return toIssueDetailModel(response as IssueDetailResponseDto);
 }
 
-export async function updateIssue(issueNumber: number, request: UpdateIssueRequestDto): Promise<IssueDetailModel> {
-  const response = await updateIssueApiV1IssuesIssueNumberPatch(
-    issueNumber,
-    request as Parameters<typeof updateIssueApiV1IssuesIssueNumberPatch>[1],
+export async function updateIssue(issueId: string, request: UpdateIssueRequestDto): Promise<IssueDetailModel> {
+  const response = await updateIssueApi(
+    issueId,
+    request as Parameters<typeof updateIssueApi>[1],
   );
   return toIssueDetailModel(response as IssueDetailResponseDto);
 }
 
 export async function syncIssueAssignees(
-  issueNumber: number,
+  issueId: string,
   request: SyncIssueAssigneesRequestDto,
 ): Promise<SyncIssueAssigneesResponseDto> {
-  return syncAssigneesApiV1IssuesIssueNumberAssigneesPut(issueNumber, request);
+  return syncIssueAssigneesApi(issueId, request);
 }
 
 export async function syncIssueChanges(
-  issueNumber: number,
+  issueId: string,
   request: SyncIssueChangesRequestDto,
 ): Promise<SyncIssueChangesResponseDto> {
-  return syncChangesApiV1IssuesIssueNumberEngineeringChangesPut(issueNumber, request);
+  return syncIssueChangesApi(issueId, request);
 }
 
 export async function syncIssueLabels(
-  issueNumber: number,
+  issueId: string,
   request: SyncIssueLabelsRequestDto,
 ): Promise<SyncIssueLabelsResponseDto> {
-  return syncLabelsApiV1IssuesIssueNumberLabelsPut(issueNumber, request);
+  return syncIssueLabelsApi(issueId, request);
 }
 
 export async function syncIssueParts(
-  issueNumber: number,
+  issueId: string,
   request: SyncIssuePartsRequestDto,
 ): Promise<SyncIssuePartsResponseDto> {
-  return syncPartsApiV1IssuesIssueNumberPartsPut(issueNumber, request);
+  return syncIssuePartsApi(issueId, request);
 }
 
-export async function closeIssue(issueNumber: number): Promise<IssueDetailModel> {
-  const response = await closeIssueApiV1IssuesIssueNumberClosePost(issueNumber);
+export async function closeIssue(issueId: string): Promise<IssueDetailModel> {
+  const response = await closeIssueApi(issueId);
   return toIssueDetailModel(response as IssueDetailResponseDto);
 }
 
-export async function reopenIssue(issueNumber: number): Promise<IssueDetailModel> {
-  const response = await reopenIssueApiV1IssuesIssueNumberReopenPost(issueNumber);
+export async function reopenIssue(issueId: string): Promise<IssueDetailModel> {
+  const response = await reopenIssueApi(issueId);
   return toIssueDetailModel(response as IssueDetailResponseDto);
 }
 
-export async function fetchIssueTimeline(issueNumber: number): Promise<IssueTimelineItemModel[]> {
-  const response = await getTimelineApiV1IssuesIssueNumberTimelineGet(issueNumber);
+export async function fetchIssueTimeline(issueId: string): Promise<IssueTimelineItemModel[]> {
+  const response = await getIssueTimelineApi(issueId);
   const timeline = response as IssueTimelineResponseDto;
 
   return timeline.items.map((item) => {
@@ -120,43 +120,43 @@ export async function fetchIssueTimeline(issueNumber: number): Promise<IssueTime
 }
 
 export async function createIssueComment(
-  issueNumber: number,
+  issueId: string,
   request: CreateIssueCommentRequestDto,
 ): Promise<IssueTimelineCommentModel> {
-  const response = await createCommentApiV1IssuesIssueNumberCommentsPost(
-    issueNumber,
-    request as Parameters<typeof createCommentApiV1IssuesIssueNumberCommentsPost>[1],
+  const response = await createIssueCommentApi(
+    issueId,
+    request as Parameters<typeof createIssueCommentApi>[1],
   );
   return toIssueCommentModel(response as CreateIssueCommentResponseDto);
 }
 
 export async function updateIssueComment(
-  issueNumber: number,
+  issueId: string,
   commentId: string,
   request: UpdateIssueCommentRequestDto,
 ): Promise<IssueTimelineCommentModel> {
-  const response = await updateCommentApiV1IssuesIssueNumberCommentsCommentIdPatch(
-    issueNumber,
+  const response = await updateIssueCommentApi(
+    issueId,
     commentId,
-    request as Parameters<typeof updateCommentApiV1IssuesIssueNumberCommentsCommentIdPatch>[2],
+    request as Parameters<typeof updateIssueCommentApi>[2],
   );
   return toIssueCommentModel(response as UpdateIssueCommentResponseDto);
 }
 
-export async function deleteIssueComment(issueNumber: number, commentId: string) {
-  await deleteCommentApiV1IssuesIssueNumberCommentsCommentIdDelete(issueNumber, commentId);
+export async function deleteIssueComment(issueId: string, commentId: string) {
+  await deleteIssueCommentApi(issueId, commentId);
 }
 
 export async function addIssueFiles(
-  issueNumber: number,
+  issueId: string,
   request: AddIssueFilesRequestDto,
 ): Promise<IssueFileModel[]> {
-  const response = await addFilesApiV1IssuesIssueNumberFilesPost(issueNumber, request);
+  const response = await addIssueFilesApi(issueId, request);
   return response.map(toIssueFileModel);
 }
 
-export async function deleteIssueFile(issueNumber: number, fileId: string) {
-  await deleteFileApiV1IssuesIssueNumberFilesFileIdDelete(issueNumber, fileId);
+export async function deleteIssueFile(issueId: string, fileId: string) {
+  await deleteIssueFileApi(issueId, fileId);
 }
 
 function toIssueDetailModel(issue: IssueDetailResponseDto): IssueDetailModel {
@@ -235,6 +235,7 @@ function toIssueCommentModel(
   return {
     type: "comment",
     id: comment.id,
+    targetId: comment.target_id ?? null,
     body: isObjectLike(comment.body) ? comment.body : null,
     bodyText: getPlainTextFromRichText(comment.body),
     authorId: comment.created_by ?? null,
@@ -252,6 +253,7 @@ function toIssueTimelineCommentModel(
   return {
     type: "comment",
     id: item.id,
+    targetId: null,
     body: isObjectLike(item.body) ? item.body : null,
     bodyText: getPlainTextFromRichText(item.body),
     authorId: item.author_id ?? null,

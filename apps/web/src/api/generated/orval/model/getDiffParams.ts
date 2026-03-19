@@ -6,8 +6,5 @@
  */
 
 export type GetDiffParams = {
-/**
- * 비교 기준 리비전 코드
- */
-base_revision_code?: string;
+base_revision_id?: string;
 };

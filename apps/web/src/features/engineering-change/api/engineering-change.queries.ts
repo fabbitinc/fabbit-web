@@ -1,21 +1,15 @@
 import { mutationOptions, queryOptions } from "@tanstack/react-query";
 import {
   addEngineeringChangeFiles,
-  closeEngineeringChange,
   createEngineeringChange,
   createEngineeringChangeComment,
   deleteEngineeringChangeComment,
   deleteEngineeringChangeFile,
   fetchEngineeringChangeDetail,
   fetchEngineeringChangeTimeline,
-  mergeEngineeringChange,
-  reopenEngineeringChange,
+  replaceEngineeringChangeSteps,
   submitEngineeringChange,
-  syncEngineeringChangeAssignees,
   syncEngineeringChangeIssues,
-  syncEngineeringChangeLabels,
-  syncEngineeringChangeParts,
-  syncEngineeringChangeReviewers,
   updateEngineeringChange,
   updateEngineeringChangeComment,
 } from "@/features/engineering-change/api/engineering-change.api";
@@ -23,32 +17,29 @@ import type {
   AddEngineeringChangeFilesRequestDto,
   CreateEngineeringChangeCommentRequestDto,
   CreateEngineeringChangeDto,
-  SyncEngineeringChangeAssigneesRequestDto,
+  ReplaceEngineeringChangeStepsRequestDto,
   SyncEngineeringChangeIssuesRequestDto,
-  SyncEngineeringChangeLabelsRequestDto,
-  SyncEngineeringChangePartsRequestDto,
-  SyncEngineeringChangeReviewersRequestDto,
   UpdateEngineeringChangeCommentRequestDto,
   UpdateEngineeringChangeDto,
 } from "@/features/engineering-change/api/engineering-change.types";
 
 export const engineeringChangeKeys = {
   all: ["engineering-change"] as const,
-  detail: (changeNumber: number) => ["engineering-change", changeNumber, "detail"] as const,
-  timeline: (changeNumber: number) => ["engineering-change", changeNumber, "timeline"] as const,
+  detail: (engineeringChangeId: string) => ["engineering-change", engineeringChangeId, "detail"] as const,
+  timeline: (engineeringChangeId: string) => ["engineering-change", engineeringChangeId, "timeline"] as const,
 };
 
 export const engineeringChangeQueries = {
-  detail: (changeNumber: number) =>
+  detail: (engineeringChangeId: string) =>
     queryOptions({
-      queryKey: engineeringChangeKeys.detail(changeNumber),
-      queryFn: () => fetchEngineeringChangeDetail(changeNumber),
+      queryKey: engineeringChangeKeys.detail(engineeringChangeId),
+      queryFn: () => fetchEngineeringChangeDetail(engineeringChangeId),
       staleTime: 30_000,
     }),
-  timeline: (changeNumber: number) =>
+  timeline: (engineeringChangeId: string) =>
     queryOptions({
-      queryKey: engineeringChangeKeys.timeline(changeNumber),
-      queryFn: () => fetchEngineeringChangeTimeline(changeNumber),
+      queryKey: engineeringChangeKeys.timeline(engineeringChangeId),
+      queryFn: () => fetchEngineeringChangeTimeline(engineeringChangeId),
       staleTime: 10_000,
     }),
 };
@@ -59,80 +50,54 @@ export const engineeringChangeMutations = {
       mutationKey: ["engineering-change", "create"],
       mutationFn: (request: CreateEngineeringChangeDto) => createEngineeringChange(request),
     }),
-  update: (changeNumber: number) =>
+  update: (engineeringChangeId: string) =>
     mutationOptions({
-      mutationKey: ["engineering-change", changeNumber, "update"],
-      mutationFn: (request: UpdateEngineeringChangeDto) => updateEngineeringChange(changeNumber, request),
+      mutationKey: ["engineering-change", engineeringChangeId, "update"],
+      mutationFn: (request: UpdateEngineeringChangeDto) => updateEngineeringChange(engineeringChangeId, request),
     }),
-  syncIssues: (changeNumber: number) =>
+  syncIssues: (engineeringChangeId: string) =>
     mutationOptions({
-      mutationKey: ["engineering-change", changeNumber, "sync-issues"],
-      mutationFn: (request: SyncEngineeringChangeIssuesRequestDto) => syncEngineeringChangeIssues(changeNumber, request),
+      mutationKey: ["engineering-change", engineeringChangeId, "sync-issues"],
+      mutationFn: (request: SyncEngineeringChangeIssuesRequestDto) =>
+        syncEngineeringChangeIssues(engineeringChangeId, request),
     }),
-  syncAssignees: (changeNumber: number) =>
+  syncReviewers: (engineeringChangeId: string) =>
     mutationOptions({
-      mutationKey: ["engineering-change", changeNumber, "sync-assignees"],
-      mutationFn: (request: SyncEngineeringChangeAssigneesRequestDto) => syncEngineeringChangeAssignees(changeNumber, request),
+      mutationKey: ["engineering-change", engineeringChangeId, "sync-reviewers"],
+      mutationFn: (request: ReplaceEngineeringChangeStepsRequestDto) =>
+        replaceEngineeringChangeSteps(engineeringChangeId, request),
     }),
-  syncReviewers: (changeNumber: number) =>
+  submit: (engineeringChangeId: string) =>
     mutationOptions({
-      mutationKey: ["engineering-change", changeNumber, "sync-reviewers"],
-      mutationFn: (request: SyncEngineeringChangeReviewersRequestDto) => syncEngineeringChangeReviewers(changeNumber, request),
+      mutationKey: ["engineering-change", engineeringChangeId, "submit"],
+      mutationFn: () => submitEngineeringChange(engineeringChangeId),
     }),
-  syncLabels: (changeNumber: number) =>
+  createComment: (engineeringChangeId: string) =>
     mutationOptions({
-      mutationKey: ["engineering-change", changeNumber, "sync-labels"],
-      mutationFn: (request: SyncEngineeringChangeLabelsRequestDto) => syncEngineeringChangeLabels(changeNumber, request),
+      mutationKey: ["engineering-change", engineeringChangeId, "create-comment"],
+      mutationFn: (request: CreateEngineeringChangeCommentRequestDto) =>
+        createEngineeringChangeComment(engineeringChangeId, request),
     }),
-  syncParts: (changeNumber: number) =>
+  updateComment: (engineeringChangeId: string, commentId: string) =>
     mutationOptions({
-      mutationKey: ["engineering-change", changeNumber, "sync-parts"],
-      mutationFn: (request: SyncEngineeringChangePartsRequestDto) => syncEngineeringChangeParts(changeNumber, request),
-    }),
-  submit: (changeNumber: number) =>
-    mutationOptions({
-      mutationKey: ["engineering-change", changeNumber, "submit"],
-      mutationFn: () => submitEngineeringChange(changeNumber),
-    }),
-  merge: (changeNumber: number) =>
-    mutationOptions({
-      mutationKey: ["engineering-change", changeNumber, "merge"],
-      mutationFn: () => mergeEngineeringChange(changeNumber),
-    }),
-  close: (changeNumber: number) =>
-    mutationOptions({
-      mutationKey: ["engineering-change", changeNumber, "close"],
-      mutationFn: () => closeEngineeringChange(changeNumber),
-    }),
-  reopen: (changeNumber: number) =>
-    mutationOptions({
-      mutationKey: ["engineering-change", changeNumber, "reopen"],
-      mutationFn: () => reopenEngineeringChange(changeNumber),
-    }),
-  createComment: (changeNumber: number) =>
-    mutationOptions({
-      mutationKey: ["engineering-change", changeNumber, "create-comment"],
-      mutationFn: (request: CreateEngineeringChangeCommentRequestDto) => createEngineeringChangeComment(changeNumber, request),
-    }),
-  updateComment: (changeNumber: number, commentId: string) =>
-    mutationOptions({
-      mutationKey: ["engineering-change", changeNumber, "update-comment", commentId],
+      mutationKey: ["engineering-change", engineeringChangeId, "update-comment", commentId],
       mutationFn: (request: UpdateEngineeringChangeCommentRequestDto) =>
-        updateEngineeringChangeComment(changeNumber, commentId, request),
+        updateEngineeringChangeComment(engineeringChangeId, commentId, request),
     }),
-  deleteComment: (changeNumber: number, commentId: string) =>
+  deleteComment: (engineeringChangeId: string, commentId: string) =>
     mutationOptions({
-      mutationKey: ["engineering-change", changeNumber, "delete-comment", commentId],
-      mutationFn: () => deleteEngineeringChangeComment(changeNumber, commentId),
+      mutationKey: ["engineering-change", engineeringChangeId, "delete-comment", commentId],
+      mutationFn: () => deleteEngineeringChangeComment(engineeringChangeId, commentId),
     }),
-  addFiles: (changeNumber: number) =>
+  addFiles: (engineeringChangeId: string) =>
     mutationOptions({
-      mutationKey: ["engineering-change", changeNumber, "add-files"],
-      mutationFn: (request: AddEngineeringChangeFilesRequestDto) => addEngineeringChangeFiles(changeNumber, request),
+      mutationKey: ["engineering-change", engineeringChangeId, "add-files"],
+      mutationFn: (request: AddEngineeringChangeFilesRequestDto) =>
+        addEngineeringChangeFiles(engineeringChangeId, request),
     }),
-  deleteFile: (changeNumber: number, fileId: string) =>
+  deleteFile: (engineeringChangeId: string, fileId: string) =>
     mutationOptions({
-      mutationKey: ["engineering-change", changeNumber, "delete-file", fileId],
-      mutationFn: () => deleteEngineeringChangeFile(changeNumber, fileId),
+      mutationKey: ["engineering-change", engineeringChangeId, "delete-file", fileId],
+      mutationFn: () => deleteEngineeringChangeFile(engineeringChangeId, fileId),
     }),
 };

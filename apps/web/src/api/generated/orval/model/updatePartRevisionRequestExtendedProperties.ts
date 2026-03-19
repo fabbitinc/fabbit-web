@@ -6,6 +6,6 @@
  */
 
 /**
- * 확장 속성 JSON 객체
+ * 확장 속성 JSON 객체. key는 property_definition.id(UUID)여야 합니다
  */
 export type UpdatePartRevisionRequestExtendedProperties = {[key: string]: unknown};

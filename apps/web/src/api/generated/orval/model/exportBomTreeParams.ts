@@ -6,12 +6,6 @@
  */
 
 export type ExportBomTreeParams = {
-/**
- * 전개 방향
- */
 direction?: string;
-/**
- * 매핑 ID
- */
 mapping_id?: string;
 };

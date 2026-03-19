@@ -104,19 +104,16 @@ export function AppRouter() {
             <Route path="/parts/templates" element={<PartsTemplateAnalysisPage />} />
             <Route path="/parts/templates/processing" element={<PartsTemplateProcessingPage />} />
             <Route path="/parts/templates/mapping" element={<PartsTemplateMappingPage />} />
-            <Route path="/parts/:partNumber/revisions/:revisionCode/templates" element={<PartsTemplateAnalysisPage />} />
-            <Route path="/parts/:partNumber/revisions/:revisionCode/templates/processing" element={<PartsTemplateProcessingPage />} />
-            <Route path="/parts/:partNumber/revisions/:revisionCode/templates/mapping" element={<PartsTemplateMappingPage />} />
-            <Route path="/parts/:partNumber/revisions/:revisionCode/bom" element={<BomExplorePage />} />
-            <Route path="/parts/:partNumber/revisions/:revisionCode" element={<PartDetailPage />} />
-            <Route path="/parts/:partNumber/drafts/:draftKey/edit" element={<PartEditPage />} />
-            <Route path="/parts/:partNumber/drafts/:draftKey" element={<PartDetailPage />} />
-            <Route path="/parts/:partNumber/revisions/:revisionCode/drafts/:draftKey/edit" element={<PartEditPage />} />
-            <Route path="/parts/:partNumber/revisions/:revisionCode/drafts/:draftKey" element={<PartDetailPage />} />
+            <Route path="/parts/:partId/revisions/:revisionId/templates" element={<PartsTemplateAnalysisPage />} />
+            <Route path="/parts/:partId/revisions/:revisionId/templates/processing" element={<PartsTemplateProcessingPage />} />
+            <Route path="/parts/:partId/revisions/:revisionId/templates/mapping" element={<PartsTemplateMappingPage />} />
+            <Route path="/parts/:partId/revisions/:revisionId/bom" element={<BomExplorePage />} />
+            <Route path="/parts/:partId/revisions/:revisionId/edit" element={<PartEditPage />} />
+            <Route path="/parts/:partId/revisions/:revisionId" element={<PartDetailPage />} />
             <Route path="/changes/issues/new" element={<IssueCreatePage />} />
-            <Route path="/changes/issues/:issueNumber" element={<IssueDetailPage />} />
+            <Route path="/changes/issues/:issueId" element={<IssueDetailPage />} />
             <Route path="/changes/engineering-changes/new" element={<EngineeringChangeCreatePage />} />
-            <Route path="/changes/engineering-changes/:changeNumber" element={<EngineeringChangeDetailPage />} />
+            <Route path="/changes/engineering-changes/:engineeringChangeId" element={<EngineeringChangeDetailPage />} />
             <Route path="/changes/*" element={<ChangeManagementPage />} />
             <Route path="/projects" element={<ProjectListPage />} />
             <Route path="/projects/:projectId/*" element={<ProjectDetailPage />} />

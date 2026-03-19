@@ -3,11 +3,12 @@ import { partsQueries } from "@/features/parts/api/parts.queries";
 
 export function usePartDrawingProcessingQuery(
   partId: string,
+  revisionId: string,
   drawingId: string | null,
   enabled = true,
 ) {
   return useQuery({
-    ...partsQueries.drawingProcessing(partId),
+    ...partsQueries.drawingProcessing(partId, revisionId),
     enabled: Boolean(drawingId) && enabled,
     retry: false,
     refetchInterval: (query) => {

@@ -5,9 +5,9 @@ import { partsKeys, partsMutations } from "@/features/parts/api/parts.queries";
 import { invalidatePartsQueries } from "@/features/parts/lib/invalidate-parts-queries";
 import { extractApiError } from "@/lib/api-error";
 
-export function useUploadPartPreviewFileAction(partId: string) {
+export function useUploadPartPreviewFileAction(partId: string, revisionId: string) {
   const queryClient = useQueryClient();
-  const mutation = partsMutations.uploadPreviewFile(partId);
+  const mutation = partsMutations.uploadPreviewFile(partId, revisionId);
 
   return useMutation({
     mutationKey: mutation.mutationKey,
@@ -24,8 +24,8 @@ export function useUploadPartPreviewFileAction(partId: string) {
     onSuccess: async () => {
       toast.success("미리보기 파일을 등록했습니다.");
       await Promise.all([
-        invalidatePartsQueries(queryClient, partId),
-        queryClient.invalidateQueries({ queryKey: partsKeys.drawingProcessing(partId) }),
+        invalidatePartsQueries(queryClient, partId, revisionId),
+        queryClient.invalidateQueries({ queryKey: partsKeys.drawingProcessing(partId, revisionId) }),
       ]);
     },
     onError: (error) => {

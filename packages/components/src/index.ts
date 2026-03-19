@@ -153,6 +153,8 @@ export type {
   PartEditorScreenOption,
   PartEditorScreenProps,
   PartEditorScreenReferenceStats,
+  PartEditorScreenSystemField,
+  PartEditorScreenSystemFieldKey,
 } from "./part-editor-screen";
 export { PartHeaderCard } from "./part-header-card";
 export type { PartHeaderCardPart, PartHeaderCardProps } from "./part-header-card";
@@ -179,6 +181,7 @@ export type {
 } from "./part-revision-diff";
 export { PartPropertiesTab } from "./part-properties-tab";
 export type { PartPropertiesTabPart, PartPropertiesTabProps } from "./part-properties-tab";
+export type { PartPropertiesTableRow } from "./part-properties-table";
 export { PartProjectsTab } from "./part-projects-tab";
 export type { PartProjectsTabProject, PartProjectsTabProps } from "./part-projects-tab";
 export { PartSuppliersTab } from "./part-suppliers-tab";

@@ -9,6 +9,7 @@ import { extractApiError } from "@/lib/api-error";
 export interface CreatePartActionInput {
   category: string;
   description: string;
+  extendedProperties: Record<string, unknown>;
   isPhantom: boolean;
   leadTimeDays: string;
   lifecycleState: CreatePartRequestDto["lifecycle_state"] | null;
@@ -59,6 +60,7 @@ export function useCreatePartAction(options?: UseCreatePartActionOptions) {
         is_phantom: input.isPhantom,
         lifecycle_state: input.lifecycleState ?? undefined,
         lead_time_days: toOptionalInteger(input.leadTimeDays),
+        extended_properties: input.extendedProperties,
       }),
     onSuccess: async (part) => {
       toast.success("부품을 생성했습니다.");

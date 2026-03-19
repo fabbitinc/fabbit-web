@@ -5,15 +5,18 @@
  * OpenAPI spec version: v0
  */
 import type { BomChildResponseExtendedProperties } from './bomChildResponseExtendedProperties';
+import type { BomChildResponseRevisionStatus } from './bomChildResponseRevisionStatus';
 
 /**
  * 응답 DTO
  */
 export interface BomChildResponse {
-  id?: string;
+  part_id?: string;
+  revision_id?: string;
   part_number?: string;
   name?: string;
   revision_code?: string;
+  revision_status?: BomChildResponseRevisionStatus;
   line_number?: string;
   quantity?: number;
   extended_properties?: BomChildResponseExtendedProperties;

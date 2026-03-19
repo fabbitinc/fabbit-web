@@ -11,14 +11,14 @@ import type {
   ExportPartsParams,
   ListInProgressPartsParams,
   ListPartsParams,
-  LookupDraftsParams,
   LookupParts1Params,
+  LookupRevisionsParams,
   PartDetailResponse,
-  PartDraftLookupResponse,
   PartFilterOptionsResponse,
   PartInProgressListResponse,
   PartListResponse,
   PartLookupResponse,
+  PartRevisionLookupResponse,
   RenameCategoryRequest,
   RenameCategoryResponse
 } from '../model';
@@ -31,8 +31,8 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 
   /**
- * Part 목록을 검색/필터 조건과 함께 조회합니다
- * @summary Part 목록을 검색/필터 조건과 함께 조회합니다
+ * 검색/필터 조건과 함께 Part 목록을 조회합니다
+ * @summary Part 목록을 조회합니다
  */
 export const listParts = (
     params?: ListPartsParams,
@@ -44,8 +44,8 @@ export const listParts = (
       options);
     }
   /**
- * 부품을 생성하고 생성 직후 상세 정보를 반환합니다
- * @summary 부품을 생성하고 생성 직후 상세 정보를 반환합니다
+ * 부품을 생성하고 생성된 초기 초안 상세를 반환합니다
+ * @summary 부품을 생성하고 초안 상세를 반환합니다
  */
 export const createPart = (
     createPartRequest: BodyType<CreatePartRequest>,
@@ -59,7 +59,7 @@ export const createPart = (
     }
   /**
  * 카테고리 이름을 일괄 변경하고 변경 건수를 반환합니다
- * @summary 카테고리 이름을 일괄 변경하고 변경 건수를 반환합니다
+ * @summary 카테고리 이름을 일괄 변경합니다
  */
 export const renameCategory = (
     category: string,
@@ -69,6 +69,19 @@ export const renameCategory = (
       {url: `/api/v1/parts/categories/${category}`, method: 'PATCH',
       headers: {'Content-Type': 'application/json', },
       data: renameCategoryRequest
+    },
+      options);
+    }
+  /**
+ * 현재 사용자가 만든 변경관리 연결 가능한 DRAFT 리비전 목록을 조회합니다
+ * @summary 변경관리 연결 가능한 리비전 목록을 조회합니다
+ */
+export const lookupRevisions = (
+    params?: LookupRevisionsParams,
+ options?: SecondParameter<typeof customInstance<PartRevisionLookupResponse | Blob>>,) => {
+      return customInstance<PartRevisionLookupResponse | Blob>(
+      {url: `/api/v1/parts/revisions/lookup`, method: 'GET',
+        params
     },
       options);
     }
@@ -86,8 +99,8 @@ export const lookupParts1 = (
       options);
     }
   /**
- * 진행중 부품 작업함 목록을 검색/필터 조건과 함께 조회합니다
- * @summary 진행중 부품 작업함 목록을 검색/필터 조건과 함께 조회합니다
+ * 검색/필터 조건과 함께 진행중 부품 작업함 목록을 조회합니다
+ * @summary 진행중 부품 작업함 목록을 조회합니다
  */
 export const listInProgressParts = (
     params?: ListInProgressPartsParams,
@@ -100,7 +113,7 @@ export const listInProgressParts = (
     }
   /**
  * Part 목록 필터 옵션(카테고리/수명주기 상태)을 조회합니다
- * @summary Part 목록 필터 옵션(카테고리/수명주기 상태)을 조회합니다
+ * @summary Part 목록 필터 옵션을 조회합니다
  */
 export const getFilterOptions = (
     
@@ -112,7 +125,7 @@ export const getFilterOptions = (
     }
   /**
  * 필터링된 Part 목록을 Excel(.xlsx) 파일로 내보냅니다
- * @summary 필터링된 Part 목록을 Excel(.xlsx) 파일로 내보냅니다
+ * @summary 필터링된 Part 목록을 Excel 파일로 내보냅니다
  */
 export const exportParts = (
     params?: ExportPartsParams,
@@ -121,19 +134,6 @@ export const exportParts = (
       {url: `/api/v1/parts/export`, method: 'GET',
         params,
         responseType: 'blob'
-    },
-      options);
-    }
-  /**
- * 현재 사용자가 만든 변경관리 연결 가능 초안 목록을 조회합니다
- * @summary 현재 사용자가 만든 변경관리 연결 가능 초안 목록을 조회합니다
- */
-export const lookupDrafts = (
-    params?: LookupDraftsParams,
- options?: SecondParameter<typeof customInstance<PartDraftLookupResponse | Blob>>,) => {
-      return customInstance<PartDraftLookupResponse | Blob>(
-      {url: `/api/v1/parts/drafts/lookup`, method: 'GET',
-        params
     },
       options);
     }
@@ -164,10 +164,10 @@ export const lookupCategories = (
   export type ListPartsResult = NonNullable<Awaited<ReturnType<typeof listParts>>>
 export type CreatePartResult = NonNullable<Awaited<ReturnType<typeof createPart>>>
 export type RenameCategoryResult = NonNullable<Awaited<ReturnType<typeof renameCategory>>>
+export type LookupRevisionsResult = NonNullable<Awaited<ReturnType<typeof lookupRevisions>>>
 export type LookupParts1Result = NonNullable<Awaited<ReturnType<typeof lookupParts1>>>
 export type ListInProgressPartsResult = NonNullable<Awaited<ReturnType<typeof listInProgressParts>>>
 export type GetFilterOptionsResult = NonNullable<Awaited<ReturnType<typeof getFilterOptions>>>
 export type ExportPartsResult = NonNullable<Awaited<ReturnType<typeof exportParts>>>
-export type LookupDraftsResult = NonNullable<Awaited<ReturnType<typeof lookupDrafts>>>
 export type ListCategoriesResult = NonNullable<Awaited<ReturnType<typeof listCategories>>>
 export type LookupCategoriesResult = NonNullable<Awaited<ReturnType<typeof lookupCategories>>>

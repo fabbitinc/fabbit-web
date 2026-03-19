@@ -1,31 +1,33 @@
 import {
-  addFiles1 as addFilesApiV1EngineeringChangesEngineeringChangeNumberFilesPost,
-  close as closeEngineeringChangeApiV1EngineeringChangesEngineeringChangeNumberClosePost,
-  createComment1 as createCommentApiV1EngineeringChangesEngineeringChangeNumberCommentsPost,
-  createEngineeringChange as createEngineeringChangeApiV1EngineeringChangesPost,
-  deleteComment1 as deleteCommentApiV1EngineeringChangesEngineeringChangeNumberCommentsCommentIdDelete,
-  deleteFile1 as deleteFileApiV1EngineeringChangesEngineeringChangeNumberFilesFileIdDelete,
-  getEngineeringChange as getEngineeringChangeApiV1EngineeringChangesEngineeringChangeNumberGet,
-  getTimeline1 as getTimelineApiV1EngineeringChangesEngineeringChangeNumberTimelineGet,
-  merge as mergeEngineeringChangeApiV1EngineeringChangesEngineeringChangeNumberMergePost,
-  reopen as reopenEngineeringChangeApiV1EngineeringChangesEngineeringChangeNumberReopenPost,
-  submit as submitEngineeringChangeApiV1EngineeringChangesEngineeringChangeNumberSubmitPost,
-  syncIssues as syncIssuesApiV1EngineeringChangesEngineeringChangeNumberIssuesPut,
-  syncReviewers as syncReviewersApiV1EngineeringChangesEngineeringChangeNumberReviewersPut,
-  updateComment1 as updateCommentApiV1EngineeringChangesEngineeringChangeNumberCommentsCommentIdPatch,
-  updateEngineeringChange as updateEngineeringChangeApiV1EngineeringChangesEngineeringChangeNumberPatch,
+  addFiles1 as addEngineeringChangeFilesApi,
+  approve as approveEngineeringChangeApi,
+  approveReview as approveReviewEngineeringChangeApi,
+  cancel1 as cancelEngineeringChangeApi,
+  createComment1 as createEngineeringChangeCommentApi,
+  createEngineeringChange as createEngineeringChangeApi,
+  deleteComment1 as deleteEngineeringChangeCommentApi,
+  deleteFile2 as deleteEngineeringChangeFileApi,
+  getEngineeringChange as getEngineeringChangeApi,
+  getTimeline1 as getEngineeringChangeTimelineApi,
+  reject as rejectEngineeringChangeApi,
+  release1 as releaseEngineeringChangeApi,
+  replaceSteps as replaceEngineeringChangeStepsApi,
+  submit as submitEngineeringChangeApi,
+  syncIssues as syncEngineeringChangeIssuesApi,
+  updateComment1 as updateEngineeringChangeCommentApi,
+  updateEngineeringChange as updateEngineeringChangeApi,
 } from "@/api/generated/orval/engineering-changes/engineering-changes";
 import type {
   AddEngineeringChangeFilesRequestDto,
-  EngineeringChangeDetailResponseDto,
-  EngineeringChangeTimelineResponseDto,
   CreateEngineeringChangeCommentRequestDto,
   CreateEngineeringChangeCommentResponseDto,
   CreateEngineeringChangeDto,
+  EngineeringChangeDetailResponseDto,
+  EngineeringChangeTimelineResponseDto,
+  ReplaceEngineeringChangeStepsRequestDto,
+  ReplaceEngineeringChangeStepsResponseDto,
   SyncEngineeringChangeIssuesRequestDto,
   SyncEngineeringChangeIssuesResponseDto,
-  SyncEngineeringChangeReviewersRequestDto,
-  SyncEngineeringChangeReviewersResponseDto,
   UpdateEngineeringChangeCommentRequestDto,
   UpdateEngineeringChangeCommentResponseDto,
   UpdateEngineeringChangeDto,
@@ -37,7 +39,6 @@ import type {
   EngineeringChangePartModel,
   EngineeringChangePartRevisionModel,
   EngineeringChangeReviewerModel,
-  EngineeringChangeReviewerTeamModel,
   EngineeringChangeTimelineActivityModel,
   EngineeringChangeTimelineCommentModel,
   EngineeringChangeTimelineItemModel,
@@ -46,75 +47,76 @@ import type {
 import { getPlainTextFromRichText } from "@/lib/rich-text";
 
 export async function createEngineeringChange(request: CreateEngineeringChangeDto) {
-  return createEngineeringChangeApiV1EngineeringChangesPost(
-    request as Parameters<typeof createEngineeringChangeApiV1EngineeringChangesPost>[0],
-  );
+  return createEngineeringChangeApi(request as Parameters<typeof createEngineeringChangeApi>[0]);
 }
 
-export async function fetchEngineeringChangeDetail(changeNumber: number): Promise<EngineeringChangeDetailModel> {
-  const response = await getEngineeringChangeApiV1EngineeringChangesEngineeringChangeNumberGet(changeNumber);
+export async function fetchEngineeringChangeDetail(engineeringChangeId: string): Promise<EngineeringChangeDetailModel> {
+  const response = await getEngineeringChangeApi(engineeringChangeId);
   return toEngineeringChangeDetailModel(response as EngineeringChangeDetailResponseDto);
 }
 
 export async function updateEngineeringChange(
-  changeNumber: number,
+  engineeringChangeId: string,
   request: UpdateEngineeringChangeDto,
 ): Promise<EngineeringChangeDetailModel> {
-  const response = await updateEngineeringChangeApiV1EngineeringChangesEngineeringChangeNumberPatch(
-    changeNumber,
-    request as Parameters<typeof updateEngineeringChangeApiV1EngineeringChangesEngineeringChangeNumberPatch>[1],
+  const response = await updateEngineeringChangeApi(
+    engineeringChangeId,
+    request as Parameters<typeof updateEngineeringChangeApi>[1],
   );
   return toEngineeringChangeDetailModel(response as EngineeringChangeDetailResponseDto);
 }
 
 export async function syncEngineeringChangeIssues(
-  changeNumber: number,
+  engineeringChangeId: string,
   request: SyncEngineeringChangeIssuesRequestDto,
 ): Promise<SyncEngineeringChangeIssuesResponseDto> {
-  return syncIssuesApiV1EngineeringChangesEngineeringChangeNumberIssuesPut(changeNumber, request);
+  return syncEngineeringChangeIssuesApi(engineeringChangeId, request);
 }
 
-export async function syncEngineeringChangeAssignees(_changeNumber: number, _request: { user_ids?: string[] }) {
-  return;
+export async function replaceEngineeringChangeSteps(
+  engineeringChangeId: string,
+  request: ReplaceEngineeringChangeStepsRequestDto,
+): Promise<EngineeringChangeDetailModel> {
+  const response = await replaceEngineeringChangeStepsApi(engineeringChangeId, request);
+  return toEngineeringChangeDetailModel(response as ReplaceEngineeringChangeStepsResponseDto);
 }
 
-export async function syncEngineeringChangeReviewers(
-  changeNumber: number,
-  request: SyncEngineeringChangeReviewersRequestDto,
-): Promise<SyncEngineeringChangeReviewersResponseDto> {
-  return syncReviewersApiV1EngineeringChangesEngineeringChangeNumberReviewersPut(changeNumber, request);
-}
-
-export async function syncEngineeringChangeLabels(_changeNumber: number, _request: { label_ids?: string[] }) {
-  return;
-}
-
-export async function syncEngineeringChangeParts(_changeNumber: number, _request: { part_ids?: string[] }) {
-  return;
-}
-
-export async function submitEngineeringChange(changeNumber: number): Promise<EngineeringChangeDetailModel> {
-  const response = await submitEngineeringChangeApiV1EngineeringChangesEngineeringChangeNumberSubmitPost(changeNumber);
+export async function submitEngineeringChange(engineeringChangeId: string): Promise<EngineeringChangeDetailModel> {
+  const response = await submitEngineeringChangeApi(engineeringChangeId);
   return toEngineeringChangeDetailModel(response as EngineeringChangeDetailResponseDto);
 }
 
-export async function mergeEngineeringChange(changeNumber: number): Promise<EngineeringChangeDetailModel> {
-  const response = await mergeEngineeringChangeApiV1EngineeringChangesEngineeringChangeNumberMergePost(changeNumber);
+export async function approveReviewEngineeringChange(
+  engineeringChangeId: string,
+): Promise<EngineeringChangeDetailModel> {
+  const response = await approveReviewEngineeringChangeApi(engineeringChangeId);
   return toEngineeringChangeDetailModel(response as EngineeringChangeDetailResponseDto);
 }
 
-export async function closeEngineeringChange(changeNumber: number): Promise<EngineeringChangeDetailModel> {
-  const response = await closeEngineeringChangeApiV1EngineeringChangesEngineeringChangeNumberClosePost(changeNumber);
+export async function approveEngineeringChange(engineeringChangeId: string): Promise<EngineeringChangeDetailModel> {
+  const response = await approveEngineeringChangeApi(engineeringChangeId);
   return toEngineeringChangeDetailModel(response as EngineeringChangeDetailResponseDto);
 }
 
-export async function reopenEngineeringChange(changeNumber: number): Promise<EngineeringChangeDetailModel> {
-  const response = await reopenEngineeringChangeApiV1EngineeringChangesEngineeringChangeNumberReopenPost(changeNumber);
+export async function releaseEngineeringChange(engineeringChangeId: string): Promise<EngineeringChangeDetailModel> {
+  const response = await releaseEngineeringChangeApi(engineeringChangeId);
   return toEngineeringChangeDetailModel(response as EngineeringChangeDetailResponseDto);
 }
 
-export async function fetchEngineeringChangeTimeline(changeNumber: number): Promise<EngineeringChangeTimelineItemModel[]> {
-  const response = await getTimelineApiV1EngineeringChangesEngineeringChangeNumberTimelineGet(changeNumber);
+export async function rejectEngineeringChange(engineeringChangeId: string): Promise<EngineeringChangeDetailModel> {
+  const response = await rejectEngineeringChangeApi(engineeringChangeId);
+  return toEngineeringChangeDetailModel(response as EngineeringChangeDetailResponseDto);
+}
+
+export async function cancelEngineeringChange(engineeringChangeId: string): Promise<EngineeringChangeDetailModel> {
+  const response = await cancelEngineeringChangeApi(engineeringChangeId);
+  return toEngineeringChangeDetailModel(response as EngineeringChangeDetailResponseDto);
+}
+
+export async function fetchEngineeringChangeTimeline(
+  engineeringChangeId: string,
+): Promise<EngineeringChangeTimelineItemModel[]> {
+  const response = await getEngineeringChangeTimelineApi(engineeringChangeId);
   const timeline = response as EngineeringChangeTimelineResponseDto;
   const items = timeline.items ?? [];
   const users = timeline.users ?? {};
@@ -133,67 +135,66 @@ export async function fetchEngineeringChangeTimeline(changeNumber: number): Prom
 }
 
 export async function createEngineeringChangeComment(
-  changeNumber: number,
+  engineeringChangeId: string,
   request: CreateEngineeringChangeCommentRequestDto,
 ): Promise<EngineeringChangeTimelineCommentModel> {
-  const response = await createCommentApiV1EngineeringChangesEngineeringChangeNumberCommentsPost(
-    changeNumber,
-    request as Parameters<typeof createCommentApiV1EngineeringChangesEngineeringChangeNumberCommentsPost>[1],
+  const response = await createEngineeringChangeCommentApi(
+    engineeringChangeId,
+    request as Parameters<typeof createEngineeringChangeCommentApi>[1],
   );
   return toEngineeringChangeCommentModel(response as CreateEngineeringChangeCommentResponseDto);
 }
 
 export async function updateEngineeringChangeComment(
-  changeNumber: number,
+  engineeringChangeId: string,
   commentId: string,
   request: UpdateEngineeringChangeCommentRequestDto,
 ): Promise<EngineeringChangeTimelineCommentModel> {
-  const response = await updateCommentApiV1EngineeringChangesEngineeringChangeNumberCommentsCommentIdPatch(
-    changeNumber,
+  const response = await updateEngineeringChangeCommentApi(
+    engineeringChangeId,
     commentId,
-    request as Parameters<typeof updateCommentApiV1EngineeringChangesEngineeringChangeNumberCommentsCommentIdPatch>[2],
+    request as Parameters<typeof updateEngineeringChangeCommentApi>[2],
   );
   return toEngineeringChangeCommentModel(response as UpdateEngineeringChangeCommentResponseDto);
 }
 
-export async function deleteEngineeringChangeComment(changeNumber: number, commentId: string) {
-  await deleteCommentApiV1EngineeringChangesEngineeringChangeNumberCommentsCommentIdDelete(changeNumber, commentId);
+export async function deleteEngineeringChangeComment(engineeringChangeId: string, commentId: string) {
+  await deleteEngineeringChangeCommentApi(engineeringChangeId, commentId);
 }
 
 export async function addEngineeringChangeFiles(
-  changeNumber: number,
+  engineeringChangeId: string,
   request: AddEngineeringChangeFilesRequestDto,
 ): Promise<EngineeringChangeFileModel[]> {
-  const response = await addFilesApiV1EngineeringChangesEngineeringChangeNumberFilesPost(changeNumber, request);
+  const response = await addEngineeringChangeFilesApi(engineeringChangeId, request);
   return response.map(toEngineeringChangeFileModel);
 }
 
-export async function deleteEngineeringChangeFile(changeNumber: number, fileId: string) {
-  await deleteFileApiV1EngineeringChangesEngineeringChangeNumberFilesFileIdDelete(changeNumber, fileId);
+export async function deleteEngineeringChangeFile(engineeringChangeId: string, fileId: string) {
+  await deleteEngineeringChangeFileApi(engineeringChangeId, fileId);
 }
 
 function toEngineeringChangeDetailModel(change: EngineeringChangeDetailResponseDto): EngineeringChangeDetailModel {
-  const reviewers = (change.reviewers ?? []).map(toEngineeringChangeReviewerModel);
-  const reviewerTeams = (change.reviewer_teams ?? []).map(toEngineeringChangeReviewerTeamModel);
+  const reviewSteps = (change.steps ?? []).filter((step) => step.step_type === "REVIEW");
   const partRevisions = (change.part_revisions ?? []).map(toEngineeringChangePartRevisionModel);
 
   return {
-    id: change.id,
-    number: change.number,
-    title: change.title,
+    id: change.id ?? "",
+    number: change.number ?? 0,
+    title: change.title ?? "",
     body: isObjectLike(change.body) ? change.body : null,
     bodyText: getPlainTextFromRichText(change.body),
-    state: change.state,
-    engineeringChangeState: change.state,
+    state: change.state ?? "DRAFT",
+    engineeringChangeState: toLegacyEngineeringChangeState(change.state ?? "DRAFT"),
     closedAt: change.closed_at ?? null,
-    createdAt: change.created_at,
-    updatedAt: change.updated_at,
-    isModified: change.is_modified,
+    createdAt: change.created_at ?? "",
+    updatedAt: change.updated_at ?? "",
+    isModified: change.is_modified ?? false,
     createdBy: change.created_by ? toEngineeringChangeUserModel(change.created_by) : null,
     labels: [],
     assignees: [],
-    reviewers,
-    reviewerTeams,
+    reviewers: reviewSteps.map(toEngineeringChangeReviewerModel),
+    reviewerTeams: [],
     parts: partRevisions.map(toEngineeringChangePartModel),
     partRevisions,
     files: (change.files ?? []).map(toEngineeringChangeFileModel),
@@ -202,6 +203,24 @@ function toEngineeringChangeDetailModel(change: EngineeringChangeDetailResponseD
     mergedAt: change.merged_at ?? null,
     mergedBy: change.merged_by ?? null,
   };
+}
+
+function toLegacyEngineeringChangeState(state: string): string {
+  const normalized = state.toUpperCase();
+
+  if (normalized === "DRAFT") {
+    return "DRAFT";
+  }
+
+  if (normalized === "RELEASED") {
+    return "MERGED";
+  }
+
+  if (normalized === "CANCELED") {
+    return "CLOSED";
+  }
+
+  return "SUBMITTED";
 }
 
 function toEngineeringChangeUserModel(user: {
@@ -220,26 +239,21 @@ function toEngineeringChangeUserModel(user: {
   };
 }
 
-function toEngineeringChangeReviewerModel(reviewer: {
-  user_id?: string;
-  full_name?: string;
-  email?: string;
-  phone?: string | null;
-  profile_image_url?: string | null;
-  review_status?: string;
-  reviewed_at?: string;
+function toEngineeringChangeReviewerModel(step: {
+  assignee_user?: {
+    user_id?: string;
+    full_name?: string;
+    email?: string;
+    phone?: string | null;
+    profile_image_url?: string | null;
+  };
+  status?: string;
+  acted_at?: string;
 }): EngineeringChangeReviewerModel {
   return {
-    ...toEngineeringChangeUserModel(reviewer),
-    reviewStatus: reviewer.review_status ?? "PENDING",
-    reviewedAt: reviewer.reviewed_at ?? null,
-  };
-}
-
-function toEngineeringChangeReviewerTeamModel(team: { team_id?: string; name?: string }): EngineeringChangeReviewerTeamModel {
-  return {
-    teamId: team.team_id ?? "",
-    name: team.name ?? "이름 없음",
+    ...toEngineeringChangeUserModel(step.assignee_user ?? {}),
+    reviewStatus: step.status ?? "PENDING",
+    reviewedAt: step.acted_at ?? null,
   };
 }
 
@@ -248,7 +262,6 @@ function toEngineeringChangePartRevisionModel(part: {
   part_id?: string;
   part_number?: string;
   base_revision_code?: string;
-  draft_key?: string;
   name?: string;
   status?: string;
 }): EngineeringChangePartRevisionModel {
@@ -257,7 +270,6 @@ function toEngineeringChangePartRevisionModel(part: {
     partId: part.part_id ?? "",
     partNumber: part.part_number ?? "",
     baseRevisionCode: part.base_revision_code ?? null,
-    draftKey: part.draft_key ?? "",
     name: part.name ?? null,
     status: part.status ?? null,
   };
@@ -265,7 +277,7 @@ function toEngineeringChangePartRevisionModel(part: {
 
 function toEngineeringChangePartModel(part: EngineeringChangePartRevisionModel): EngineeringChangePartModel {
   return {
-    id: part.partId || part.revisionId || part.draftKey,
+    id: part.partId || part.revisionId,
     partNumber: part.partNumber,
     name: part.name,
   };
@@ -327,7 +339,7 @@ function toEngineeringChangeTimelineCommentModel(
   return {
     type: "comment",
     id: item.id ?? "",
-    targetId: item.id ?? null,
+    targetId: null,
     body: isObjectLike(item.body) ? item.body : null,
     bodyText: getPlainTextFromRichText(item.body),
     authorId: item.author_id ?? null,

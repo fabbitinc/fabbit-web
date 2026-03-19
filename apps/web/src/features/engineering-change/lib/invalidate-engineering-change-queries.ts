@@ -7,12 +7,12 @@ interface InvalidateEngineeringChangeQueriesOptions {
 
 export async function invalidateEngineeringChangeQueries(
   queryClient: QueryClient,
-  changeNumber: number,
+  engineeringChangeId: string,
   options?: InvalidateEngineeringChangeQueriesOptions,
 ) {
   await Promise.all([
-    queryClient.invalidateQueries({ queryKey: engineeringChangeKeys.detail(changeNumber) }),
-    queryClient.invalidateQueries({ queryKey: engineeringChangeKeys.timeline(changeNumber) }),
+    queryClient.invalidateQueries({ queryKey: engineeringChangeKeys.detail(engineeringChangeId) }),
+    queryClient.invalidateQueries({ queryKey: engineeringChangeKeys.timeline(engineeringChangeId) }),
     options?.includeList
       ? queryClient.invalidateQueries({ queryKey: ["change-management"] })
       : Promise.resolve(),

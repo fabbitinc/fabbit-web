@@ -8,6 +8,7 @@ import { extractApiError } from "@/lib/api-error";
 export interface UpdatePartDraftActionInput {
   category: string;
   description: string;
+  extendedProperties: Record<string, unknown>;
   isPhantom: boolean;
   leadTimeDays: string;
   material: string;
@@ -42,14 +43,15 @@ function toOptionalInteger(value: string) {
 
 export function useUpdatePartDraftAction(
   partId: string,
+  revisionId: string,
   options?: UseUpdatePartDraftActionOptions,
 ) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationKey: ["parts", partId, "update-draft-action"],
+    mutationKey: ["parts", partId, "revisions", revisionId, "update-draft-action"],
     mutationFn: (input: UpdatePartDraftActionInput) =>
-      updatePartDraft(partId, {
+      updatePartDraft(partId, revisionId, {
         name: toOptionalString(input.name),
         name_set: true,
         material: toOptionalString(input.material),
@@ -64,11 +66,13 @@ export function useUpdatePartDraftAction(
         phantom_set: true,
         lead_time_days: toOptionalInteger(input.leadTimeDays),
         lead_time_days_set: true,
+        extended_properties: input.extendedProperties,
+        extended_properties_set: true,
       }),
     onSuccess: async (part) => {
       toast.success("부품 초안을 저장했습니다.");
       await Promise.all([
-        queryClient.invalidateQueries({ queryKey: partsKeys.detail(partId) }),
+        queryClient.invalidateQueries({ queryKey: partsKeys.detail(partId, revisionId) }),
         queryClient.invalidateQueries({ queryKey: partsKeys.lists() }),
       ]);
       options?.onSuccess?.(part);

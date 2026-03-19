@@ -4,18 +4,18 @@ import { syncIssueAssignees } from "@/features/issue/api/issue.api";
 import { invalidateIssueQueries } from "@/features/issue/lib/invalidate-issue-queries";
 import { extractApiError } from "@/lib/api-error";
 
-export function useSyncIssueAssigneesAction(issueNumber: number) {
+export function useSyncIssueAssigneesAction(issueId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationKey: ["issue", issueNumber, "sync-issue-assignees-action"],
+    mutationKey: ["issue", issueId, "sync-issue-assignees-action"],
     mutationFn: (userIds: string[]) =>
-      syncIssueAssignees(issueNumber, {
+      syncIssueAssignees(issueId, {
         user_ids: userIds,
       }),
     onSuccess: async () => {
       toast.success("담당자를 갱신했습니다.");
-      await invalidateIssueQueries(queryClient, issueNumber);
+      await invalidateIssueQueries(queryClient, issueId);
     },
     onError: (error) => {
       toast.error(extractApiError(error, "담당자 변경에 실패했습니다."));

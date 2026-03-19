@@ -10,19 +10,19 @@ interface UpdateEngineeringChangeActionInput {
   body: RichTextDocument | null;
 }
 
-export function useUpdateEngineeringChangeAction(changeNumber: number) {
+export function useUpdateEngineeringChangeAction(engineeringChangeId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationKey: ["engineering-change", changeNumber, "update-engineering-change-action"],
+    mutationKey: ["engineering-change", engineeringChangeId, "update-engineering-change-action"],
     mutationFn: ({ title, body }: UpdateEngineeringChangeActionInput) =>
-      updateEngineeringChange(changeNumber, {
+      updateEngineeringChange(engineeringChangeId, {
         title: title.trim(),
         body,
       }),
     onSuccess: async () => {
       toast.success("변경관리를 저장했습니다.");
-      await invalidateEngineeringChangeQueries(queryClient, changeNumber, { includeList: true });
+      await invalidateEngineeringChangeQueries(queryClient, engineeringChangeId, { includeList: true });
     },
     onError: (error) => {
       toast.error(extractApiError(error, "변경관리 저장에 실패했습니다."));

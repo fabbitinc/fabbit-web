@@ -10,19 +10,19 @@ interface UpdateIssueActionInput {
   body: RichTextDocument | null;
 }
 
-export function useUpdateIssueAction(issueNumber: number) {
+export function useUpdateIssueAction(issueId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationKey: ["issue", issueNumber, "update-issue-action"],
+    mutationKey: ["issue", issueId, "update-issue-action"],
     mutationFn: ({ title, body }: UpdateIssueActionInput) =>
-      updateIssue(issueNumber, {
+      updateIssue(issueId, {
         title: title.trim(),
         body,
       }),
     onSuccess: async () => {
       toast.success("이슈를 저장했습니다.");
-      await invalidateIssueQueries(queryClient, issueNumber, { includeList: true });
+      await invalidateIssueQueries(queryClient, issueId, { includeList: true });
     },
     onError: (error) => {
       toast.error(extractApiError(error, "이슈 저장에 실패했습니다."));

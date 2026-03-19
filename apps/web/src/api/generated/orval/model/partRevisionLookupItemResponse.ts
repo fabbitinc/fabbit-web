@@ -4,12 +4,13 @@
  * OpenAPI definition
  * OpenAPI spec version: v0
  */
+import type { PartRevisionLookupItemResponseStatus } from './partRevisionLookupItemResponseStatus';
 import type { PartUserSummaryResponse } from './partUserSummaryResponse';
 
 /**
- * 부품 초안 lookup 항목
+ * 부품 리비전 lookup 항목
  */
-export interface PartDraftLookupItemResponse {
+export interface PartRevisionLookupItemResponse {
   /** 리비전 ID */
   revision_id?: string;
   /** 부품 ID */
@@ -18,10 +19,10 @@ export interface PartDraftLookupItemResponse {
   part_number?: string;
   /** 기준 공식 리비전 코드 */
   base_revision_code?: string;
-  /** 초안 키 */
-  draft_key?: string;
-  /** 초안 이름 */
+  /** 리비전 이름 */
   name?: string;
-  /** 초안 작성자 */
+  /** 리비전 상태 */
+  status?: PartRevisionLookupItemResponseStatus;
+  /** 리비전 작성자 */
   created_by?: PartUserSummaryResponse;
 }

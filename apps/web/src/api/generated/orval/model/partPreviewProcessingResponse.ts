@@ -5,12 +5,17 @@
  * OpenAPI spec version: v0
  */
 import type { PartPreviewProcessingResponseFailureCode } from './partPreviewProcessingResponseFailureCode';
+import type { PartPreviewProcessingResponseSourceType } from './partPreviewProcessingResponseSourceType';
 import type { PartPreviewProcessingResponseStatus } from './partPreviewProcessingResponseStatus';
 
 /**
  * 부품 대표 미리보기 처리 상태 응답
  */
 export interface PartPreviewProcessingResponse {
+  /** 현재 처리 중인 대표 미리보기 소스 타입 */
+  source_type?: PartPreviewProcessingResponseSourceType;
+  /** 현재 처리 중인 대표 미리보기 소스 ID */
+  source_id?: string;
   /** 대표 미리보기 처리 상태 */
   status?: PartPreviewProcessingResponseStatus;
   /** 대표 미리보기 처리 실패 코드 */

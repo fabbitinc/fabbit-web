@@ -10,16 +10,16 @@ interface UpdateEngineeringChangeCommentActionInput {
   body: RichTextDocument;
 }
 
-export function useUpdateEngineeringChangeCommentAction(changeNumber: number) {
+export function useUpdateEngineeringChangeCommentAction(engineeringChangeId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationKey: ["engineering-change", changeNumber, "update-engineering-change-comment-action"],
+    mutationKey: ["engineering-change", engineeringChangeId, "update-engineering-change-comment-action"],
     mutationFn: ({ commentId, body }: UpdateEngineeringChangeCommentActionInput) =>
-      updateEngineeringChangeComment(changeNumber, commentId, { body }),
+      updateEngineeringChangeComment(engineeringChangeId, commentId, { body }),
     onSuccess: async () => {
       toast.success("댓글을 수정했습니다.");
-      await invalidateEngineeringChangeQueries(queryClient, changeNumber);
+      await invalidateEngineeringChangeQueries(queryClient, engineeringChangeId);
     },
     onError: (error) => {
       toast.error(extractApiError(error, "댓글 수정에 실패했습니다."));

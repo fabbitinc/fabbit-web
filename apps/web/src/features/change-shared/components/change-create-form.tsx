@@ -18,6 +18,7 @@ interface ChangeCreateFormProps {
   heading: string;
   includeReviewers?: boolean;
   isPending: boolean;
+  linkedIssueId?: string | null;
   linkedIssueNumber?: number | null;
   linkedIssueTitle?: string | null;
   submitLabel: string;
@@ -25,7 +26,7 @@ interface ChangeCreateFormProps {
   onSubmit: (input: ChangeCreateFormSubmitInput) => Promise<void>;
 }
 
-function toSubmitInput(input: ChangeCreateScreenSubmitInput): ChangeCreateFormSubmitInput {
+function toSubmitInput(input: ChangeCreateScreenSubmitInput, linkedIssueId: string | null): ChangeCreateFormSubmitInput {
   return {
     title: input.title,
     body: input.body ? normalizeRichTextDocument(input.body) : null,
@@ -34,6 +35,7 @@ function toSubmitInput(input: ChangeCreateScreenSubmitInput): ChangeCreateFormSu
     labelIds: input.labelIds,
     partIds: input.partIds,
     files: input.files,
+    linkedIssueId,
     linkedIssueNumber: input.linkedIssueNumber,
   };
 }
@@ -46,6 +48,7 @@ export function ChangeCreateForm({
   heading,
   includeReviewers = false,
   isPending,
+  linkedIssueId = null,
   linkedIssueNumber,
   linkedIssueTitle,
   submitLabel,
@@ -128,7 +131,7 @@ export function ChangeCreateForm({
       onReviewerSearchChange={setReviewerSearch}
       submitLabel={submitLabel}
       onSubmit={async (input) => {
-        await onSubmit(toSubmitInput(input));
+        await onSubmit(toSubmitInput(input, linkedIssueId));
       }}
     />
   );

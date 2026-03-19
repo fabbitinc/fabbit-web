@@ -5,9 +5,11 @@
  * OpenAPI spec version: v0
  */
 import type { JsonNode } from './jsonNode';
+import type { TimelineDetailResponse } from './timelineDetailResponse';
 import type { TimelineItemResponseAction } from './timelineItemResponseAction';
 import type { TimelineItemResponseScope } from './timelineItemResponseScope';
 import type { TimelineItemResponseType } from './timelineItemResponseType';
+import type { UserSummaryResponse } from './userSummaryResponse';
 
 /**
  * 타임라인 항목
@@ -17,10 +19,10 @@ export interface TimelineItemResponse {
   id?: string;
   action?: TimelineItemResponseAction;
   scope?: TimelineItemResponseScope;
-  actor_id?: string;
-  detail?: JsonNode;
+  actor?: UserSummaryResponse;
+  detail?: TimelineDetailResponse;
   body?: JsonNode;
-  author_id?: string;
+  author?: UserSummaryResponse;
   created_at?: string;
   updated_at?: string;
   is_modified?: boolean;

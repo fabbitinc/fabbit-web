@@ -1,13 +1,12 @@
 import { useMemo } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { BomExploreScreen } from "@/features/parts/components/bom-explore-screen";
-import { toPartRouteId } from "@/features/parts/lib/part-route";
 import type { PartBomDirection, PartBomExploreView } from "@/features/parts/types/parts-model";
 
 export function BomExplorePage() {
-  const { partNumber, revisionCode } = useParams<{
-    partNumber: string;
-    revisionCode: string;
+  const { partId, revisionId } = useParams<{
+    partId: string;
+    revisionId: string;
   }>();
   const [searchParams, setSearchParams] = useSearchParams();
 
@@ -25,15 +24,14 @@ export function BomExplorePage() {
   const searchQuery = searchParams.get("q") ?? "";
   const singleLevelRootKey = searchParams.get("root") ?? "root";
 
-  if (!partNumber || !revisionCode) {
+  if (!partId || !revisionId) {
     return null;
   }
-
-  const partId = toPartRouteId({ partNumber, revisionCode });
 
   return (
     <BomExploreScreen
       partId={partId}
+      revisionId={revisionId}
       direction={direction}
       viewType={viewType}
       searchQuery={searchQuery}

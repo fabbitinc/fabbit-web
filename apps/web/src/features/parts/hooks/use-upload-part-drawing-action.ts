@@ -10,9 +10,9 @@ interface UploadPartDrawingActionInput {
   skipSuccessToast?: boolean;
 }
 
-export function useUploadPartDrawingAction(partId: string) {
+export function useUploadPartDrawingAction(partId: string, revisionId: string) {
   const queryClient = useQueryClient();
-  const registerDrawingMutation = partsMutations.registerDrawing(partId);
+  const registerDrawingMutation = partsMutations.registerDrawing(partId, revisionId);
 
   return useMutation({
     mutationKey: registerDrawingMutation.mutationKey,
@@ -44,7 +44,7 @@ export function useUploadPartDrawingAction(partId: string) {
       );
     },
     onSettled: async () => {
-      await invalidatePartsQueries(queryClient, partId, { includeList: true });
+      await invalidatePartsQueries(queryClient, partId, revisionId, { includeList: true });
     },
     onError: (error) => {
       toast.error(extractApiError(error, "도면 등록에 실패했습니다."));

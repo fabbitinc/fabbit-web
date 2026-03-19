@@ -209,7 +209,15 @@ export function PartsListScreen({
       onMineOnlyChange={onMineOnlyChange}
       onPageSizeChange={onPageSizeChange}
       onQueryChange={onQueryChange}
-      onRowClick={(partId) => navigate(buildPartDetailPath(partId))}
+      onRowClick={(itemId) => {
+        const item = sortedItems.find((candidate) => candidate.id === itemId);
+
+        if (!item || !item.revisionId) {
+          return;
+        }
+
+        navigate(buildPartDetailPath(item.partId, item.revisionId));
+      }}
       onSearchValueChange={setDraftQuery}
       onCreateClick={() => navigate("/parts/new")}
       onSelectedExportClick={() => exportPartsAction.mutate({ part_ids: selectedPartIds })}

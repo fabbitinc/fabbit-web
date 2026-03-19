@@ -18,7 +18,7 @@ export function IssueCreatePage() {
       titlePlaceholder="이슈 제목을 입력하세요"
       onSubmit={async (input) => {
         const issue = await createIssueAction.mutateAsync(input);
-        navigate(`/changes/issues/${issue.number}`);
+        navigate(`/changes/issues/${issue.id}`);
       }}
     />
   );

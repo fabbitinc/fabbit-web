@@ -59,6 +59,7 @@ export interface IssueDetailModel {
 export interface IssueTimelineCommentModel {
   type: "comment";
   id: string;
+  targetId: string | null;
   body: Record<string, unknown> | null;
   bodyText: string;
   authorId: string | null;

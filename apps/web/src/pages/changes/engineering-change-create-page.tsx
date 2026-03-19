@@ -7,8 +7,9 @@ export function EngineeringChangeCreatePage() {
   const [searchParams] = useSearchParams();
   const createEngineeringChangeAction = useCreateEngineeringChangeAction();
 
-  const issueNumberParam = searchParams.get("issueNumber");
-  const linkedIssueNumber = issueNumberParam ? Number(issueNumberParam) : null;
+  const linkedIssueId = searchParams.get("issueId");
+  const issueDisplayNumberParam = searchParams.get("issueDisplayNumber");
+  const linkedIssueNumber = issueDisplayNumberParam ? Number(issueDisplayNumberParam) : null;
   const linkedIssueTitle = searchParams.get("issueTitle");
 
   return (
@@ -20,13 +21,14 @@ export function EngineeringChangeCreatePage() {
       heading="새 변경관리"
       includeReviewers
       isPending={createEngineeringChangeAction.isPending}
+      linkedIssueId={linkedIssueId}
       linkedIssueNumber={linkedIssueNumber}
       linkedIssueTitle={linkedIssueTitle}
       submitLabel="변경관리 생성"
       titlePlaceholder="변경관리 제목을 입력하세요"
       onSubmit={async (input) => {
         const engineeringChange = await createEngineeringChangeAction.mutateAsync(input);
-        navigate(`/changes/engineering-changes/${engineeringChange.number}`);
+        navigate(`/changes/engineering-changes/${engineeringChange.id}`);
       }}
     />
   );

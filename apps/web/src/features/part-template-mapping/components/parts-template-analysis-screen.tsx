@@ -2,18 +2,25 @@ import { PartsTemplateAnalysisScreen as PartsTemplateAnalysisScreenView } from "
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { useTemplateUploadAction } from "@/features/part-template-mapping/hooks/use-template-upload-action";
+import {
+  buildPartDetailPath,
+  buildPartTemplateAnalysisPath,
+} from "@/features/parts/lib/part-route";
 
 const ANALYSIS_ACCEPT = ".xlsx,.xls,.csv";
 
 interface PartsTemplateAnalysisScreenProps {
   partId?: string;
+  revisionId?: string;
 }
 
-export function PartsTemplateAnalysisScreen({ partId }: PartsTemplateAnalysisScreenProps) {
+export function PartsTemplateAnalysisScreen({ partId, revisionId }: PartsTemplateAnalysisScreenProps) {
   const navigate = useNavigate();
   const uploadAction = useTemplateUploadAction();
-  const templatePathBase = partId ? `/parts/${partId}/templates` : "/parts/templates";
-  const backPath = partId ? `/parts/${partId}` : "/parts";
+  const templatePathBase =
+    partId && revisionId ? buildPartTemplateAnalysisPath(partId, revisionId) : "/parts/templates";
+  const backPath =
+    partId && revisionId ? buildPartDetailPath(partId, revisionId) : "/parts";
   const description = partId
     ? `부품(${partId}) 기준으로 상세 속성 템플릿을 생성합니다.`
     : "업로드 파일을 분석해 부품 속성 템플릿을 생성합니다.";

@@ -36,7 +36,7 @@ interface TimelineCommentItemProps {
   currentUserId: string | null;
   issueMentionFetcher: TiptapMentionFetcher;
   onDeleteComment: (commentId: string) => Promise<void>;
-  onNavigateToIssueMention: (issueNumber: number, issueType: "issue" | "engineering_change") => void;
+  onNavigateToIssueMention: (issueDisplayNumber: number, issueType: "issue" | "engineering_change") => void;
   onUpdateComment: (commentId: string, body: RichTextDocument) => Promise<void>;
   userMentionFetcher: TiptapMentionFetcher;
 }
@@ -169,7 +169,7 @@ interface IssueTimelineSectionProps {
   items: IssueTimelineItemModel[];
   onCreateComment: (body: RichTextDocument) => Promise<void>;
   onDeleteComment: (commentId: string) => Promise<void>;
-  onNavigateToIssueMention: (issueNumber: number, issueType: "issue" | "engineering_change") => void;
+  onNavigateToIssueMention: (issueDisplayNumber: number, issueType: "issue" | "engineering_change") => void;
   onUpdateComment: (commentId: string, body: RichTextDocument) => Promise<void>;
 }
 

@@ -25,8 +25,6 @@ export interface PartInProgressItemResponse {
   status?: PartInProgressItemResponseStatus;
   /** 공식 리비전 코드 */
   revision_code?: string;
-  /** 초안 키 */
-  draft_key?: string;
   /** 기준 리비전 코드 */
   base_revision_code?: string;
   /** 라이프사이클 상태 */

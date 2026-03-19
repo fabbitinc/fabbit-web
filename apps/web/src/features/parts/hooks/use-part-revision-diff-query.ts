@@ -2,22 +2,22 @@ import { useQuery } from "@tanstack/react-query";
 import { partsQueries } from "@/features/parts/api/parts.queries";
 
 export function usePartRevisionDiffQuery(
-  partNumber: string,
-  revisionCode: string | null,
-  baseRevisionCode: string | null,
+  partId: string,
+  revisionId: string | null,
+  baseRevisionId: string | null,
   enabled = true,
 ) {
   return useQuery({
     ...partsQueries.revisionDiff(
-      partNumber,
-      revisionCode ?? "",
-      baseRevisionCode ?? "",
+      partId,
+      revisionId ?? "",
+      baseRevisionId ?? "",
     ),
     enabled:
       enabled &&
-      partNumber.length > 0 &&
-      revisionCode != null &&
-      baseRevisionCode != null &&
-      revisionCode !== baseRevisionCode,
+      partId.length > 0 &&
+      revisionId != null &&
+      baseRevisionId != null &&
+      revisionId !== baseRevisionId,
   });
 }

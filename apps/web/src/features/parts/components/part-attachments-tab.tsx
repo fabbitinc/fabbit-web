@@ -2,7 +2,6 @@ import { useMemo, useRef } from "react";
 import { toast } from "sonner";
 import { PartAttachmentsTab as PartAttachmentsTabView } from "@fabbit/components";
 import { useAttachPartFilesAction } from "@/features/parts/hooks/use-attach-part-files-action";
-import { parsePartRouteId } from "@/features/parts/lib/part-route";
 import { useDelayedVisibilityLogic } from "@/hooks/use-delayed-visibility-logic";
 import { useDeletePartDrawingItemAction } from "@/features/parts/hooks/use-delete-part-drawing-item-action";
 import { useDetachPartFileAction } from "@/features/parts/hooks/use-detach-part-file-action";
@@ -10,7 +9,9 @@ import { usePartFilesQuery } from "@/features/parts/hooks/use-part-files-query";
 import { useUploadPartDrawingAction } from "@/features/parts/hooks/use-upload-part-drawing-action";
 
 interface PartAttachmentsTabProps {
+  isEditable: boolean;
   partId: string;
+  revisionId: string;
 }
 
 function formatRejectedDrawingExtensions(files: File[]) {
@@ -26,15 +27,12 @@ function formatRejectedDrawingExtensions(files: File[]) {
   return extensions.slice(0, 3).join(", ");
 }
 
-export function PartAttachmentsTab({ partId }: PartAttachmentsTabProps) {
-  const partRoute = parsePartRouteId(partId);
-  const isEditable =
-    partRoute.kind === "draft" || partRoute.kind === "revision-draft";
-  const filesQuery = usePartFilesQuery(partId);
-  const attachPartFilesAction = useAttachPartFilesAction(partId);
-  const uploadPartDrawingAction = useUploadPartDrawingAction(partId);
-  const detachPartFileAction = useDetachPartFileAction(partId);
-  const deletePartDrawingItemAction = useDeletePartDrawingItemAction(partId);
+export function PartAttachmentsTab({ isEditable, partId, revisionId }: PartAttachmentsTabProps) {
+  const filesQuery = usePartFilesQuery(partId, revisionId);
+  const attachPartFilesAction = useAttachPartFilesAction(partId, revisionId);
+  const uploadPartDrawingAction = useUploadPartDrawingAction(partId, revisionId);
+  const detachPartFileAction = useDetachPartFileAction(partId, revisionId);
+  const deletePartDrawingItemAction = useDeletePartDrawingItemAction(partId, revisionId);
   const skipDrawingSuccessToastRef = useRef(false);
   const isAttachmentsTabLoading =
     !filesQuery.isFetched && filesQuery.fetchStatus === "fetching";

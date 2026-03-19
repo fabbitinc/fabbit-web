@@ -5,6 +5,7 @@
  * OpenAPI spec version: v0
  */
 import type { JsonNode } from './jsonNode';
+import type { UserSummaryResponse } from './userSummaryResponse';
 
 /**
  * 댓글 응답
@@ -16,5 +17,5 @@ export interface CommentResponse {
   created_at?: string;
   updated_at?: string;
   is_modified?: boolean;
-  created_by?: string;
+  created_by?: UserSummaryResponse;
 }

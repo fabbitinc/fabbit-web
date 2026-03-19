@@ -5,9 +5,9 @@ import { engineeringChangeMutations } from "@/features/engineering-change/api/en
 import { invalidateEngineeringChangeQueries } from "@/features/engineering-change/lib/invalidate-engineering-change-queries";
 import { extractApiError } from "@/lib/api-error";
 
-export function useAddEngineeringChangeFilesAction(changeNumber: number) {
+export function useAddEngineeringChangeFilesAction(engineeringChangeId: string) {
   const queryClient = useQueryClient();
-  const addFilesMutation = engineeringChangeMutations.addFiles(changeNumber);
+  const addFilesMutation = engineeringChangeMutations.addFiles(engineeringChangeId);
 
   return useMutation({
     mutationKey: addFilesMutation.mutationKey,
@@ -25,7 +25,7 @@ export function useAddEngineeringChangeFilesAction(changeNumber: number) {
     },
     onSuccess: async (_, files) => {
       toast.success(`${files.length}개의 파일을 첨부했습니다.`);
-      await invalidateEngineeringChangeQueries(queryClient, changeNumber);
+      await invalidateEngineeringChangeQueries(queryClient, engineeringChangeId);
     },
     onError: (error) => {
       toast.error(extractApiError(error, "파일 첨부에 실패했습니다."));

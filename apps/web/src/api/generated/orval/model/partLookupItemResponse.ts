@@ -10,6 +10,7 @@
  */
 export interface PartLookupItemResponse {
   id?: string;
+  revision_id?: string;
   part_number?: string;
   name?: string;
 }

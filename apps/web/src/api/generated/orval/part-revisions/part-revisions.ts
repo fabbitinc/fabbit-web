@@ -12,147 +12,128 @@ import type {
   PartBomResponse,
   PartDetailResponse,
   PartProjectsResponse,
-  PartRevisionChangeReasonRequest,
   PartRevisionDiffResponse,
   PartRevisionHistoryResponse,
   PartSuppliersResponse
 } from '../model';
 
 import { customInstance } from '../../../orval/custom-instance.js';
-import type { BodyType } from '../../../orval/custom-instance.js';
 
 
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 
   /**
- * 공식 리비전을 직접 릴리즈합니다
- * @summary 공식 리비전을 직접 릴리즈합니다
+ * 부품 리비전 상세와 관계 카운트를 조회합니다
+ * @summary PartRevision 상세를 조회합니다
  */
-export const release = (
-    partNumber: string,
-    revisionCode: string,
-    partRevisionChangeReasonRequest: BodyType<PartRevisionChangeReasonRequest>,
+export const get2 = (
+    partId: string,
+    revisionId: string,
  options?: SecondParameter<typeof customInstance<PartDetailResponse>>,) => {
       return customInstance<PartDetailResponse>(
-      {url: `/api/v1/parts/${partNumber}/revisions/${revisionCode}/release`, method: 'POST',
-      headers: {'Content-Type': 'application/json', },
-      data: partRevisionChangeReasonRequest
+      {url: `/api/v1/parts/${partId}/revisions/${revisionId}`, method: 'GET'
     },
       options);
     }
   /**
- * Part 상세 정보와 관계 카운트를 조회합니다
- * @summary Part 상세 정보와 관계 카운트를 조회합니다
- */
-export const get3 = (
-    partNumber: string,
-    revisionCode: string,
- options?: SecondParameter<typeof customInstance<PartDetailResponse>>,) => {
-      return customInstance<PartDetailResponse>(
-      {url: `/api/v1/parts/${partNumber}/revisions/${revisionCode}`, method: 'GET'
-    },
-      options);
-    }
-  /**
- * Part에 연결된 공급사 목록을 조회합니다
- * @summary Part에 연결된 공급사 목록을 조회합니다
+ * 리비전에 연결된 공급사 목록을 조회합니다
+ * @summary 연결된 공급사 목록을 조회합니다
  */
 export const getSuppliers = (
-    partNumber: string,
-    revisionCode: string,
+    partId: string,
+    revisionId: string,
  options?: SecondParameter<typeof customInstance<PartSuppliersResponse>>,) => {
       return customInstance<PartSuppliersResponse>(
-      {url: `/api/v1/parts/${partNumber}/revisions/${revisionCode}/suppliers`, method: 'GET'
+      {url: `/api/v1/parts/${partId}/revisions/${revisionId}/suppliers`, method: 'GET'
     },
       options);
     }
   /**
- * 해당 Part가 소속된 프로젝트 목록을 조회합니다
- * @summary 해당 Part가 소속된 프로젝트 목록을 조회합니다
+ * 리비전이 속한 프로젝트 목록을 조회합니다
+ * @summary 연결된 프로젝트 목록을 조회합니다
  */
 export const getProjects = (
-    partNumber: string,
-    revisionCode: string,
+    partId: string,
+    revisionId: string,
  options?: SecondParameter<typeof customInstance<PartProjectsResponse>>,) => {
       return customInstance<PartProjectsResponse>(
-      {url: `/api/v1/parts/${partNumber}/revisions/${revisionCode}/projects`, method: 'GET'
+      {url: `/api/v1/parts/${partId}/revisions/${revisionId}/projects`, method: 'GET'
     },
       options);
     }
   /**
- * 이전 또는 지정한 기준 리비전 대비 상세 diff를 조회합니다
- * @summary 이전 또는 지정한 기준 리비전 대비 상세 diff를 조회합니다
+ * 이전 리비전 또는 지정한 기준 리비전 ID 대비 상세 diff를 조회합니다
+ * @summary 기준 리비전 대비 상세 diff를 조회합니다
  */
 export const getDiff = (
-    partNumber: string,
-    revisionCode: string,
+    partId: string,
+    revisionId: string,
     params?: GetDiffParams,
  options?: SecondParameter<typeof customInstance<PartRevisionDiffResponse>>,) => {
       return customInstance<PartRevisionDiffResponse>(
-      {url: `/api/v1/parts/${partNumber}/revisions/${revisionCode}/diff`, method: 'GET',
+      {url: `/api/v1/parts/${partId}/revisions/${revisionId}/diff`, method: 'GET',
         params
     },
       options);
     }
   /**
- * Part의 직접 자식/직접 부모 BOM 관계를 조회합니다
- * @summary Part의 직접 자식/직접 부모 BOM 관계를 조회합니다
+ * 리비전 기준 직접 자식/직접 부모 BOM 관계를 조회합니다
+ * @summary 직접 자식/부모 BOM을 조회합니다
  */
 export const getBom = (
-    partNumber: string,
-    revisionCode: string,
+    partId: string,
+    revisionId: string,
  options?: SecondParameter<typeof customInstance<PartBomResponse>>,) => {
       return customInstance<PartBomResponse>(
-      {url: `/api/v1/parts/${partNumber}/revisions/${revisionCode}/bom`, method: 'GET'
+      {url: `/api/v1/parts/${partId}/revisions/${revisionId}/bom`, method: 'GET'
     },
       options);
     }
   /**
- * Part BOM 트리를 정전개 또는 역전개로 조회합니다
- * @summary Part BOM 트리를 정전개 또는 역전개로 조회합니다
+ * 정전개 또는 역전개 BOM 트리를 조회합니다
+ * @summary BOM 트리를 조회합니다
  */
 export const getBomTree = (
-    partNumber: string,
-    revisionCode: string,
+    partId: string,
+    revisionId: string,
     params?: GetBomTreeParams,
  options?: SecondParameter<typeof customInstance<BomTreeResponse>>,) => {
       return customInstance<BomTreeResponse>(
-      {url: `/api/v1/parts/${partNumber}/revisions/${revisionCode}/bom/tree`, method: 'GET',
+      {url: `/api/v1/parts/${partId}/revisions/${revisionId}/bom/tree`, method: 'GET',
         params
     },
       options);
     }
   /**
- * Part BOM 트리를 Excel(.xlsx) 파일로 내보냅니다
- * @summary Part BOM 트리를 Excel(.xlsx) 파일로 내보냅니다
+ * BOM 트리를 Excel(.xlsx) 파일로 내보냅니다
+ * @summary BOM 트리를 Excel로 내보냅니다
  */
 export const exportBomTree = (
-    partNumber: string,
-    revisionCode: string,
+    partId: string,
+    revisionId: string,
     params?: ExportBomTreeParams,
  options?: SecondParameter<typeof customInstance<Blob>>,) => {
       return customInstance<Blob>(
-      {url: `/api/v1/parts/${partNumber}/revisions/${revisionCode}/bom/tree/export`, method: 'GET',
+      {url: `/api/v1/parts/${partId}/revisions/${revisionId}/bom/tree/export`, method: 'GET',
         params,
         responseType: 'blob'
     },
       options);
     }
   /**
- * 공식 리비전 이력 목록과 이전 리비전 대비 요약 diff를 조회합니다
- * @summary 공식 리비전 이력 목록과 이전 리비전 대비 요약 diff를 조회합니다
+ * 공식 리비전 카드와 초안 시도 이력을 함께 조회합니다
+ * @summary Part 변경 이력을 조회합니다
  */
 export const getHistory = (
-    partNumber: string,
+    partId: string,
  options?: SecondParameter<typeof customInstance<PartRevisionHistoryResponse>>,) => {
       return customInstance<PartRevisionHistoryResponse>(
-      {url: `/api/v1/parts/${partNumber}/history`, method: 'GET'
+      {url: `/api/v1/parts/${partId}/history`, method: 'GET'
     },
       options);
     }
-  export type ReleaseResult = NonNullable<Awaited<ReturnType<typeof release>>>
-export type Get3Result = NonNullable<Awaited<ReturnType<typeof get3>>>
+  export type Get2Result = NonNullable<Awaited<ReturnType<typeof get2>>>
 export type GetSuppliersResult = NonNullable<Awaited<ReturnType<typeof getSuppliers>>>
 export type GetProjectsResult = NonNullable<Awaited<ReturnType<typeof getProjects>>>
 export type GetDiffResult = NonNullable<Awaited<ReturnType<typeof getDiff>>>

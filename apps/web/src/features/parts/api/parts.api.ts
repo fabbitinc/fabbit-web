@@ -1,62 +1,33 @@
 import {
-  approve as approveDraftApiV1PartDraftApprovePost,
-  approveFromRevision as approveRevisionDraftApiV1PartRevisionDraftApprovePost,
-  attachFiles1 as attachDraftFilesApiV1PartDraftFilesPost,
-  attachFilesFromRevision as attachRevisionDraftFilesApiV1PartRevisionDraftFilesPost,
-  cancel as cancelDraftApiV1PartDraftCancelPost,
-  cancelFromRevision as cancelRevisionDraftApiV1PartRevisionDraftCancelPost,
-  create as createRevisionDraftApiV1PartRevisionDraftPost,
-  createDrawing1 as createDraftDrawingApiV1PartDraftDrawingsPost,
-  createDrawingFromRevision as createRevisionDraftDrawingApiV1PartRevisionDraftDrawingsPost,
-  deleteDrawing1 as deleteDraftDrawingApiV1PartDraftDrawingsDelete,
-  deleteDrawingFromRevision as deleteRevisionDraftDrawingApiV1PartRevisionDraftDrawingsDelete,
-  deleteFile1 as deleteDraftFileApiV1PartDraftFilesDelete,
-  deleteFileFromRevision as deleteRevisionDraftFileApiV1PartRevisionDraftFilesDelete,
-  deletePreview as deleteDraftPreviewApiV1PartDraftPreviewDelete,
-  deletePreviewFile1 as deleteDraftPreviewFileApiV1PartDraftPreviewFilesFileIdDelete,
-  deletePreviewFileFromRevision as deleteRevisionDraftPreviewFileApiV1PartRevisionDraftPreviewFilesFileIdDelete,
-  deletePreviewFromRevision as deleteRevisionDraftPreviewApiV1PartRevisionDraftPreviewDelete,
-  get2 as getDraftApiV1PartDraftGet,
-  getFiles1 as getDraftFilesApiV1PartDraftFilesGet,
-  getFilesFromRevision as getRevisionDraftFilesApiV1PartRevisionDraftFilesGet,
-  getFromRevision as getRevisionDraftApiV1PartRevisionDraftGet,
-  getPreviewProcessing as getDraftPreviewProcessingApiV1PartDraftPreviewProcessingGet,
-  getPreviewProcessingFromRevision as getRevisionDraftPreviewProcessingApiV1PartRevisionDraftPreviewProcessingGet,
-  getPreviewSources as getDraftPreviewSourcesApiV1PartDraftPreviewSourcesGet,
-  getPreviewSourcesFromRevision as getRevisionDraftPreviewSourcesApiV1PartRevisionDraftPreviewSourcesGet,
-  release1 as releaseDraftApiV1PartDraftReleasePost,
-  releaseFromRevision as releaseRevisionDraftApiV1PartRevisionDraftReleasePost,
-  update3 as updateDraftApiV1PartDraftPatch,
-  updateFromRevision as updateRevisionDraftApiV1PartRevisionDraftPatch,
-  updatePreview as updateDraftPreviewApiV1PartDraftPreviewPatch,
-  updatePreviewFromRevision as updateRevisionDraftPreviewApiV1PartRevisionDraftPreviewPatch,
-  uploadPreviewFile as uploadDraftPreviewFileApiV1PartDraftPreviewFilesPost,
-  uploadPreviewFileFromRevision as uploadRevisionDraftPreviewFileApiV1PartRevisionDraftPreviewFilesPost,
-} from "@/api/generated/orval/part-drafts/part-drafts";
-import {
-  attachFiles as attachFilesApiV1PartRevisionsFilesPost,
-  createDrawing as registerDrawingForPartApiV1PartRevisionsDrawingsPost,
-  deleteDrawing as deleteDrawingFromPartApiV1PartRevisionsDrawingsDelete,
-  deleteFile as detachFileApiV1PartRevisionsFilesDelete,
-  getFiles as getPartFilesApiV1PartRevisionsFilesGet,
+  attachFiles as attachFilesApiV1PartRevisionFilesPost,
+  createDrawing as createDrawingApiV1PartRevisionDrawingsPost,
+  deleteDrawing as deleteDrawingApiV1PartRevisionDrawingsDelete,
+  deleteFile as deleteFileApiV1PartRevisionFilesDelete,
+  getFiles as getFilesApiV1PartRevisionFilesGet,
 } from "@/api/generated/orval/part-revision-assets/part-revision-assets";
 import {
-  createPreviewFile as uploadPreviewFileApiV1PartRevisionsPreviewFilesPost,
-  delete2 as deletePartPreviewApiV1PartRevisionsPreviewDelete,
-  deletePreviewFile as deletePreviewFileApiV1PartRevisionsPreviewFilesFileIdDelete,
-  getProcessing as getPreviewProcessingApiV1PartRevisionsPreviewProcessingGet,
-  getSources as getPreviewSourcesApiV1PartRevisionsPreviewSourcesGet,
-  update2 as updatePartPreviewApiV1PartRevisionsPreviewPatch,
+  cancel as cancelPartRevisionApiV1PartRevisionCancelPost,
+  createDraft as createDraftApiV1PartRevisionDraftPost,
+  release as releasePartRevisionApiV1PartRevisionReleasePost,
+  update2 as updatePartRevisionApiV1PartRevisionPatch,
+} from "@/api/generated/orval/part-revision-commands/part-revision-commands";
+import {
+  createPreviewFile as createPreviewFileApiV1PartRevisionPreviewFilesPost,
+  delete2 as clearPartPreviewApiV1PartRevisionPreviewDelete,
+  deletePreviewFile as deletePreviewFileApiV1PartRevisionPreviewFilesDelete,
+  getProcessing as getPreviewProcessingApiV1PartRevisionPreviewProcessingGet,
+  getSources as getPreviewSourcesApiV1PartRevisionPreviewSourcesGet,
+  update3 as selectPreviewSourceApiV1PartRevisionPreviewPatch,
 } from "@/api/generated/orval/part-revision-previews/part-revision-previews";
 import {
-  exportBomTree as exportBomApiV1PartRevisionsBomTreeExportGet,
-  get3 as getPartApiV1PartRevisionsGet,
-  getBom as getPartBomApiV1PartRevisionsBomGet,
-  getBomTree as getBomTreeApiV1PartRevisionsBomTreeGet,
-  getDiff as getDiffApiV1PartRevisionsDiffGet,
-  getHistory as getHistoryApiV1PartsHistoryGet,
-  getProjects as getPartProjectsApiV1PartRevisionsProjectsGet,
-  getSuppliers as getPartSuppliersApiV1PartRevisionsSuppliersGet,
+  exportBomTree as exportBomTreeApiV1PartRevisionBomTreeExportGet,
+  get2 as getPartRevisionApiV1PartRevisionGet,
+  getBom as getBomApiV1PartRevisionBomGet,
+  getBomTree as getBomTreeApiV1PartRevisionBomTreeGet,
+  getDiff as getDiffApiV1PartRevisionDiffGet,
+  getHistory as getHistoryApiV1PartHistoryGet,
+  getProjects as getProjectsApiV1PartRevisionProjectsGet,
+  getSuppliers as getSuppliersApiV1PartRevisionSuppliersGet,
 } from "@/api/generated/orval/part-revisions/part-revisions";
 import {
   createPart as createPartApiV1PartsPost,
@@ -65,16 +36,14 @@ import {
   listInProgressParts as listInProgressPartsApiV1PartsInProgressGet,
   listParts as listPartsApiV1PartsGet,
 } from "@/api/generated/orval/parts/parts";
-import {
-  linkParts as linkPartsToProjectApiV1ProjectsProjectIdPartsPost,
-} from "@/api/generated/orval/project-parts/project-parts";
+import { linkParts as linkPartsApiV1ProjectsProjectIdPartsPost } from "@/api/generated/orval/project-parts/project-parts";
 import { listProjects as listProjectsApiV1ProjectsGet } from "@/api/generated/orval/projects/projects";
 import { listTeams as listTeamsApiV1TeamsGet } from "@/api/generated/orval/teams/teams";
 import type {
   AttachPartFilesRequestDto,
   AttachPartFilesResponseDto,
-  CreatePartRequestDto,
   CreatePartDraftRequestDto,
+  CreatePartRequestDto,
   DrawingProcessingResponseDto,
   ExportPartBomTreeQueryDto,
   ExportPartsQueryDto,
@@ -100,16 +69,10 @@ import type {
   ProjectListResponseDto,
   RegisterPartDrawingRequestDto,
   RegisterPartDrawingResponseDto,
-  UploadPartPreviewFileRequestDto,
   UpdatePartDraftRequestDto,
   UpdatePartPreviewRequestDto,
+  UploadPartPreviewFileRequestDto,
 } from "@/features/parts/api/parts.types";
-import {
-  parsePartRouteId,
-  toPartDraftRouteId,
-  toPartRevisionDraftRouteId,
-  toPartRouteId,
-} from "@/features/parts/lib/part-route";
 import {
   DEFAULT_PART_DRAWING_FAILURE_MESSAGE,
   getPartDrawingFailureMessage,
@@ -131,25 +94,11 @@ import type {
   PartProjectModel,
   PartsAvailableProjectModel,
   PartsAvailableTeamModel,
-  PartRevisionHistoryDraftModel,
   PartRevisionDiffModel,
+  PartRevisionHistoryDraftModel,
   PartRevisionHistoryItemModel,
   PartSupplierModel,
 } from "@/features/parts/types/parts-model";
-
-function resolvePartRef(partId: string) {
-  return parsePartRouteId(partId);
-}
-
-function resolveRevisionRef(partId: string) {
-  const route = resolvePartRef(partId);
-
-  if (route.kind !== "revision") {
-    throw new Error("공식 리비전 경로가 필요한 작업입니다.");
-  }
-
-  return route;
-}
 
 export async function fetchPartsList(query: ListPartsQueryDto): Promise<PartListResultModel> {
   if (query.source === "workbench") {
@@ -197,120 +146,41 @@ export async function fetchPartsList(query: ListPartsQueryDto): Promise<PartList
 
 export async function createPart(request: CreatePartRequestDto): Promise<PartDetailModel> {
   const response = await createPartApiV1PartsPost(request);
-
-  return toPartDetailModel(response as PartDetailResponseDto, {
-    kind: "draft",
-    partNumber: response.part_number ?? request.part_number,
-    draftKey: response.draft_key ?? "",
-  });
+  return toPartDetailModel(response as PartDetailResponseDto);
 }
 
 export async function createPartDraftFromRevision(
   partId: string,
+  revisionId: string,
   request: CreatePartDraftRequestDto = {},
 ): Promise<PartDetailModel> {
-  const route = resolvePartRef(partId);
-
-  if (route.kind !== "revision") {
-    throw new Error("공식 리비전에서만 개정을 시작할 수 있습니다.");
-  }
-
-  const response = await createRevisionDraftApiV1PartRevisionDraftPost(
-    route.partNumber,
-    route.revisionCode,
-    request,
-  );
-
-  return toPartDetailModel(response as PartDetailResponseDto, {
-    kind: "revision-draft",
-    partNumber: route.partNumber,
-    revisionCode: route.revisionCode,
-    draftKey: response.draft_key ?? "",
-  });
+  const response = await createDraftApiV1PartRevisionDraftPost(partId, revisionId, request);
+  return toPartDetailModel(response as PartDetailResponseDto);
 }
 
 export async function approvePartDraft(
   partId: string,
+  revisionId: string,
   request: PartRevisionChangeReasonRequestDto,
 ): Promise<PartDetailModel> {
-  const route = resolvePartRef(partId);
-
-  if (route.kind === "draft") {
-    const response = await approveDraftApiV1PartDraftApprovePost(
-      route.partNumber,
-      route.draftKey,
-      request,
-    );
-    return toPartDetailModel(response as PartDetailResponseDto);
-  }
-
-  if (route.kind === "revision-draft") {
-    const response = await approveRevisionDraftApiV1PartRevisionDraftApprovePost(
-      route.partNumber,
-      route.revisionCode,
-      route.draftKey,
-      request,
-    );
-    return toPartDetailModel(response as PartDetailResponseDto);
-  }
-
-  throw new Error("초안에서만 승인할 수 있습니다.");
+  return releasePartDraft(partId, revisionId, request);
 }
 
 export async function releasePartDraft(
   partId: string,
+  revisionId: string,
   request: PartRevisionChangeReasonRequestDto,
 ): Promise<PartDetailModel> {
-  const route = resolvePartRef(partId);
-
-  if (route.kind === "draft") {
-    const response = await releaseDraftApiV1PartDraftReleasePost(
-      route.partNumber,
-      route.draftKey,
-      request,
-    );
-    return toPartDetailModel(response as PartDetailResponseDto);
-  }
-
-  if (route.kind === "revision-draft") {
-    const response = await releaseRevisionDraftApiV1PartRevisionDraftReleasePost(
-      route.partNumber,
-      route.revisionCode,
-      route.draftKey,
-      request,
-    );
-    return toPartDetailModel(response as PartDetailResponseDto);
-  }
-
-  throw new Error("초안에서만 배포할 수 있습니다.");
+  const response = await releasePartRevisionApiV1PartRevisionReleasePost(partId, revisionId, request);
+  return toPartDetailModel(response as PartDetailResponseDto);
 }
 
 export async function cancelPartDraft(
   partId: string,
+  revisionId: string,
   request: PartRevisionChangeReasonRequestDto,
 ): Promise<void> {
-  const route = resolvePartRef(partId);
-
-  if (route.kind === "draft") {
-    await cancelDraftApiV1PartDraftCancelPost(
-      route.partNumber,
-      route.draftKey,
-      request,
-    );
-    return;
-  }
-
-  if (route.kind === "revision-draft") {
-    await cancelRevisionDraftApiV1PartRevisionDraftCancelPost(
-      route.partNumber,
-      route.revisionCode,
-      route.draftKey,
-      request,
-    );
-    return;
-  }
-
-  throw new Error("초안에서만 폐기할 수 있습니다.");
+  await cancelPartRevisionApiV1PartRevisionCancelPost(partId, revisionId, request);
 }
 
 export async function fetchPartFilterOptions(): Promise<PartFilterOptionsModel> {
@@ -323,45 +193,27 @@ export async function fetchPartFilterOptions(): Promise<PartFilterOptionsModel> 
   };
 }
 
-export async function fetchPartDetail(partId: string): Promise<PartDetailModel> {
-  const route = resolvePartRef(partId);
-
-  if (route.kind === "draft") {
-    const response = await getDraftApiV1PartDraftGet(route.partNumber, route.draftKey);
-    return toPartDetailModel(response as PartDetailResponseDto, route);
-  }
-
-  if (route.kind === "revision-draft") {
-    const response = await getRevisionDraftApiV1PartRevisionDraftGet(
-      route.partNumber,
-      route.revisionCode,
-      route.draftKey,
-    );
-    return toPartDetailModel(response as PartDetailResponseDto, route);
-  }
-
-  const response = await getPartApiV1PartRevisionsGet(route.partNumber, route.revisionCode);
-
-  return toPartDetailModel(response as PartDetailResponseDto, route);
+export async function fetchPartDetail(partId: string, revisionId: string): Promise<PartDetailModel> {
+  const response = await getPartRevisionApiV1PartRevisionGet(partId, revisionId);
+  return toPartDetailModel(response as PartDetailResponseDto);
 }
 
-export async function fetchPartBom(partId: string): Promise<PartBomModel> {
-  const { partNumber, revisionCode } = resolveRevisionRef(partId);
-  const response = await getPartBomApiV1PartRevisionsBomGet(partNumber, revisionCode);
+export async function fetchPartBom(partId: string, revisionId: string): Promise<PartBomModel> {
+  const response = await getBomApiV1PartRevisionBomGet(partId, revisionId);
   const bom = response as PartBomResponseDto;
 
   return {
-    children: bom.children.map(toPartBomItemModel),
-    parents: bom.parents.map(toPartBomItemModel),
+    children: (bom.children ?? []).map(toPartBomItemModel),
+    parents: (bom.parents ?? []).map(toPartBomItemModel),
   };
 }
 
 export async function fetchPartBomTree(
   partId: string,
+  revisionId: string,
   query: PartBomTreeQueryDto,
 ): Promise<PartBomTreeModel> {
-  const { partNumber, revisionCode } = resolveRevisionRef(partId);
-  const response = await getBomTreeApiV1PartRevisionsBomTreeGet(partNumber, revisionCode, query);
+  const response = await getBomTreeApiV1PartRevisionBomTreeGet(partId, revisionId, query);
   const tree = response as PartBomTreeResponseDto;
 
   return {
@@ -371,12 +223,11 @@ export async function fetchPartBomTree(
   };
 }
 
-export async function fetchPartSuppliers(partId: string): Promise<PartSupplierModel[]> {
-  const { partNumber, revisionCode } = resolveRevisionRef(partId);
-  const response = await getPartSuppliersApiV1PartRevisionsSuppliersGet(partNumber, revisionCode);
+export async function fetchPartSuppliers(partId: string, revisionId: string): Promise<PartSupplierModel[]> {
+  const response = await getSuppliersApiV1PartRevisionSuppliersGet(partId, revisionId);
   const suppliers = response as PartSuppliersResponseDto;
 
-  return suppliers.items.map((supplier) => ({
+  return (suppliers.items ?? []).map((supplier) => ({
     id: supplier.id,
     companyName: supplier.company_name,
     code: supplier.code ?? null,
@@ -385,334 +236,100 @@ export async function fetchPartSuppliers(partId: string): Promise<PartSupplierMo
   }));
 }
 
-export async function fetchPartFiles(partId: string): Promise<PartAttachmentModel[]> {
-  const route = resolvePartRef(partId);
-  let response: PartFilesResponseDto;
-
-  if (route.kind === "draft") {
-    response = await getDraftFilesApiV1PartDraftFilesGet(
-      route.partNumber,
-      route.draftKey,
-    ) as PartFilesResponseDto;
-  } else if (route.kind === "revision-draft") {
-    response = await getRevisionDraftFilesApiV1PartRevisionDraftFilesGet(
-      route.partNumber,
-      route.revisionCode,
-      route.draftKey,
-    ) as PartFilesResponseDto;
-  } else {
-    response = await getPartFilesApiV1PartRevisionsFilesGet(
-      route.partNumber,
-      route.revisionCode,
-    ) as PartFilesResponseDto;
-  }
-
-  return response.items.map(toPartAttachmentModel);
+export async function fetchPartFiles(partId: string, revisionId: string): Promise<PartAttachmentModel[]> {
+  const response = await getFilesApiV1PartRevisionFilesGet(partId, revisionId);
+  return ((response as PartFilesResponseDto).items ?? []).map(toPartAttachmentModel);
 }
 
-export async function fetchPartPreviewSources(partId: string): Promise<PartPreviewSourceModel[]> {
-  const route = resolvePartRef(partId);
-  let response: PartPreviewSourcesResponseDto;
+export async function fetchPartPreviewSources(partId: string, revisionId: string): Promise<PartPreviewSourceModel[]> {
+  const response = await getPreviewSourcesApiV1PartRevisionPreviewSourcesGet(partId, revisionId);
+  const result = response as PartPreviewSourcesResponseDto;
 
-  if (route.kind === "draft") {
-    response = await getDraftPreviewSourcesApiV1PartDraftPreviewSourcesGet(
-      route.partNumber,
-      route.draftKey,
-    ) as PartPreviewSourcesResponseDto;
-  } else if (route.kind === "revision-draft") {
-    response = await getRevisionDraftPreviewSourcesApiV1PartRevisionDraftPreviewSourcesGet(
-      route.partNumber,
-      route.revisionCode,
-      route.draftKey,
-    ) as PartPreviewSourcesResponseDto;
-  } else {
-    response = await getPreviewSourcesApiV1PartRevisionsPreviewSourcesGet(
-      route.partNumber,
-      route.revisionCode,
-    ) as PartPreviewSourcesResponseDto;
-  }
-
-  return (response.items ?? [])
-    .filter(
-      (source) =>
-        source.source_type === "DRAWING" || source.source_type === "PREVIEW_FILE",
-    )
+  return (result.items ?? [])
+    .filter((source) => source.source_type === "DRAWING" || source.source_type === "PREVIEW_FILE")
     .map(toPartPreviewSourceModel);
 }
 
-export async function attachPartFiles(partId: string, request: AttachPartFilesRequestDto): Promise<PartAttachmentModel[]> {
-  const route = resolvePartRef(partId);
-  let response: AttachPartFilesResponseDto;
+export async function attachPartFiles(
+  partId: string,
+  revisionId: string,
+  request: AttachPartFilesRequestDto,
+): Promise<PartAttachmentModel[]> {
+  const response = await attachFilesApiV1PartRevisionFilesPost(partId, revisionId, request);
+  const result = response as AttachPartFilesResponseDto;
 
-  if (route.kind === "draft") {
-    response = await attachDraftFilesApiV1PartDraftFilesPost(
-      route.partNumber,
-      route.draftKey,
-      request,
-    ) as AttachPartFilesResponseDto;
-  } else if (route.kind === "revision-draft") {
-    response = await attachRevisionDraftFilesApiV1PartRevisionDraftFilesPost(
-      route.partNumber,
-      route.revisionCode,
-      route.draftKey,
-      request,
-    ) as AttachPartFilesResponseDto;
-  } else {
-    response = await attachFilesApiV1PartRevisionsFilesPost(
-      route.partNumber,
-      route.revisionCode,
-      request,
-    ) as AttachPartFilesResponseDto;
-  }
-
-  return response
+  return result
     .filter((item) => item.attachment_type !== "DRAWING")
     .map(toPartAttachmentModel);
 }
 
-export async function detachPartFile(partId: string, fileId: string) {
-  const route = resolvePartRef(partId);
-
-  if (route.kind === "draft") {
-    await deleteDraftFileApiV1PartDraftFilesDelete(
-      route.partNumber,
-      route.draftKey,
-      fileId,
-    );
-    return;
-  }
-
-  if (route.kind === "revision-draft") {
-    await deleteRevisionDraftFileApiV1PartRevisionDraftFilesDelete(
-      route.partNumber,
-      route.revisionCode,
-      route.draftKey,
-      fileId,
-    );
-    return;
-  }
-
-  await detachFileApiV1PartRevisionsFilesDelete(
-    route.partNumber,
-    route.revisionCode,
-    fileId,
-  );
+export async function detachPartFile(partId: string, revisionId: string, fileId: string) {
+  await deleteFileApiV1PartRevisionFilesDelete(partId, revisionId, fileId);
 }
 
-export async function fetchPartProjects(partId: string): Promise<PartProjectModel[]> {
-  const { partNumber, revisionCode } = resolveRevisionRef(partId);
-  const response = await getPartProjectsApiV1PartRevisionsProjectsGet(partNumber, revisionCode);
+export async function fetchPartProjects(partId: string, revisionId: string): Promise<PartProjectModel[]> {
+  const response = await getProjectsApiV1PartRevisionProjectsGet(partId, revisionId);
   const projects = response as PartProjectsResponseDto;
 
-  return projects.items.map((project) => ({
+  return (projects.items ?? []).map((project) => ({
     id: project.id,
     name: project.name,
-      description: project.description ?? null,
+    description: project.description ?? null,
   }));
 }
 
 export async function updatePartDraft(
   partId: string,
+  revisionId: string,
   request: UpdatePartDraftRequestDto,
 ): Promise<PartDetailModel> {
-  const route = resolvePartRef(partId);
-
-  if (route.kind === "draft") {
-    const response = await updateDraftApiV1PartDraftPatch(
-      route.partNumber,
-      route.draftKey,
-      request,
-    );
-
-    return toPartDetailModel(response as PartDetailResponseDto, route);
-  }
-
-  if (route.kind === "revision-draft") {
-    const response = await updateRevisionDraftApiV1PartRevisionDraftPatch(
-      route.partNumber,
-      route.revisionCode,
-      route.draftKey,
-      request,
-    );
-
-    return toPartDetailModel(response as PartDetailResponseDto, route);
-  }
-
-  throw new Error("초안에서만 편집할 수 있습니다.");
+  const response = await updatePartRevisionApiV1PartRevisionPatch(partId, revisionId, request);
+  return toPartDetailModel(response as PartDetailResponseDto);
 }
 
-export async function registerPartDrawing(partId: string, request: RegisterPartDrawingRequestDto): Promise<PartDrawingModel> {
-  const route = resolvePartRef(partId);
-  let response: RegisterPartDrawingResponseDto;
-
-  if (route.kind === "draft") {
-    response = await createDraftDrawingApiV1PartDraftDrawingsPost(
-      route.partNumber,
-      route.draftKey,
-      request,
-    ) as RegisterPartDrawingResponseDto;
-  } else if (route.kind === "revision-draft") {
-    response = await createRevisionDraftDrawingApiV1PartRevisionDraftDrawingsPost(
-      route.partNumber,
-      route.revisionCode,
-      route.draftKey,
-      request,
-    ) as RegisterPartDrawingResponseDto;
-  } else {
-    response = await registerDrawingForPartApiV1PartRevisionsDrawingsPost(
-      route.partNumber,
-      route.revisionCode,
-      request,
-    ) as RegisterPartDrawingResponseDto;
-  }
-
-  return toRegisteredDrawingModel(response);
+export async function registerPartDrawing(
+  partId: string,
+  revisionId: string,
+  request: RegisterPartDrawingRequestDto,
+): Promise<PartDrawingModel> {
+  const response = await createDrawingApiV1PartRevisionDrawingsPost(partId, revisionId, request);
+  return toRegisteredDrawingModel(response as RegisterPartDrawingResponseDto);
 }
 
 export async function selectPartPreviewSource(
   partId: string,
+  revisionId: string,
   request: UpdatePartPreviewRequestDto,
 ): Promise<void> {
-  const route = resolvePartRef(partId);
-
-  if (route.kind === "draft") {
-    await updateDraftPreviewApiV1PartDraftPreviewPatch(
-      route.partNumber,
-      route.draftKey,
-      request,
-    );
-    return;
-  }
-
-  if (route.kind === "revision-draft") {
-    await updateRevisionDraftPreviewApiV1PartRevisionDraftPreviewPatch(
-      route.partNumber,
-      route.revisionCode,
-      route.draftKey,
-      request,
-    );
-    return;
-  }
-
-  await updatePartPreviewApiV1PartRevisionsPreviewPatch(
-    route.partNumber,
-    route.revisionCode,
-    request,
-  );
+  await selectPreviewSourceApiV1PartRevisionPreviewPatch(partId, revisionId, request);
 }
 
-export async function clearPartPreview(partId: string): Promise<void> {
-  const route = resolvePartRef(partId);
-
-  if (route.kind === "draft") {
-    await deleteDraftPreviewApiV1PartDraftPreviewDelete(
-      route.partNumber,
-      route.draftKey,
-    );
-    return;
-  }
-
-  if (route.kind === "revision-draft") {
-    await deleteRevisionDraftPreviewApiV1PartRevisionDraftPreviewDelete(
-      route.partNumber,
-      route.revisionCode,
-      route.draftKey,
-    );
-    return;
-  }
-
-  await deletePartPreviewApiV1PartRevisionsPreviewDelete(
-    route.partNumber,
-    route.revisionCode,
-  );
+export async function clearPartPreview(partId: string, revisionId: string): Promise<void> {
+  await clearPartPreviewApiV1PartRevisionPreviewDelete(partId, revisionId);
 }
 
 export async function uploadPartPreviewFile(
   partId: string,
+  revisionId: string,
   request: UploadPartPreviewFileRequestDto,
 ): Promise<void> {
-  const route = resolvePartRef(partId);
-
-  if (route.kind === "draft") {
-    await uploadDraftPreviewFileApiV1PartDraftPreviewFilesPost(
-      route.partNumber,
-      route.draftKey,
-      request,
-    );
-    return;
-  }
-
-  if (route.kind === "revision-draft") {
-    await uploadRevisionDraftPreviewFileApiV1PartRevisionDraftPreviewFilesPost(
-      route.partNumber,
-      route.revisionCode,
-      route.draftKey,
-      request,
-    );
-    return;
-  }
-
-  await uploadPreviewFileApiV1PartRevisionsPreviewFilesPost(
-    route.partNumber,
-    route.revisionCode,
-    request,
-  );
+  await createPreviewFileApiV1PartRevisionPreviewFilesPost(partId, revisionId, request);
 }
 
 export async function deletePartPreviewFile(
   partId: string,
+  revisionId: string,
   previewFileId: string,
 ): Promise<void> {
-  const route = resolvePartRef(partId);
-
-  if (route.kind === "draft") {
-    await deleteDraftPreviewFileApiV1PartDraftPreviewFilesFileIdDelete(
-      route.partNumber,
-      route.draftKey,
-      previewFileId,
-    );
-    return;
-  }
-
-  if (route.kind === "revision-draft") {
-    await deleteRevisionDraftPreviewFileApiV1PartRevisionDraftPreviewFilesFileIdDelete(
-      route.partNumber,
-      route.revisionCode,
-      route.draftKey,
-      previewFileId,
-    );
-    return;
-  }
-
-  await deletePreviewFileApiV1PartRevisionsPreviewFilesFileIdDelete(
-    route.partNumber,
-    route.revisionCode,
-    previewFileId,
-  );
+  await deletePreviewFileApiV1PartRevisionPreviewFilesDelete(partId, revisionId, previewFileId);
 }
 
-export async function fetchDrawingProcessing(partId: string): Promise<PartDrawingProcessingModel> {
-  const route = resolvePartRef(partId);
-  let response: DrawingProcessingResponseDto;
-
-  if (route.kind === "draft") {
-    response = await getDraftPreviewProcessingApiV1PartDraftPreviewProcessingGet(
-      route.partNumber,
-      route.draftKey,
-    ) as DrawingProcessingResponseDto;
-  } else if (route.kind === "revision-draft") {
-    response = await getRevisionDraftPreviewProcessingApiV1PartRevisionDraftPreviewProcessingGet(
-      route.partNumber,
-      route.revisionCode,
-      route.draftKey,
-    ) as DrawingProcessingResponseDto;
-  } else {
-    response = await getPreviewProcessingApiV1PartRevisionsPreviewProcessingGet(
-      route.partNumber,
-      route.revisionCode,
-    ) as DrawingProcessingResponseDto;
-  }
-  const processing = response;
+export async function fetchDrawingProcessing(
+  partId: string,
+  revisionId: string,
+): Promise<PartDrawingProcessingModel> {
+  const response = await getPreviewProcessingApiV1PartRevisionPreviewProcessingGet(partId, revisionId);
+  const processing = response as DrawingProcessingResponseDto;
   const failureCode = resolvePartDrawingFailureCode({
     failureCode: processing.failure_code ?? null,
     failureReason: processing.failure_message ?? null,
@@ -734,45 +351,20 @@ export async function fetchDrawingProcessing(partId: string): Promise<PartDrawin
   };
 }
 
-export async function deletePartDrawing(partId: string, drawingId: string) {
-  const route = resolvePartRef(partId);
-
+export async function deletePartDrawing(partId: string, revisionId: string, drawingId: string) {
   if (drawingId === "__preview__") {
-    await clearPartPreview(partId);
+    await clearPartPreview(partId, revisionId);
     return;
   }
 
-  if (route.kind === "draft") {
-    await deleteDraftDrawingApiV1PartDraftDrawingsDelete(
-      route.partNumber,
-      route.draftKey,
-      drawingId,
-    );
-    return;
-  }
-
-  if (route.kind === "revision-draft") {
-    await deleteRevisionDraftDrawingApiV1PartRevisionDraftDrawingsDelete(
-      route.partNumber,
-      route.revisionCode,
-      route.draftKey,
-      drawingId,
-    );
-    return;
-  }
-
-  await deleteDrawingFromPartApiV1PartRevisionsDrawingsDelete(
-    route.partNumber,
-    route.revisionCode,
-    drawingId,
-  );
+  await deleteDrawingApiV1PartRevisionDrawingsDelete(partId, revisionId, drawingId);
 }
 
 export async function fetchAvailableProjects(query: ListProjectsQueryDto): Promise<PartsAvailableProjectModel[]> {
   const response = await listProjectsApiV1ProjectsGet(query);
   const projects = response as ProjectListResponseDto;
 
-  return projects.items.map((project) => ({
+  return (projects.items ?? []).map((project) => ({
     id: project.id,
     name: project.name,
     description: project.description ?? null,
@@ -785,13 +377,13 @@ export async function linkPartsToProject(
   projectId: string,
   request: LinkProjectPartsRequestDto,
 ): Promise<LinkProjectPartsResponseDto> {
-  return linkPartsToProjectApiV1ProjectsProjectIdPartsPost(projectId, request);
+  return linkPartsApiV1ProjectsProjectIdPartsPost(projectId, request);
 }
 
 export async function fetchTeamLookup(): Promise<PartsAvailableTeamModel[]> {
   const response = await listTeamsApiV1TeamsGet();
 
-  return response.items.map((team) => ({
+  return (response.items ?? []).map((team) => ({
     id: team.id,
     name: team.name,
     memberCount: team.member_count,
@@ -799,109 +391,87 @@ export async function fetchTeamLookup(): Promise<PartsAvailableTeamModel[]> {
 }
 
 export async function exportParts(query: ExportPartsQueryDto): Promise<Blob> {
-  const response = await exportPartsApiV1PartsExportGet(query, {
-    responseType: "blob",
-  });
-
+  const response = await exportPartsApiV1PartsExportGet(query, { responseType: "blob" });
   return response as Blob;
 }
 
-export async function exportPartBomTree(partId: string, query: ExportPartBomTreeQueryDto): Promise<Blob> {
-  const { partNumber, revisionCode } = resolveRevisionRef(partId);
-  const response = await exportBomApiV1PartRevisionsBomTreeExportGet(partNumber, revisionCode, query, {
+export async function exportPartBomTree(
+  partId: string,
+  revisionId: string,
+  query: ExportPartBomTreeQueryDto,
+): Promise<Blob> {
+  const response = await exportBomTreeApiV1PartRevisionBomTreeExportGet(partId, revisionId, query, {
     responseType: "blob",
   });
-
   return response as Blob;
+}
+
+export async function fetchPartHistory(partId: string): Promise<PartRevisionHistoryItemModel[]> {
+  const response = await getHistoryApiV1PartHistoryGet(partId);
+  const result = response as PartRevisionHistoryResponseDto;
+  return (result.items ?? []).map(toPartRevisionHistoryItemModel);
+}
+
+export async function fetchPartRevisionDiff(
+  partId: string,
+  revisionId: string,
+  baseRevisionId: string,
+): Promise<PartRevisionDiffModel> {
+  const response = await getDiffApiV1PartRevisionDiffGet(partId, revisionId, {
+    base_revision_id: baseRevisionId,
+  });
+  return toPartRevisionDiffModel(response as PartRevisionDiffResponseDto);
 }
 
 function toPartListItemModel(part: PartListResponseDto["items"][number]): PartListItemModel {
-  const routeId = toPartRouteId({
-    partNumber: part.part_number ?? "",
-    revisionCode: part.revision_code ?? "",
-  });
+  const partId = part.id ?? "";
 
   return {
-    id: part.id ?? routeId,
-    routeId,
+    id: partId,
+    partId,
+    revisionId: part.revision_id ?? null,
     partNumber: part.part_number ?? "",
     name: part.name ?? null,
     category: part.category ?? null,
     revision: part.revision_code ?? "",
     lifecycleState: part.lifecycle_state ?? null,
-    drawingId: part.has_drawing ? routeId : null,
+    drawingId: part.has_drawing ? (part.revision_id ?? partId) : null,
     childrenCount: part.children_count ?? 0,
-    workStatus: null,
+    workStatus: part.revision_status ?? null,
   };
 }
 
 function toPartInProgressListItemModel(
   part: PartInProgressListResponseDto["items"][number],
 ): PartListItemModel {
-  const routeId = part.draft_key
-    ? part.base_revision_code
-      ? toPartRevisionDraftRouteId({
-          partNumber: part.part_number ?? "",
-          revisionCode: part.base_revision_code,
-          draftKey: part.draft_key,
-        })
-      : toPartDraftRouteId({
-          partNumber: part.part_number ?? "",
-          draftKey: part.draft_key,
-        })
-    : toPartRouteId({
-        partNumber: part.part_number ?? "",
-        revisionCode: part.revision_code ?? "",
-      });
+  const partId = part.part_id ?? "";
+  const revisionId = part.revision_id ?? null;
 
   return {
-    id: part.revision_id ?? part.part_id ?? routeId,
-    routeId,
+    id: revisionId ?? partId,
+    partId,
+    revisionId,
     partNumber: part.part_number ?? "",
     name: part.name ?? null,
     category: part.category ?? null,
     revision: part.revision_code ?? part.base_revision_code ?? "",
     lifecycleState: part.lifecycle_state ?? null,
-    drawingId: part.has_drawing ? routeId : null,
+    drawingId: part.has_drawing ? (revisionId ?? partId) : null,
     childrenCount: part.children_count ?? 0,
     workStatus: (part.status as PartListStatusDto | undefined) ?? null,
   };
 }
 
-function toPartDetailModel(part: PartDetailResponseDto, route?: ReturnType<typeof resolvePartRef>): PartDetailModel {
-  const routeId = route
-    ? route.kind === "draft"
-      ? toPartDraftRouteId({
-          partNumber: route.partNumber,
-          draftKey: route.draftKey,
-        })
-      : route.kind === "revision-draft"
-        ? toPartRevisionDraftRouteId({
-            partNumber: route.partNumber,
-            revisionCode: route.revisionCode,
-            draftKey: route.draftKey,
-          })
-        : toPartRouteId({
-            partNumber: route.partNumber,
-            revisionCode: route.revisionCode,
-          })
-    : part.draft_key
-      ? toPartDraftRouteId({
-          partNumber: part.part_number ?? "",
-          draftKey: part.draft_key,
-        })
-      : toPartRouteId({
-          partNumber: part.part_number ?? "",
-          revisionCode: part.revision ?? "",
-        });
-
+function toPartDetailModel(part: PartDetailResponseDto): PartDetailModel {
   return {
-    id: part.id,
-    routeId,
-    partNumber: part.part_number,
+    partId: part.id ?? "",
+    revisionId: part.revision_id ?? "",
+    revisionStatus: part.revision_status ?? null,
+    baseRevisionId: part.base_revision_id ?? null,
+    baseRevisionCode: part.base_revision_code ?? null,
+    partNumber: part.part_number ?? "",
     name: part.name ?? null,
     revision: part.revision ?? "",
-    draftKey: part.draft_key ?? null,
     material: part.material ?? null,
     unit: part.unit ?? null,
     description: part.description ?? null,
@@ -909,7 +479,7 @@ function toPartDetailModel(part: PartDetailResponseDto, route?: ReturnType<typeo
     lifecycleState: part.lifecycle_state ?? null,
     isPhantom: part.is_phantom ?? null,
     leadTimeDays: part.lead_time_days ?? null,
-    extendedProperties: part.extended_properties,
+    extendedProperties: part.extended_properties ?? {},
     drawing: part.preview ? toPreviewDrawingModel(part.preview) : null,
     draftCount: part.draft_count ?? 0,
     childrenCount: part.children_count ?? 0,
@@ -922,9 +492,7 @@ function toPartDetailModel(part: PartDetailResponseDto, route?: ReturnType<typeo
 
 function toPreviewDrawingModel(preview: NonNullable<PartDetailResponseDto["preview"]>): PartDrawingModel {
   return {
-    id: preview.source_type === "DRAWING"
-      ? (preview.source_id ?? preview.id ?? "")
-      : "__preview__",
+    id: preview.source_type === "DRAWING" ? (preview.source_id ?? preview.id ?? "") : "__preview__",
     drawingNumber: null,
     name: null,
     version: null,
@@ -958,34 +526,34 @@ function toRegisteredDrawingModel(drawing: RegisterPartDrawingResponseDto): Part
   };
 }
 
-function toPartBomItemModel(item: PartBomResponseDto["children"][number] | PartBomResponseDto["parents"][number]): PartBomItemModel {
+function toPartBomItemModel(
+  item: PartBomResponseDto["children"][number] | PartBomResponseDto["parents"][number],
+): PartBomItemModel {
   return {
-    id: toPartRouteId({
-      partNumber: item.part_number,
-      revisionCode: item.revision_code,
-    }),
-    partNumber: item.part_number,
+    id: item.revision_id ?? item.part_id ?? "",
+    partId: item.part_id ?? null,
+    revisionId: item.revision_id ?? null,
+    partNumber: item.part_number ?? "",
     name: item.name ?? null,
-    quantity: item.quantity,
-    extendedProperties: item.extended_properties,
+    quantity: item.quantity ?? 0,
+    extendedProperties: item.extended_properties ?? {},
   };
 }
 
 function toPartBomTreeNodeModel(node: PartBomTreeResponseDto["root"]): PartBomTreeNodeModel {
   return {
-    id: toPartRouteId({
-      partNumber: node.part_number,
-      revisionCode: node.revision,
-    }),
-    partNumber: node.part_number,
+    id: node.revision_id ?? node.part_id ?? "",
+    partId: node.part_id ?? null,
+    revisionId: node.revision_id ?? null,
+    partNumber: node.part_number ?? "",
     name: node.name ?? null,
-    revision: node.revision,
+    revision: node.revision_code ?? "",
     material: node.material ?? null,
     unit: node.unit ?? null,
     category: node.category ?? null,
     lifecycleState: node.lifecycle_state ?? null,
-    quantity: node.quantity,
-    children: node.children.map(toPartBomTreeNodeModel),
+    quantity: node.quantity ?? 0,
+    children: (node.children ?? []).map(toPartBomTreeNodeModel),
   };
 }
 
@@ -1009,10 +577,8 @@ function toPartPreviewSourceModel(
   return {
     sourceId: source.source_id ?? "",
     sourceType: source.source_type === "PREVIEW_FILE" ? "PREVIEW_FILE" : "DRAWING",
-    attachmentType:
-      source.attachment_type === "PREVIEW_FILE" ? "PREVIEW_FILE" : "DRAWING",
-    previewFileId:
-      source.source_type === "PREVIEW_FILE" ? (source.source_id ?? null) : null,
+    attachmentType: source.attachment_type === "PREVIEW_FILE" ? "PREVIEW_FILE" : "DRAWING",
+    previewFileId: source.source_type === "PREVIEW_FILE" ? (source.source_id ?? null) : null,
     fileId: source.file_id ?? null,
     drawingId: source.drawing_id ?? null,
     originalName: source.original_name ?? "이름 없는 파일",
@@ -1025,33 +591,13 @@ function toPartPreviewSourceModel(
   };
 }
 
-// ── 이력 / Diff ──────────────────────────────────────────
-
-export async function fetchPartHistory(partNumber: string): Promise<PartRevisionHistoryItemModel[]> {
-  const response = await getHistoryApiV1PartsHistoryGet(partNumber);
-  const result = response as PartRevisionHistoryResponseDto;
-  return (result.items ?? []).map(toPartRevisionHistoryItemModel);
-}
-
-export async function fetchPartRevisionDiff(
-  partNumber: string,
-  revisionCode: string,
-  baseRevisionCode: string,
-): Promise<PartRevisionDiffModel> {
-  const response = await getDiffApiV1PartRevisionsDiffGet(partNumber, revisionCode, {
-    base_revision_code: baseRevisionCode,
-  });
-  const result = response as PartRevisionDiffResponseDto;
-  return toPartRevisionDiffModel(result);
-}
-
 function toPartRevisionHistoryItemModel(
   item: NonNullable<PartRevisionHistoryResponseDto["items"]>[number],
 ): PartRevisionHistoryItemModel {
   return {
     revisionId: item.revision_id ?? "",
     revisionCode: item.revision_code ?? "",
-    status: (item.status as PartRevisionHistoryItemModel["status"]) ?? "DRAFT",
+    status: item.status ?? "DRAFT",
     name: item.name ?? null,
     releasedAt: item.released_at ?? null,
     releasedByName: item.released_by?.full_name ?? null,
@@ -1072,7 +618,7 @@ function toPartRevisionHistoryDraftModel(
   return {
     revisionId: draft.revision_id ?? "",
     name: draft.name ?? null,
-    status: (draft.status as PartRevisionHistoryDraftModel["status"]) ?? "DRAFT",
+    status: draft.status ?? "DRAFT",
     createdAt: draft.created_at ?? null,
     createdByName: draft.created_by?.full_name ?? null,
     completedAt: draft.completed_at ?? null,
@@ -1084,6 +630,8 @@ function toPartRevisionHistoryDraftModel(
 
 function toPartRevisionDiffModel(dto: PartRevisionDiffResponseDto): PartRevisionDiffModel {
   return {
+    baseRevisionId: dto.base_revision?.revision_id ?? null,
+    targetRevisionId: dto.target_revision?.revision_id ?? null,
     baseRevisionCode: dto.base_revision?.revision_code ?? null,
     targetRevisionCode: dto.target_revision?.revision_code ?? null,
     summary: dto.summary
@@ -1093,17 +641,17 @@ function toPartRevisionDiffModel(dto: PartRevisionDiffResponseDto): PartRevision
           bomChanges: dto.summary.bom_changes ?? 0,
         }
       : null,
-    attributes: (dto.attributes ?? []).map((attr) => ({
-      fieldKey: attr.field_key ?? "",
-      fieldLabel: attr.field_label ?? "",
-      changeType: (attr.change_type as PartRevisionDiffModel["attributes"][number]["changeType"]) ?? "CHANGED",
-      beforeValue: attr.before_value ?? null,
-      afterValue: attr.after_value ?? null,
+    attributes: (dto.attributes ?? []).map((attribute) => ({
+      fieldKey: attribute.field_key ?? "",
+      fieldLabel: attribute.field_label ?? "",
+      changeType: attribute.change_type ?? "CHANGED",
+      beforeValue: attribute.before_value ?? null,
+      afterValue: attribute.after_value ?? null,
     })),
     files: (dto.files ?? []).map((file) => ({
       itemType: file.item_type ?? "",
       displayName: file.display_name ?? "",
-      changeType: (file.change_type as PartRevisionDiffModel["files"][number]["changeType"]) ?? "CHANGED",
+      changeType: file.change_type ?? "CHANGED",
     })),
     bom: (dto.bom ?? []).map((bom) => ({
       lineNumber: bom.line_number ?? null,
@@ -1113,7 +661,7 @@ function toPartRevisionDiffModel(dto: PartRevisionDiffResponseDto): PartRevision
       afterPartNumber: bom.after_part_number ?? null,
       afterName: bom.after_name ?? null,
       afterQuantity: bom.after_quantity ?? null,
-      changeType: (bom.change_type as PartRevisionDiffModel["bom"][number]["changeType"]) ?? "CHANGED",
+      changeType: bom.change_type ?? "CHANGED",
     })),
   };
 }

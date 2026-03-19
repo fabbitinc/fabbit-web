@@ -24,6 +24,7 @@ type WorkflowActionKind = "cancel" | "release";
 interface PartDirectWorkflowActionsProps {
   className?: string;
   partId: string;
+  revisionId: string;
   onCanceled: () => void;
   onReleased: (part: PartDetailModel) => void;
 }
@@ -53,6 +54,7 @@ const actionMeta: Record<
 export function PartDirectWorkflowActions({
   className,
   partId,
+  revisionId,
   onCanceled,
   onReleased,
 }: PartDirectWorkflowActionsProps) {
@@ -60,14 +62,14 @@ export function PartDirectWorkflowActions({
     useState<WorkflowActionKind>("release");
   const [actionKind, setActionKind] = useState<WorkflowActionKind | null>(null);
   const [reason, setReason] = useState("");
-  const cancelAction = useCancelPartDraftAction(partId, {
+  const cancelAction = useCancelPartDraftAction(partId, revisionId, {
     onSuccess: () => {
       setActionKind(null);
       setReason("");
       onCanceled();
     },
   });
-  const releaseAction = useReleasePartDraftAction(partId, {
+  const releaseAction = useReleasePartDraftAction(partId, revisionId, {
     onSuccess: (part) => {
       setActionKind(null);
       setReason("");

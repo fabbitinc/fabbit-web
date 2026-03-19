@@ -20,45 +20,45 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 
   /**
- * 업로드 완료 파일을 대표 미리보기 전용 파일로 등록하고 현재 미리보기로 설정합니다
- * @summary 업로드 완료 파일을 대표 미리보기 전용 파일로 등록하고 현재 미리보기로 설정합니다
+ * 업로드 완료 파일을 미리보기 전용 파일로 등록하고 현재 미리보기로 설정합니다
+ * @summary 미리보기 전용 파일을 업로드합니다
  */
 export const createPreviewFile = (
-    partNumber: string,
-    revisionCode: string,
+    partId: string,
+    revisionId: string,
     uploadPartPreviewFileRequest: BodyType<UploadPartPreviewFileRequest>,
  options?: SecondParameter<typeof customInstance<PartPreviewResponse | Blob>>,) => {
       return customInstance<PartPreviewResponse | Blob>(
-      {url: `/api/v1/parts/${partNumber}/revisions/${revisionCode}/preview/files`, method: 'POST',
+      {url: `/api/v1/parts/${partId}/revisions/${revisionId}/preview/files`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: uploadPartPreviewFileRequest
     },
       options);
     }
   /**
- * Part 대표 미리보기를 해제합니다
- * @summary Part 대표 미리보기를 해제합니다
+ * 현재 대표 미리보기를 해제합니다
+ * @summary 대표 미리보기를 해제합니다
  */
 export const delete2 = (
-    partNumber: string,
-    revisionCode: string,
+    partId: string,
+    revisionId: string,
  options?: SecondParameter<typeof customInstance<void>>,) => {
       return customInstance<void>(
-      {url: `/api/v1/parts/${partNumber}/revisions/${revisionCode}/preview`, method: 'DELETE'
+      {url: `/api/v1/parts/${partId}/revisions/${revisionId}/preview`, method: 'DELETE'
     },
       options);
     }
   /**
- * Part 대표 미리보기 소스를 도면 또는 미리보기 전용 파일로 변경합니다
- * @summary Part 대표 미리보기 소스를 도면 또는 미리보기 전용 파일로 변경합니다
+ * 도면 또는 미리보기 전용 파일을 대표 미리보기로 선택합니다
+ * @summary 대표 미리보기 소스를 변경합니다
  */
-export const update2 = (
-    partNumber: string,
-    revisionCode: string,
+export const update3 = (
+    partId: string,
+    revisionId: string,
     changePartPreviewRequest: BodyType<ChangePartPreviewRequest>,
  options?: SecondParameter<typeof customInstance<PartPreviewResponse | Blob>>,) => {
       return customInstance<PartPreviewResponse | Blob>(
-      {url: `/api/v1/parts/${partNumber}/revisions/${revisionCode}/preview`, method: 'PATCH',
+      {url: `/api/v1/parts/${partId}/revisions/${revisionId}/preview`, method: 'PATCH',
       headers: {'Content-Type': 'application/json', },
       data: changePartPreviewRequest
     },
@@ -66,47 +66,47 @@ export const update2 = (
     }
   /**
  * 대표 미리보기 선택 모달에 필요한 선택 가능 소스 목록을 조회합니다
- * @summary 대표 미리보기 선택 모달에 필요한 선택 가능 소스 목록을 조회합니다
+ * @summary 미리보기 후보 목록을 조회합니다
  */
 export const getSources = (
-    partNumber: string,
-    revisionCode: string,
+    partId: string,
+    revisionId: string,
  options?: SecondParameter<typeof customInstance<PartPreviewSourcesResponse | Blob>>,) => {
       return customInstance<PartPreviewSourcesResponse | Blob>(
-      {url: `/api/v1/parts/${partNumber}/revisions/${revisionCode}/preview/sources`, method: 'GET'
+      {url: `/api/v1/parts/${partId}/revisions/${revisionId}/preview/sources`, method: 'GET'
     },
       options);
     }
   /**
- * Part 대표 미리보기 비동기 처리 상태와 산출물 준비 여부를 조회합니다
- * @summary Part 대표 미리보기 비동기 처리 상태와 산출물 준비 여부를 조회합니다
+ * 대표 미리보기 비동기 처리 상태와 산출물 준비 여부를 조회합니다
+ * @summary 미리보기 처리 상태를 조회합니다
  */
 export const getProcessing = (
-    partNumber: string,
-    revisionCode: string,
+    partId: string,
+    revisionId: string,
  options?: SecondParameter<typeof customInstance<PartPreviewProcessingResponse | Blob>>,) => {
       return customInstance<PartPreviewProcessingResponse | Blob>(
-      {url: `/api/v1/parts/${partNumber}/revisions/${revisionCode}/preview/processing`, method: 'GET'
+      {url: `/api/v1/parts/${partId}/revisions/${revisionId}/preview/processing`, method: 'GET'
     },
       options);
     }
   /**
  * 대표 미리보기 전용 파일 1건을 삭제합니다
- * @summary 대표 미리보기 전용 파일 1건을 삭제합니다
+ * @summary 미리보기 전용 파일을 삭제합니다
  */
 export const deletePreviewFile = (
-    partNumber: string,
-    revisionCode: string,
+    partId: string,
+    revisionId: string,
     previewFileId: string,
  options?: SecondParameter<typeof customInstance<void>>,) => {
       return customInstance<void>(
-      {url: `/api/v1/parts/${partNumber}/revisions/${revisionCode}/preview/files/${previewFileId}`, method: 'DELETE'
+      {url: `/api/v1/parts/${partId}/revisions/${revisionId}/preview/files/${previewFileId}`, method: 'DELETE'
     },
       options);
     }
   export type CreatePreviewFileResult = NonNullable<Awaited<ReturnType<typeof createPreviewFile>>>
 export type Delete2Result = NonNullable<Awaited<ReturnType<typeof delete2>>>
-export type Update2Result = NonNullable<Awaited<ReturnType<typeof update2>>>
+export type Update3Result = NonNullable<Awaited<ReturnType<typeof update3>>>
 export type GetSourcesResult = NonNullable<Awaited<ReturnType<typeof getSources>>>
 export type GetProcessingResult = NonNullable<Awaited<ReturnType<typeof getProcessing>>>
 export type DeletePreviewFileResult = NonNullable<Awaited<ReturnType<typeof deletePreviewFile>>>

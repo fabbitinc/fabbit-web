@@ -18,8 +18,8 @@ export interface EngineeringChangePartRevisionResponse {
   part_number?: string;
   /** 기준 공식 리비전 코드 */
   base_revision_code?: string;
-  /** 초안 키 */
-  draft_key?: string;
+  /** 현재 리비전 코드 */
+  revision_code?: string;
   /** 초안 이름 */
   name?: string;
   /** 초안 상태 */

@@ -6,6 +6,7 @@
  */
 import type { PartDetailResponseExtendedProperties } from './partDetailResponseExtendedProperties';
 import type { PartDetailResponseLifecycleState } from './partDetailResponseLifecycleState';
+import type { PartDetailResponseRevisionStatus } from './partDetailResponseRevisionStatus';
 import type { PartPreviewResponse } from './partPreviewResponse';
 
 /**
@@ -14,10 +15,12 @@ import type { PartPreviewResponse } from './partPreviewResponse';
 export interface PartDetailResponse {
   id?: string;
   revision_id?: string;
+  revision_status?: PartDetailResponseRevisionStatus;
   part_number?: string;
+  base_revision_id?: string;
+  base_revision_code?: string;
   name?: string;
   revision?: string;
-  draft_key?: string;
   material?: string;
   unit?: string;
   description?: string;

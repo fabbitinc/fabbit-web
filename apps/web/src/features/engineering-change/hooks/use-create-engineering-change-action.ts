@@ -5,6 +5,8 @@ import type { ChangeCreateFormSubmitInput } from "@/features/change-shared";
 import { changeManagementKeys } from "@/features/change-management/api/change-management.queries";
 import { engineeringChangeMutations } from "@/features/engineering-change/api/engineering-change.queries";
 import type { CreateEngineeringChangeDto } from "@/features/engineering-change/api/engineering-change.types";
+import { EngineeringChangeStepRequestAssigneeType } from "@/api/generated/orval/model/engineeringChangeStepRequestAssigneeType";
+import { EngineeringChangeStepRequestStepType } from "@/api/generated/orval/model/engineeringChangeStepRequestStepType";
 import { extractApiError } from "@/lib/api-error";
 
 export function useCreateEngineeringChangeAction() {
@@ -40,8 +42,16 @@ function toCreateEngineeringChangeRequest(
   return {
     title: input.title,
     body: input.body ?? undefined,
-    source_issue_number: input.linkedIssueNumber ?? undefined,
-    reviewer_user_ids: input.reviewerIds.length > 0 ? input.reviewerIds : undefined,
+    source_issue_id: input.linkedIssueId ?? undefined,
     file_ids: fileIds.length > 0 ? fileIds : undefined,
+    steps:
+      input.reviewerIds.length > 0
+        ? input.reviewerIds.map((reviewerId, index) => ({
+            assignee_id: reviewerId,
+            assignee_type: EngineeringChangeStepRequestAssigneeType.USER,
+            sequence: index + 1,
+            step_type: EngineeringChangeStepRequestStepType.REVIEW,
+          }))
+        : undefined,
   };
 }

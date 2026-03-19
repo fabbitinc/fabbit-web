@@ -51,6 +51,6 @@ export interface UpdatePartRevisionRequest {
    * @minimum 0
    */
   lead_time_days?: number;
-  /** 확장 속성 JSON 객체 */
+  /** 확장 속성 JSON 객체. key는 property_definition.id(UUID)여야 합니다 */
   extended_properties?: UpdatePartRevisionRequestExtendedProperties;
 }

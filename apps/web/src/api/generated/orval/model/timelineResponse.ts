@@ -5,12 +5,10 @@
  * OpenAPI spec version: v0
  */
 import type { TimelineItemResponse } from './timelineItemResponse';
-import type { TimelineResponseUsers } from './timelineResponseUsers';
 
 /**
  * 이슈 타임라인 응답
  */
 export interface TimelineResponse {
   items?: TimelineItemResponse[];
-  users?: TimelineResponseUsers;
 }

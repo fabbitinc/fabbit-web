@@ -7,6 +7,7 @@ import {
 import { usePartTemplateMappingStore } from "@/features/part-template-mapping/stores/template-mapping-store";
 import { useTemplateUploadStore } from "@/features/part-template-mapping/stores/template-upload-store";
 import { useProcessTemplateMappingAction } from "@/features/part-template-mapping/hooks/use-process-template-mapping-action";
+import { buildPartTemplateMappingPath } from "@/features/parts/lib/part-route";
 
 type StepStatus = "pending" | "in_progress" | "completed";
 
@@ -45,11 +46,13 @@ function waitFor(ms: number) {
 
 interface PartsTemplateProcessingScreenProps {
   partId?: string;
+  revisionId?: string;
   fileName?: string;
 }
 
 export function PartsTemplateProcessingScreen({
   partId,
+  revisionId,
   fileName,
 }: PartsTemplateProcessingScreenProps) {
   const navigate = useNavigate();
@@ -66,7 +69,10 @@ export function PartsTemplateProcessingScreen({
   const [retryToken, setRetryToken] = useState(0);
 
   const effectiveFileName = fileName || uploadedFiles[0]?.name || "업로드된 파일";
-  const mappingPath = useMemo(() => (partId ? `/parts/${partId}/templates/mapping` : "/parts/templates/mapping"), [partId]);
+  const mappingPath = useMemo(
+    () => (partId && revisionId ? buildPartTemplateMappingPath(partId, revisionId) : "/parts/templates/mapping"),
+    [partId, revisionId],
+  );
 
   useEffect(() => {
     setStep(2);

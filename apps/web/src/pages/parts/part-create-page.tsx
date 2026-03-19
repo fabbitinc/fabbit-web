@@ -8,7 +8,7 @@ export function PartCreatePage() {
   return (
     <PartCreateScreen
       onBack={() => navigate("/parts")}
-      onCreated={(part) => navigate(buildPartDetailPath(part.routeId))}
+      onCreated={(part) => navigate(buildPartDetailPath(part.partId, part.revisionId))}
     />
   );
 }

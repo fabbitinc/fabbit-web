@@ -5,11 +5,12 @@ import { useDelayedVisibilityLogic } from "@/hooks/use-delayed-visibility-logic"
 
 interface PartProjectsTabProps {
   partId: string;
+  revisionId: string;
 }
 
-export function PartProjectsTab({ partId }: PartProjectsTabProps) {
+export function PartProjectsTab({ partId, revisionId }: PartProjectsTabProps) {
   const navigate = useNavigate();
-  const projectsQuery = usePartProjectsQuery(partId);
+  const projectsQuery = usePartProjectsQuery(partId, revisionId);
   const isProjectsTabLoading =
     !projectsQuery.isFetched && projectsQuery.fetchStatus === "fetching";
   const showLoadingIndicator = useDelayedVisibilityLogic(

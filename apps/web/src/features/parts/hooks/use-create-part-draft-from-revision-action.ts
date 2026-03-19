@@ -11,10 +11,11 @@ interface UseCreatePartDraftFromRevisionActionOptions {
 
 export function useCreatePartDraftFromRevisionAction(
   partId: string,
+  revisionId: string,
   options?: UseCreatePartDraftFromRevisionActionOptions,
 ) {
   const queryClient = useQueryClient();
-  const createDraftMutation = partsMutations.createDraftFromRevision(partId);
+  const createDraftMutation = partsMutations.createDraftFromRevision(partId, revisionId);
 
   return useMutation({
     mutationKey: createDraftMutation.mutationKey,
@@ -30,8 +31,8 @@ export function useCreatePartDraftFromRevisionAction(
     onSuccess: async (part) => {
       toast.success("개정 초안을 생성했습니다.");
       await Promise.all([
-        invalidatePartsQueries(queryClient, partId, { includeList: true }),
-        queryClient.invalidateQueries({ queryKey: partsKeys.detail(part.routeId) }),
+        invalidatePartsQueries(queryClient, partId, revisionId, { includeList: true }),
+        queryClient.invalidateQueries({ queryKey: partsKeys.detail(part.partId, part.revisionId) }),
       ]);
       options?.onSuccess?.(part);
     },

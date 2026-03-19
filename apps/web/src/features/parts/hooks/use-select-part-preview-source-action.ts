@@ -10,9 +10,9 @@ interface SelectPartPreviewSourceInput {
   sourceType: PartPreviewSourceType;
 }
 
-export function useSelectPartPreviewSourceAction(partId: string) {
+export function useSelectPartPreviewSourceAction(partId: string, revisionId: string) {
   const queryClient = useQueryClient();
-  const mutation = partsMutations.selectPreviewSource(partId);
+  const mutation = partsMutations.selectPreviewSource(partId, revisionId);
 
   return useMutation({
     mutationKey: mutation.mutationKey,
@@ -34,8 +34,8 @@ export function useSelectPartPreviewSourceAction(partId: string) {
     onSuccess: async () => {
       toast.success("대표 미리보기를 변경했습니다.");
       await Promise.all([
-        invalidatePartsQueries(queryClient, partId),
-        queryClient.invalidateQueries({ queryKey: partsKeys.drawingProcessing(partId) }),
+        invalidatePartsQueries(queryClient, partId, revisionId),
+        queryClient.invalidateQueries({ queryKey: partsKeys.drawingProcessing(partId, revisionId) }),
       ]);
     },
     onError: (error) => {

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import {
   PartEditorScreen,
   type PartEditorScreenDrawingSummary,
+  type PartEditorScreenExtendedField,
   type PartEditorScreenFormValues,
   type PartEditorScreenOption,
   type PartDrawingPreviewDrawing,
@@ -10,8 +11,12 @@ import { CreatePartRequestLifecycleState } from "@/api/generated/orval/model/cre
 import { usePartFilterOptionsQuery } from "@/features/parts/hooks/use-part-filter-options-query";
 import { usePartDetailQuery } from "@/features/parts/hooks/use-part-detail-query";
 import { useUpdatePartDraftAction } from "@/features/parts/hooks/use-update-part-draft-action";
+import { buildPartCustomPropertyFields, buildPartCustomPropertiesPayload } from "@/features/parts/lib/part-custom-properties";
+import { buildPartSystemFields } from "@/features/parts/lib/part-property-meta";
 import { openPartDrawingViewer } from "@/features/parts/lib/open-part-drawing-viewer";
 import type { PartDetailModel } from "@/features/parts/types/parts-model";
+import { usePropertyMetaQuery } from "@/features/properties/hooks/use-property-meta-query";
+import { toast } from "sonner";
 
 const DEFAULT_LIFECYCLE_OPTIONS: PartEditorScreenOption[] = Object.values(
   CreatePartRequestLifecycleState,
@@ -47,6 +52,7 @@ interface PartEditScreenProps {
   onBack: () => void;
   onSaved: (part: PartDetailModel) => void;
   partId: string;
+  revisionId: string;
 }
 
 function toOptions(values: string[]): PartEditorScreenOption[] {
@@ -91,32 +97,62 @@ function toDrawingSummary(
   };
 }
 
-export function PartEditScreen({ onBack, onSaved, partId }: PartEditScreenProps) {
-  const partQuery = usePartDetailQuery(partId);
+export function PartEditScreen({ onBack, onSaved, partId, revisionId }: PartEditScreenProps) {
+  const partQuery = usePartDetailQuery(partId, revisionId);
   const filterOptionsQuery = usePartFilterOptionsQuery();
-  const updatePartDraftAction = useUpdatePartDraftAction(partId, {
+  const propertyMetaQuery = usePropertyMetaQuery("PART", false);
+  const updatePartDraftAction = useUpdatePartDraftAction(partId, revisionId, {
     onSuccess: onSaved,
   });
   const [formValues, setFormValues] = useState(EMPTY_FORM_VALUES);
-  const initializedPartIdRef = useRef<string | null>(null);
+  const [extendedFields, setExtendedFields] = useState<PartEditorScreenExtendedField[]>([]);
+  const initializedRevisionIdRef = useRef<string | null>(null);
+  const initializedExtendedFieldsRevisionIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!partQuery.data) {
       return;
     }
 
-    if (initializedPartIdRef.current === partId) {
+    if (initializedRevisionIdRef.current === revisionId) {
       return;
     }
 
-    initializedPartIdRef.current = partId;
+    initializedRevisionIdRef.current = revisionId;
     setFormValues(toPartEditorFormValues(partQuery.data));
-  }, [partId, partQuery.data]);
+  }, [partQuery.data, revisionId]);
+
+  useEffect(() => {
+    if (!partQuery.data || !propertyMetaQuery.data) {
+      return;
+    }
+
+    const nextFields = buildPartCustomPropertyFields(
+      propertyMetaQuery.data,
+      partQuery.data.extendedProperties,
+    );
+
+    if (initializedExtendedFieldsRevisionIdRef.current !== revisionId) {
+      initializedExtendedFieldsRevisionIdRef.current = revisionId;
+      setExtendedFields(nextFields);
+      return;
+    }
+
+    setExtendedFields((currentFields) => {
+      const currentFieldMap = new Map(currentFields.map((field) => [field.id, field.value]));
+
+      return nextFields.map((field) => ({
+        ...field,
+        value: currentFieldMap.get(field.id) ?? field.value,
+      }));
+    });
+  }, [partQuery.data, propertyMetaQuery.data, revisionId]);
 
   const categoryOptions = toOptions(filterOptionsQuery.data?.categories ?? []);
   const lifecycleOptions = filterOptionsQuery.data?.lifecycleStates?.length
     ? toOptions(filterOptionsQuery.data.lifecycleStates)
     : DEFAULT_LIFECYCLE_OPTIONS;
+  const systemFields = buildPartSystemFields(propertyMetaQuery.data);
 
   if (partQuery.isLoading && !partQuery.data) {
     return null;
@@ -153,6 +189,7 @@ export function PartEditScreen({ onBack, onSaved, partId }: PartEditScreenProps)
       backLabel="부품 상세"
       categoryOptions={categoryOptions}
       drawing={toDrawingSummary(part.drawing)}
+      extendedFields={extendedFields}
       formValues={formValues}
       heading="부품 편집"
       isSubmitting={updatePartDraftAction.isPending}
@@ -164,20 +201,29 @@ export function PartEditScreen({ onBack, onSaved, partId }: PartEditScreenProps)
       }}
       mode="edit"
       submitLabel="저장"
+      systemFields={systemFields}
       unitOptions={DEFAULT_UNIT_OPTIONS}
       onBack={onBack}
       onChange={setFormValues}
+      onExtendedFieldsChange={setExtendedFields}
       onOpenDrawingViewer={handleOpenDrawingViewer}
       onSubmit={() =>
-        updatePartDraftAction.mutate({
-          category: formValues.category ?? "",
-          description: formValues.description,
-          isPhantom: formValues.isPhantom,
-          leadTimeDays: formValues.leadTimeDays,
-          material: formValues.material,
-          name: formValues.name,
-          unit: formValues.unit ?? "",
-        })
+        {
+          try {
+            updatePartDraftAction.mutate({
+              category: formValues.category ?? "",
+              description: formValues.description,
+              extendedProperties: buildPartCustomPropertiesPayload(propertyMetaQuery.data ?? [], extendedFields),
+              isPhantom: formValues.isPhantom,
+              leadTimeDays: formValues.leadTimeDays,
+              material: formValues.material,
+              name: formValues.name,
+              unit: formValues.unit ?? "",
+            });
+          } catch (error) {
+            toast.error(error instanceof Error ? error.message : "확장 속성 값을 확인해 주세요.");
+          }
+        }
       }
     />
   );

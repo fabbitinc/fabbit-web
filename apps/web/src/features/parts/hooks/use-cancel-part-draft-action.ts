@@ -10,10 +10,11 @@ interface UseCancelPartDraftActionOptions {
 
 export function useCancelPartDraftAction(
   partId: string,
+  revisionId: string,
   options?: UseCancelPartDraftActionOptions,
 ) {
   const queryClient = useQueryClient();
-  const cancelDraftMutation = partsMutations.cancelDraft(partId);
+  const cancelDraftMutation = partsMutations.cancelDraft(partId, revisionId);
 
   return useMutation({
     mutationKey: cancelDraftMutation.mutationKey,
@@ -28,7 +29,7 @@ export function useCancelPartDraftAction(
     },
     onSuccess: async () => {
       toast.success("부품 초안을 폐기했습니다.");
-      await invalidatePartsQueries(queryClient, partId, { includeList: true });
+      await invalidatePartsQueries(queryClient, partId, revisionId, { includeList: true });
       options?.onSuccess?.();
     },
     onError: (error) => {

@@ -1,21 +1,28 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { syncEngineeringChangeReviewers } from "@/features/engineering-change/api/engineering-change.api";
+import { replaceEngineeringChangeSteps } from "@/features/engineering-change/api/engineering-change.api";
 import { invalidateEngineeringChangeQueries } from "@/features/engineering-change/lib/invalidate-engineering-change-queries";
+import { EngineeringChangeStepRequestAssigneeType } from "@/api/generated/orval/model/engineeringChangeStepRequestAssigneeType";
+import { EngineeringChangeStepRequestStepType } from "@/api/generated/orval/model/engineeringChangeStepRequestStepType";
 import { extractApiError } from "@/lib/api-error";
 
-export function useSyncEngineeringChangeReviewersAction(changeNumber: number) {
+export function useSyncEngineeringChangeReviewersAction(engineeringChangeId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationKey: ["engineering-change", changeNumber, "sync-engineering-change-reviewers-action"],
+    mutationKey: ["engineering-change", engineeringChangeId, "sync-engineering-change-reviewers-action"],
     mutationFn: (userIds: string[]) =>
-      syncEngineeringChangeReviewers(changeNumber, {
-        user_ids: userIds,
+      replaceEngineeringChangeSteps(engineeringChangeId, {
+        steps: userIds.map((userId, index) => ({
+          assignee_id: userId,
+          assignee_type: EngineeringChangeStepRequestAssigneeType.USER,
+          sequence: index + 1,
+          step_type: EngineeringChangeStepRequestStepType.REVIEW,
+        })),
       }),
     onSuccess: async () => {
       toast.success("검토자를 갱신했습니다.");
-      await invalidateEngineeringChangeQueries(queryClient, changeNumber);
+      await invalidateEngineeringChangeQueries(queryClient, engineeringChangeId);
     },
     onError: (error) => {
       toast.error(extractApiError(error, "검토자 변경에 실패했습니다."));

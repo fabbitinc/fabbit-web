@@ -49,7 +49,6 @@ export interface EngineeringChangePartRevisionModel {
   partId: string;
   partNumber: string;
   baseRevisionCode: string | null;
-  draftKey: string;
   name: string | null;
   status: string | null;
 }

@@ -4,15 +4,15 @@ import { deleteIssueComment } from "@/features/issue/api/issue.api";
 import { invalidateIssueQueries } from "@/features/issue/lib/invalidate-issue-queries";
 import { extractApiError } from "@/lib/api-error";
 
-export function useDeleteIssueCommentAction(issueNumber: number) {
+export function useDeleteIssueCommentAction(issueId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationKey: ["issue", issueNumber, "delete-issue-comment-action"],
-    mutationFn: (commentId: string) => deleteIssueComment(issueNumber, commentId),
+    mutationKey: ["issue", issueId, "delete-issue-comment-action"],
+    mutationFn: (commentId: string) => deleteIssueComment(issueId, commentId),
     onSuccess: async () => {
       toast.success("댓글을 삭제했습니다.");
-      await invalidateIssueQueries(queryClient, issueNumber);
+      await invalidateIssueQueries(queryClient, issueId);
     },
     onError: (error) => {
       toast.error(extractApiError(error, "댓글 삭제에 실패했습니다."));

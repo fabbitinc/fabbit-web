@@ -1,6 +1,8 @@
 import { useDeferredValue, useMemo, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { type TiptapEditorProps } from "@fabbit/ui";
+import { changeSharedQueries } from "@/features/change-shared/api/change-shared.queries";
 import {
   EngineeringChangeDetailScreen as EngineeringChangeDetailScreenView,
   type EngineeringChangeDetailScreenProps as EngineeringChangeDetailScreenViewProps,
@@ -42,33 +44,37 @@ const detailTabs: { id: EngineeringChangeDetailTab; label: string }[] = [
 
 interface EngineeringChangeDetailScreenProps {
   activeTab: EngineeringChangeDetailTab;
-  changeNumber: number;
+  engineeringChangeId: string;
   onTabChange: (tab: EngineeringChangeDetailTab) => void;
 }
 
 export function EngineeringChangeDetailScreen({
   activeTab,
-  changeNumber,
+  engineeringChangeId,
   onTabChange,
 }: EngineeringChangeDetailScreenProps) {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const currentUser = useAuthStore((state) => state.user);
   const { userMentionFetcher, issueMentionFetcher } = useTiptapMentionFetchers();
 
-  const engineeringChangeQuery = useEngineeringChangeDetailQuery(changeNumber);
-  const timelineQuery = useEngineeringChangeTimelineQuery(changeNumber, activeTab === "conversation");
-  const updateEngineeringChangeAction = useUpdateEngineeringChangeAction(changeNumber);
-  const syncReviewersAction = useSyncEngineeringChangeReviewersAction(changeNumber);
-  const syncIssuesAction = useSyncEngineeringChangeIssuesAction(changeNumber);
-  const createCommentAction = useCreateEngineeringChangeCommentAction(changeNumber);
-  const updateCommentAction = useUpdateEngineeringChangeCommentAction(changeNumber);
-  const deleteCommentAction = useDeleteEngineeringChangeCommentAction(changeNumber);
-  const addFilesAction = useAddEngineeringChangeFilesAction(changeNumber);
-  const deleteFileAction = useDeleteEngineeringChangeFileAction(changeNumber);
-  const submitEngineeringChangeAction = useSubmitEngineeringChangeAction(changeNumber);
-  const mergeEngineeringChangeAction = useMergeEngineeringChangeAction(changeNumber);
-  const closeEngineeringChangeAction = useCloseEngineeringChangeAction(changeNumber);
-  const reopenEngineeringChangeAction = useReopenEngineeringChangeAction(changeNumber);
+  const engineeringChangeQuery = useEngineeringChangeDetailQuery(engineeringChangeId);
+  const timelineQuery = useEngineeringChangeTimelineQuery(engineeringChangeId, activeTab === "conversation");
+  const updateEngineeringChangeAction = useUpdateEngineeringChangeAction(engineeringChangeId);
+  const syncReviewersAction = useSyncEngineeringChangeReviewersAction(engineeringChangeId);
+  const syncIssuesAction = useSyncEngineeringChangeIssuesAction(engineeringChangeId);
+  const createCommentAction = useCreateEngineeringChangeCommentAction(engineeringChangeId);
+  const updateCommentAction = useUpdateEngineeringChangeCommentAction(engineeringChangeId);
+  const deleteCommentAction = useDeleteEngineeringChangeCommentAction(engineeringChangeId);
+  const addFilesAction = useAddEngineeringChangeFilesAction(engineeringChangeId);
+  const deleteFileAction = useDeleteEngineeringChangeFileAction(engineeringChangeId);
+  const submitEngineeringChangeAction = useSubmitEngineeringChangeAction(engineeringChangeId);
+  const mergeEngineeringChangeAction = useMergeEngineeringChangeAction(
+    engineeringChangeId,
+    engineeringChangeQuery.data?.state,
+  );
+  const closeEngineeringChangeAction = useCloseEngineeringChangeAction(engineeringChangeId);
+  const reopenEngineeringChangeAction = useReopenEngineeringChangeAction(engineeringChangeId);
 
   const engineeringChange = engineeringChangeQuery.data;
 
@@ -137,12 +143,41 @@ export function EngineeringChangeDetailScreen({
     return next;
   }, [sortedTimeline]);
 
-  const navigateToIssueMention = (targetIssueNumber: number, issueType: "issue" | "engineering_change") =>
-    navigate(
-      issueType === "engineering_change"
-        ? `/changes/engineering-changes/${targetIssueNumber}`
-        : `/changes/issues/${targetIssueNumber}`,
+  const navigateToIssueMention = async (targetIssueNumber: number, issueType: "issue" | "engineering_change") => {
+    if (issueType === "engineering_change") {
+      if (engineeringChange?.number === targetIssueNumber) {
+        navigate(`/changes/engineering-changes/${engineeringChange.id}`);
+        return;
+      }
+
+      const changes = await queryClient.fetchQuery(
+        changeSharedQueries.changes({ search: String(targetIssueNumber), limit: 20 }),
+      );
+      const matchedChange = changes.find((change) => change.number === targetIssueNumber);
+
+      if (matchedChange) {
+        navigate(`/changes/engineering-changes/${matchedChange.id}`);
+      }
+
+      return;
+    }
+
+    const linkedIssue = engineeringChange?.linkedIssues.find((issue) => issue.number === targetIssueNumber);
+
+    if (linkedIssue) {
+      navigate(`/changes/issues/${linkedIssue.id}`);
+      return;
+    }
+
+    const issues = await queryClient.fetchQuery(
+      changeSharedQueries.issues({ search: String(targetIssueNumber), limit: 20 }),
     );
+    const matchedIssue = issues.find((issue) => issue.number === targetIssueNumber);
+
+    if (matchedIssue) {
+      navigate(`/changes/issues/${matchedIssue.id}`);
+    }
+  };
 
   const engineeringChangeViewModel = engineeringChange
     ? {
@@ -211,7 +246,7 @@ export function EngineeringChangeDetailScreen({
       isLoading={engineeringChangeQuery.isLoading}
       isMergingEngineeringChange={mergeEngineeringChangeAction.isPending}
       isNotFound={!engineeringChangeQuery.isLoading && !engineeringChangeQuery.isError && !engineeringChange}
-      isReopeningEngineeringChange={reopenEngineeringChangeAction.isPending}
+      isReopeningEngineeringChange={reopenEngineeringChangeAction.isPending || engineeringChange?.state === "CANCELED"}
       isSavingEngineeringChange={updateEngineeringChangeAction.isPending}
       isSubmittingEngineeringChange={submitEngineeringChangeAction.isPending}
       isTimelineLoading={timelineQuery.isLoading}
@@ -273,10 +308,32 @@ export function EngineeringChangeDetailScreen({
       onMergeEngineeringChange={() => {
         mergeEngineeringChangeAction.mutate();
       }}
-      onNavigateToIssue={(issueNumber: number) => navigate(`/changes/issues/${issueNumber}`)}
+      onNavigateToIssue={async (linkedIssueDisplayNumber: number) => {
+        const linkedIssue = engineeringChange?.linkedIssues.find(
+          (issue) => issue.number === linkedIssueDisplayNumber,
+        );
+
+        if (linkedIssue) {
+          navigate(`/changes/issues/${linkedIssue.id}`);
+          return;
+        }
+
+        const issues = await queryClient.fetchQuery(
+          changeSharedQueries.issues({ search: String(linkedIssueDisplayNumber), limit: 20 }),
+        );
+        const matchedIssue = issues.find(
+          (issue) => issue.number === linkedIssueDisplayNumber,
+        );
+
+        if (matchedIssue) {
+          navigate(`/changes/issues/${matchedIssue.id}`);
+        }
+      }}
       onNavigateToIssueMention={navigateToIssueMention}
       onReopenEngineeringChange={() => {
-        reopenEngineeringChangeAction.mutate();
+        if (engineeringChange?.state !== "CANCELED") {
+          reopenEngineeringChangeAction.mutate();
+        }
       }}
       onRetry={() => {
         void engineeringChangeQuery.refetch();

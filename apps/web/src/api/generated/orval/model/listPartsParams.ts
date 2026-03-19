@@ -12,13 +12,7 @@ lifecycle_state?: string;
 has_drawing?: boolean;
 has_children?: boolean;
 project_id?: string;
-/**
- * 다음 페이지 조회 기준 커서
- */
 next_cursor?: string;
-/**
- * 이전 페이지 조회 기준 커서
- */
 prev_cursor?: string;
 /**
  * @minimum 1

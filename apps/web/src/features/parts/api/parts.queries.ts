@@ -6,11 +6,11 @@ import {
   clearPartPreview,
   createPart,
   createPartDraftFromRevision,
-  deletePartPreviewFile,
   deletePartDrawing,
+  deletePartPreviewFile,
   detachPartFile,
-  exportParts,
   exportPartBomTree,
+  exportParts,
   fetchAvailableProjects,
   fetchDrawingProcessing,
   fetchPartBom,
@@ -18,35 +18,35 @@ import {
   fetchPartDetail,
   fetchPartFiles,
   fetchPartFilterOptions,
+  fetchPartHistory,
   fetchPartPreviewSources,
   fetchPartProjects,
+  fetchPartRevisionDiff,
   fetchPartsList,
   fetchPartSuppliers,
   fetchTeamLookup,
   linkPartsToProject,
   registerPartDrawing,
   releasePartDraft,
-  fetchPartHistory,
-  fetchPartRevisionDiff,
   selectPartPreviewSource,
-  uploadPartPreviewFile,
   updatePartDraft,
+  uploadPartPreviewFile,
 } from "@/features/parts/api/parts.api";
 import type {
   AttachPartFilesRequestDto,
-  CreatePartRequestDto,
   CreatePartDraftRequestDto,
-  ExportPartsQueryDto,
+  CreatePartRequestDto,
   ExportPartBomTreeQueryDto,
+  ExportPartsQueryDto,
   LinkProjectPartsRequestDto,
   ListPartsQueryDto,
   ListProjectsQueryDto,
   PartBomTreeQueryDto,
   PartRevisionChangeReasonRequestDto,
   RegisterPartDrawingRequestDto,
+  UpdatePartDraftRequestDto,
   UpdatePartPreviewRequestDto,
   UploadPartPreviewFileRequestDto,
-  UpdatePartDraftRequestDto,
 } from "@/features/parts/api/parts.types";
 
 export const partsKeys = {
@@ -54,28 +54,24 @@ export const partsKeys = {
   filterOptions: () => ["parts", "filter-options"] as const,
   lists: () => ["parts", "list"] as const,
   list: (query: ListPartsQueryDto) => ["parts", "list", query] as const,
-  detail: (partId: string) => ["parts", partId, "detail"] as const,
-  drawingProcessing: (partId: string) => ["parts", partId, "drawing-processing"] as const,
-  bom: (partId: string) => ["parts", partId, "bom"] as const,
-  bomTree: (partId: string, query: PartBomTreeQueryDto) => ["parts", partId, "bom-tree", query] as const,
-  files: (partId: string) => ["parts", partId, "files"] as const,
-  previewSources: (partId: string) => ["parts", partId, "preview-sources"] as const,
-  suppliers: (partId: string) => ["parts", partId, "suppliers"] as const,
-  projects: (partId: string) => ["parts", partId, "projects"] as const,
+  detail: (partId: string, revisionId: string) => ["parts", partId, "revisions", revisionId, "detail"] as const,
+  drawingProcessing: (partId: string, revisionId: string) =>
+    ["parts", partId, "revisions", revisionId, "drawing-processing"] as const,
+  bom: (partId: string, revisionId: string) => ["parts", partId, "revisions", revisionId, "bom"] as const,
+  bomTree: (partId: string, revisionId: string, query: PartBomTreeQueryDto) =>
+    ["parts", partId, "revisions", revisionId, "bom-tree", query] as const,
+  files: (partId: string, revisionId: string) => ["parts", partId, "revisions", revisionId, "files"] as const,
+  previewSources: (partId: string, revisionId: string) =>
+    ["parts", partId, "revisions", revisionId, "preview-sources"] as const,
+  suppliers: (partId: string, revisionId: string) =>
+    ["parts", partId, "revisions", revisionId, "suppliers"] as const,
+  projects: (partId: string, revisionId: string) =>
+    ["parts", partId, "revisions", revisionId, "projects"] as const,
+  history: (partId: string) => ["parts", partId, "history"] as const,
+  revisionDiff: (partId: string, revisionId: string, baseRevisionId: string) =>
+    ["parts", partId, "revisions", revisionId, "diff", baseRevisionId] as const,
   availableProjects: (query: ListProjectsQueryDto) => ["parts", "available-projects", query] as const,
   teamLookup: () => ["parts", "team-lookup"] as const,
-  approveDraft: (partId: string) => ["parts", partId, "approve-draft"] as const,
-  createDraftFromRevision: (partId: string) => ["parts", partId, "create-draft-from-revision"] as const,
-  releaseDraft: (partId: string) => ["parts", partId, "release-draft"] as const,
-  cancelDraft: (partId: string) => ["parts", partId, "cancel-draft"] as const,
-  selectPreviewSource: (partId: string) => ["parts", partId, "select-preview-source"] as const,
-  clearPreview: (partId: string) => ["parts", partId, "clear-preview"] as const,
-  uploadPreviewFile: (partId: string) => ["parts", partId, "upload-preview-file"] as const,
-  deletePreviewFile: (partId: string, previewFileId: string) =>
-    ["parts", partId, "delete-preview-file", previewFileId] as const,
-  history: (partNumber: string) => ["parts", partNumber, "history"] as const,
-  revisionDiff: (partNumber: string, revisionCode: string, baseRevisionCode: string) =>
-    ["parts", partNumber, "revision-diff", revisionCode, baseRevisionCode] as const,
 };
 
 export const partsQueries = {
@@ -92,53 +88,65 @@ export const partsQueries = {
       placeholderData: (previousData) => previousData,
       staleTime: 30_000,
     }),
-  detail: (partId: string) =>
+  detail: (partId: string, revisionId: string) =>
     queryOptions({
-      queryKey: partsKeys.detail(partId),
-      queryFn: () => fetchPartDetail(partId),
+      queryKey: partsKeys.detail(partId, revisionId),
+      queryFn: () => fetchPartDetail(partId, revisionId),
       staleTime: 30_000,
     }),
-  drawingProcessing: (partId: string) =>
+  drawingProcessing: (partId: string, revisionId: string) =>
     queryOptions({
-      queryKey: partsKeys.drawingProcessing(partId),
-      queryFn: () => fetchDrawingProcessing(partId),
+      queryKey: partsKeys.drawingProcessing(partId, revisionId),
+      queryFn: () => fetchDrawingProcessing(partId, revisionId),
       staleTime: 0,
     }),
-  bom: (partId: string) =>
+  bom: (partId: string, revisionId: string) =>
     queryOptions({
-      queryKey: partsKeys.bom(partId),
-      queryFn: () => fetchPartBom(partId),
+      queryKey: partsKeys.bom(partId, revisionId),
+      queryFn: () => fetchPartBom(partId, revisionId),
       staleTime: 30_000,
     }),
-  bomTree: (partId: string, query: PartBomTreeQueryDto) =>
+  bomTree: (partId: string, revisionId: string, query: PartBomTreeQueryDto) =>
     queryOptions({
-      queryKey: partsKeys.bomTree(partId, query),
-      queryFn: () => fetchPartBomTree(partId, query),
+      queryKey: partsKeys.bomTree(partId, revisionId, query),
+      queryFn: () => fetchPartBomTree(partId, revisionId, query),
       staleTime: 30_000,
     }),
-  files: (partId: string) =>
+  files: (partId: string, revisionId: string) =>
     queryOptions({
-      queryKey: partsKeys.files(partId),
-      queryFn: () => fetchPartFiles(partId),
+      queryKey: partsKeys.files(partId, revisionId),
+      queryFn: () => fetchPartFiles(partId, revisionId),
       staleTime: 10_000,
     }),
-  previewSources: (partId: string) =>
+  previewSources: (partId: string, revisionId: string) =>
     queryOptions({
-      queryKey: partsKeys.previewSources(partId),
-      queryFn: () => fetchPartPreviewSources(partId),
+      queryKey: partsKeys.previewSources(partId, revisionId),
+      queryFn: () => fetchPartPreviewSources(partId, revisionId),
       staleTime: 10_000,
     }),
-  suppliers: (partId: string) =>
+  suppliers: (partId: string, revisionId: string) =>
     queryOptions({
-      queryKey: partsKeys.suppliers(partId),
-      queryFn: () => fetchPartSuppliers(partId),
+      queryKey: partsKeys.suppliers(partId, revisionId),
+      queryFn: () => fetchPartSuppliers(partId, revisionId),
       staleTime: 60_000,
     }),
-  projects: (partId: string) =>
+  projects: (partId: string, revisionId: string) =>
     queryOptions({
-      queryKey: partsKeys.projects(partId),
-      queryFn: () => fetchPartProjects(partId),
+      queryKey: partsKeys.projects(partId, revisionId),
+      queryFn: () => fetchPartProjects(partId, revisionId),
       staleTime: 30_000,
+    }),
+  history: (partId: string) =>
+    queryOptions({
+      queryKey: partsKeys.history(partId),
+      queryFn: () => fetchPartHistory(partId),
+      staleTime: 30_000,
+    }),
+  revisionDiff: (partId: string, revisionId: string, baseRevisionId: string) =>
+    queryOptions({
+      queryKey: partsKeys.revisionDiff(partId, revisionId, baseRevisionId),
+      queryFn: () => fetchPartRevisionDiff(partId, revisionId, baseRevisionId),
+      staleTime: 60_000,
     }),
   availableProjects: (query: ListProjectsQueryDto) =>
     queryOptions({
@@ -152,18 +160,6 @@ export const partsQueries = {
       queryFn: fetchTeamLookup,
       staleTime: 60_000,
     }),
-  history: (partNumber: string) =>
-    queryOptions({
-      queryKey: partsKeys.history(partNumber),
-      queryFn: () => fetchPartHistory(partNumber),
-      staleTime: 30_000,
-    }),
-  revisionDiff: (partNumber: string, revisionCode: string, baseRevisionCode: string) =>
-    queryOptions({
-      queryKey: partsKeys.revisionDiff(partNumber, revisionCode, baseRevisionCode),
-      queryFn: () => fetchPartRevisionDiff(partNumber, revisionCode, baseRevisionCode),
-      staleTime: 60_000,
-    }),
 };
 
 export const partsMutations = {
@@ -172,85 +168,85 @@ export const partsMutations = {
       mutationKey: ["parts", "create"],
       mutationFn: (request: CreatePartRequestDto) => createPart(request),
     }),
-  createDraftFromRevision: (partId: string) =>
+  createDraftFromRevision: (partId: string, revisionId: string) =>
     mutationOptions({
-      mutationKey: partsKeys.createDraftFromRevision(partId),
+      mutationKey: ["parts", partId, "revisions", revisionId, "create-draft"],
       mutationFn: (request: CreatePartDraftRequestDto = {}) =>
-        createPartDraftFromRevision(partId, request),
+        createPartDraftFromRevision(partId, revisionId, request),
     }),
-  approveDraft: (partId: string) =>
+  approveDraft: (partId: string, revisionId: string) =>
     mutationOptions({
-      mutationKey: partsKeys.approveDraft(partId),
-      mutationFn: (request: PartRevisionChangeReasonRequestDto) => approvePartDraft(partId, request),
+      mutationKey: ["parts", partId, "revisions", revisionId, "approve"],
+      mutationFn: (request: PartRevisionChangeReasonRequestDto) => approvePartDraft(partId, revisionId, request),
     }),
-  releaseDraft: (partId: string) =>
+  releaseDraft: (partId: string, revisionId: string) =>
     mutationOptions({
-      mutationKey: partsKeys.releaseDraft(partId),
-      mutationFn: (request: PartRevisionChangeReasonRequestDto) => releasePartDraft(partId, request),
+      mutationKey: ["parts", partId, "revisions", revisionId, "release"],
+      mutationFn: (request: PartRevisionChangeReasonRequestDto) => releasePartDraft(partId, revisionId, request),
     }),
-  cancelDraft: (partId: string) =>
+  cancelDraft: (partId: string, revisionId: string) =>
     mutationOptions({
-      mutationKey: partsKeys.cancelDraft(partId),
-      mutationFn: (request: PartRevisionChangeReasonRequestDto) => cancelPartDraft(partId, request),
+      mutationKey: ["parts", partId, "revisions", revisionId, "cancel"],
+      mutationFn: (request: PartRevisionChangeReasonRequestDto) => cancelPartDraft(partId, revisionId, request),
     }),
-  attachFiles: (partId: string) =>
+  attachFiles: (partId: string, revisionId: string) =>
     mutationOptions({
-      mutationKey: ["parts", partId, "attach-files"],
-      mutationFn: (request: AttachPartFilesRequestDto) => attachPartFiles(partId, request),
+      mutationKey: ["parts", partId, "revisions", revisionId, "attach-files"],
+      mutationFn: (request: AttachPartFilesRequestDto) => attachPartFiles(partId, revisionId, request),
     }),
-  detachFile: (partId: string, fileId: string) =>
+  detachFile: (partId: string, revisionId: string, fileId: string) =>
     mutationOptions({
-      mutationKey: ["parts", partId, "detach-file", fileId],
-      mutationFn: () => detachPartFile(partId, fileId),
+      mutationKey: ["parts", partId, "revisions", revisionId, "detach-file", fileId],
+      mutationFn: () => detachPartFile(partId, revisionId, fileId),
     }),
-  updateDraft: (partId: string) =>
+  updateDraft: (partId: string, revisionId: string) =>
     mutationOptions({
-      mutationKey: ["parts", partId, "update-draft"],
-      mutationFn: (request: UpdatePartDraftRequestDto) => updatePartDraft(partId, request),
+      mutationKey: ["parts", partId, "revisions", revisionId, "update"],
+      mutationFn: (request: UpdatePartDraftRequestDto) => updatePartDraft(partId, revisionId, request),
     }),
-  registerDrawing: (partId: string) =>
+  registerDrawing: (partId: string, revisionId: string) =>
     mutationOptions({
-      mutationKey: ["parts", partId, "register-drawing"],
-      mutationFn: (request: RegisterPartDrawingRequestDto) => registerPartDrawing(partId, request),
+      mutationKey: ["parts", partId, "revisions", revisionId, "register-drawing"],
+      mutationFn: (request: RegisterPartDrawingRequestDto) => registerPartDrawing(partId, revisionId, request),
     }),
-  selectPreviewSource: (partId: string) =>
+  selectPreviewSource: (partId: string, revisionId: string) =>
     mutationOptions({
-      mutationKey: partsKeys.selectPreviewSource(partId),
-      mutationFn: (request: UpdatePartPreviewRequestDto) => selectPartPreviewSource(partId, request),
+      mutationKey: ["parts", partId, "revisions", revisionId, "select-preview-source"],
+      mutationFn: (request: UpdatePartPreviewRequestDto) => selectPartPreviewSource(partId, revisionId, request),
     }),
-  clearPreview: (partId: string) =>
+  clearPreview: (partId: string, revisionId: string) =>
     mutationOptions({
-      mutationKey: partsKeys.clearPreview(partId),
-      mutationFn: () => clearPartPreview(partId),
+      mutationKey: ["parts", partId, "revisions", revisionId, "clear-preview"],
+      mutationFn: () => clearPartPreview(partId, revisionId),
     }),
-  uploadPreviewFile: (partId: string) =>
+  uploadPreviewFile: (partId: string, revisionId: string) =>
     mutationOptions({
-      mutationKey: partsKeys.uploadPreviewFile(partId),
-      mutationFn: (request: UploadPartPreviewFileRequestDto) => uploadPartPreviewFile(partId, request),
+      mutationKey: ["parts", partId, "revisions", revisionId, "upload-preview-file"],
+      mutationFn: (request: UploadPartPreviewFileRequestDto) => uploadPartPreviewFile(partId, revisionId, request),
     }),
-  deletePreviewFile: (partId: string, previewFileId: string) =>
+  deletePreviewFile: (partId: string, revisionId: string, previewFileId: string) =>
     mutationOptions({
-      mutationKey: partsKeys.deletePreviewFile(partId, previewFileId),
-      mutationFn: () => deletePartPreviewFile(partId, previewFileId),
+      mutationKey: ["parts", partId, "revisions", revisionId, "delete-preview-file", previewFileId],
+      mutationFn: () => deletePartPreviewFile(partId, revisionId, previewFileId),
     }),
-  deleteDrawing: (partId: string, drawingId: string) =>
+  deleteDrawing: (partId: string, revisionId: string, drawingId: string) =>
     mutationOptions({
-      mutationKey: ["parts", partId, "delete-drawing", drawingId],
-      mutationFn: () => deletePartDrawing(partId, drawingId),
+      mutationKey: ["parts", partId, "revisions", revisionId, "delete-drawing", drawingId],
+      mutationFn: () => deletePartDrawing(partId, revisionId, drawingId),
     }),
-  linkToProject: (projectId: string) =>
-    mutationOptions({
-      mutationKey: ["parts", "link-to-project", projectId],
-      mutationFn: (request: LinkProjectPartsRequestDto) => linkPartsToProject(projectId, request),
-    }),
-  export: () =>
+  exportParts: () =>
     mutationOptions({
       mutationKey: ["parts", "export"],
       mutationFn: (query: ExportPartsQueryDto) => exportParts(query),
     }),
-  exportBomTree: (partId: string) =>
+  exportBomTree: (partId: string, revisionId: string) =>
     mutationOptions({
-      mutationKey: ["parts", partId, "export-bom-tree"],
-      mutationFn: (query: ExportPartBomTreeQueryDto) => exportPartBomTree(partId, query),
+      mutationKey: ["parts", partId, "revisions", revisionId, "export-bom-tree"],
+      mutationFn: (query: ExportPartBomTreeQueryDto) => exportPartBomTree(partId, revisionId, query),
+    }),
+  linkPartsToProject: (projectId: string) =>
+    mutationOptions({
+      mutationKey: ["projects", projectId, "link-parts"],
+      mutationFn: (request: LinkProjectPartsRequestDto) => linkPartsToProject(projectId, request),
     }),
 };

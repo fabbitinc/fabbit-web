@@ -8,5 +8,6 @@ export interface ChangeCreateFormSubmitInput {
   labelIds: string[];
   partIds: string[];
   files: File[];
+  linkedIssueId: string | null;
   linkedIssueNumber: number | null;
 }

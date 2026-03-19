@@ -1,11 +1,9 @@
 import { useMemo } from "react";
-import { useNavigate } from "react-router-dom";
 import {
   BomExploreScreen as BomExploreScreenView,
   type BomExploreDisplayNode,
 } from "@fabbit/components";
 import { useExportPartBomAction } from "@/features/parts/hooks/use-export-part-bom-action";
-import { buildPartBomPath, buildPartDetailPath } from "@/features/parts/lib/part-route";
 import { usePartBomTreeQuery } from "@/features/parts/hooks/use-part-bom-tree-query";
 import type {
   PartBomDirection,
@@ -15,6 +13,7 @@ import type {
 
 interface BomExploreScreenProps {
   partId: string;
+  revisionId: string;
   direction: PartBomDirection;
   viewType: PartBomExploreView;
   searchQuery: string;
@@ -27,6 +26,7 @@ interface BomExploreScreenProps {
 
 export function BomExploreScreen({
   partId,
+  revisionId,
   direction,
   viewType,
   searchQuery,
@@ -36,9 +36,8 @@ export function BomExploreScreen({
   onSearchChange,
   onSingleLevelRootKeyChange,
 }: BomExploreScreenProps) {
-  const navigate = useNavigate();
-  const bomTreeQuery = usePartBomTreeQuery(partId, direction);
-  const exportBomAction = useExportPartBomAction(partId);
+  const bomTreeQuery = usePartBomTreeQuery(partId, revisionId, direction);
+  const exportBomAction = useExportPartBomAction(partId, revisionId);
 
   const tree = useMemo<BomExploreDisplayNode | null>(() => {
     if (!bomTreeQuery.data) {
@@ -62,8 +61,8 @@ export function BomExploreScreen({
       viewType={viewType}
       onDirectionChange={onDirectionChange}
       onExport={() => exportBomAction.mutate({ direction })}
-      onNavigateBom={(targetPartId) => navigate(buildPartBomPath(targetPartId))}
-      onNavigateDetail={(targetPartId) => navigate(buildPartDetailPath(targetPartId))}
+      onNavigateBom={() => {}}
+      onNavigateDetail={() => {}}
       onSearchChange={onSearchChange}
       onSingleLevelRootKeyChange={onSingleLevelRootKeyChange}
       onViewTypeChange={onViewTypeChange}

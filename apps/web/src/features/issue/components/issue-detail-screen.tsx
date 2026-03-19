@@ -1,4 +1,5 @@
 import { useDeferredValue, useMemo, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import {
   IssueDetailScreen as IssueDetailScreenView,
@@ -12,6 +13,7 @@ import type {
   LookupMemberModel,
   LookupPartModel,
 } from "@/features/change-shared/types/change-shared-model";
+import { changeSharedQueries } from "@/features/change-shared/api/change-shared.queries";
 import { useTiptapMentionFetchers } from "@/features/change-shared/hooks/use-tiptap-mention-fetchers";
 import { useChangeLookupQuery } from "@/features/change-shared/hooks/use-change-lookup-query";
 import { useLabelLookupQuery } from "@/features/change-shared/hooks/use-label-lookup-query";
@@ -45,11 +47,12 @@ type IssueViewIssue = NonNullable<IssueDetailScreenViewProps["issue"]>;
 type IssueViewTimelineItems = IssueDetailScreenViewProps["timelineItems"];
 
 interface IssueDetailScreenProps {
-  issueNumber: number;
+  issueId: string;
 }
 
-export function IssueDetailScreen({ issueNumber }: IssueDetailScreenProps) {
+export function IssueDetailScreen({ issueId }: IssueDetailScreenProps) {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const authUser = useAuthStore((state) => state.user);
   const currentUser = useMemo(
     () =>
@@ -64,20 +67,20 @@ export function IssueDetailScreen({ issueNumber }: IssueDetailScreenProps) {
   );
   const { userMentionFetcher, issueMentionFetcher } = useTiptapMentionFetchers();
 
-  const issueQuery = useIssueDetailQuery(issueNumber);
-  const timelineQuery = useIssueTimelineQuery(issueNumber);
-  const updateIssueAction = useUpdateIssueAction(issueNumber);
-  const syncAssigneesAction = useSyncIssueAssigneesAction(issueNumber);
-  const syncLabelsAction = useSyncIssueLabelsAction(issueNumber);
-  const syncPartsAction = useSyncIssuePartsAction(issueNumber);
-  const syncChangesAction = useSyncIssueChangesAction(issueNumber);
-  const createCommentAction = useCreateIssueCommentAction(issueNumber);
-  const updateCommentAction = useUpdateIssueCommentAction(issueNumber);
-  const deleteCommentAction = useDeleteIssueCommentAction(issueNumber);
-  const addIssueFilesAction = useAddIssueFilesAction(issueNumber);
-  const deleteIssueFileAction = useDeleteIssueFileAction(issueNumber);
-  const closeIssueAction = useCloseIssueAction(issueNumber);
-  const reopenIssueAction = useReopenIssueAction(issueNumber);
+  const issueQuery = useIssueDetailQuery(issueId);
+  const timelineQuery = useIssueTimelineQuery(issueId);
+  const updateIssueAction = useUpdateIssueAction(issueId);
+  const syncAssigneesAction = useSyncIssueAssigneesAction(issueId);
+  const syncLabelsAction = useSyncIssueLabelsAction(issueId);
+  const syncPartsAction = useSyncIssuePartsAction(issueId);
+  const syncChangesAction = useSyncIssueChangesAction(issueId);
+  const createCommentAction = useCreateIssueCommentAction(issueId);
+  const updateCommentAction = useUpdateIssueCommentAction(issueId);
+  const deleteCommentAction = useDeleteIssueCommentAction(issueId);
+  const addIssueFilesAction = useAddIssueFilesAction(issueId);
+  const deleteIssueFileAction = useDeleteIssueFileAction(issueId);
+  const closeIssueAction = useCloseIssueAction(issueId);
+  const reopenIssueAction = useReopenIssueAction(issueId);
 
   const issue = issueQuery.data;
 
@@ -214,12 +217,40 @@ export function IssueDetailScreen({ issueNumber }: IssueDetailScreenProps) {
     };
   }, [issue]);
 
-  const navigateToIssueMention = (targetIssueNumber: number, issueType: "issue" | "engineering_change") => {
-    navigate(
-      issueType === "engineering_change"
-        ? `/changes/engineering-changes/${targetIssueNumber}`
-        : `/changes/issues/${targetIssueNumber}`,
+  const navigateToIssueMention = async (targetIssueNumber: number, issueType: "issue" | "engineering_change") => {
+    if (issueType === "engineering_change") {
+      const linkedChange = issue?.linkedChanges.find((change) => change.number === targetIssueNumber);
+
+      if (linkedChange) {
+        navigate(`/changes/engineering-changes/${linkedChange.id}`);
+        return;
+      }
+
+      const changes = await queryClient.fetchQuery(
+        changeSharedQueries.changes({ search: String(targetIssueNumber), limit: 20 }),
+      );
+      const matchedChange = changes.find((change) => change.number === targetIssueNumber);
+
+      if (matchedChange) {
+        navigate(`/changes/engineering-changes/${matchedChange.id}`);
+      }
+
+      return;
+    }
+
+    if (issue?.number === targetIssueNumber) {
+      navigate(`/changes/issues/${issue.id}`);
+      return;
+    }
+
+    const issues = await queryClient.fetchQuery(
+      changeSharedQueries.issues({ search: String(targetIssueNumber), limit: 20 }),
     );
+    const matchedIssue = issues.find((candidate) => candidate.number === targetIssueNumber);
+
+    if (matchedIssue) {
+      navigate(`/changes/issues/${matchedIssue.id}`);
+    }
   };
 
   return (
@@ -287,7 +318,8 @@ export function IssueDetailScreen({ issueNumber }: IssueDetailScreenProps) {
         if (!issue) return;
 
         const params = new URLSearchParams({
-          issueNumber: String(issue.number),
+          issueId: issue.id,
+          issueDisplayNumber: String(issue.number),
           issueTitle: issue.title,
         });
         navigate(`/changes/engineering-changes/new?${params.toString()}`);
@@ -295,7 +327,27 @@ export function IssueDetailScreen({ issueNumber }: IssueDetailScreenProps) {
       onDeleteComment={(commentId) => deleteCommentAction.mutateAsync(commentId)}
       onDeleteFile={(fileId) => deleteIssueFileAction.mutateAsync(fileId)}
       onLabelSearchChange={setLabelsSearch}
-      onNavigateToChange={(changeNumber) => navigate(`/changes/engineering-changes/${changeNumber}`)}
+      onNavigateToChange={async (linkedChangeDisplayNumber) => {
+        const linkedChange = issue?.linkedChanges.find(
+          (change) => change.number === linkedChangeDisplayNumber,
+        );
+
+        if (linkedChange) {
+          navigate(`/changes/engineering-changes/${linkedChange.id}`);
+          return;
+        }
+
+        const changes = await queryClient.fetchQuery(
+          changeSharedQueries.changes({ search: String(linkedChangeDisplayNumber), limit: 20 }),
+        );
+        const matchedChange = changes.find(
+          (change) => change.number === linkedChangeDisplayNumber,
+        );
+
+        if (matchedChange) {
+          navigate(`/changes/engineering-changes/${matchedChange.id}`);
+        }
+      }}
       onNavigateToIssueMention={navigateToIssueMention}
       onMemberSearchChange={setMembersSearch}
       onPartsSearchChange={setPartsSearch}

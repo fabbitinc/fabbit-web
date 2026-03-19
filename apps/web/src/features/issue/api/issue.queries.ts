@@ -30,21 +30,21 @@ import type {
 
 export const issueKeys = {
   all: ["issue"] as const,
-  detail: (issueNumber: number) => ["issue", issueNumber, "detail"] as const,
-  timeline: (issueNumber: number) => ["issue", issueNumber, "timeline"] as const,
+  detail: (issueId: string) => ["issue", issueId, "detail"] as const,
+  timeline: (issueId: string) => ["issue", issueId, "timeline"] as const,
 };
 
 export const issueQueries = {
-  detail: (issueNumber: number) =>
+  detail: (issueId: string) =>
     queryOptions({
-      queryKey: issueKeys.detail(issueNumber),
-      queryFn: () => fetchIssueDetail(issueNumber),
+      queryKey: issueKeys.detail(issueId),
+      queryFn: () => fetchIssueDetail(issueId),
       staleTime: 30_000,
     }),
-  timeline: (issueNumber: number) =>
+  timeline: (issueId: string) =>
     queryOptions({
-      queryKey: issueKeys.timeline(issueNumber),
-      queryFn: () => fetchIssueTimeline(issueNumber),
+      queryKey: issueKeys.timeline(issueId),
+      queryFn: () => fetchIssueTimeline(issueId),
       staleTime: 10_000,
     }),
 };
@@ -55,64 +55,64 @@ export const issueMutations = {
       mutationKey: ["issue", "create"],
       mutationFn: (request: CreateIssueRequestDto) => createIssue(request),
     }),
-  update: (issueNumber: number) =>
+  update: (issueId: string) =>
     mutationOptions({
-      mutationKey: ["issue", issueNumber, "update"],
-      mutationFn: (request: UpdateIssueRequestDto) => updateIssue(issueNumber, request),
+      mutationKey: ["issue", issueId, "update"],
+      mutationFn: (request: UpdateIssueRequestDto) => updateIssue(issueId, request),
     }),
-  syncAssignees: (issueNumber: number) =>
+  syncAssignees: (issueId: string) =>
     mutationOptions({
-      mutationKey: ["issue", issueNumber, "sync-assignees"],
-      mutationFn: (request: SyncIssueAssigneesRequestDto) => syncIssueAssignees(issueNumber, request),
+      mutationKey: ["issue", issueId, "sync-assignees"],
+      mutationFn: (request: SyncIssueAssigneesRequestDto) => syncIssueAssignees(issueId, request),
     }),
-  syncLabels: (issueNumber: number) =>
+  syncLabels: (issueId: string) =>
     mutationOptions({
-      mutationKey: ["issue", issueNumber, "sync-labels"],
-      mutationFn: (request: SyncIssueLabelsRequestDto) => syncIssueLabels(issueNumber, request),
+      mutationKey: ["issue", issueId, "sync-labels"],
+      mutationFn: (request: SyncIssueLabelsRequestDto) => syncIssueLabels(issueId, request),
     }),
-  syncParts: (issueNumber: number) =>
+  syncParts: (issueId: string) =>
     mutationOptions({
-      mutationKey: ["issue", issueNumber, "sync-parts"],
-      mutationFn: (request: SyncIssuePartsRequestDto) => syncIssueParts(issueNumber, request),
+      mutationKey: ["issue", issueId, "sync-parts"],
+      mutationFn: (request: SyncIssuePartsRequestDto) => syncIssueParts(issueId, request),
     }),
-  syncChanges: (issueNumber: number) =>
+  syncChanges: (issueId: string) =>
     mutationOptions({
-      mutationKey: ["issue", issueNumber, "sync-changes"],
-      mutationFn: (request: SyncIssueChangesRequestDto) => syncIssueChanges(issueNumber, request),
+      mutationKey: ["issue", issueId, "sync-changes"],
+      mutationFn: (request: SyncIssueChangesRequestDto) => syncIssueChanges(issueId, request),
     }),
-  close: (issueNumber: number) =>
+  close: (issueId: string) =>
     mutationOptions({
-      mutationKey: ["issue", issueNumber, "close"],
-      mutationFn: () => closeIssue(issueNumber),
+      mutationKey: ["issue", issueId, "close"],
+      mutationFn: () => closeIssue(issueId),
     }),
-  reopen: (issueNumber: number) =>
+  reopen: (issueId: string) =>
     mutationOptions({
-      mutationKey: ["issue", issueNumber, "reopen"],
-      mutationFn: () => reopenIssue(issueNumber),
+      mutationKey: ["issue", issueId, "reopen"],
+      mutationFn: () => reopenIssue(issueId),
     }),
-  createComment: (issueNumber: number) =>
+  createComment: (issueId: string) =>
     mutationOptions({
-      mutationKey: ["issue", issueNumber, "create-comment"],
-      mutationFn: (request: CreateIssueCommentRequestDto) => createIssueComment(issueNumber, request),
+      mutationKey: ["issue", issueId, "create-comment"],
+      mutationFn: (request: CreateIssueCommentRequestDto) => createIssueComment(issueId, request),
     }),
-  updateComment: (issueNumber: number, commentId: string) =>
+  updateComment: (issueId: string, commentId: string) =>
     mutationOptions({
-      mutationKey: ["issue", issueNumber, "update-comment", commentId],
-      mutationFn: (request: UpdateIssueCommentRequestDto) => updateIssueComment(issueNumber, commentId, request),
+      mutationKey: ["issue", issueId, "update-comment", commentId],
+      mutationFn: (request: UpdateIssueCommentRequestDto) => updateIssueComment(issueId, commentId, request),
     }),
-  deleteComment: (issueNumber: number, commentId: string) =>
+  deleteComment: (issueId: string, commentId: string) =>
     mutationOptions({
-      mutationKey: ["issue", issueNumber, "delete-comment", commentId],
-      mutationFn: () => deleteIssueComment(issueNumber, commentId),
+      mutationKey: ["issue", issueId, "delete-comment", commentId],
+      mutationFn: () => deleteIssueComment(issueId, commentId),
     }),
-  addFiles: (issueNumber: number) =>
+  addFiles: (issueId: string) =>
     mutationOptions({
-      mutationKey: ["issue", issueNumber, "add-files"],
-      mutationFn: (request: AddIssueFilesRequestDto) => addIssueFiles(issueNumber, request),
+      mutationKey: ["issue", issueId, "add-files"],
+      mutationFn: (request: AddIssueFilesRequestDto) => addIssueFiles(issueId, request),
     }),
-  deleteFile: (issueNumber: number, fileId: string) =>
+  deleteFile: (issueId: string, fileId: string) =>
     mutationOptions({
-      mutationKey: ["issue", issueNumber, "delete-file", fileId],
-      mutationFn: () => deleteIssueFile(issueNumber, fileId),
+      mutationKey: ["issue", issueId, "delete-file", fileId],
+      mutationFn: () => deleteIssueFile(issueId, fileId),
     }),
 };

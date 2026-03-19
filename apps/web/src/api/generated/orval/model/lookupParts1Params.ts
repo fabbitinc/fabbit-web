@@ -6,12 +6,8 @@
  */
 
 export type LookupParts1Params = {
-/**
- * 품번/품명 검색어
- */
 search?: string;
 /**
- * 조회 건수
  * @minimum 1
  * @maximum 50
  */

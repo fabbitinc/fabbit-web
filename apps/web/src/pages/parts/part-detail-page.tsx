@@ -5,7 +5,7 @@
 // 4. 탭 콘텐츠 컴포넌트 생성 및 연결
 import { Navigate, useParams, useSearchParams } from "react-router-dom";
 import { PartDetailScreen } from "@/features/parts";
-import { toPartDraftRouteId, toPartRevisionDraftRouteId, toPartRouteId } from "@/features/parts/lib/part-route";
+import { buildPartDetailPath } from "@/features/parts/lib/part-route";
 import type { PartDetailTab } from "@/features/parts/types/parts-model";
 
 const VALID_PART_DETAIL_TABS = new Set<PartDetailTab>([
@@ -18,29 +18,18 @@ const VALID_PART_DETAIL_TABS = new Set<PartDetailTab>([
 ]);
 
 export function PartDetailPage() {
-  const { partNumber, revisionCode, draftKey } = useParams<{
-    partNumber: string;
-    revisionCode?: string;
-    draftKey?: string;
+  const { partId, revisionId } = useParams<{
+    partId: string;
+    revisionId?: string;
   }>();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const partId = !partNumber
-    ? null
-    : draftKey && revisionCode
-      ? toPartRevisionDraftRouteId({ partNumber, revisionCode, draftKey })
-      : draftKey
-        ? toPartDraftRouteId({ partNumber, draftKey })
-        : revisionCode
-          ? toPartRouteId({ partNumber, revisionCode })
-          : null;
-
-  if (!partId) {
+  if (!partId || !revisionId) {
     return <Navigate replace to="/parts" />;
   }
 
   const tabParam = searchParams.get("tab");
-  const basePath = `/parts/${partId}`;
+  const basePath = buildPartDetailPath(partId, revisionId);
   const availableTabs: PartDetailTab[] = Array.from(VALID_PART_DETAIL_TABS);
 
   if (tabParam === "properties") {
@@ -60,6 +49,7 @@ export function PartDetailPage() {
       activeTab={activeTab}
       availableTabs={availableTabs}
       partId={partId}
+      revisionId={revisionId}
       onTabChange={(tab) => {
         setSearchParams((previous) => {
           const next = new URLSearchParams(previous);

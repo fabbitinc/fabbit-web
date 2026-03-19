@@ -26,11 +26,12 @@ export interface EngineeringChangeResponse {
   updated_at?: string;
   is_modified?: boolean;
   created_by?: UserSummaryResponse;
+  source_issue?: LinkedIssueSummaryResponse;
   steps?: EngineeringChangeStepResponse[];
   part_revisions?: EngineeringChangePartRevisionResponse[];
   files?: FileItemResponse[];
   comments_count?: number;
-  merged_at?: string;
-  merged_by?: string;
+  released_at?: string;
+  released_by?: UserSummaryResponse;
   linked_issues?: LinkedIssueSummaryResponse[];
 }

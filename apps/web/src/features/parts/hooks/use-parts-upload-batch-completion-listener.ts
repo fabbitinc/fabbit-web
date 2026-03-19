@@ -32,9 +32,14 @@ export function usePartsUploadBatchCompletionListener({
 
     handledBatchIdRef.current = batchSession.batchId;
 
-    void invalidatePartsQueries(queryClient, contextPartId ?? undefined, {
-      includeList: true,
-    });
+    void invalidatePartsQueries(
+      queryClient,
+      contextPartId ?? undefined,
+      undefined,
+      {
+        includeList: true,
+      },
+    );
 
     if (batchStatus.failedJobCount > 0 || batchStatus.failed.length > 0) {
       toast.warning("일부 부품 업로드 처리에 실패했습니다.");

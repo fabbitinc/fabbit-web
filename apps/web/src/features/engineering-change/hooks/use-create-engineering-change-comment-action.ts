@@ -5,18 +5,18 @@ import { invalidateEngineeringChangeQueries } from "@/features/engineering-chang
 import type { RichTextDocument } from "@/lib/rich-text";
 import { extractApiError } from "@/lib/api-error";
 
-export function useCreateEngineeringChangeCommentAction(changeNumber: number) {
+export function useCreateEngineeringChangeCommentAction(engineeringChangeId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationKey: ["engineering-change", changeNumber, "create-engineering-change-comment-action"],
+    mutationKey: ["engineering-change", engineeringChangeId, "create-engineering-change-comment-action"],
     mutationFn: (body: RichTextDocument) =>
-      createEngineeringChangeComment(changeNumber, {
+      createEngineeringChangeComment(engineeringChangeId, {
         body,
       }),
     onSuccess: async () => {
       toast.success("댓글을 등록했습니다.");
-      await invalidateEngineeringChangeQueries(queryClient, changeNumber);
+      await invalidateEngineeringChangeQueries(queryClient, engineeringChangeId);
     },
     onError: (error) => {
       toast.error(extractApiError(error, "댓글 등록에 실패했습니다."));

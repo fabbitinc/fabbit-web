@@ -20,75 +20,75 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 
   /**
- * Part에 연결된 업로드 완료 파일 목록을 조회합니다
- * @summary Part에 연결된 업로드 완료 파일 목록을 조회합니다
+ * 리비전에 연결된 파일과 도면 목록을 조회합니다
+ * @summary 연결된 파일 목록을 조회합니다
  */
 export const getFiles = (
-    partNumber: string,
-    revisionCode: string,
+    partId: string,
+    revisionId: string,
  options?: SecondParameter<typeof customInstance<PartFilesResponse | Blob>>,) => {
       return customInstance<PartFilesResponse | Blob>(
-      {url: `/api/v1/parts/${partNumber}/revisions/${revisionCode}/files`, method: 'GET'
+      {url: `/api/v1/parts/${partId}/revisions/${revisionId}/files`, method: 'GET'
     },
       options);
     }
   /**
- * 업로드 완료 파일들을 Part에 배치 연결합니다
- * @summary 업로드 완료 파일들을 Part에 배치 연결합니다
+ * 업로드 완료 파일들을 리비전에 배치 연결합니다
+ * @summary 파일을 첨부합니다
  */
 export const attachFiles = (
-    partNumber: string,
-    revisionCode: string,
+    partId: string,
+    revisionId: string,
     attachFilesRequest: BodyType<AttachFilesRequest>,
  options?: SecondParameter<typeof customInstance<PartAttachmentItemResponse[] | Blob>>,) => {
       return customInstance<PartAttachmentItemResponse[] | Blob>(
-      {url: `/api/v1/parts/${partNumber}/revisions/${revisionCode}/files`, method: 'POST',
+      {url: `/api/v1/parts/${partId}/revisions/${revisionId}/files`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: attachFilesRequest
     },
       options);
     }
   /**
- * 업로드 완료 파일을 Drawing으로 등록하고 PartRevision에 연결합니다
- * @summary 업로드 완료 파일을 Drawing으로 등록하고 PartRevision에 연결합니다
+ * 업로드 완료 파일을 Drawing으로 등록하고 리비전에 연결합니다
+ * @summary 도면을 등록합니다
  */
 export const createDrawing = (
-    partNumber: string,
-    revisionCode: string,
+    partId: string,
+    revisionId: string,
     registerDrawingRequest: BodyType<RegisterDrawingRequest>,
  options?: SecondParameter<typeof customInstance<RegisterDrawingResponse | Blob>>,) => {
       return customInstance<RegisterDrawingResponse | Blob>(
-      {url: `/api/v1/parts/${partNumber}/revisions/${revisionCode}/drawings`, method: 'POST',
+      {url: `/api/v1/parts/${partId}/revisions/${revisionId}/drawings`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: registerDrawingRequest
     },
       options);
     }
   /**
- * Part에 연결된 첨부파일 1건을 제거합니다
- * @summary Part에 연결된 첨부파일 1건을 제거합니다
+ * 리비전에 연결된 첨부 파일 1건을 제거합니다
+ * @summary 첨부 파일을 제거합니다
  */
 export const deleteFile = (
-    partNumber: string,
-    revisionCode: string,
+    partId: string,
+    revisionId: string,
     fileId: string,
  options?: SecondParameter<typeof customInstance<void>>,) => {
       return customInstance<void>(
-      {url: `/api/v1/parts/${partNumber}/revisions/${revisionCode}/files/${fileId}`, method: 'DELETE'
+      {url: `/api/v1/parts/${partId}/revisions/${revisionId}/files/${fileId}`, method: 'DELETE'
     },
       options);
     }
   /**
- * PartRevision에 연결된 도면 1건을 삭제합니다
- * @summary PartRevision에 연결된 도면 1건을 삭제합니다
+ * 리비전에 연결된 도면 1건을 삭제합니다
+ * @summary 도면을 삭제합니다
  */
 export const deleteDrawing = (
-    partNumber: string,
-    revisionCode: string,
+    partId: string,
+    revisionId: string,
     drawingId: string,
  options?: SecondParameter<typeof customInstance<void>>,) => {
       return customInstance<void>(
-      {url: `/api/v1/parts/${partNumber}/revisions/${revisionCode}/drawings/${drawingId}`, method: 'DELETE'
+      {url: `/api/v1/parts/${partId}/revisions/${revisionId}/drawings/${drawingId}`, method: 'DELETE'
     },
       options);
     }

@@ -10,16 +10,15 @@ import type { EngineeringChangeDetailTab } from "@/features/engineering-change/t
 const VALID_ENGINEERING_CHANGE_DETAIL_TABS = new Set<EngineeringChangeDetailTab>(["conversation", "changes"]);
 
 export function EngineeringChangeDetailPage() {
-  const { changeNumber: changeNumberParam } = useParams<{ changeNumber: string }>();
+  const { engineeringChangeId } = useParams<{ engineeringChangeId: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
-  const changeNumber = changeNumberParam ? Number(changeNumberParam) : Number.NaN;
 
-  if (!Number.isInteger(changeNumber) || changeNumber <= 0) {
+  if (!engineeringChangeId) {
     return <Navigate replace to="/changes?view=engineering-changes" />;
   }
 
   const tabParam = searchParams.get("tab");
-  const basePath = `/changes/engineering-changes/${changeNumber}`;
+  const basePath = `/changes/engineering-changes/${engineeringChangeId}`;
 
   if (tabParam === "conversation") {
     return <Navigate replace to={basePath} />;
@@ -33,7 +32,7 @@ export function EngineeringChangeDetailPage() {
 
   return (
     <EngineeringChangeDetailScreen
-      changeNumber={changeNumber}
+      engineeringChangeId={engineeringChangeId}
       activeTab={activeTab}
       onTabChange={(tab) => {
         setSearchParams((previous) => {

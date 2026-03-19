@@ -5,9 +5,9 @@ import { issueMutations } from "@/features/issue/api/issue.queries";
 import { invalidateIssueQueries } from "@/features/issue/lib/invalidate-issue-queries";
 import { extractApiError } from "@/lib/api-error";
 
-export function useAddIssueFilesAction(issueNumber: number) {
+export function useAddIssueFilesAction(issueId: string) {
   const queryClient = useQueryClient();
-  const addFilesMutation = issueMutations.addFiles(issueNumber);
+  const addFilesMutation = issueMutations.addFiles(issueId);
 
   return useMutation({
     mutationKey: addFilesMutation.mutationKey,
@@ -25,7 +25,7 @@ export function useAddIssueFilesAction(issueNumber: number) {
     },
     onSuccess: async (_, files) => {
       toast.success(`${files.length}개의 파일을 첨부했습니다.`);
-      await invalidateIssueQueries(queryClient, issueNumber);
+      await invalidateIssueQueries(queryClient, issueId);
     },
     onError: (error) => {
       toast.error(extractApiError(error, "파일 첨부에 실패했습니다."));

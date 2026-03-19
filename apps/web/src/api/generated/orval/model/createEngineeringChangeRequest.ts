@@ -20,8 +20,8 @@ export interface CreateEngineeringChangeRequest {
   title: string;
   /** 변경관리 본문(TipTap JSON) */
   body?: JsonNode;
-  /** 연결할 원본 이슈 번호 */
-  source_issue_number?: number;
+  /** 연결할 원본 이슈 ID */
+  source_issue_id?: string;
   /** 연결할 부품 초안 목록 */
   part_revisions?: EngineeringChangePartRevisionTargetRequest[];
   /**

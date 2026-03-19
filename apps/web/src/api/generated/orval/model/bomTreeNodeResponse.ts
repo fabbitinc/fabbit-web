@@ -5,15 +5,18 @@
  * OpenAPI spec version: v0
  */
 import type { BomTreeNodeResponseLifecycleState } from './bomTreeNodeResponseLifecycleState';
+import type { BomTreeNodeResponseRevisionStatus } from './bomTreeNodeResponseRevisionStatus';
 
 /**
  * 응답 DTO
  */
 export interface BomTreeNodeResponse {
-  id?: string;
+  part_id?: string;
+  revision_id?: string;
   part_number?: string;
   name?: string;
-  revision?: string;
+  revision_code?: string;
+  revision_status?: BomTreeNodeResponseRevisionStatus;
   material?: string;
   unit?: string;
   category?: string;

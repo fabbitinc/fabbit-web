@@ -9,16 +9,6 @@
  * 변경관리에 연결할 부품 초안 식별자
  */
 export interface EngineeringChangePartRevisionTargetRequest {
-  /**
-   * 품번
-   * @minLength 1
-   */
-  part_number: string;
-  /** 기준 공식 리비전 코드. 초기 초안이면 null */
-  base_revision_code?: string;
-  /**
-   * 초안 키
-   * @minLength 1
-   */
-  draft_key: string;
+  /** 리비전 ID */
+  revision_id: string;
 }

@@ -6,7 +6,7 @@ import { StorageUsageTab } from "@/features/billing/components/storage-usage-tab
 import { OrganizationGeneralSettingsTab } from "@/features/organization-settings/components/organization-general-settings-tab";
 import { OrganizationLabelsTab } from "@/features/organization-settings/components/organization-labels-tab";
 import { OrganizationMembersUsersTab } from "@/features/organization-settings/components/organization-members-users-tab";
-import { OrganizationPartsCategoriesTab } from "@/features/organization-settings/components/organization-parts-categories-tab";
+import { OrganizationPartsSettingsTab } from "@/features/organization-settings/components/organization-parts-settings-tab";
 import { OrganizationSecuritySettingsTab } from "@/features/organization-settings/components/organization-security-settings-tab";
 import { OrganizationTeamsTab } from "@/features/organization-settings/components/organization-teams-tab";
 import { mockActivityLogs } from "@/features/organization-settings/mock-data/activity-logs";
@@ -46,7 +46,7 @@ export function OrganizationSettingsScreen({
       generalContent={<OrganizationGeneralSettingsTab />}
       membersUsersContent={<OrganizationMembersUsersTab />}
       membersTeamsContent={<OrganizationTeamsTab />}
-      partsCategoriesContent={<OrganizationPartsCategoriesTab />}
+      partsCategoriesContent={<OrganizationPartsSettingsTab />}
       changeGeneralContent={<OrganizationChangeGeneralTab />}
       labelsContent={<OrganizationLabelsTab />}
       billingContent={<BillingSection />}

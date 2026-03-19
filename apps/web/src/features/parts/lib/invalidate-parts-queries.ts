@@ -8,6 +8,7 @@ interface InvalidatePartsQueriesOptions {
 export async function invalidatePartsQueries(
   queryClient: QueryClient,
   partId?: string,
+  revisionId?: string,
   options?: InvalidatePartsQueriesOptions,
 ) {
   const tasks: Promise<unknown>[] = [];
@@ -17,13 +18,18 @@ export async function invalidatePartsQueries(
   }
 
   if (partId) {
+    tasks.push(queryClient.invalidateQueries({ queryKey: partsKeys.history(partId) }));
+  }
+
+  if (partId && revisionId) {
     tasks.push(
-      queryClient.invalidateQueries({ queryKey: partsKeys.detail(partId) }),
-      queryClient.invalidateQueries({ queryKey: partsKeys.bom(partId) }),
-      queryClient.invalidateQueries({ queryKey: partsKeys.files(partId) }),
-      queryClient.invalidateQueries({ queryKey: partsKeys.previewSources(partId) }),
-      queryClient.invalidateQueries({ queryKey: partsKeys.projects(partId) }),
-      queryClient.invalidateQueries({ queryKey: partsKeys.suppliers(partId) }),
+      queryClient.invalidateQueries({ queryKey: partsKeys.detail(partId, revisionId) }),
+      queryClient.invalidateQueries({ queryKey: partsKeys.bom(partId, revisionId) }),
+      queryClient.invalidateQueries({ queryKey: partsKeys.files(partId, revisionId) }),
+      queryClient.invalidateQueries({ queryKey: partsKeys.previewSources(partId, revisionId) }),
+      queryClient.invalidateQueries({ queryKey: partsKeys.projects(partId, revisionId) }),
+      queryClient.invalidateQueries({ queryKey: partsKeys.suppliers(partId, revisionId) }),
+      queryClient.invalidateQueries({ queryKey: partsKeys.drawingProcessing(partId, revisionId) }),
     );
   }
 

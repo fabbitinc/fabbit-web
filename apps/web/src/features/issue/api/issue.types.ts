@@ -12,43 +12,43 @@ export interface CreateIssueRequestDto
 }
 export type IssueResponseDto = ResponseOf<"/api/v1/issues", "post">;
 
-export type IssueDetailResponseDto = ResponseOf<"/api/v1/issues/{issueNumber}", "get">;
+export type IssueDetailResponseDto = ResponseOf<"/api/v1/issues/{issueId}", "get">;
 export interface UpdateIssueRequestDto
-  extends Omit<ApiRequestBody<"/api/v1/issues/{issueNumber}", "patch">, "body"> {
+  extends Omit<ApiRequestBody<"/api/v1/issues/{issueId}", "patch">, "body"> {
   body?: RichTextDocument | null;
 }
 
-export type SyncIssueAssigneesRequestDto = ApiRequestBody<"/api/v1/issues/{issueNumber}/assignees", "put">;
-export type SyncIssueAssigneesResponseDto = ResponseOf<"/api/v1/issues/{issueNumber}/assignees", "put">;
+export type SyncIssueAssigneesRequestDto = ApiRequestBody<"/api/v1/issues/{issueId}/assignees", "put">;
+export type SyncIssueAssigneesResponseDto = ResponseOf<"/api/v1/issues/{issueId}/assignees", "put">;
 
 export type SyncIssueChangesRequestDto = ApiRequestBody<
-  "/api/v1/issues/{issueNumber}/engineering-changes",
+  "/api/v1/issues/{issueId}/engineering-changes",
   "put"
 >;
 export type SyncIssueChangesResponseDto = ResponseOf<
-  "/api/v1/issues/{issueNumber}/engineering-changes",
+  "/api/v1/issues/{issueId}/engineering-changes",
   "put"
 >;
 
-export type SyncIssueLabelsRequestDto = ApiRequestBody<"/api/v1/issues/{issueNumber}/labels", "put">;
-export type SyncIssueLabelsResponseDto = ResponseOf<"/api/v1/issues/{issueNumber}/labels", "put">;
+export type SyncIssueLabelsRequestDto = ApiRequestBody<"/api/v1/issues/{issueId}/labels", "put">;
+export type SyncIssueLabelsResponseDto = ResponseOf<"/api/v1/issues/{issueId}/labels", "put">;
 
-export type SyncIssuePartsRequestDto = ApiRequestBody<"/api/v1/issues/{issueNumber}/parts", "put">;
-export type SyncIssuePartsResponseDto = ResponseOf<"/api/v1/issues/{issueNumber}/parts", "put">;
+export type SyncIssuePartsRequestDto = ApiRequestBody<"/api/v1/issues/{issueId}/parts", "put">;
+export type SyncIssuePartsResponseDto = ResponseOf<"/api/v1/issues/{issueId}/parts", "put">;
 
-export type IssueTimelineResponseDto = ResponseOf<"/api/v1/issues/{issueNumber}/timeline", "get">;
+export type IssueTimelineResponseDto = ResponseOf<"/api/v1/issues/{issueId}/timeline", "get">;
 
 export interface CreateIssueCommentRequestDto
-  extends Omit<ApiRequestBody<"/api/v1/issues/{issueNumber}/comments", "post">, "body"> {
+  extends Omit<ApiRequestBody<"/api/v1/issues/{issueId}/comments", "post">, "body"> {
   body: RichTextDocument;
 }
-export type CreateIssueCommentResponseDto = ResponseOf<"/api/v1/issues/{issueNumber}/comments", "post">;
+export type CreateIssueCommentResponseDto = ResponseOf<"/api/v1/issues/{issueId}/comments", "post">;
 
 export interface UpdateIssueCommentRequestDto
-  extends Omit<ApiRequestBody<"/api/v1/issues/{issueNumber}/comments/{commentId}", "patch">, "body"> {
+  extends Omit<ApiRequestBody<"/api/v1/issues/{issueId}/comments/{commentId}", "patch">, "body"> {
   body: RichTextDocument;
 }
-export type UpdateIssueCommentResponseDto = ResponseOf<"/api/v1/issues/{issueNumber}/comments/{commentId}", "patch">;
+export type UpdateIssueCommentResponseDto = ResponseOf<"/api/v1/issues/{issueId}/comments/{commentId}", "patch">;
 
-export type AddIssueFilesRequestDto = ApiRequestBody<"/api/v1/issues/{issueNumber}/files", "post">;
-export type AddIssueFilesResponseDto = ResponseOf<"/api/v1/issues/{issueNumber}/files", "post">;
+export type AddIssueFilesRequestDto = ApiRequestBody<"/api/v1/issues/{issueId}/files", "post">;
+export type AddIssueFilesResponseDto = ResponseOf<"/api/v1/issues/{issueId}/files", "post">;

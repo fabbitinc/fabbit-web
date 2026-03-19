@@ -44,12 +44,35 @@ export interface PartEditorScreenOption {
   label: string;
 }
 
+export type PartEditorScreenSystemFieldKey =
+  | "partNumber"
+  | "name"
+  | "revision"
+  | "lifecycleState"
+  | "category"
+  | "material"
+  | "unit"
+  | "leadTimeDays"
+  | "isPhantom"
+  | "description";
+
+export interface PartEditorScreenSystemField {
+  active?: boolean;
+  displayOrder?: number;
+  key: PartEditorScreenSystemFieldKey;
+  label: string;
+}
+
 export interface PartEditorScreenExtendedField {
   helperText?: string;
   id: string;
   label: string;
+  optionMode?: "FIXED" | "CREATABLE" | null;
+  options?: PartEditorScreenOption[];
   placeholder?: string;
-  value: string;
+  required?: boolean;
+  value: string | boolean;
+  valueType?: "STRING" | "INTEGER" | "FLOAT" | "BOOLEAN" | "OPTION";
 }
 
 export interface PartEditorScreenDrawingSummary {
@@ -116,6 +139,7 @@ export interface PartEditorScreenProps {
   referenceStats?: PartEditorScreenReferenceStats;
   saveDraftLabel?: string;
   submitLabel?: string;
+  systemFields?: PartEditorScreenSystemField[];
   unitOptions: PartEditorScreenOption[];
 }
 
@@ -213,6 +237,118 @@ function CategoryCombobox({ className, options, value, onChange }: CategoryCombo
   );
 }
 
+interface CreatableOptionComboboxProps {
+  className?: string;
+  creatable?: boolean;
+  options: PartEditorScreenOption[];
+  placeholder: string;
+  value: string;
+  onChange: (value: string) => void;
+}
+
+function CreatableOptionCombobox({
+  className,
+  creatable = true,
+  options,
+  placeholder,
+  value,
+  onChange,
+}: CreatableOptionComboboxProps) {
+  const [open, setOpen] = useState(false);
+  const [search, setSearch] = useState("");
+
+  const displayValue = value.trim();
+  const filtered = options.filter((option) =>
+    option.label.toLowerCase().includes(search.toLowerCase()),
+  );
+  const hasExactMatch = options.some(
+    (option) =>
+      option.value.toLowerCase() === search.trim().toLowerCase() ||
+      option.label.toLowerCase() === search.trim().toLowerCase(),
+  );
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          className={cn(
+            className,
+            "flex w-full items-center justify-between text-left",
+            !displayValue && "text-muted-foreground",
+          )}
+        >
+          <span className="truncate">{displayValue || placeholder}</span>
+          <ChevronsUpDown className="ml-2 h-3.5 w-3.5 shrink-0 opacity-50" />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
+        <Command shouldFilter={false}>
+          <CommandInput
+            placeholder="검색 또는 직접 입력"
+            value={search}
+            onValueChange={setSearch}
+          />
+          <CommandList>
+            {creatable && search.trim() && !hasExactMatch ? (
+              <CommandGroup heading="직접 입력">
+                <CommandItem
+                  value={`__custom__${search}`}
+                  onSelect={() => {
+                    onChange(search.trim());
+                    setOpen(false);
+                    setSearch("");
+                  }}
+                >
+                  <span>&ldquo;{search.trim()}&rdquo; 사용</span>
+                </CommandItem>
+              </CommandGroup>
+            ) : null}
+            {filtered.length > 0 ? (
+              <CommandGroup heading="옵션">
+                {filtered.map((option) => (
+                  <CommandItem
+                    key={option.value}
+                    value={option.value}
+                    onSelect={() => {
+                      onChange(option.value);
+                      setOpen(false);
+                      setSearch("");
+                    }}
+                  >
+                    <Check
+                      className={cn(
+                        "mr-2 h-3.5 w-3.5",
+                        value === option.value ? "opacity-100" : "opacity-0",
+                      )}
+                    />
+                    {option.label}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            ) : (
+              <CommandEmpty>선택 가능한 옵션이 없습니다.</CommandEmpty>
+            )}
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+const DEFAULT_SYSTEM_FIELDS: PartEditorScreenSystemField[] = [
+  { key: "partNumber", label: "품번", displayOrder: 10 },
+  { key: "name", label: "품명", displayOrder: 20 },
+  { key: "revision", label: "리비전", displayOrder: 30 },
+  { key: "lifecycleState", label: "상태", displayOrder: 40 },
+  { key: "category", label: "카테고리", displayOrder: 50 },
+  { key: "material", label: "재질", displayOrder: 60 },
+  { key: "unit", label: "단위", displayOrder: 70 },
+  { key: "leadTimeDays", label: "리드타임", displayOrder: 80 },
+  { key: "isPhantom", label: "팬텀", displayOrder: 90 },
+  { key: "description", label: "설명", displayOrder: 100 },
+];
+
 export function PartEditorScreen({
   backLabel = "부품 관리",
   categoryOptions,
@@ -234,6 +370,7 @@ export function PartEditorScreen({
   onSubmit,
   saveDraftLabel,
   submitLabel,
+  systemFields,
   unitOptions,
 }: PartEditorScreenProps) {
   const createBreadcrumbLabel = heading ?? "새 부품";
@@ -262,10 +399,39 @@ export function PartEditorScreen({
     { id: "projects", icon: FolderKanban, label: "프로젝트" },
     { id: "history", icon: Clock, label: "이력" },
   ];
+  const systemFieldMap = new Map(
+    (systemFields ?? DEFAULT_SYSTEM_FIELDS).map((field) => [field.key, field]),
+  );
+  const resolvedSystemFields = DEFAULT_SYSTEM_FIELDS.map((defaultField) => {
+    const override = systemFieldMap.get(defaultField.key);
+
+    return {
+      ...defaultField,
+      ...override,
+      label: override?.label ?? defaultField.label,
+      active: override?.active ?? true,
+      displayOrder: override?.displayOrder ?? defaultField.displayOrder ?? 0,
+    };
+  })
+    .filter((field) => field.active !== false)
+    .sort((left, right) => (left.displayOrder ?? 0) - (right.displayOrder ?? 0));
+
+  function updateExtendedField(fieldId: string, nextValue: string | boolean) {
+    if (!onExtendedFieldsChange) {
+      return;
+    }
+
+    onExtendedFieldsChange(
+      extendedFields.map((field) =>
+        field.id === fieldId ? { ...field, value: nextValue } : field,
+      ),
+    );
+  }
+
   const tableRows = [
     {
+      key: "partNumber" as const,
       error: submitted && partNumberEmpty ? "품번을 입력해 주세요." : undefined,
-      label: "품번",
       value: lockedFields?.partNumber ? (
         <span className="font-mono text-xs">{formValues.partNumber}</span>
       ) : (
@@ -281,7 +447,7 @@ export function PartEditorScreen({
       ),
     },
     {
-      label: "품명",
+      key: "name" as const,
       value: (
         <Input
           className={tableFieldClassName}
@@ -295,7 +461,7 @@ export function PartEditorScreen({
       ),
     },
     {
-      label: "리비전",
+      key: "revision" as const,
       value:
         mode === "create" ? (
           <span className="text-sm text-muted-foreground">생성 시 자동 부여</span>
@@ -314,7 +480,7 @@ export function PartEditorScreen({
         ),
     },
     {
-      label: "상태",
+      key: "lifecycleState" as const,
       value: lockedFields?.lifecycleState ? (
         <span className="text-sm">
           {lifecycleOptions.find((o) => o.value === formValues.lifecycleState)?.label
@@ -346,7 +512,7 @@ export function PartEditorScreen({
       ),
     },
     {
-      label: "카테고리",
+      key: "category" as const,
       value: (
         <CategoryCombobox
           className={tableFieldClassName}
@@ -357,7 +523,7 @@ export function PartEditorScreen({
       ),
     },
     {
-      label: "재질",
+      key: "material" as const,
       value: (
         <Input
           className={tableFieldClassName}
@@ -371,7 +537,7 @@ export function PartEditorScreen({
       ),
     },
     {
-      label: "단위",
+      key: "unit" as const,
       value: (
         <Select
           value={formValues.unit ?? undefined}
@@ -395,7 +561,7 @@ export function PartEditorScreen({
       ),
     },
     {
-      label: "리드타임",
+      key: "leadTimeDays" as const,
       value: (
         <Input
           className={tableFieldClassName}
@@ -410,7 +576,7 @@ export function PartEditorScreen({
       ),
     },
     {
-      label: "팬텀",
+      key: "isPhantom" as const,
       value: (
         <div className="flex min-h-8 items-center justify-between gap-3">
           <span className="text-sm text-foreground">
@@ -426,8 +592,8 @@ export function PartEditorScreen({
       ),
     },
     {
+      key: "description" as const,
       alignTop: true,
-      label: "설명",
       value: (
         <Textarea
           id="part-editor-description"
@@ -440,39 +606,88 @@ export function PartEditorScreen({
         />
       ),
     },
-    ...extendedFields.map((field) => ({
-      alignTop: false,
-      label: field.label,
-      value: (
-        <div className="space-y-2">
+  ];
+  const systemTableRows = resolvedSystemFields
+    .map((field) => {
+      const row = tableRows.find((candidate) => candidate.key === field.key);
+
+      if (!row) {
+        return null;
+      }
+
+      return {
+        ...row,
+        label: field.label,
+      };
+    })
+    .filter((row): row is NonNullable<typeof row> => row !== null);
+  const extendedTableRows = extendedFields.map((field) => ({
+    alignTop: field.valueType !== "BOOLEAN",
+    label: field.label,
+    required: field.required,
+    value: (
+      <div className="space-y-2">
+        {field.valueType === "BOOLEAN" ? (
+          <div className="flex min-h-8 items-center justify-between gap-3">
+            <span className="text-sm text-foreground">
+              {field.required ? "필수 여부를 확인하세요." : "켜짐/꺼짐으로 값을 저장합니다."}
+            </span>
+            <Switch
+              checked={field.value === true}
+              onCheckedChange={(checked) => updateExtendedField(field.id, checked)}
+            />
+          </div>
+        ) : field.valueType === "OPTION" && field.optionMode === "FIXED" ? (
+          <Select
+            value={typeof field.value === "string" && field.value ? field.value : "__empty__"}
+            onValueChange={(nextValue) =>
+              updateExtendedField(field.id, nextValue === "__empty__" ? "" : nextValue)
+            }
+          >
+            <SelectTrigger className={tableSelectTriggerClassName}>
+              <SelectValue placeholder={field.placeholder || "옵션을 선택하세요"} />
+            </SelectTrigger>
+            <SelectContent>
+              {!field.required ? <SelectItem value="__empty__">값 비움</SelectItem> : null}
+              {(field.options ?? []).map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        ) : field.valueType === "OPTION" && field.optionMode === "CREATABLE" ? (
+          <CreatableOptionCombobox
+            className={tableFieldClassName}
+            options={field.options ?? []}
+            placeholder={field.placeholder || "옵션을 선택하거나 입력하세요"}
+            value={typeof field.value === "string" ? field.value : ""}
+            onChange={(nextValue) => updateExtendedField(field.id, nextValue)}
+          />
+        ) : (
           <Input
             className={tableFieldClassName}
             id={`part-editor-extra-${field.id}`}
+            inputMode={
+              field.valueType === "INTEGER"
+                ? "numeric"
+                : field.valueType === "FLOAT"
+                  ? "decimal"
+                  : undefined
+            }
             placeholder={field.placeholder}
-            value={field.value}
-            onChange={(event) => {
-              if (!onExtendedFieldsChange) {
-                return;
-              }
-
-              onExtendedFieldsChange(
-                extendedFields.map((item) =>
-                  item.id === field.id
-                    ? { ...item, value: event.target.value }
-                    : item,
-                ),
-              );
-            }}
+            value={typeof field.value === "string" ? field.value : ""}
+            onChange={(event) => updateExtendedField(field.id, event.target.value)}
           />
-          {field.helperText ? (
-            <p className="text-xs leading-5 text-muted-foreground">
-              {field.helperText}
-            </p>
-          ) : null}
-        </div>
-      ),
-    })),
-  ];
+        )}
+        {field.helperText ? (
+          <p className="text-xs leading-5 text-muted-foreground">
+            {field.helperText}
+          </p>
+        ) : null}
+      </div>
+    ),
+  }));
 
   return (
     <div className="min-h-full">
@@ -627,7 +842,18 @@ export function PartEditorScreen({
         ) : null}
 
         <div className={cn(showDrawingPreview && "lg:col-span-2")}>
-          <PartPropertiesTable rows={tableRows} />
+          <div className="space-y-4">
+            <PartPropertiesTable rows={systemTableRows} />
+            {extendedTableRows.length > 0 ? (
+              <div className="space-y-2">
+                <div>
+                  <h3 className="text-sm font-semibold text-foreground">사용자 정의 항목</h3>
+                  <p className="text-xs text-muted-foreground">조직에서 추가로 정의한 부품 항목입니다.</p>
+                </div>
+                <PartPropertiesTable rows={extendedTableRows} />
+              </div>
+            ) : null}
+          </div>
         </div>
       </div>
     </div>

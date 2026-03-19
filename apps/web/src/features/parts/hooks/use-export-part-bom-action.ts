@@ -13,10 +13,10 @@ function downloadBlob(blob: Blob, filename: string) {
   window.URL.revokeObjectURL(url);
 }
 
-export function useExportPartBomAction(partId: string) {
+export function useExportPartBomAction(partId: string, revisionId: string) {
   return useMutation({
     mutationFn: async (query: ExportPartBomTreeQueryDto) => {
-      const blob = await exportPartBomTree(partId, query);
+      const blob = await exportPartBomTree(partId, revisionId, query);
       downloadBlob(blob, `bom-${new Date().toISOString().slice(0, 10)}.xlsx`);
       return blob;
     },

@@ -5,16 +5,19 @@
  * OpenAPI spec version: v0
  */
 import type { PartSummaryResponseLifecycleState } from './partSummaryResponseLifecycleState';
+import type { PartSummaryResponseRevisionStatus } from './partSummaryResponseRevisionStatus';
 
 /**
  * 응답 DTO
  */
 export interface PartSummaryResponse {
   id?: string;
+  revision_id?: string;
   part_number?: string;
   name?: string;
   category?: string;
   revision_code?: string;
+  revision_status?: PartSummaryResponseRevisionStatus;
   lifecycle_state?: PartSummaryResponseLifecycleState;
   has_drawing?: boolean;
   children_count?: number;

@@ -5,9 +5,9 @@ import { partsMutations } from "@/features/parts/api/parts.queries";
 import { invalidatePartsQueries } from "@/features/parts/lib/invalidate-parts-queries";
 import { extractApiError } from "@/lib/api-error";
 
-export function useAttachPartFilesAction(partId: string) {
+export function useAttachPartFilesAction(partId: string, revisionId: string) {
   const queryClient = useQueryClient();
-  const attachFilesMutation = partsMutations.attachFiles(partId);
+  const attachFilesMutation = partsMutations.attachFiles(partId, revisionId);
 
   return useMutation({
     mutationKey: attachFilesMutation.mutationKey,
@@ -23,7 +23,7 @@ export function useAttachPartFilesAction(partId: string) {
     },
     onSuccess: async (_, files) => {
       toast.success(`${files.length}개의 파일을 연결했습니다.`);
-      await invalidatePartsQueries(queryClient, partId);
+      await invalidatePartsQueries(queryClient, partId, revisionId);
     },
     onError: (error) => {
       toast.error(extractApiError(error, "파일 연결에 실패했습니다."));

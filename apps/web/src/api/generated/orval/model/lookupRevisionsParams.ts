@@ -5,13 +5,9 @@
  * OpenAPI spec version: v0
  */
 
-export type LookupDraftsParams = {
-/**
- * 품번/품명 검색어
- */
+export type LookupRevisionsParams = {
 search?: string;
 /**
- * 조회 건수
  * @minimum 1
  * @maximum 50
  */

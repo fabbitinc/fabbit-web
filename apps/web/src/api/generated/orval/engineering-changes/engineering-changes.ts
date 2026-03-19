@@ -36,11 +36,11 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
  * @summary 변경관리 단계 목록을 동기화합니다
  */
 export const replaceSteps = (
-    engineeringChangeNumber: number,
+    engineeringChangeId: string,
     syncEngineeringChangeStepsRequest: BodyType<SyncEngineeringChangeStepsRequest>,
  options?: SecondParameter<typeof customInstance<EngineeringChangeResponse | Blob>>,) => {
       return customInstance<EngineeringChangeResponse | Blob>(
-      {url: `/api/v1/engineering-changes/${engineeringChangeNumber}/steps`, method: 'PUT',
+      {url: `/api/v1/engineering-changes/${engineeringChangeId}/steps`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
       data: syncEngineeringChangeStepsRequest
     },
@@ -51,11 +51,11 @@ export const replaceSteps = (
  * @summary 변경관리에 연결할 부품 초안 목록을 동기화합니다
  */
 export const syncPartRevisions = (
-    engineeringChangeNumber: number,
+    engineeringChangeId: string,
     syncPartRevisionsRequest: BodyType<SyncPartRevisionsRequest>,
  options?: SecondParameter<typeof customInstance<SyncDiffResponse | Blob>>,) => {
       return customInstance<SyncDiffResponse | Blob>(
-      {url: `/api/v1/engineering-changes/${engineeringChangeNumber}/part-revisions`, method: 'PUT',
+      {url: `/api/v1/engineering-changes/${engineeringChangeId}/part-revisions`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
       data: syncPartRevisionsRequest
     },
@@ -66,11 +66,11 @@ export const syncPartRevisions = (
  * @summary 변경관리에 연결된 이슈 목록을 동기화합니다
  */
 export const syncIssues = (
-    engineeringChangeNumber: number,
+    engineeringChangeId: string,
     syncIssuesRequest: BodyType<SyncIssuesRequest>,
  options?: SecondParameter<typeof customInstance<SyncDiffResponse | Blob>>,) => {
       return customInstance<SyncDiffResponse | Blob>(
-      {url: `/api/v1/engineering-changes/${engineeringChangeNumber}/issues`, method: 'PUT',
+      {url: `/api/v1/engineering-changes/${engineeringChangeId}/issues`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
       data: syncIssuesRequest
     },
@@ -108,10 +108,10 @@ export const createEngineeringChange = (
  * @summary 변경관리를 검토 대기로 전환합니다 (DRAFT -> REVIEW_PENDING)
  */
 export const submit = (
-    engineeringChangeNumber: number,
+    engineeringChangeId: string,
  options?: SecondParameter<typeof customInstance<EngineeringChangeResponse | Blob>>,) => {
       return customInstance<EngineeringChangeResponse | Blob>(
-      {url: `/api/v1/engineering-changes/${engineeringChangeNumber}/submit`, method: 'POST'
+      {url: `/api/v1/engineering-changes/${engineeringChangeId}/submit`, method: 'POST'
     },
       options);
     }
@@ -120,10 +120,10 @@ export const submit = (
  * @summary 현재 검토 단계 담당자가 자신의 검토 단계를 승인합니다
  */
 export const approveReview = (
-    engineeringChangeNumber: number,
+    engineeringChangeId: string,
  options?: SecondParameter<typeof customInstance<EngineeringChangeResponse | Blob>>,) => {
       return customInstance<EngineeringChangeResponse | Blob>(
-      {url: `/api/v1/engineering-changes/${engineeringChangeNumber}/review/approve`, method: 'POST'
+      {url: `/api/v1/engineering-changes/${engineeringChangeId}/review/approve`, method: 'POST'
     },
       options);
     }
@@ -131,11 +131,11 @@ export const approveReview = (
  * 현재 반영 단계 담당자가 변경관리를 반영 완료합니다 (RELEASE_PENDING -> RELEASED)
  * @summary 현재 반영 단계 담당자가 변경관리를 반영 완료합니다 (RELEASE_PENDING -> RELEASED)
  */
-export const release2 = (
-    engineeringChangeNumber: number,
+export const release1 = (
+    engineeringChangeId: string,
  options?: SecondParameter<typeof customInstance<EngineeringChangeResponse | Blob>>,) => {
       return customInstance<EngineeringChangeResponse | Blob>(
-      {url: `/api/v1/engineering-changes/${engineeringChangeNumber}/release`, method: 'POST'
+      {url: `/api/v1/engineering-changes/${engineeringChangeId}/release`, method: 'POST'
     },
       options);
     }
@@ -144,10 +144,10 @@ export const release2 = (
  * @summary 변경관리를 작성 단계로 되돌립니다 (*_PENDING -> DRAFT)
  */
 export const reject = (
-    engineeringChangeNumber: number,
+    engineeringChangeId: string,
  options?: SecondParameter<typeof customInstance<EngineeringChangeResponse | Blob>>,) => {
       return customInstance<EngineeringChangeResponse | Blob>(
-      {url: `/api/v1/engineering-changes/${engineeringChangeNumber}/reject`, method: 'POST'
+      {url: `/api/v1/engineering-changes/${engineeringChangeId}/reject`, method: 'POST'
     },
       options);
     }
@@ -156,11 +156,11 @@ export const reject = (
  * @summary 첨부파일을 배치 연결합니다
  */
 export const addFiles1 = (
-    engineeringChangeNumber: number,
+    engineeringChangeId: string,
     attachFilesRequest: BodyType<AttachFilesRequest>,
  options?: SecondParameter<typeof customInstance<FileItemResponse[] | Blob>>,) => {
       return customInstance<FileItemResponse[] | Blob>(
-      {url: `/api/v1/engineering-changes/${engineeringChangeNumber}/files`, method: 'POST',
+      {url: `/api/v1/engineering-changes/${engineeringChangeId}/files`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: attachFilesRequest
     },
@@ -171,11 +171,11 @@ export const addFiles1 = (
  * @summary 댓글을 생성합니다
  */
 export const createComment1 = (
-    engineeringChangeNumber: number,
+    engineeringChangeId: string,
     createCommentRequest: BodyType<CreateCommentRequest>,
  options?: SecondParameter<typeof customInstance<CommentResponse | Blob>>,) => {
       return customInstance<CommentResponse | Blob>(
-      {url: `/api/v1/engineering-changes/${engineeringChangeNumber}/comments`, method: 'POST',
+      {url: `/api/v1/engineering-changes/${engineeringChangeId}/comments`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: createCommentRequest
     },
@@ -186,10 +186,10 @@ export const createComment1 = (
  * @summary 변경관리를 폐기하고 미반영 리비전을 취소합니다
  */
 export const cancel1 = (
-    engineeringChangeNumber: number,
+    engineeringChangeId: string,
  options?: SecondParameter<typeof customInstance<EngineeringChangeResponse | Blob>>,) => {
       return customInstance<EngineeringChangeResponse | Blob>(
-      {url: `/api/v1/engineering-changes/${engineeringChangeNumber}/cancel`, method: 'POST'
+      {url: `/api/v1/engineering-changes/${engineeringChangeId}/cancel`, method: 'POST'
     },
       options);
     }
@@ -197,23 +197,23 @@ export const cancel1 = (
  * 현재 승인 단계 담당자가 변경관리를 승인해 반영 대기로 전환합니다 (APPROVAL_PENDING -> RELEASE_PENDING)
  * @summary 현재 승인 단계 담당자가 변경관리를 승인해 반영 대기로 전환합니다 (APPROVAL_PENDING -> RELEASE_PENDING)
  */
-export const approve1 = (
-    engineeringChangeNumber: number,
+export const approve = (
+    engineeringChangeId: string,
  options?: SecondParameter<typeof customInstance<EngineeringChangeResponse | Blob>>,) => {
       return customInstance<EngineeringChangeResponse | Blob>(
-      {url: `/api/v1/engineering-changes/${engineeringChangeNumber}/approve`, method: 'POST'
+      {url: `/api/v1/engineering-changes/${engineeringChangeId}/approve`, method: 'POST'
     },
       options);
     }
   /**
- * 변경관리 번호로 상세 정보를 조회합니다
- * @summary 변경관리 번호로 상세 정보를 조회합니다
+ * 변경관리 ID로 상세 정보를 조회합니다
+ * @summary 변경관리 상세 정보를 조회합니다
  */
 export const getEngineeringChange = (
-    engineeringChangeNumber: number,
+    engineeringChangeId: string,
  options?: SecondParameter<typeof customInstance<EngineeringChangeResponse | Blob>>,) => {
       return customInstance<EngineeringChangeResponse | Blob>(
-      {url: `/api/v1/engineering-changes/${engineeringChangeNumber}`, method: 'GET'
+      {url: `/api/v1/engineering-changes/${engineeringChangeId}`, method: 'GET'
     },
       options);
     }
@@ -222,11 +222,11 @@ export const getEngineeringChange = (
  * @summary 변경관리 제목/본문을 수정합니다
  */
 export const updateEngineeringChange = (
-    engineeringChangeNumber: number,
+    engineeringChangeId: string,
     updateEngineeringChangeRequest: BodyType<UpdateEngineeringChangeRequest>,
  options?: SecondParameter<typeof customInstance<EngineeringChangeResponse | Blob>>,) => {
       return customInstance<EngineeringChangeResponse | Blob>(
-      {url: `/api/v1/engineering-changes/${engineeringChangeNumber}`, method: 'PATCH',
+      {url: `/api/v1/engineering-changes/${engineeringChangeId}`, method: 'PATCH',
       headers: {'Content-Type': 'application/json', },
       data: updateEngineeringChangeRequest
     },
@@ -237,11 +237,11 @@ export const updateEngineeringChange = (
  * @summary 댓글을 삭제합니다
  */
 export const deleteComment1 = (
-    engineeringChangeNumber: number,
+    engineeringChangeId: string,
     commentId: string,
  options?: SecondParameter<typeof customInstance<void>>,) => {
       return customInstance<void>(
-      {url: `/api/v1/engineering-changes/${engineeringChangeNumber}/comments/${commentId}`, method: 'DELETE'
+      {url: `/api/v1/engineering-changes/${engineeringChangeId}/comments/${commentId}`, method: 'DELETE'
     },
       options);
     }
@@ -250,12 +250,12 @@ export const deleteComment1 = (
  * @summary 댓글을 수정합니다
  */
 export const updateComment1 = (
-    engineeringChangeNumber: number,
+    engineeringChangeId: string,
     commentId: string,
     updateCommentRequest: BodyType<UpdateCommentRequest>,
  options?: SecondParameter<typeof customInstance<CommentResponse | Blob>>,) => {
       return customInstance<CommentResponse | Blob>(
-      {url: `/api/v1/engineering-changes/${engineeringChangeNumber}/comments/${commentId}`, method: 'PATCH',
+      {url: `/api/v1/engineering-changes/${engineeringChangeId}/comments/${commentId}`, method: 'PATCH',
       headers: {'Content-Type': 'application/json', },
       data: updateCommentRequest
     },
@@ -266,10 +266,10 @@ export const updateComment1 = (
  * @summary 댓글과 활동 이력을 시간순으로 병합 조회합니다
  */
 export const getTimeline1 = (
-    engineeringChangeNumber: number,
+    engineeringChangeId: string,
  options?: SecondParameter<typeof customInstance<TimelineResponse | Blob>>,) => {
       return customInstance<TimelineResponse | Blob>(
-      {url: `/api/v1/engineering-changes/${engineeringChangeNumber}/timeline`, method: 'GET'
+      {url: `/api/v1/engineering-changes/${engineeringChangeId}/timeline`, method: 'GET'
     },
       options);
     }
@@ -290,12 +290,12 @@ export const lookupEngineeringChanges = (
  * 첨부파일 1건을 삭제(soft delete)합니다
  * @summary 첨부파일 1건을 삭제(soft delete)합니다
  */
-export const deleteFile3 = (
-    engineeringChangeNumber: number,
+export const deleteFile2 = (
+    engineeringChangeId: string,
     fileId: string,
  options?: SecondParameter<typeof customInstance<void>>,) => {
       return customInstance<void>(
-      {url: `/api/v1/engineering-changes/${engineeringChangeNumber}/files/${fileId}`, method: 'DELETE'
+      {url: `/api/v1/engineering-changes/${engineeringChangeId}/files/${fileId}`, method: 'DELETE'
     },
       options);
     }
@@ -306,16 +306,16 @@ export type ListEngineeringChangesResult = NonNullable<Awaited<ReturnType<typeof
 export type CreateEngineeringChangeResult = NonNullable<Awaited<ReturnType<typeof createEngineeringChange>>>
 export type SubmitResult = NonNullable<Awaited<ReturnType<typeof submit>>>
 export type ApproveReviewResult = NonNullable<Awaited<ReturnType<typeof approveReview>>>
-export type Release2Result = NonNullable<Awaited<ReturnType<typeof release2>>>
+export type Release1Result = NonNullable<Awaited<ReturnType<typeof release1>>>
 export type RejectResult = NonNullable<Awaited<ReturnType<typeof reject>>>
 export type AddFiles1Result = NonNullable<Awaited<ReturnType<typeof addFiles1>>>
 export type CreateComment1Result = NonNullable<Awaited<ReturnType<typeof createComment1>>>
 export type Cancel1Result = NonNullable<Awaited<ReturnType<typeof cancel1>>>
-export type Approve1Result = NonNullable<Awaited<ReturnType<typeof approve1>>>
+export type ApproveResult = NonNullable<Awaited<ReturnType<typeof approve>>>
 export type GetEngineeringChangeResult = NonNullable<Awaited<ReturnType<typeof getEngineeringChange>>>
 export type UpdateEngineeringChangeResult = NonNullable<Awaited<ReturnType<typeof updateEngineeringChange>>>
 export type DeleteComment1Result = NonNullable<Awaited<ReturnType<typeof deleteComment1>>>
 export type UpdateComment1Result = NonNullable<Awaited<ReturnType<typeof updateComment1>>>
 export type GetTimeline1Result = NonNullable<Awaited<ReturnType<typeof getTimeline1>>>
 export type LookupEngineeringChangesResult = NonNullable<Awaited<ReturnType<typeof lookupEngineeringChanges>>>
-export type DeleteFile3Result = NonNullable<Awaited<ReturnType<typeof deleteFile3>>>
+export type DeleteFile2Result = NonNullable<Awaited<ReturnType<typeof deleteFile2>>>

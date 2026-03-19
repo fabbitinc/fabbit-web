@@ -10,14 +10,20 @@ import { useSaveTemplateMappingAction } from "@/features/part-template-mapping/h
 import { useTemplateMappingActions } from "@/features/part-template-mapping/hooks/use-template-mapping-actions";
 import { usePartTemplateMappingStore } from "@/features/part-template-mapping/stores/template-mapping-store";
 import { useTemplateUploadStore } from "@/features/part-template-mapping/stores/template-upload-store";
+import {
+  buildPartDetailPath,
+  buildPartTemplateProcessingPath,
+} from "@/features/parts/lib/part-route";
 
 interface PartsTemplateMappingScreenProps {
   partId?: string;
+  revisionId?: string;
   fileName?: string;
 }
 
 export function PartsTemplateMappingScreen({
   partId,
+  revisionId,
   fileName,
 }: PartsTemplateMappingScreenProps) {
   const navigate = useNavigate();
@@ -33,8 +39,10 @@ export function PartsTemplateMappingScreen({
   const saveAction = useSaveTemplateMappingAction();
   const effectiveFileName = fileName || uploadedFiles[0]?.name || "분석 결과";
   const defaultMappingName = partId ? "부품 상세 템플릿" : "부품 마스터 템플릿";
-  const returnPath = partId ? `/parts/${partId}` : "/parts";
-  const processingPath = partId ? `/parts/${partId}/templates/processing` : "/parts/templates/processing";
+  const returnPath =
+    partId && revisionId ? buildPartDetailPath(partId, revisionId) : "/parts";
+  const processingPath =
+    partId && revisionId ? buildPartTemplateProcessingPath(partId, revisionId) : "/parts/templates/processing";
 
   const handleExit = () => {
     resetTemplateMappingFlow();

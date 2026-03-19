@@ -24,6 +24,6 @@ export interface EngineeringChangeSummaryResponse {
   steps?: EngineeringChangeStepResponse[];
   files?: FileItemResponse[];
   comments_count?: number;
-  merged_at?: string;
-  merged_by?: string;
+  released_at?: string;
+  released_by?: UserSummaryResponse;
 }

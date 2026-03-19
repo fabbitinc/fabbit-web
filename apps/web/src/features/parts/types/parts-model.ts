@@ -1,6 +1,8 @@
 import type { PartDetailResponseLifecycleState } from "@/api/generated/orval/model/partDetailResponseLifecycleState";
+import type { PartDetailResponseRevisionStatus } from "@/api/generated/orval/model/partDetailResponseRevisionStatus";
 import type { PartRevisionHistoryDraftResponseStatus } from "@/api/generated/orval/model/partRevisionHistoryDraftResponseStatus";
 import type { PartRevisionHistoryItemResponseStatus } from "@/api/generated/orval/model/partRevisionHistoryItemResponseStatus";
+import type { PartSummaryResponseRevisionStatus } from "@/api/generated/orval/model/partSummaryResponseRevisionStatus";
 
 export type PartLifecycleState = PartDetailResponseLifecycleState;
 
@@ -23,7 +25,8 @@ export type PartListSortOrder = "asc" | "desc";
 
 export interface PartListItemModel {
   id: string;
-  routeId: string;
+  partId: string;
+  revisionId: string | null;
   partNumber: string;
   name: string | null;
   category: string | null;
@@ -31,7 +34,7 @@ export interface PartListItemModel {
   lifecycleState: PartLifecycleState | null;
   drawingId: string | null;
   childrenCount: number;
-  workStatus: "DRAFT" | "RELEASED" | "SUPERSEDED" | "CANCELED" | null;
+  workStatus: PartSummaryResponseRevisionStatus | null;
 }
 
 export interface PartListResultModel {
@@ -96,12 +99,14 @@ export interface PartDrawingProcessingModel {
 }
 
 export interface PartDetailModel {
-  id: string;
-  routeId: string;
+  partId: string;
+  revisionId: string;
+  revisionStatus: PartDetailResponseRevisionStatus | null;
+  baseRevisionId: string | null;
+  baseRevisionCode: string | null;
   partNumber: string;
   name: string | null;
   revision: string;
-  draftKey: string | null;
   material: string | null;
   unit: string | null;
   description: string | null;
@@ -121,6 +126,8 @@ export interface PartDetailModel {
 
 export interface PartBomItemModel {
   id: string;
+  partId: string | null;
+  revisionId: string | null;
   partNumber: string;
   name: string | null;
   quantity: number;
@@ -137,6 +144,8 @@ export type PartBomExploreView = "multi-level" | "single-level" | "flattened";
 
 export interface PartBomTreeNodeModel {
   id: string;
+  partId: string | null;
+  revisionId: string | null;
   partNumber: string;
   name: string | null;
   revision: string;
@@ -157,6 +166,7 @@ export interface PartBomTreeModel {
 export interface PartBomDisplayNodeModel {
   nodeKey: string;
   partId: string | null;
+  revisionId: string | null;
   partNumber: string;
   name: string | null;
   quantity: number;
@@ -171,6 +181,7 @@ export interface PartBomDisplayNodeModel {
 export interface PartBomFlatRowModel {
   partNumber: string;
   partId: string | null;
+  revisionId: string | null;
   name: string | null;
   totalQuantity: number;
   material: string | null;
@@ -303,6 +314,8 @@ export interface PartRevisionDiffBomModel {
 }
 
 export interface PartRevisionDiffModel {
+  baseRevisionId: string | null;
+  targetRevisionId: string | null;
   baseRevisionCode: string | null;
   targetRevisionCode: string | null;
   summary: PartRevisionHistoryChangeSummaryModel | null;
