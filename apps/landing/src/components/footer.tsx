@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { Button } from "@heroui/react";
 import { ArrowRight } from "lucide-react";
+import { usePilotModal } from "@/app";
 
 export function Footer() {
   const [email, setEmail] = useState("");
+  const openPilot = usePilotModal();
 
   return (
     <footer className="border-t border-[var(--lp-border)] bg-[var(--lp-surface-dim)]">
@@ -59,12 +61,20 @@ export function Footer() {
                 {[
                   { label: "기능 소개", href: "/#features" },
                   { label: "요금제", href: "/pricing" },
-                  { label: "파일럿 신청", href: "#" },
+                  { label: "파일럿 신청", href: "#", onClick: openPilot },
                   { label: "업데이트", href: "#" },
                 ].map((item) => (
                   <li key={item.label}>
                     <a
                       href={item.href}
+                      onClick={
+                        "onClick" in item
+                          ? (e: React.MouseEvent) => {
+                              e.preventDefault();
+                              item.onClick?.();
+                            }
+                          : undefined
+                      }
                       className="text-sm text-[var(--lp-text-muted)] transition-colors hover:text-[var(--lp-text-secondary)]"
                     >
                       {item.label}

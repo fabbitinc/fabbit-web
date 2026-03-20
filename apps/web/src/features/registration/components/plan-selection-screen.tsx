@@ -90,6 +90,8 @@ function toPlanOption(plan: PlanModel): PlanSelectionScreenPlanOption {
     badge = "별도 문의";
   } else if (isPaid && plan.availableForSignup) {
     badge = "결제 필요";
+  } else if (isPaid && !plan.availableForSignup) {
+    badge = "준비 중";
   } else if (!isPaid) {
     badge = "추천";
   }

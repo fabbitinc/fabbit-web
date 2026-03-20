@@ -100,7 +100,9 @@ export function PlanSelectionScreen({
                       "rounded-full px-3 py-1 text-xs font-medium",
                       plan.paymentRequired
                         ? "bg-amber-500/12 text-amber-600"
-                        : "bg-primary/12 text-primary",
+                        : plan.disabled
+                          ? "bg-muted text-muted-foreground"
+                          : "bg-primary/12 text-primary",
                     )}
                   >
                     {plan.badge}
