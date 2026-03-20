@@ -22,6 +22,12 @@ export interface PlanResponse {
   extra_storage_bytes_per_full_seat?: number;
   /** 플랜별 스토리지 초과 허용 여부 */
   allow_storage_overage?: boolean;
+  /** 현재 가입 흐름에서 바로 선택 가능한 플랜인지 여부 */
+  available_for_signup?: boolean;
+  /** Starter 즉시 업그레이드 대상 플랜으로 사용할 수 있는지 여부 */
+  available_for_starter_upgrade?: boolean;
+  /** 현재 문의/상담 경로가 필요한 플랜인지 여부 */
+  contact_required?: boolean;
   /** Starter 월 포함 AI 크레딧 */
   starter_monthly_ai_credits?: number;
   /** AI 과금 방식, Starter는 INCLUDED_ONLY이고 유료 플랜은 METERED */

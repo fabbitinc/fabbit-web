@@ -6,7 +6,7 @@
  */
 
 /**
- * 워크스페이스 시작 플랜 타입
+ * 워크스페이스 시작 플랜 타입, 현재 가입 흐름에서는 Starter와 Team만 선택 가능
  */
 export type RegisterRequestPlanType = typeof RegisterRequestPlanType[keyof typeof RegisterRequestPlanType];
 
@@ -14,6 +14,4 @@ export type RegisterRequestPlanType = typeof RegisterRequestPlanType[keyof typeo
 export const RegisterRequestPlanType = {
   STARTER: 'STARTER',
   TEAM: 'TEAM',
-  ORGANIZATION: 'ORGANIZATION',
-  ENTERPRISE: 'ENTERPRISE',
 } as const;

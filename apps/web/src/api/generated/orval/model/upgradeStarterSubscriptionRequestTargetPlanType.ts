@@ -6,12 +6,12 @@
  */
 
 /**
- * 즉시 업그레이드할 대상 플랜, 현재 Team 또는 Org만 지원
+ * 즉시 업그레이드할 대상 플랜, 현재 Team 또는 Organization만 지원
  */
 export type UpgradeStarterSubscriptionRequestTargetPlanType = typeof UpgradeStarterSubscriptionRequestTargetPlanType[keyof typeof UpgradeStarterSubscriptionRequestTargetPlanType];
 
 
 export const UpgradeStarterSubscriptionRequestTargetPlanType = {
   TEAM: 'TEAM',
-  ORG: 'ORG',
+  ORGANIZATION: 'ORGANIZATION',
 } as const;

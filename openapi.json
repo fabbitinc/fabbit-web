@@ -6,7 +6,7 @@
     },
     "servers": [
         {
-            "url": "http://localhost:8080",
+            "url": "http://127.0.0.1:18080",
             "description": "Generated server url"
         }
     ],
@@ -2190,7 +2190,7 @@
                     "subscription"
                 ],
                 "summary": "Starter \ud50c\ub79c \uc989\uc2dc \uc5c5\uadf8\ub808\uc774\ub4dc",
-                "description": "\ud604\uc7ac Starter \uc6cc\ud06c\uc2a4\ud398\uc774\uc2a4\ub97c Team \ub610\ub294 Org\ub85c \uc989\uc2dc \uc804\ud658\ud558\uace0, \uae30\uc874 \uba64\ubc84 \uc804\uc6d0\uc758 \uc88c\uc11d \ud0c0\uc785\uc744 \ud55c \ubc88\uc5d0 \ud655\uc815\ud569\ub2c8\ub2e4",
+                "description": "\ud604\uc7ac Starter \uc6cc\ud06c\uc2a4\ud398\uc774\uc2a4\ub97c Team \ub610\ub294 Organization\uc73c\ub85c \uc989\uc2dc \uc804\ud658\ud558\uace0, \uae30\uc874 \uba64\ubc84 \uc804\uc6d0\uc758 \uc88c\uc11d \ud0c0\uc785\uc744 \ud55c \ubc88\uc5d0 \ud655\uc815\ud569\ub2c8\ub2e4",
                 "operationId": "upgradeStarter",
                 "requestBody": {
                     "content": {
@@ -4154,7 +4154,7 @@
                     "organizations"
                 ],
                 "summary": "\uc2a4\ucf54\ud504 \ud1a0\ud070\uc73c\ub85c \uc6cc\ud06c\uc2a4\ud398\uc774\uc2a4\ub97c \uc0dd\uc131\ud558\uace0 access/refresh \ud1a0\ud070\uc744 \ubc1c\uae09\ud569\ub2c8\ub2e4",
-                "description": "scope=create_org \ud1a0\ud070\uc73c\ub85c \uc6cc\ud06c\uc2a4\ud398\uc774\uc2a4\ub97c \uc0dd\uc131\ud558\uace0 \uc2dc\uc791 \ud50c\ub79c\uc744 \uc120\ud0dd\ud569\ub2c8\ub2e4. \uc720\ub8cc \ud50c\ub79c\uc774\uba74 ownerSeatType\uc744 \ud568\uaed8 \uc9c0\uc815\ud574\uc57c \ud569\ub2c8\ub2e4",
+                "description": "scope=create_org \ud1a0\ud070\uc73c\ub85c \uc6cc\ud06c\uc2a4\ud398\uc774\uc2a4\ub97c \uc0dd\uc131\ud558\uace0 \uc2dc\uc791 \ud50c\ub79c\uc744 \uc120\ud0dd\ud569\ub2c8\ub2e4. \ud604\uc7ac \uac00\uc785\uc73c\ub85c \uc2dc\uc791\ud560 \uc218 \uc788\ub294 \ud50c\ub79c\uc740 Starter\uc640 Team\uc774\uba70, \uc720\ub8cc \ud50c\ub79c\uc774\uba74 ownerSeatType\uc744 \ud568\uaed8 \uc9c0\uc815\ud574\uc57c \ud569\ub2c8\ub2e4",
                 "operationId": "createOrganization",
                 "requestBody": {
                     "content": {
@@ -6794,7 +6794,7 @@
                     "auth"
                 ],
                 "summary": "\ud68c\uc6d0\uac00\uc785",
-                "description": "\uc774\uba54\uc77c \uc778\uc99d\uc774 \ub05d\ub09c \uc0ac\uc6a9\uc790\uac00 \uc6cc\ud06c\uc2a4\ud398\uc774\uc2a4\ub97c \uc0dd\uc131\ud558\uace0 \uc2dc\uc791 \ud50c\ub79c\uc744 \uc120\ud0dd\ud569\ub2c8\ub2e4. \uc720\ub8cc \ud50c\ub79c\uc774\uba74 ownerSeatType\uc744 \ud568\uaed8 \uc9c0\uc815\ud574\uc57c \ud569\ub2c8\ub2e4",
+                "description": "\uc774\uba54\uc77c \uc778\uc99d\uc774 \ub05d\ub09c \uc0ac\uc6a9\uc790\uac00 \uc6cc\ud06c\uc2a4\ud398\uc774\uc2a4\ub97c \uc0dd\uc131\ud558\uace0 \uc2dc\uc791 \ud50c\ub79c\uc744 \uc120\ud0dd\ud569\ub2c8\ub2e4. \ud604\uc7ac \uac00\uc785\uc73c\ub85c \uc2dc\uc791\ud560 \uc218 \uc788\ub294 \ud50c\ub79c\uc740 Starter\uc640 Team\uc774\uba70, \uc720\ub8cc \ud50c\ub79c\uc774\uba74 ownerSeatType\uc744 \ud568\uaed8 \uc9c0\uc815\ud574\uc57c \ud569\ub2c8\ub2e4",
                 "operationId": "register",
                 "requestBody": {
                     "content": {
@@ -13830,7 +13830,7 @@
                     "auth"
                 ],
                 "summary": "\ud50c\ub79c \ubaa9\ub85d \uc870\ud68c",
-                "description": "\uc6cc\ud06c\uc2a4\ud398\uc774\uc2a4 \uc2dc\uc791 \ud50c\ub79c \ubaa9\ub85d\uacfc \uc88c\uc11d \ub2e8\uac00, \uba64\ubc84 \uc815\ucc45, \uc2a4\ud1a0\ub9ac\uc9c0 \uae30\ubcf8 \uc815\ucc45, AI \uacfc\uae08 \ubaa8\ub4dc\ub97c \uc870\ud68c\ud569\ub2c8\ub2e4",
+                "description": "\uc6cc\ud06c\uc2a4\ud398\uc774\uc2a4 \uc2dc\uc791 \ud50c\ub79c \ubaa9\ub85d\uacfc \uc88c\uc11d \ub2e8\uac00, \uba64\ubc84 \uc815\ucc45, \uc2a4\ud1a0\ub9ac\uc9c0 \uae30\ubcf8 \uc815\ucc45, AI \uacfc\uae08 \ubaa8\ub4dc, \ud604\uc7ac \uac00\uc785 \uac00\ub2a5 \uc5ec\ubd80\ub97c \uc870\ud68c\ud569\ub2c8\ub2e4",
                 "operationId": "getPlans",
                 "responses": {
                     "200": {
@@ -15425,9 +15425,6 @@
             "JsonNode": {
                 "type": "object",
                 "properties": {
-                    "container": {
-                        "type": "boolean"
-                    },
                     "pojo": {
                         "type": "boolean"
                     },
@@ -15438,6 +15435,9 @@
                         "type": "boolean"
                     },
                     "value_node": {
+                        "type": "boolean"
+                    },
+                    "container": {
                         "type": "boolean"
                     },
                     "missing_node": {
@@ -15905,10 +15905,10 @@
                 "properties": {
                     "target_plan_type": {
                         "type": "string",
-                        "description": "\uc989\uc2dc \uc5c5\uadf8\ub808\uc774\ub4dc\ud560 \ub300\uc0c1 \ud50c\ub79c, \ud604\uc7ac Team \ub610\ub294 Org\ub9cc \uc9c0\uc6d0",
+                        "description": "\uc989\uc2dc \uc5c5\uadf8\ub808\uc774\ub4dc\ud560 \ub300\uc0c1 \ud50c\ub79c, \ud604\uc7ac Team \ub610\ub294 Organization\ub9cc \uc9c0\uc6d0",
                         "enum": [
                             "TEAM",
-                            "ORG"
+                            "ORGANIZATION"
                         ],
                         "example": "TEAM"
                     },
@@ -16886,12 +16886,10 @@
                     },
                     "plan_type": {
                         "type": "string",
-                        "description": "\uc6cc\ud06c\uc2a4\ud398\uc774\uc2a4 \uc2dc\uc791 \ud50c\ub79c \ud0c0\uc785",
+                        "description": "\uc6cc\ud06c\uc2a4\ud398\uc774\uc2a4 \uc2dc\uc791 \ud50c\ub79c \ud0c0\uc785, \ud604\uc7ac \uac00\uc785 \ud750\ub984\uc5d0\uc11c\ub294 Starter\uc640 Team\ub9cc \uc120\ud0dd \uac00\ub2a5",
                         "enum": [
                             "STARTER",
-                            "TEAM",
-                            "ORGANIZATION",
-                            "ENTERPRISE"
+                            "TEAM"
                         ],
                         "example": "STARTER"
                     },
@@ -18029,12 +18027,10 @@
                     },
                     "plan_type": {
                         "type": "string",
-                        "description": "\uc6cc\ud06c\uc2a4\ud398\uc774\uc2a4 \uc2dc\uc791 \ud50c\ub79c \ud0c0\uc785",
+                        "description": "\uc6cc\ud06c\uc2a4\ud398\uc774\uc2a4 \uc2dc\uc791 \ud50c\ub79c \ud0c0\uc785, \ud604\uc7ac \uac00\uc785 \ud750\ub984\uc5d0\uc11c\ub294 Starter\uc640 Team\ub9cc \uc120\ud0dd \uac00\ub2a5",
                         "enum": [
                             "STARTER",
-                            "TEAM",
-                            "ORGANIZATION",
-                            "ENTERPRISE"
+                            "TEAM"
                         ],
                         "example": "STARTER"
                     },
@@ -21795,6 +21791,21 @@
                     "allow_storage_overage": {
                         "type": "boolean",
                         "description": "\ud50c\ub79c\ubcc4 \uc2a4\ud1a0\ub9ac\uc9c0 \ucd08\uacfc \ud5c8\uc6a9 \uc5ec\ubd80",
+                        "example": false
+                    },
+                    "available_for_signup": {
+                        "type": "boolean",
+                        "description": "\ud604\uc7ac \uac00\uc785 \ud750\ub984\uc5d0\uc11c \ubc14\ub85c \uc120\ud0dd \uac00\ub2a5\ud55c \ud50c\ub79c\uc778\uc9c0 \uc5ec\ubd80",
+                        "example": true
+                    },
+                    "available_for_starter_upgrade": {
+                        "type": "boolean",
+                        "description": "Starter \uc989\uc2dc \uc5c5\uadf8\ub808\uc774\ub4dc \ub300\uc0c1 \ud50c\ub79c\uc73c\ub85c \uc0ac\uc6a9\ud560 \uc218 \uc788\ub294\uc9c0 \uc5ec\ubd80",
+                        "example": false
+                    },
+                    "contact_required": {
+                        "type": "boolean",
+                        "description": "\ud604\uc7ac \ubb38\uc758/\uc0c1\ub2f4 \uacbd\ub85c\uac00 \ud544\uc694\ud55c \ud50c\ub79c\uc778\uc9c0 \uc5ec\ubd80",
                         "example": false
                     },
                     "starter_monthly_ai_credits": {

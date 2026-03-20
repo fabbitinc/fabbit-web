@@ -12,6 +12,17 @@ import type { PlanModel } from "@/features/auth/types/plan-model";
 import { useRegistrationStore } from "@/features/registration/stores/registration-store";
 import type { OwnerSeatType, PlanTier } from "@/features/registration/types/registration.types";
 
+const STARTER_FALLBACK: PlanSelectionScreenPlanOption[] = [
+  {
+    tier: "starter",
+    name: "Starter",
+    priceLabel: "무료",
+    description: "최대 5명까지 무료로 시작하는 플랜입니다.",
+    features: ["최대 5명", "스토리지 250MB", "AI 크레딧 월 100 포함"],
+    badge: "추천",
+  },
+];
+
 function formatBytes(bytes: number): string {
   if (bytes >= 1_000_000_000_000) return `${Math.round(bytes / 1_000_000_000_000)}TB`;
   if (bytes >= 1_000_000_000) return `${Math.round(bytes / 1_000_000_000)}GB`;
@@ -117,10 +128,15 @@ export function PlanSelectionScreen() {
 
   const plansQuery = useQuery(planQueries.list());
 
-  const planOptions = useMemo(
-    () => (plansQuery.data ?? []).map(toPlanOption),
-    [plansQuery.data],
-  );
+  const planOptions = useMemo(() => {
+    if (plansQuery.data && plansQuery.data.length > 0) {
+      return plansQuery.data.map(toPlanOption);
+    }
+    if (plansQuery.isError || (!plansQuery.isLoading && (!plansQuery.data || plansQuery.data.length === 0))) {
+      return STARTER_FALLBACK;
+    }
+    return [];
+  }, [plansQuery.data, plansQuery.isError, plansQuery.isLoading]);
 
   const selectedPlanModel = useMemo(
     () => plansQuery.data?.find((p) => toPlanTier(p.planType) === selectedPlan),

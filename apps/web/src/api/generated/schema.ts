@@ -407,7 +407,7 @@ export interface paths {
         put?: never;
         /**
          * Starter 플랜 즉시 업그레이드
-         * @description 현재 Starter 워크스페이스를 Team 또는 Org로 즉시 전환하고, 기존 멤버 전원의 좌석 타입을 한 번에 확정합니다
+         * @description 현재 Starter 워크스페이스를 Team 또는 Organization으로 즉시 전환하고, 기존 멤버 전원의 좌석 타입을 한 번에 확정합니다
          */
         post: operations["upgradeStarter"];
         delete?: never;
@@ -715,7 +715,7 @@ export interface paths {
         put?: never;
         /**
          * 스코프 토큰으로 워크스페이스를 생성하고 access/refresh 토큰을 발급합니다
-         * @description scope=create_org 토큰으로 워크스페이스를 생성하고 시작 플랜을 선택합니다. 유료 플랜이면 ownerSeatType을 함께 지정해야 합니다
+         * @description scope=create_org 토큰으로 워크스페이스를 생성하고 시작 플랜을 선택합니다. 현재 가입으로 시작할 수 있는 플랜은 Starter와 Team이며, 유료 플랜이면 ownerSeatType을 함께 지정해야 합니다
          */
         post: operations["createOrganization"];
         delete?: never;
@@ -1271,7 +1271,7 @@ export interface paths {
         put?: never;
         /**
          * 회원가입
-         * @description 이메일 인증이 끝난 사용자가 워크스페이스를 생성하고 시작 플랜을 선택합니다. 유료 플랜이면 ownerSeatType을 함께 지정해야 합니다
+         * @description 이메일 인증이 끝난 사용자가 워크스페이스를 생성하고 시작 플랜을 선택합니다. 현재 가입으로 시작할 수 있는 플랜은 Starter와 Team이며, 유료 플랜이면 ownerSeatType을 함께 지정해야 합니다
          */
         post: operations["register"];
         delete?: never;
@@ -2757,7 +2757,7 @@ export interface paths {
         };
         /**
          * 플랜 목록 조회
-         * @description 워크스페이스 시작 플랜 목록과 좌석 단가, 멤버 정책, 스토리지 기본 정책, AI 과금 모드를 조회합니다
+         * @description 워크스페이스 시작 플랜 목록과 좌석 단가, 멤버 정책, 스토리지 기본 정책, AI 과금 모드, 현재 가입 가능 여부를 조회합니다
          */
         get: operations["getPlans"];
         put?: never;
@@ -3372,11 +3372,11 @@ export interface components {
             created_at?: string;
         };
         JsonNode: {
-            container?: boolean;
             pojo?: boolean;
             int?: boolean;
             long?: boolean;
             value_node?: boolean;
+            container?: boolean;
             missing_node?: boolean;
             object?: boolean;
             /** @enum {string} */
@@ -3623,11 +3623,11 @@ export interface components {
         /** @description Starter 플랜 즉시 업그레이드 요청 */
         UpgradeStarterSubscriptionRequest: {
             /**
-             * @description 즉시 업그레이드할 대상 플랜, 현재 Team 또는 Org만 지원
+             * @description 즉시 업그레이드할 대상 플랜, 현재 Team 또는 Organization만 지원
              * @example TEAM
              * @enum {string}
              */
-            target_plan_type: "TEAM" | "ORG";
+            target_plan_type: "TEAM" | "ORGANIZATION";
             /** @description 현재 워크스페이스 멤버 전원의 좌석 타입 지정 */
             member_seats: components["schemas"]["MemberSeatRequest"][];
         };
@@ -4261,11 +4261,11 @@ export interface components {
              */
             team_size?: string;
             /**
-             * @description 워크스페이스 시작 플랜 타입
+             * @description 워크스페이스 시작 플랜 타입, 현재 가입 흐름에서는 Starter와 Team만 선택 가능
              * @example STARTER
              * @enum {string}
              */
-            plan_type: "STARTER" | "TEAM" | "ORGANIZATION" | "ENTERPRISE";
+            plan_type: "STARTER" | "TEAM";
             /**
              * @description 유료 플랜 선택 시 생성자에게 즉시 배정할 좌석 타입
              * @example FULL
@@ -4844,11 +4844,11 @@ export interface components {
              */
             team_size?: string;
             /**
-             * @description 워크스페이스 시작 플랜 타입
+             * @description 워크스페이스 시작 플랜 타입, 현재 가입 흐름에서는 Starter와 Team만 선택 가능
              * @example STARTER
              * @enum {string}
              */
-            plan_type: "STARTER" | "TEAM" | "ORGANIZATION" | "ENTERPRISE";
+            plan_type: "STARTER" | "TEAM";
             /**
              * @description 유료 플랜 선택 시 생성자에게 즉시 배정할 좌석 타입
              * @example FULL
@@ -6924,6 +6924,21 @@ export interface components {
              * @example false
              */
             allow_storage_overage?: boolean;
+            /**
+             * @description 현재 가입 흐름에서 바로 선택 가능한 플랜인지 여부
+             * @example true
+             */
+            available_for_signup?: boolean;
+            /**
+             * @description Starter 즉시 업그레이드 대상 플랜으로 사용할 수 있는지 여부
+             * @example false
+             */
+            available_for_starter_upgrade?: boolean;
+            /**
+             * @description 현재 문의/상담 경로가 필요한 플랜인지 여부
+             * @example false
+             */
+            contact_required?: boolean;
             /**
              * Format: int32
              * @description Starter 월 포함 AI 크레딧

@@ -63,7 +63,7 @@ export const sendVerification = (
       options);
     }
   /**
- * 이메일 인증이 끝난 사용자가 워크스페이스를 생성하고 시작 플랜을 선택합니다. 유료 플랜이면 ownerSeatType을 함께 지정해야 합니다
+ * 이메일 인증이 끝난 사용자가 워크스페이스를 생성하고 시작 플랜을 선택합니다. 현재 가입으로 시작할 수 있는 플랜은 Starter와 Team이며, 유료 플랜이면 ownerSeatType을 함께 지정해야 합니다
  * @summary 회원가입
  */
 export const register = (
@@ -145,7 +145,7 @@ export const getSite = (
       options);
     }
   /**
- * 워크스페이스 시작 플랜 목록과 좌석 단가, 멤버 정책, 스토리지 기본 정책, AI 과금 모드를 조회합니다
+ * 워크스페이스 시작 플랜 목록과 좌석 단가, 멤버 정책, 스토리지 기본 정책, AI 과금 모드, 현재 가입 가능 여부를 조회합니다
  * @summary 플랜 목록 조회
  */
 export const getPlans = (

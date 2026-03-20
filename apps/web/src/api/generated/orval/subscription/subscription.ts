@@ -20,7 +20,7 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 
   /**
- * 현재 Starter 워크스페이스를 Team 또는 Org로 즉시 전환하고, 기존 멤버 전원의 좌석 타입을 한 번에 확정합니다
+ * 현재 Starter 워크스페이스를 Team 또는 Organization으로 즉시 전환하고, 기존 멤버 전원의 좌석 타입을 한 번에 확정합니다
  * @summary Starter 플랜 즉시 업그레이드
  */
 export const upgradeStarter = (

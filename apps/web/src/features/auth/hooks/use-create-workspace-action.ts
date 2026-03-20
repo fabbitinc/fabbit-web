@@ -13,14 +13,16 @@ interface CreateWorkspaceActionResult {
   redirectUrl: string;
 }
 
-function toApiPlanType(planTier: PlanTier): "STARTER" | "TEAM" {
+function toApiPlanType(planTier: PlanTier): "STARTER" | "TEAM" | "ORGANIZATION" | "ENTERPRISE" {
   switch (planTier) {
     case "starter":
       return "STARTER";
     case "team":
       return "TEAM";
-    default:
-      return "STARTER";
+    case "organization":
+      return "ORGANIZATION";
+    case "enterprise":
+      return "ENTERPRISE";
   }
 }
 

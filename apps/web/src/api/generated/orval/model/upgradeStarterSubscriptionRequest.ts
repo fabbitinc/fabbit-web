@@ -11,7 +11,7 @@ import type { UpgradeStarterSubscriptionRequestTargetPlanType } from './upgradeS
  * Starter 플랜 즉시 업그레이드 요청
  */
 export interface UpgradeStarterSubscriptionRequest {
-  /** 즉시 업그레이드할 대상 플랜, 현재 Team 또는 Org만 지원 */
+  /** 즉시 업그레이드할 대상 플랜, 현재 Team 또는 Organization만 지원 */
   target_plan_type: UpgradeStarterSubscriptionRequestTargetPlanType;
   /**
    * 현재 워크스페이스 멤버 전원의 좌석 타입 지정
