@@ -4,6 +4,7 @@
  * OpenAPI definition
  * OpenAPI spec version: v0
  */
+import type { PlanResponseAiBillingMode } from './planResponseAiBillingMode';
 import type { PlanResponsePlanType } from './planResponsePlanType';
 
 export interface PlanResponse {
@@ -13,12 +14,24 @@ export interface PlanResponse {
   display_name?: string;
   /** 플랜 설명 */
   description?: string;
-  /** 최대 멤버 수 */
+  /** 최대 멤버 수, -1이면 코드상 명시적 상한 없음 */
   max_members?: number;
-  /** 스토리지(GB) */
-  storage_gb?: number;
-  /** AI 크레딧 */
-  ai_credits?: number;
-  /** 월 과금 금액 */
-  price_monthly?: number;
+  /** 플랜 기본 제공 스토리지 바이트 */
+  base_storage_bytes?: number;
+  /** Full 좌석 1개당 추가 스토리지 바이트 */
+  extra_storage_bytes_per_full_seat?: number;
+  /** 플랜별 스토리지 초과 허용 여부 */
+  allow_storage_overage?: boolean;
+  /** Starter 월 포함 AI 크레딧 */
+  starter_monthly_ai_credits?: number;
+  /** AI 과금 방식, Starter는 INCLUDED_ONLY이고 유료 플랜은 METERED */
+  ai_billing_mode?: PlanResponseAiBillingMode;
+  /** Viewer 월 과금 금액 */
+  viewer_monthly_price?: number;
+  /** Collaborator 월 과금 금액 */
+  collaborator_monthly_price?: number;
+  /** Full Seat 월 과금 금액 */
+  full_seat_monthly_price?: number;
+  /** 스토리지 초과 1GB당 월 과금 금액 */
+  storage_overage_price_per_gb?: number;
 }

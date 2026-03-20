@@ -17,6 +17,6 @@ export interface SheetPreviewResponse {
   headers?: string[];
   /** 샘플 행 목록 */
   sample_rows?: JsonNode[];
-  /** 시트 매핑 결과 */
+  /** 매핑 결과 */
   mapping?: MappingResultDto;
 }

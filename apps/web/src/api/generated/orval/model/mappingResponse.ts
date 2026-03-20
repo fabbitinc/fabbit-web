@@ -4,11 +4,10 @@
  * OpenAPI definition
  * OpenAPI spec version: v0
  */
-import type { MappingResponseScope } from './mappingResponseScope';
 import type { MappingResultDto } from './mappingResultDto';
 
 /**
- * 매핑 상세 응답
+ * 매핑 응답
  */
 export interface MappingResponse {
   /** 매핑 ID */
@@ -21,15 +20,13 @@ export interface MappingResponse {
   sheet_name?: string;
   /** 원본 헤더 목록 */
   original_headers?: string[];
-  /** 실사용 컬럼 목록 */
+  /** 매핑에 사용된 헤더 목록 */
   mapped_headers?: string[];
-  /** 매핑 본문 */
+  /** 저장된 매핑 */
   mapping?: MappingResultDto;
-  /** 매핑 스코프 */
-  scope?: MappingResponseScope;
   /** 활성 여부 */
-  is_active?: boolean;
-  /** 누적 사용 횟수 */
+  active?: boolean;
+  /** 사용 횟수 */
   usage_count?: number;
   /** 리비전 버전 */
   version?: number;

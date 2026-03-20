@@ -4,15 +4,15 @@
  * OpenAPI definition
  * OpenAPI spec version: v0
  */
-import type { PropertyMappingDto } from './propertyMappingDto';
+import type { NodeMappingDto } from './nodeMappingDto';
 import type { RelationMappingDto } from './relationMappingDto';
 
 /**
  * 매핑 결과
  */
 export interface MappingResultDto {
-  /** Part 속성 매핑 목록 */
-  property_mappings?: PropertyMappingDto[];
-  /** 관계 매핑 목록 */
-  relation_mappings?: RelationMappingDto[];
+  /** 행 안의 노드 목록 */
+  nodes?: NodeMappingDto[];
+  /** 노드 간 관계 목록 */
+  relations?: RelationMappingDto[];
 }

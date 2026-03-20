@@ -6,7 +6,7 @@
     },
     "servers": [
         {
-            "url": "http://localhost:18080",
+            "url": "http://localhost:8080",
             "description": "Generated server url"
         }
     ],
@@ -84,6 +84,10 @@
             "description": "\uc870\uc9c1 \ucd08\ub300 API"
         },
         {
+            "name": "subscription",
+            "description": "\ud604\uc7ac \uad6c\ub3c5 \uc870\ud68c/\uc5c5\uadf8\ub808\uc774\ub4dc/\ubcc0\uacbd API"
+        },
+        {
             "name": "organizations",
             "description": "\uc870\uc9c1 \uc0dd\uc131/\uc804\ud658/\ud504\ub85c\ud544 \uc774\ubbf8\uc9c0 API"
         },
@@ -130,10 +134,6 @@
         {
             "name": "issues",
             "description": "\uc774\uc288 \uc870\ud68c/\uc0dd\uc131/\uc218\uc815/\uc5f0\uacb0 API"
-        },
-        {
-            "name": "subscription",
-            "description": "\ud604\uc7ac \uad6c\ub3c5 \uc870\ud68c API"
         }
     ],
     "paths": {
@@ -4153,8 +4153,8 @@
                 "tags": [
                     "organizations"
                 ],
-                "summary": "\uc2a4\ucf54\ud504 \ud1a0\ud070(scope=create_org)\uc73c\ub85c \uc870\uc9c1\uc744 \uc0dd\uc131\ud558\uace0 access/refresh \ud1a0\ud070\uc744 \ubc1c\uae09\ud569\ub2c8\ub2e4",
-                "description": "\uc2a4\ucf54\ud504 \ud1a0\ud070(scope=create_org)\uc73c\ub85c \uc870\uc9c1\uc744 \uc0dd\uc131\ud558\uace0 access/refresh \ud1a0\ud070\uc744 \ubc1c\uae09\ud569\ub2c8\ub2e4",
+                "summary": "\uc2a4\ucf54\ud504 \ud1a0\ud070\uc73c\ub85c \uc6cc\ud06c\uc2a4\ud398\uc774\uc2a4\ub97c \uc0dd\uc131\ud558\uace0 access/refresh \ud1a0\ud070\uc744 \ubc1c\uae09\ud569\ub2c8\ub2e4",
+                "description": "scope=create_org \ud1a0\ud070\uc73c\ub85c \uc6cc\ud06c\uc2a4\ud398\uc774\uc2a4\ub97c \uc0dd\uc131\ud558\uace0 \uc2dc\uc791 \ud50c\ub79c\uc744 \uc120\ud0dd\ud569\ub2c8\ub2e4. \uc720\ub8cc \ud50c\ub79c\uc774\uba74 ownerSeatType\uc744 \ud568\uaed8 \uc9c0\uc815\ud574\uc57c \ud569\ub2c8\ub2e4",
                 "operationId": "createOrganization",
                 "requestBody": {
                     "content": {
@@ -6794,7 +6794,7 @@
                     "auth"
                 ],
                 "summary": "\ud68c\uc6d0\uac00\uc785",
-                "description": "\ud68c\uc6d0\uac00\uc785",
+                "description": "\uc774\uba54\uc77c \uc778\uc99d\uc774 \ub05d\ub09c \uc0ac\uc6a9\uc790\uac00 \uc6cc\ud06c\uc2a4\ud398\uc774\uc2a4\ub97c \uc0dd\uc131\ud558\uace0 \uc2dc\uc791 \ud50c\ub79c\uc744 \uc120\ud0dd\ud569\ub2c8\ub2e4. \uc720\ub8cc \ud50c\ub79c\uc774\uba74 ownerSeatType\uc744 \ud568\uaed8 \uc9c0\uc815\ud574\uc57c \ud569\ub2c8\ub2e4",
                 "operationId": "register",
                 "requestBody": {
                     "content": {
@@ -7678,7 +7678,7 @@
                     "subscription"
                 ],
                 "summary": "\ud604\uc7ac \uad6c\ub3c5 \uc88c\uc11d \uc218\ub7c9 \ubcc0\uacbd",
-                "description": "\uad00\ub9ac\uc790 \uad8c\ud55c\uc73c\ub85c \uc6cc\ud06c\uc2a4\ud398\uc774\uc2a4\uc5d0\uc11c \uad6c\ub9e4\ud55c \uc88c\uc11d \uc218\ub7c9\uc744 \ubcc0\uacbd\ud569\ub2c8\ub2e4",
+                "description": "\uad00\ub9ac\uc790 \uad8c\ud55c\uc73c\ub85c \uc720\ub8cc \ud50c\ub79c \uc6cc\ud06c\uc2a4\ud398\uc774\uc2a4\uc5d0\uc11c \uad6c\ub9e4\ud55c \uc88c\uc11d \uc218\ub7c9\uc744 \ubcc0\uacbd\ud569\ub2c8\ub2e4",
                 "operationId": "updateSeatQuotas",
                 "requestBody": {
                     "content": {
@@ -7750,7 +7750,7 @@
                     "subscription"
                 ],
                 "summary": "\ud604\uc7ac \uad6c\ub3c5 \ud50c\ub79c \ubcc0\uacbd \uc608\uc57d",
-                "description": "\uad00\ub9ac\uc790 \uad8c\ud55c\uc73c\ub85c \ub2e4\uc74c \uac31\uc2e0\uc77c\ubd80\ud130 \uc801\uc6a9\ud560 \uc6cc\ud06c\uc2a4\ud398\uc774\uc2a4 \ud50c\ub79c \ubcc0\uacbd\uc744 \uc608\uc57d\ud569\ub2c8\ub2e4",
+                "description": "\uad00\ub9ac\uc790 \uad8c\ud55c\uc73c\ub85c \uc774\ubbf8 \uc720\ub8cc \ud50c\ub79c\uc778 \uc6cc\ud06c\uc2a4\ud398\uc774\uc2a4\uc758 \ub2e4\uc74c \uac31\uc2e0 \uc2dc\uc810 \ud50c\ub79c \ubcc0\uacbd\uc744 \uc608\uc57d\ud569\ub2c8\ub2e4. Starter\uc5d0\uc11c \uc720\ub8cc \ud50c\ub79c\uc73c\ub85c\uc758 \uc989\uc2dc \uc804\ud658\uc740 starter-upgrade API\ub97c \uc0ac\uc6a9\ud569\ub2c8\ub2e4",
                 "operationId": "updatePlan",
                 "requestBody": {
                     "content": {
@@ -7822,7 +7822,7 @@
                     "subscription"
                 ],
                 "summary": "\ud604\uc7ac \uad6c\ub3c5 AI \ud55c\ub3c4 \uc815\ucc45 \ubcc0\uacbd",
-                "description": "\uad00\ub9ac\uc790 \uad8c\ud55c\uc73c\ub85c \uc6d4\uac04 AI \ud55c\ub3c4\uc640 \ucd08\uacfc \uc989\uc2dc \ucc28\ub2e8 \uc5ec\ubd80\ub97c \ubcc0\uacbd\ud569\ub2c8\ub2e4",
+                "description": "\uad00\ub9ac\uc790 \uad8c\ud55c\uc73c\ub85c \uc720\ub8cc \ud50c\ub79c\uc758 \uc6d4\uac04 AI \ud55c\ub3c4\uc640 \ud558\ub4dc \ub9ac\ubc0b \uc5ec\ubd80\ub97c \ubcc0\uacbd\ud569\ub2c8\ub2e4",
                 "operationId": "updateAiLimit",
                 "requestBody": {
                     "content": {
@@ -13830,7 +13830,7 @@
                     "auth"
                 ],
                 "summary": "\ud50c\ub79c \ubaa9\ub85d \uc870\ud68c",
-                "description": "\ud50c\ub79c \ubaa9\ub85d \uc870\ud68c",
+                "description": "\uc6cc\ud06c\uc2a4\ud398\uc774\uc2a4 \uc2dc\uc791 \ud50c\ub79c \ubaa9\ub85d\uacfc \uc88c\uc11d \ub2e8\uac00, \uba64\ubc84 \uc815\ucc45, \uc2a4\ud1a0\ub9ac\uc9c0 \uae30\ubcf8 \uc815\ucc45, AI \uacfc\uae08 \ubaa8\ub4dc\ub97c \uc870\ud68c\ud569\ub2c8\ub2e4",
                 "operationId": "getPlans",
                 "responses": {
                     "200": {
@@ -15425,7 +15425,7 @@
             "JsonNode": {
                 "type": "object",
                 "properties": {
-                    "number": {
+                    "container": {
                         "type": "boolean"
                     },
                     "pojo": {
@@ -15435,6 +15435,15 @@
                         "type": "boolean"
                     },
                     "long": {
+                        "type": "boolean"
+                    },
+                    "value_node": {
+                        "type": "boolean"
+                    },
+                    "missing_node": {
+                        "type": "boolean"
+                    },
+                    "object": {
                         "type": "boolean"
                     },
                     "node_type": {
@@ -15452,18 +15461,6 @@
                         ]
                     },
                     "string": {
-                        "type": "boolean"
-                    },
-                    "value_node": {
-                        "type": "boolean"
-                    },
-                    "container": {
-                        "type": "boolean"
-                    },
-                    "missing_node": {
-                        "type": "boolean"
-                    },
-                    "object": {
                         "type": "boolean"
                     },
                     "short": {
@@ -15486,6 +15483,9 @@
                         "type": "boolean"
                     },
                     "binary": {
+                        "type": "boolean"
+                    },
+                    "number": {
                         "type": "boolean"
                     },
                     "integral_number": {
@@ -15885,9 +15885,8 @@
                     },
                     "seat_type": {
                         "type": "string",
-                        "description": "\uc5c5\uadf8\ub808\uc774\ub4dc \ud6c4 \uc801\uc6a9\ud560 \uc88c\uc11d \ud0c0\uc785",
+                        "description": "\uc5c5\uadf8\ub808\uc774\ub4dc \ud6c4 \uc801\uc6a9\ud560 \uc88c\uc11d \ud0c0\uc785, \uc720\ub8cc \ud50c\ub79c\uc5d0\uc11c\ub294 STARTER \uc88c\uc11d\uc744 \uc0ac\uc6a9\ud560 \uc218 \uc5c6\uc74c",
                         "enum": [
-                            "STARTER",
                             "VIEWER",
                             "COLLABORATOR",
                             "FULL"
@@ -15906,12 +15905,10 @@
                 "properties": {
                     "target_plan_type": {
                         "type": "string",
-                        "description": "\uc989\uc2dc \uc5c5\uadf8\ub808\uc774\ub4dc\ud560 \ub300\uc0c1 \ud50c\ub79c",
+                        "description": "\uc989\uc2dc \uc5c5\uadf8\ub808\uc774\ub4dc\ud560 \ub300\uc0c1 \ud50c\ub79c, \ud604\uc7ac Team \ub610\ub294 Org\ub9cc \uc9c0\uc6d0",
                         "enum": [
-                            "STARTER",
                             "TEAM",
-                            "ORG",
-                            "ENTERPRISE"
+                            "ORG"
                         ],
                         "example": "TEAM"
                     },
@@ -15939,7 +15936,7 @@
                         "enum": [
                             "STARTER",
                             "TEAM",
-                            "ORG",
+                            "ORGANIZATION",
                             "ENTERPRISE"
                         ],
                         "example": "TEAM"
@@ -15980,10 +15977,10 @@
                         "enum": [
                             "STARTER",
                             "TEAM",
-                            "ORG",
+                            "ORGANIZATION",
                             "ENTERPRISE"
                         ],
-                        "example": "ORG"
+                        "example": "ORGANIZATION"
                     },
                     "scheduled_change_effective_at": {
                         "type": "string",
@@ -16868,7 +16865,7 @@
                     },
                     "slug": {
                         "type": "string",
-                        "description": "\uc6cc\ud06c\uc2a4\ud398\uc774\uc2a4 \uc2ac\ub7ec\uadf8",
+                        "description": "\uc6cc\ud06c\uc2a4\ud398\uc774\uc2a4 \uc2ac\ub7ec\uadf8 (\ubbf8\uc785\ub825 \uc2dc \uc790\ub3d9 \uc0dd\uc131)",
                         "example": "fabbit-team",
                         "maxLength": 50,
                         "minLength": 3
@@ -16889,11 +16886,11 @@
                     },
                     "plan_type": {
                         "type": "string",
-                        "description": "\ud50c\ub79c \uc720\ud615",
+                        "description": "\uc6cc\ud06c\uc2a4\ud398\uc774\uc2a4 \uc2dc\uc791 \ud50c\ub79c \ud0c0\uc785",
                         "enum": [
                             "STARTER",
                             "TEAM",
-                            "ORG",
+                            "ORGANIZATION",
                             "ENTERPRISE"
                         ],
                         "example": "STARTER"
@@ -16902,7 +16899,6 @@
                         "type": "string",
                         "description": "\uc720\ub8cc \ud50c\ub79c \uc120\ud0dd \uc2dc \uc0dd\uc131\uc790\uc5d0\uac8c \uc989\uc2dc \ubc30\uc815\ud560 \uc88c\uc11d \ud0c0\uc785",
                         "enum": [
-                            "STARTER",
                             "VIEWER",
                             "COLLABORATOR",
                             "FULL"
@@ -16962,7 +16958,7 @@
                         "enum": [
                             "STARTER",
                             "TEAM",
-                            "ORG",
+                            "ORGANIZATION",
                             "ENTERPRISE"
                         ],
                         "example": "STARTER"
@@ -18033,11 +18029,11 @@
                     },
                     "plan_type": {
                         "type": "string",
-                        "description": "\uc694\uae08\uc81c \ud0c0\uc785",
+                        "description": "\uc6cc\ud06c\uc2a4\ud398\uc774\uc2a4 \uc2dc\uc791 \ud50c\ub79c \ud0c0\uc785",
                         "enum": [
                             "STARTER",
                             "TEAM",
-                            "ORG",
+                            "ORGANIZATION",
                             "ENTERPRISE"
                         ],
                         "example": "STARTER"
@@ -18046,7 +18042,6 @@
                         "type": "string",
                         "description": "\uc720\ub8cc \ud50c\ub79c \uc120\ud0dd \uc2dc \uc0dd\uc131\uc790\uc5d0\uac8c \uc989\uc2dc \ubc30\uc815\ud560 \uc88c\uc11d \ud0c0\uc785",
                         "enum": [
-                            "STARTER",
                             "VIEWER",
                             "COLLABORATOR",
                             "FULL"
@@ -18422,9 +18417,8 @@
                 "properties": {
                     "seat_type": {
                         "type": "string",
-                        "description": "\uc88c\uc11d \ud0c0\uc785",
+                        "description": "\uc88c\uc11d \ud0c0\uc785, \uc720\ub8cc \ud50c\ub79c \uc88c\uc11d\ub9cc \uc218\ub7c9 \ubcc0\uacbd \uac00\ub2a5",
                         "enum": [
-                            "STARTER",
                             "VIEWER",
                             "COLLABORATOR",
                             "FULL"
@@ -18470,10 +18464,10 @@
                         "enum": [
                             "STARTER",
                             "TEAM",
-                            "ORG",
+                            "ORGANIZATION",
                             "ENTERPRISE"
                         ],
-                        "example": "ORG"
+                        "example": "ORGANIZATION"
                     }
                 },
                 "required": [
@@ -21765,7 +21759,7 @@
                         "enum": [
                             "STARTER",
                             "TEAM",
-                            "ORG",
+                            "ORGANIZATION",
                             "ENTERPRISE"
                         ],
                         "example": "STARTER"
@@ -21783,20 +21777,25 @@
                     "max_members": {
                         "type": "integer",
                         "format": "int32",
-                        "description": "\ucd5c\ub300 \uba64\ubc84 \uc218",
-                        "example": 10
+                        "description": "\ucd5c\ub300 \uba64\ubc84 \uc218, -1\uc774\uba74 \ucf54\ub4dc\uc0c1 \uba85\uc2dc\uc801 \uc0c1\ud55c \uc5c6\uc74c",
+                        "example": 5
                     },
                     "base_storage_bytes": {
                         "type": "integer",
                         "format": "int64",
-                        "description": "\uae30\ubcf8 \uc2a4\ud1a0\ub9ac\uc9c0 \ubc14\uc774\ud2b8",
-                        "example": 10000000000
+                        "description": "\ud50c\ub79c \uae30\ubcf8 \uc81c\uacf5 \uc2a4\ud1a0\ub9ac\uc9c0 \ubc14\uc774\ud2b8",
+                        "example": 250000000
                     },
                     "extra_storage_bytes_per_full_seat": {
                         "type": "integer",
                         "format": "int64",
-                        "description": "Full Seat\ub2f9 \ucd94\uac00 \uc2a4\ud1a0\ub9ac\uc9c0 \ubc14\uc774\ud2b8",
+                        "description": "Full \uc88c\uc11d 1\uac1c\ub2f9 \ucd94\uac00 \uc2a4\ud1a0\ub9ac\uc9c0 \ubc14\uc774\ud2b8",
                         "example": 10000000000
+                    },
+                    "allow_storage_overage": {
+                        "type": "boolean",
+                        "description": "\ud50c\ub79c\ubcc4 \uc2a4\ud1a0\ub9ac\uc9c0 \ucd08\uacfc \ud5c8\uc6a9 \uc5ec\ubd80",
+                        "example": false
                     },
                     "starter_monthly_ai_credits": {
                         "type": "integer",
@@ -21806,12 +21805,12 @@
                     },
                     "ai_billing_mode": {
                         "type": "string",
-                        "description": "AI \uacfc\uae08 \ubc29\uc2dd",
+                        "description": "AI \uacfc\uae08 \ubc29\uc2dd, Starter\ub294 INCLUDED_ONLY\uc774\uace0 \uc720\ub8cc \ud50c\ub79c\uc740 METERED",
                         "enum": [
                             "INCLUDED_ONLY",
                             "METERED"
                         ],
-                        "example": "METERED"
+                        "example": "INCLUDED_ONLY"
                     },
                     "viewer_monthly_price": {
                         "type": "integer",

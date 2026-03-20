@@ -26,8 +26,8 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
  */
 export const listTeams = (
     
- options?: SecondParameter<typeof customInstance<TeamListResponse | Blob>>,) => {
-      return customInstance<TeamListResponse | Blob>(
+ options?: SecondParameter<typeof customInstance<TeamListResponse | void>>,) => {
+      return customInstance<TeamListResponse | void>(
       {url: `/api/v1/teams`, method: 'GET'
     },
       options);
@@ -38,8 +38,8 @@ export const listTeams = (
  */
 export const createTeam = (
     createTeamRequest: BodyType<CreateTeamRequest>,
- options?: SecondParameter<typeof customInstance<TeamDetailResponse | Blob>>,) => {
-      return customInstance<TeamDetailResponse | Blob>(
+ options?: SecondParameter<typeof customInstance<TeamDetailResponse | void>>,) => {
+      return customInstance<TeamDetailResponse | void>(
       {url: `/api/v1/teams`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: createTeamRequest
@@ -52,8 +52,8 @@ export const createTeam = (
  */
 export const getTeam = (
     teamId: string,
- options?: SecondParameter<typeof customInstance<TeamDetailResponse | Blob>>,) => {
-      return customInstance<TeamDetailResponse | Blob>(
+ options?: SecondParameter<typeof customInstance<TeamDetailResponse | void>>,) => {
+      return customInstance<TeamDetailResponse | void>(
       {url: `/api/v1/teams/${teamId}`, method: 'GET'
     },
       options);
@@ -77,8 +77,8 @@ export const deleteTeam = (
 export const updateTeam = (
     teamId: string,
     updateTeamRequest: BodyType<UpdateTeamRequest>,
- options?: SecondParameter<typeof customInstance<TeamDetailResponse | Blob>>,) => {
-      return customInstance<TeamDetailResponse | Blob>(
+ options?: SecondParameter<typeof customInstance<TeamDetailResponse | void>>,) => {
+      return customInstance<TeamDetailResponse | void>(
       {url: `/api/v1/teams/${teamId}`, method: 'PATCH',
       headers: {'Content-Type': 'application/json', },
       data: updateTeamRequest
@@ -91,8 +91,8 @@ export const updateTeam = (
  */
 export const lookupTeams = (
     params?: LookupTeamsParams,
- options?: SecondParameter<typeof customInstance<TeamLookupResponse | Blob>>,) => {
-      return customInstance<TeamLookupResponse | Blob>(
+ options?: SecondParameter<typeof customInstance<TeamLookupResponse | void>>,) => {
+      return customInstance<TeamLookupResponse | void>(
       {url: `/api/v1/teams/lookup`, method: 'GET',
         params
     },

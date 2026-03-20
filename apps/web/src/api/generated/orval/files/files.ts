@@ -27,8 +27,8 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
  */
 export const createFile = (
     createFileRequest: BodyType<CreateFileRequest>,
- options?: SecondParameter<typeof customInstance<CreateFileResponse | Blob>>,) => {
-      return customInstance<CreateFileResponse | Blob>(
+ options?: SecondParameter<typeof customInstance<CreateFileResponse | void>>,) => {
+      return customInstance<CreateFileResponse | void>(
       {url: `/api/v1/files/upload`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: createFileRequest
@@ -41,8 +41,8 @@ export const createFile = (
  */
 export const completeFile = (
     fileId: string,
- options?: SecondParameter<typeof customInstance<FileCompleteResponse | Blob>>,) => {
-      return customInstance<FileCompleteResponse | Blob>(
+ options?: SecondParameter<typeof customInstance<FileCompleteResponse | void>>,) => {
+      return customInstance<FileCompleteResponse | void>(
       {url: `/api/v1/files/upload/${fileId}/complete`, method: 'POST'
     },
       options);
@@ -53,8 +53,8 @@ export const completeFile = (
  */
 export const batchCreateFiles = (
     batchCreateFileRequest: BodyType<BatchCreateFileRequest>,
- options?: SecondParameter<typeof customInstance<BatchCreateFileResponse | Blob>>,) => {
-      return customInstance<BatchCreateFileResponse | Blob>(
+ options?: SecondParameter<typeof customInstance<BatchCreateFileResponse | void>>,) => {
+      return customInstance<BatchCreateFileResponse | void>(
       {url: `/api/v1/files/upload/batch`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: batchCreateFileRequest
@@ -67,8 +67,8 @@ export const batchCreateFiles = (
  */
 export const batchCompleteFiles = (
     batchCompleteRequest: BodyType<BatchCompleteRequest>,
- options?: SecondParameter<typeof customInstance<BatchCompleteResponse | Blob>>,) => {
-      return customInstance<BatchCompleteResponse | Blob>(
+ options?: SecondParameter<typeof customInstance<BatchCompleteResponse | void>>,) => {
+      return customInstance<BatchCompleteResponse | void>(
       {url: `/api/v1/files/upload/batch/complete`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: batchCompleteRequest

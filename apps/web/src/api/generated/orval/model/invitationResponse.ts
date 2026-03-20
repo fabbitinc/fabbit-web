@@ -5,6 +5,7 @@
  * OpenAPI spec version: v0
  */
 import type { InvitationResponseRole } from './invitationResponseRole';
+import type { InvitationResponseSeatType } from './invitationResponseSeatType';
 import type { InvitationResponseStatus } from './invitationResponseStatus';
 
 export interface InvitationResponse {
@@ -16,6 +17,8 @@ export interface InvitationResponse {
   email?: string;
   /** 초대 역할 */
   role?: InvitationResponseRole;
+  /** 예약된 좌석 타입 */
+  seat_type?: InvitationResponseSeatType;
   /** 초대 상태 */
   status?: InvitationResponseStatus;
   /** 초대한 사용자 ID */

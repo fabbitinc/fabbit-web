@@ -40,8 +40,8 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 export const syncParts = (
     issueId: string,
     syncPartsRequest: BodyType<SyncPartsRequest>,
- options?: SecondParameter<typeof customInstance<SyncDiffResponse | Blob>>,) => {
-      return customInstance<SyncDiffResponse | Blob>(
+ options?: SecondParameter<typeof customInstance<SyncDiffResponse | void>>,) => {
+      return customInstance<SyncDiffResponse | void>(
       {url: `/api/v1/issues/${issueId}/parts`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
       data: syncPartsRequest
@@ -55,8 +55,8 @@ export const syncParts = (
 export const syncLabels = (
     issueId: string,
     syncLabelsRequest: BodyType<SyncLabelsRequest>,
- options?: SecondParameter<typeof customInstance<SyncDiffResponse | Blob>>,) => {
-      return customInstance<SyncDiffResponse | Blob>(
+ options?: SecondParameter<typeof customInstance<SyncDiffResponse | void>>,) => {
+      return customInstance<SyncDiffResponse | void>(
       {url: `/api/v1/issues/${issueId}/labels`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
       data: syncLabelsRequest
@@ -70,8 +70,8 @@ export const syncLabels = (
 export const syncLinkedEngineeringChanges = (
     issueId: string,
     syncLinkedEngineeringChangesRequest: BodyType<SyncLinkedEngineeringChangesRequest>,
- options?: SecondParameter<typeof customInstance<SyncDiffResponse | Blob>>,) => {
-      return customInstance<SyncDiffResponse | Blob>(
+ options?: SecondParameter<typeof customInstance<SyncDiffResponse | void>>,) => {
+      return customInstance<SyncDiffResponse | void>(
       {url: `/api/v1/issues/${issueId}/engineering-changes`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
       data: syncLinkedEngineeringChangesRequest
@@ -85,8 +85,8 @@ export const syncLinkedEngineeringChanges = (
 export const syncAssignees = (
     issueId: string,
     syncAssigneesRequest: BodyType<SyncAssigneesRequest>,
- options?: SecondParameter<typeof customInstance<SyncDiffResponse | Blob>>,) => {
-      return customInstance<SyncDiffResponse | Blob>(
+ options?: SecondParameter<typeof customInstance<SyncDiffResponse | void>>,) => {
+      return customInstance<SyncDiffResponse | void>(
       {url: `/api/v1/issues/${issueId}/assignees`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
       data: syncAssigneesRequest
@@ -100,8 +100,8 @@ export const syncAssignees = (
 export const syncTeamAssignees = (
     issueId: string,
     syncTeamAssigneesRequest: BodyType<SyncTeamAssigneesRequest>,
- options?: SecondParameter<typeof customInstance<SyncDiffResponse | Blob>>,) => {
-      return customInstance<SyncDiffResponse | Blob>(
+ options?: SecondParameter<typeof customInstance<SyncDiffResponse | void>>,) => {
+      return customInstance<SyncDiffResponse | void>(
       {url: `/api/v1/issues/${issueId}/assigned-teams`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
       data: syncTeamAssigneesRequest
@@ -114,8 +114,8 @@ export const syncTeamAssignees = (
  */
 export const listIssues = (
     params?: ListIssuesParams,
- options?: SecondParameter<typeof customInstance<IssueListResponse | Blob>>,) => {
-      return customInstance<IssueListResponse | Blob>(
+ options?: SecondParameter<typeof customInstance<IssueListResponse | void>>,) => {
+      return customInstance<IssueListResponse | void>(
       {url: `/api/v1/issues`, method: 'GET',
         params
     },
@@ -127,8 +127,8 @@ export const listIssues = (
  */
 export const createIssue = (
     createIssueRequest: BodyType<CreateIssueRequest>,
- options?: SecondParameter<typeof customInstance<IssueResponse | Blob>>,) => {
-      return customInstance<IssueResponse | Blob>(
+ options?: SecondParameter<typeof customInstance<IssueResponse | void>>,) => {
+      return customInstance<IssueResponse | void>(
       {url: `/api/v1/issues`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: createIssueRequest
@@ -141,8 +141,8 @@ export const createIssue = (
  */
 export const reopenIssue = (
     issueId: string,
- options?: SecondParameter<typeof customInstance<IssueResponse | Blob>>,) => {
-      return customInstance<IssueResponse | Blob>(
+ options?: SecondParameter<typeof customInstance<IssueResponse | void>>,) => {
+      return customInstance<IssueResponse | void>(
       {url: `/api/v1/issues/${issueId}/reopen`, method: 'POST'
     },
       options);
@@ -154,8 +154,8 @@ export const reopenIssue = (
 export const addFiles = (
     issueId: string,
     attachFilesRequest: BodyType<AttachFilesRequest>,
- options?: SecondParameter<typeof customInstance<FileItemResponse[] | Blob>>,) => {
-      return customInstance<FileItemResponse[] | Blob>(
+ options?: SecondParameter<typeof customInstance<FileItemResponse[] | void>>,) => {
+      return customInstance<FileItemResponse[] | void>(
       {url: `/api/v1/issues/${issueId}/files`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: attachFilesRequest
@@ -169,8 +169,8 @@ export const addFiles = (
 export const createComment = (
     issueId: string,
     createCommentRequest: BodyType<CreateCommentRequest>,
- options?: SecondParameter<typeof customInstance<CommentResponse | Blob>>,) => {
-      return customInstance<CommentResponse | Blob>(
+ options?: SecondParameter<typeof customInstance<CommentResponse | void>>,) => {
+      return customInstance<CommentResponse | void>(
       {url: `/api/v1/issues/${issueId}/comments`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: createCommentRequest
@@ -183,8 +183,8 @@ export const createComment = (
  */
 export const closeIssue = (
     issueId: string,
- options?: SecondParameter<typeof customInstance<IssueResponse | Blob>>,) => {
-      return customInstance<IssueResponse | Blob>(
+ options?: SecondParameter<typeof customInstance<IssueResponse | void>>,) => {
+      return customInstance<IssueResponse | void>(
       {url: `/api/v1/issues/${issueId}/close`, method: 'POST'
     },
       options);
@@ -195,8 +195,8 @@ export const closeIssue = (
  */
 export const getIssue = (
     issueId: string,
- options?: SecondParameter<typeof customInstance<IssueResponse | Blob>>,) => {
-      return customInstance<IssueResponse | Blob>(
+ options?: SecondParameter<typeof customInstance<IssueResponse | void>>,) => {
+      return customInstance<IssueResponse | void>(
       {url: `/api/v1/issues/${issueId}`, method: 'GET'
     },
       options);
@@ -208,8 +208,8 @@ export const getIssue = (
 export const updateIssue = (
     issueId: string,
     updateIssueRequest: BodyType<UpdateIssueRequest>,
- options?: SecondParameter<typeof customInstance<IssueResponse | Blob>>,) => {
-      return customInstance<IssueResponse | Blob>(
+ options?: SecondParameter<typeof customInstance<IssueResponse | void>>,) => {
+      return customInstance<IssueResponse | void>(
       {url: `/api/v1/issues/${issueId}`, method: 'PATCH',
       headers: {'Content-Type': 'application/json', },
       data: updateIssueRequest
@@ -237,8 +237,8 @@ export const updateComment = (
     issueId: string,
     commentId: string,
     updateCommentRequest: BodyType<UpdateCommentRequest>,
- options?: SecondParameter<typeof customInstance<CommentResponse | Blob>>,) => {
-      return customInstance<CommentResponse | Blob>(
+ options?: SecondParameter<typeof customInstance<CommentResponse | void>>,) => {
+      return customInstance<CommentResponse | void>(
       {url: `/api/v1/issues/${issueId}/comments/${commentId}`, method: 'PATCH',
       headers: {'Content-Type': 'application/json', },
       data: updateCommentRequest
@@ -251,8 +251,8 @@ export const updateComment = (
  */
 export const getTimeline = (
     issueId: string,
- options?: SecondParameter<typeof customInstance<TimelineResponse | Blob>>,) => {
-      return customInstance<TimelineResponse | Blob>(
+ options?: SecondParameter<typeof customInstance<TimelineResponse | void>>,) => {
+      return customInstance<TimelineResponse | void>(
       {url: `/api/v1/issues/${issueId}/timeline`, method: 'GET'
     },
       options);
@@ -263,8 +263,8 @@ export const getTimeline = (
  */
 export const lookupIssues = (
     params?: LookupIssuesParams,
- options?: SecondParameter<typeof customInstance<IssueLookupResponse | Blob>>,) => {
-      return customInstance<IssueLookupResponse | Blob>(
+ options?: SecondParameter<typeof customInstance<IssueLookupResponse | void>>,) => {
+      return customInstance<IssueLookupResponse | void>(
       {url: `/api/v1/issues/lookup`, method: 'GET',
         params
     },

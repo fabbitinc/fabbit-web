@@ -6,6 +6,7 @@
  */
 import type {
   ChangeRoleRequest,
+  ChangeSeatRequest,
   LookupMembers1Params,
   MemberListResponse,
   MemberLookupResponse
@@ -18,6 +19,21 @@ import type { BodyType } from '../../../orval/custom-instance.js';
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 
+  /**
+ * 관리자(ADMIN 이상) 권한으로 멤버 좌석 타입을 변경합니다
+ * @summary 멤버 좌석 변경
+ */
+export const changeMemberSeat = (
+    userId: string,
+    changeSeatRequest: BodyType<ChangeSeatRequest>,
+ options?: SecondParameter<typeof customInstance<void>>,) => {
+      return customInstance<void>(
+      {url: `/api/v1/members/${userId}/seat`, method: 'PATCH',
+      headers: {'Content-Type': 'application/json', },
+      data: changeSeatRequest
+    },
+      options);
+    }
   /**
  * 소유자(OWNER) 권한으로 멤버 역할을 변경합니다
  * @summary 소유자(OWNER) 권한으로 멤버 역할을 변경합니다
@@ -70,7 +86,8 @@ export const removeMember = (
     },
       options);
     }
-  export type ChangeMemberRoleResult = NonNullable<Awaited<ReturnType<typeof changeMemberRole>>>
+  export type ChangeMemberSeatResult = NonNullable<Awaited<ReturnType<typeof changeMemberSeat>>>
+export type ChangeMemberRoleResult = NonNullable<Awaited<ReturnType<typeof changeMemberRole>>>
 export type ListMembersResult = NonNullable<Awaited<ReturnType<typeof listMembers>>>
 export type LookupMembers1Result = NonNullable<Awaited<ReturnType<typeof lookupMembers1>>>
 export type RemoveMemberResult = NonNullable<Awaited<ReturnType<typeof removeMember>>>

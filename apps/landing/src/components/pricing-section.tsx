@@ -2,81 +2,9 @@ import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 import { Button } from "@heroui/react";
 import { Check, ArrowRight, Sparkles } from "lucide-react";
-
-interface Plan {
-  name: string;
-  price: string;
-  priceUnit: string;
-  description: string;
-  features: string[];
-  highlighted?: boolean;
-  cta: string;
-  badge?: string;
-}
-
-const plans: Plan[] = [
-  {
-    name: "Starter",
-    price: "무료",
-    priceUnit: "",
-    description: "도입 검토 및 소규모 팀을 위한 상시 무료 플랜",
-    features: [
-      "멤버 5명",
-      "스토리지 10GB",
-      "AI BOM 매핑",
-      "기본 도면 관리",
-      "이메일 지원",
-    ],
-    cta: "시작하기",
-  },
-  {
-    name: "Team",
-    price: "249,000",
-    priceUnit: "원/월",
-    description: "10~20명 규모 초기 운영팀",
-    features: [
-      "멤버 20명",
-      "스토리지 100GB",
-      "AI BOM 매핑 (무제한)",
-      "변경 이력 관리",
-      "도면-BOM 연결",
-      "우선 지원",
-    ],
-    highlighted: true,
-    cta: "시작하기",
-    badge: "인기",
-  },
-  {
-    name: "Business",
-    price: "599,000",
-    priceUnit: "원/월",
-    description: "부서 간 협업이 필요한 운영팀",
-    features: [
-      "멤버 무제한",
-      "스토리지 500GB",
-      "Team 플랜의 모든 기능",
-      "승인 워크플로우",
-      "부서별 권한 관리",
-      "전담 매니저",
-    ],
-    cta: "영업팀 문의",
-  },
-  {
-    name: "Enterprise",
-    price: "별도",
-    priceUnit: "협의",
-    description: "커스텀 연동 및 대용량 운영",
-    features: [
-      "Business 플랜의 모든 기능",
-      "온프레미스 / 하이브리드",
-      "ERP 연동",
-      "커스텀 매핑 템플릿",
-      "SLA 보장",
-      "전용 인프라",
-    ],
-    cta: "상담 요청",
-  },
-];
+import { Link } from "react-router-dom";
+import { plans } from "@/constants/plans";
+import { APP_SIGNUP_URL } from "@/constants/urls";
 
 export function PricingSection() {
   const ref = useRef(null);
@@ -98,14 +26,14 @@ export function PricingSection() {
         >
           <p className="mb-3 text-sm font-medium uppercase tracking-widest text-[var(--lp-text-muted)]">Pricing</p>
           <h2 className="section-heading font-[Outfit,sans-serif] text-3xl font-semibold tracking-tight md:text-4xl lg:text-[2.75rem]">
-            회사 규모에 맞는
+            무료로 시작하고,
             <br />
-            <span className="text-[var(--lp-brand)]">합리적인 요금제</span>
+            <span className="text-[var(--lp-brand)]">역할별 좌석으로 확장</span>
           </h2>
           <p className="mt-6 text-base leading-relaxed text-[var(--lp-text-tertiary)] md:text-lg">
-            인당 과금이 아닌 회사 단위 과금.
+            Starter는 무료로 시작하고, 유료 플랜은 Viewer·Collaborator·Full 좌석을 조합해
             <br className="hidden md:block" />
-            팀 전체가 부담 없이 사용할 수 있습니다.
+            팀 운영 방식에 맞는 과금 구조를 만듭니다.
           </p>
         </motion.div>
 
@@ -174,12 +102,17 @@ export function PricingSection() {
               </ul>
 
               <Button
+                as={!plan.disabled ? "a" : undefined}
+                href={!plan.disabled ? APP_SIGNUP_URL : undefined}
+                isDisabled={plan.disabled}
                 className={`mt-8 w-full font-[Outfit,sans-serif] font-medium transition-all duration-200 ${
-                  plan.highlighted
-                    ? "bg-[var(--lp-brand)] text-[var(--lp-on-brand)] shadow-lg shadow-[var(--lp-brand)]/20 hover:shadow-[var(--lp-brand)]/40"
-                    : "border border-[var(--lp-border)] bg-transparent text-[var(--lp-text-secondary)] hover:border-[var(--lp-brand)]/30 hover:text-[var(--lp-text-strong)]"
+                  plan.disabled
+                    ? "border border-[var(--lp-border)] bg-transparent text-[var(--lp-text-dim)] cursor-not-allowed opacity-60"
+                    : plan.highlighted
+                      ? "bg-[var(--lp-brand)] text-[var(--lp-on-brand)] shadow-lg shadow-[var(--lp-brand)]/20 hover:shadow-[var(--lp-brand)]/40"
+                      : "border border-[var(--lp-border)] bg-transparent text-[var(--lp-text-secondary)] hover:border-[var(--lp-brand)]/30 hover:text-[var(--lp-text-strong)]"
                 }`}
-                endContent={<ArrowRight size={16} className="transition-transform group-hover:translate-x-0.5" />}
+                endContent={!plan.disabled ? <ArrowRight size={16} className="transition-transform group-hover:translate-x-0.5" /> : undefined}
               >
                 {plan.cta}
               </Button>
@@ -187,22 +120,42 @@ export function PricingSection() {
           ))}
         </div>
 
-        {/* Voucher note */}
+        {/* Inactive plan note */}
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={isInView ? { opacity: 1 } : {}}
+          transition={{ duration: 0.6, delay: 0.6 }}
+          className="mx-auto mt-6 max-w-2xl text-center text-xs text-[var(--lp-text-dim)]"
+        >
+          Organization과 Enterprise는 가격과 과금 구조를 공개하지만, 현재 공개 사이트에서는 비활성 상태로만 노출합니다.
+        </motion.p>
+
+        {/* 독립 요금 페이지 링크 */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6, delay: 0.7 }}
-          className="mx-auto mt-12 max-w-2xl text-center"
+          className="mx-auto mt-8 max-w-2xl text-center"
+        >
+          <Link
+            to="/pricing"
+            className="inline-flex items-center gap-1 text-sm text-[var(--lp-brand)] underline decoration-[var(--lp-brand)]/30 underline-offset-4 transition-colors hover:decoration-[var(--lp-brand)]"
+          >
+            전체 요금·비교표·계산기 보기
+            <ArrowRight size={14} />
+          </Link>
+        </motion.div>
+
+        {/* Voucher note */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={isInView ? { opacity: 1, y: 0 } : {}}
+          transition={{ duration: 0.6, delay: 0.8 }}
+          className="mx-auto mt-8 max-w-2xl text-center"
         >
           <div className="inline-flex items-center gap-2 rounded-xl border border-[var(--lp-border-hover)] bg-[var(--lp-border)] px-5 py-3">
             <span className="text-sm text-[var(--lp-text-muted)]">
-              💡 정부 바우처(클라우드, AI, 스마트공장) 연계 가능 —{" "}
-              <a
-                href="#"
-                className="text-[var(--lp-brand)] underline decoration-[var(--lp-brand)]/30 underline-offset-4 transition-colors hover:decoration-[var(--lp-brand)]"
-              >
-                바우처 문의
-              </a>
+              정부 바우처(클라우드, AI, 스마트공장) 연계 가능
             </span>
           </div>
         </motion.div>

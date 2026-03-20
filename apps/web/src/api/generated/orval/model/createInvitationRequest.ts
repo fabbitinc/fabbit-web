@@ -5,6 +5,7 @@
  * OpenAPI spec version: v0
  */
 import type { CreateInvitationRequestRole } from './createInvitationRequestRole';
+import type { CreateInvitationRequestSeatType } from './createInvitationRequestSeatType';
 
 /**
  * 조직 초대 생성 요청
@@ -17,4 +18,6 @@ export interface CreateInvitationRequest {
   email: string;
   /** 부여할 역할 */
   role: CreateInvitationRequestRole;
+  /** 초대 시 예약할 좌석 타입. Starter 플랜에서는 생략하면 STARTER로 처리됩니다 */
+  seat_type?: CreateInvitationRequestSeatType;
 }

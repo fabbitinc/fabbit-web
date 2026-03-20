@@ -27,7 +27,7 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
  * 부품 리비전 상세와 관계 카운트를 조회합니다
  * @summary PartRevision 상세를 조회합니다
  */
-export const get2 = (
+export const get1 = (
     partId: string,
     revisionId: string,
  options?: SecondParameter<typeof customInstance<PartDetailResponse>>,) => {
@@ -133,7 +133,7 @@ export const getHistory = (
     },
       options);
     }
-  export type Get2Result = NonNullable<Awaited<ReturnType<typeof get2>>>
+  export type Get1Result = NonNullable<Awaited<ReturnType<typeof get1>>>
 export type GetSuppliersResult = NonNullable<Awaited<ReturnType<typeof getSuppliers>>>
 export type GetProjectsResult = NonNullable<Awaited<ReturnType<typeof getProjects>>>
 export type GetDiffResult = NonNullable<Awaited<ReturnType<typeof getDiff>>>

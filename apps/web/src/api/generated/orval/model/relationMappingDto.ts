@@ -4,25 +4,27 @@
  * OpenAPI definition
  * OpenAPI spec version: v0
  */
-import type { RelationMappingDtoNodeColumns } from './relationMappingDtoNodeColumns';
-import type { RelationMappingDtoRelColumns } from './relationMappingDtoRelColumns';
-import type { RelationMappingDtoRelColumnTypes } from './relationMappingDtoRelColumnTypes';
+import type { ExtendedPropertyMappingDto } from './extendedPropertyMappingDto';
+import type { RelationMappingDtoPropertyColumns } from './relationMappingDtoPropertyColumns';
+import type { RelationMappingDtoPropertyColumnTypes } from './relationMappingDtoPropertyColumnTypes';
 import type { RelationMappingDtoRelType } from './relationMappingDtoRelType';
 
 /**
- * 관계 매핑
+ * 노드 간 관계 매핑
  */
 export interface RelationMappingDto {
+  /** 시작 노드 식별자 */
+  from_node_id?: string;
   /** 관계 타입 */
   rel_type?: RelationMappingDtoRelType;
-  /** 대상 노드 라벨 */
-  target_label?: string;
-  /** 대상 노드 속성 매핑 */
-  node_columns?: RelationMappingDtoNodeColumns;
-  /** 관계 속성 매핑 */
-  rel_columns?: RelationMappingDtoRelColumns;
-  /** 관계 속성 타입 */
-  rel_column_types?: RelationMappingDtoRelColumnTypes;
+  /** 도착 노드 식별자 */
+  to_node_id?: string;
+  /** 표준 관계 속성 매핑 */
+  property_columns?: RelationMappingDtoPropertyColumns;
+  /** 표준 관계 속성 타입 */
+  property_column_types?: RelationMappingDtoPropertyColumnTypes;
+  /** 관계 확장 속성 매핑 */
+  extended_properties?: ExtendedPropertyMappingDto[];
   /** 매핑 신뢰도(0-100) */
   confidence?: number;
   /** 매핑 근거 */

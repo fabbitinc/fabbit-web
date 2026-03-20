@@ -26,7 +26,7 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
  * 매핑 ID로 최신 리비전을 조회합니다
  * @summary 매핑 ID로 최신 리비전을 조회합니다
  */
-export const get1 = (
+export const get = (
     mappingId: string,
  options?: SecondParameter<typeof customInstance<MappingResponse>>,) => {
       return customInstance<MappingResponse>(
@@ -38,7 +38,7 @@ export const get1 = (
  * 매핑을 수정하고 새로운 리비전을 생성합니다
  * @summary 매핑을 수정하고 새로운 리비전을 생성합니다
  */
-export const update1 = (
+export const update = (
     mappingId: string,
     mappingUpdateRequest: BodyType<MappingUpdateRequest>,
  options?: SecondParameter<typeof customInstance<MappingResponse>>,) => {
@@ -53,7 +53,7 @@ export const update1 = (
  * 매핑을 비활성화(soft delete)합니다
  * @summary 매핑을 비활성화(soft delete)합니다
  */
-export const delete1 = (
+export const _delete = (
     mappingId: string,
  options?: SecondParameter<typeof customInstance<void>>,) => {
       return customInstance<void>(
@@ -65,7 +65,7 @@ export const delete1 = (
  * 매핑을 정규화하고 파일 샘플 데이터 기준으로 오류/경고를 검증합니다
  * @summary 매핑을 정규화하고 파일 샘플 데이터 기준으로 오류/경고를 검증합니다
  */
-export const validate1 = (
+export const validate = (
     mappingValidateRequest: BodyType<MappingValidateRequest>,
  options?: SecondParameter<typeof customInstance<MappingValidateResponse>>,) => {
       return customInstance<MappingValidateResponse>(
@@ -76,10 +76,10 @@ export const validate1 = (
       options);
     }
   /**
- * 업로드된 파일의 헤더/샘플 행을 기반으로 매핑 미리보기를 생성합니다
- * @summary 업로드된 파일의 헤더/샘플 행을 기반으로 매핑 미리보기를 생성합니다
+ * 업로드된 파일을 nodes[] + relations[] 구조의 매핑으로 미리보기합니다
+ * @summary POST /api/v1/mappings/preview
  */
-export const preview1 = (
+export const preview = (
     mappingPreviewRequest: BodyType<MappingPreviewRequest>,
  options?: SecondParameter<typeof customInstance<MappingPreviewResponse>>,) => {
       return customInstance<MappingPreviewResponse>(
@@ -93,7 +93,7 @@ export const preview1 = (
  * 검토된 매핑을 확정하여 새 매핑 레코드(버전 1)를 생성합니다
  * @summary 검토된 매핑을 확정하여 새 매핑 레코드(버전 1)를 생성합니다
  */
-export const confirm1 = (
+export const confirm = (
     mappingConfirmRequest: BodyType<MappingConfirmRequest>,
  options?: SecondParameter<typeof customInstance<MappingResponse>>,) => {
       return customInstance<MappingResponse>(
@@ -107,7 +107,7 @@ export const confirm1 = (
  * 활성 매핑 목록을 최신순으로 조회합니다
  * @summary 활성 매핑 목록을 최신순으로 조회합니다
  */
-export const list1 = (
+export const list = (
     
  options?: SecondParameter<typeof customInstance<MappingListResponse>>,) => {
       return customInstance<MappingListResponse>(
@@ -115,10 +115,10 @@ export const list1 = (
     },
       options);
     }
-  export type Get1Result = NonNullable<Awaited<ReturnType<typeof get1>>>
-export type Update1Result = NonNullable<Awaited<ReturnType<typeof update1>>>
-export type Delete1Result = NonNullable<Awaited<ReturnType<typeof delete1>>>
-export type Validate1Result = NonNullable<Awaited<ReturnType<typeof validate1>>>
-export type Preview1Result = NonNullable<Awaited<ReturnType<typeof preview1>>>
-export type Confirm1Result = NonNullable<Awaited<ReturnType<typeof confirm1>>>
-export type List1Result = NonNullable<Awaited<ReturnType<typeof list1>>>
+  export type GetResult = NonNullable<Awaited<ReturnType<typeof get>>>
+export type UpdateResult = NonNullable<Awaited<ReturnType<typeof update>>>
+export type _DeleteResult = NonNullable<Awaited<ReturnType<typeof _delete>>>
+export type ValidateResult = NonNullable<Awaited<ReturnType<typeof validate>>>
+export type PreviewResult = NonNullable<Awaited<ReturnType<typeof preview>>>
+export type ConfirmResult = NonNullable<Awaited<ReturnType<typeof confirm>>>
+export type ListResult = NonNullable<Awaited<ReturnType<typeof list>>>

@@ -4,6 +4,7 @@
  * OpenAPI definition
  * OpenAPI spec version: v0
  */
+import type { CreateOrganizationRequestOwnerSeatType } from './createOrganizationRequestOwnerSeatType';
 import type { CreateOrganizationRequestPlanType } from './createOrganizationRequestPlanType';
 
 /**
@@ -17,7 +18,7 @@ export interface CreateOrganizationRequest {
    */
   org_name: string;
   /**
-   * 워크스페이스 슬러그
+   * 워크스페이스 슬러그 (미입력 시 자동 생성)
    * @minLength 3
    * @maxLength 50
    */
@@ -34,6 +35,8 @@ export interface CreateOrganizationRequest {
    * @maxLength 20
    */
   team_size?: string;
-  /** 플랜 유형 */
+  /** 워크스페이스 시작 플랜 타입 */
   plan_type: CreateOrganizationRequestPlanType;
+  /** 유료 플랜 선택 시 생성자에게 즉시 배정할 좌석 타입 */
+  owner_seat_type?: CreateOrganizationRequestOwnerSeatType;
 }

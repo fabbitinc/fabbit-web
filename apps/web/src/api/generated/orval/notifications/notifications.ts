@@ -47,8 +47,8 @@ export const readAllNotifications = (
  */
 export const listNotifications = (
     params?: ListNotificationsParams,
- options?: SecondParameter<typeof customInstance<NotificationListResponse | Blob>>,) => {
-      return customInstance<NotificationListResponse | Blob>(
+ options?: SecondParameter<typeof customInstance<NotificationListResponse | void>>,) => {
+      return customInstance<NotificationListResponse | void>(
       {url: `/api/v1/notifications`, method: 'GET',
         params
     },
@@ -60,8 +60,8 @@ export const listNotifications = (
  */
 export const getUnreadCount = (
     
- options?: SecondParameter<typeof customInstance<UnreadCountResponse | Blob>>,) => {
-      return customInstance<UnreadCountResponse | Blob>(
+ options?: SecondParameter<typeof customInstance<UnreadCountResponse | void>>,) => {
+      return customInstance<UnreadCountResponse | void>(
       {url: `/api/v1/notifications/unread-count`, method: 'GET'
     },
       options);
@@ -72,8 +72,8 @@ export const getUnreadCount = (
  */
 export const stream = (
     
- options?: SecondParameter<typeof customInstance<StreamingResponseBody>>,) => {
-      return customInstance<StreamingResponseBody>(
+ options?: SecondParameter<typeof customInstance<StreamingResponseBody | void>>,) => {
+      return customInstance<StreamingResponseBody | void>(
       {url: `/api/v1/notifications/stream`, method: 'GET'
     },
       options);

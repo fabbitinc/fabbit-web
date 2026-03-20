@@ -5,6 +5,7 @@
  * OpenAPI spec version: v0
  */
 import type { MemberSummaryResponseRole } from './memberSummaryResponseRole';
+import type { MemberSummaryResponseSeatType } from './memberSummaryResponseSeatType';
 
 /**
  * 조직 멤버 요약 정보
@@ -24,4 +25,6 @@ export interface MemberSummaryResponse {
   role?: MemberSummaryResponseRole;
   /** 직무 역할 */
   job_role?: string;
+  /** 현재 좌석 타입 */
+  seat_type?: MemberSummaryResponseSeatType;
 }

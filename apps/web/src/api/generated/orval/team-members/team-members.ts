@@ -24,8 +24,8 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
  */
 export const listTeamMembers = (
     teamId: string,
- options?: SecondParameter<typeof customInstance<TeamMemberListResponse | Blob>>,) => {
-      return customInstance<TeamMemberListResponse | Blob>(
+ options?: SecondParameter<typeof customInstance<TeamMemberListResponse | void>>,) => {
+      return customInstance<TeamMemberListResponse | void>(
       {url: `/api/v1/teams/${teamId}/members`, method: 'GET'
     },
       options);
@@ -37,8 +37,8 @@ export const listTeamMembers = (
 export const addTeamMembers = (
     teamId: string,
     addTeamMembersRequest: BodyType<AddTeamMembersRequest>,
- options?: SecondParameter<typeof customInstance<ManageTeamMembersResponse | Blob>>,) => {
-      return customInstance<ManageTeamMembersResponse | Blob>(
+ options?: SecondParameter<typeof customInstance<ManageTeamMembersResponse | void>>,) => {
+      return customInstance<ManageTeamMembersResponse | void>(
       {url: `/api/v1/teams/${teamId}/members`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: addTeamMembersRequest

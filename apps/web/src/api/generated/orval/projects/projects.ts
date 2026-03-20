@@ -7,7 +7,9 @@
 import type {
   ActivityListResponse,
   CreateProjectRequest,
+  EngineeringChangeListResponse,
   GetProjectActivitiesParams,
+  IssueListResponse,
   ListProjectsParams,
   ProjectDetailResponse,
   ProjectListResponse,
@@ -112,6 +114,18 @@ export const updateProject = (
       options);
     }
   /**
+ * 프로젝트에 연결된 부품을 기준으로 연관 이슈 목록을 조회합니다
+ * @summary 프로젝트에 연결된 이슈 목록을 조회합니다
+ */
+export const listProjectIssues = (
+    projectId: string,
+ options?: SecondParameter<typeof customInstance<IssueListResponse>>,) => {
+      return customInstance<IssueListResponse>(
+      {url: `/api/v1/projects/${projectId}/issues`, method: 'GET'
+    },
+      options);
+    }
+  /**
  * 프로젝트 활동 피드를 cursor 기반으로 조회합니다
  * @summary 프로젝트 활동 피드를 cursor 기반으로 조회합니다
  */
@@ -125,6 +139,18 @@ export const getProjectActivities = (
     },
       options);
     }
+  /**
+ * 프로젝트에 연결된 부품과 이슈를 기준으로 연관 변경관리 목록을 조회합니다
+ * @summary 프로젝트에 연결된 변경관리 목록을 조회합니다
+ */
+export const listProjectChanges = (
+    projectId: string,
+ options?: SecondParameter<typeof customInstance<EngineeringChangeListResponse>>,) => {
+      return customInstance<EngineeringChangeListResponse>(
+      {url: `/api/v1/projects/${projectId}/changes`, method: 'GET'
+    },
+      options);
+    }
   export type ListProjectsResult = NonNullable<Awaited<ReturnType<typeof listProjects>>>
 export type CreateProjectResult = NonNullable<Awaited<ReturnType<typeof createProject>>>
 export type UnarchiveProjectResult = NonNullable<Awaited<ReturnType<typeof unarchiveProject>>>
@@ -132,4 +158,6 @@ export type ArchiveProjectResult = NonNullable<Awaited<ReturnType<typeof archive
 export type GetProjectResult = NonNullable<Awaited<ReturnType<typeof getProject>>>
 export type DeleteProjectResult = NonNullable<Awaited<ReturnType<typeof deleteProject>>>
 export type UpdateProjectResult = NonNullable<Awaited<ReturnType<typeof updateProject>>>
+export type ListProjectIssuesResult = NonNullable<Awaited<ReturnType<typeof listProjectIssues>>>
 export type GetProjectActivitiesResult = NonNullable<Awaited<ReturnType<typeof getProjectActivities>>>
+export type ListProjectChangesResult = NonNullable<Awaited<ReturnType<typeof listProjectChanges>>>

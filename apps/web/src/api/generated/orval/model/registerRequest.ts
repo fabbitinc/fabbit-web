@@ -4,6 +4,7 @@
  * OpenAPI definition
  * OpenAPI spec version: v0
  */
+import type { RegisterRequestOwnerSeatType } from './registerRequestOwnerSeatType';
 import type { RegisterRequestPlanType } from './registerRequestPlanType';
 
 /**
@@ -49,8 +50,10 @@ export interface RegisterRequest {
   industry?: string;
   /** 팀 규모 */
   team_size?: string;
-  /** 요금제 타입 */
+  /** 워크스페이스 시작 플랜 타입 */
   plan_type: RegisterRequestPlanType;
+  /** 유료 플랜 선택 시 생성자에게 즉시 배정할 좌석 타입 */
+  owner_seat_type?: RegisterRequestOwnerSeatType;
   /** 봇 방지 토큰(선택) */
   turnstile_token?: string;
 }

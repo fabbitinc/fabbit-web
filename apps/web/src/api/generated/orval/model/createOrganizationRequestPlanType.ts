@@ -6,7 +6,7 @@
  */
 
 /**
- * 플랜 유형
+ * 워크스페이스 시작 플랜 타입
  */
 export type CreateOrganizationRequestPlanType = typeof CreateOrganizationRequestPlanType[keyof typeof CreateOrganizationRequestPlanType];
 
@@ -14,6 +14,6 @@ export type CreateOrganizationRequestPlanType = typeof CreateOrganizationRequest
 export const CreateOrganizationRequestPlanType = {
   STARTER: 'STARTER',
   TEAM: 'TEAM',
-  BUSINESS: 'BUSINESS',
+  ORGANIZATION: 'ORGANIZATION',
   ENTERPRISE: 'ENTERPRISE',
 } as const;

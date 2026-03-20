@@ -4,34 +4,6 @@
  */
 
 export interface paths {
-    "/api/v2/mappings/{mappingId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * V2 매핑 ID로 최신 리비전을 조회합니다
-         * @description V2 매핑 ID로 최신 리비전을 조회합니다
-         */
-        get: operations["get"];
-        /**
-         * V2 매핑을 수정하고 새로운 리비전을 생성합니다
-         * @description V2 매핑을 수정하고 새로운 리비전을 생성합니다
-         */
-        put: operations["update"];
-        post?: never;
-        /**
-         * V2 매핑을 비활성화(soft delete)합니다
-         * @description V2 매핑을 비활성화(soft delete)합니다
-         */
-        delete: operations["delete"];
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/users/me/profile-image": {
         parameters: {
             query?: never;
@@ -171,18 +143,18 @@ export interface paths {
          * 매핑 ID로 최신 리비전을 조회합니다
          * @description 매핑 ID로 최신 리비전을 조회합니다
          */
-        get: operations["get_1"];
+        get: operations["get"];
         /**
          * 매핑을 수정하고 새로운 리비전을 생성합니다
          * @description 매핑을 수정하고 새로운 리비전을 생성합니다
          */
-        put: operations["update_1"];
+        put: operations["update"];
         post?: never;
         /**
          * 매핑을 비활성화(soft delete)합니다
          * @description 매핑을 비활성화(soft delete)합니다
          */
-        delete: operations["delete_1"];
+        delete: operations["delete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -348,90 +320,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v2/synthesis": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * 전체 V2 합성 작업 이력을 최신순으로 조회합니다
-         * @description 전체 V2 합성 작업 이력을 최신순으로 조회합니다
-         */
-        get: operations["listSynthesisJobs"];
-        put?: never;
-        /**
-         * V2 매핑 기반 합성 배치를 시작하고 batch/job 정보를 반환합니다
-         * @description V2 매핑 기반 합성 배치를 시작하고 batch/job 정보를 반환합니다
-         */
-        post: operations["startSynthesis"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v2/mappings/validate": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * V2 매핑을 정규화하고 파일 샘플 데이터 기준으로 오류/경고를 검증합니다
-         * @description V2 매핑을 정규화하고 파일 샘플 데이터 기준으로 오류/경고를 검증합니다
-         */
-        post: operations["validate"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v2/mappings/preview": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * 업로드된 파일을 nodes[] + relations[] 구조의 V2 매핑으로 미리보기합니다
-         * @description 업로드된 파일을 nodes[] + relations[] 구조의 V2 매핑으로 미리보기합니다
-         */
-        post: operations["preview"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v2/mappings/confirm": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * 검토된 V2 매핑을 확정하여 새 V2 매핑 레코드(버전 1)를 생성합니다
-         * @description 검토된 V2 매핑을 확정하여 새 V2 매핑 레코드(버전 1)를 생성합니다
-         */
-        post: operations["confirm"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/teams": {
         parameters: {
             query?: never;
@@ -495,13 +383,33 @@ export interface paths {
          * 전체 합성 작업 이력을 최신순으로 조회합니다
          * @description 전체 합성 작업 이력을 최신순으로 조회합니다
          */
-        get: operations["listSynthesisJobs_1"];
+        get: operations["listSynthesisJobs"];
         put?: never;
         /**
          * 매핑 기반 합성 배치를 시작하고 batch/job 정보를 반환합니다
          * @description 매핑 기반 합성 배치를 시작하고 batch/job 정보를 반환합니다
          */
-        post: operations["startSynthesis_1"];
+        post: operations["startSynthesis"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/subscription/starter-upgrade": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Starter 플랜 즉시 업그레이드
+         * @description 현재 Starter 워크스페이스를 Team 또는 Org로 즉시 전환하고, 기존 멤버 전원의 좌석 타입을 한 번에 확정합니다
+         */
+        post: operations["upgradeStarter"];
         delete?: never;
         options?: never;
         head?: never;
@@ -806,8 +714,8 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * 스코프 토큰(scope=create_org)으로 조직을 생성하고 access/refresh 토큰을 발급합니다
-         * @description 스코프 토큰(scope=create_org)으로 조직을 생성하고 access/refresh 토큰을 발급합니다
+         * 스코프 토큰으로 워크스페이스를 생성하고 access/refresh 토큰을 발급합니다
+         * @description scope=create_org 토큰으로 워크스페이스를 생성하고 시작 플랜을 선택합니다. 유료 플랜이면 ownerSeatType을 함께 지정해야 합니다
          */
         post: operations["createOrganization"];
         delete?: never;
@@ -873,7 +781,7 @@ export interface paths {
          * 매핑을 정규화하고 파일 샘플 데이터 기준으로 오류/경고를 검증합니다
          * @description 매핑을 정규화하고 파일 샘플 데이터 기준으로 오류/경고를 검증합니다
          */
-        post: operations["validate_1"];
+        post: operations["validate"];
         delete?: never;
         options?: never;
         head?: never;
@@ -890,10 +798,10 @@ export interface paths {
         get?: never;
         put?: never;
         /**
-         * 업로드된 파일의 헤더/샘플 행을 기반으로 매핑 미리보기를 생성합니다
-         * @description 업로드된 파일의 헤더/샘플 행을 기반으로 매핑 미리보기를 생성합니다
+         * POST /api/v1/mappings/preview
+         * @description 업로드된 파일을 nodes[] + relations[] 구조의 매핑으로 미리보기합니다
          */
-        post: operations["preview_1"];
+        post: operations["preview"];
         delete?: never;
         options?: never;
         head?: never;
@@ -913,7 +821,7 @@ export interface paths {
          * 검토된 매핑을 확정하여 새 매핑 레코드(버전 1)를 생성합니다
          * @description 검토된 매핑을 확정하여 새 매핑 레코드(버전 1)를 생성합니다
          */
-        post: operations["confirm_1"];
+        post: operations["confirm"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1363,7 +1271,7 @@ export interface paths {
         put?: never;
         /**
          * 회원가입
-         * @description 회원가입
+         * @description 이메일 인증이 끝난 사용자가 워크스페이스를 생성하고 시작 플랜을 선택합니다. 유료 플랜이면 ownerSeatType을 함께 지정해야 합니다
          */
         post: operations["register"];
         delete?: never;
@@ -1544,6 +1452,66 @@ export interface paths {
         patch: operations["updateTeam"];
         trace?: never;
     };
+    "/api/v1/subscription/seat-quotas": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * 현재 구독 좌석 수량 변경
+         * @description 관리자 권한으로 유료 플랜 워크스페이스에서 구매한 좌석 수량을 변경합니다
+         */
+        patch: operations["updateSeatQuotas"];
+        trace?: never;
+    };
+    "/api/v1/subscription/plan": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * 현재 구독 플랜 변경 예약
+         * @description 관리자 권한으로 이미 유료 플랜인 워크스페이스의 다음 갱신 시점 플랜 변경을 예약합니다. Starter에서 유료 플랜으로의 즉시 전환은 starter-upgrade API를 사용합니다
+         */
+        patch: operations["updatePlan"];
+        trace?: never;
+    };
+    "/api/v1/subscription/ai-limit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * 현재 구독 AI 한도 정책 변경
+         * @description 관리자 권한으로 유료 플랜의 월간 AI 한도와 하드 리밋 여부를 변경합니다
+         */
+        patch: operations["updateAiLimit"];
+        trace?: never;
+    };
     "/api/v1/properties/system-overrides/{ownerType}/{propertyKey}": {
         parameters: {
             query?: never;
@@ -1623,7 +1591,7 @@ export interface paths {
          * PartRevision 상세를 조회합니다
          * @description 부품 리비전 상세와 관계 카운트를 조회합니다
          */
-        get: operations["get_2"];
+        get: operations["get_1"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1633,7 +1601,7 @@ export interface paths {
          * 리비전을 수정합니다
          * @description DRAFT 상태의 리비전을 수정합니다
          */
-        patch: operations["update_2"];
+        patch: operations["update_1"];
         trace?: never;
     };
     "/api/v1/parts/{partId}/revisions/{revisionId}/preview": {
@@ -1650,14 +1618,14 @@ export interface paths {
          * 대표 미리보기를 해제합니다
          * @description 현재 대표 미리보기를 해제합니다
          */
-        delete: operations["delete_2"];
+        delete: operations["delete_1"];
         options?: never;
         head?: never;
         /**
          * 대표 미리보기 소스를 변경합니다
          * @description 도면 또는 미리보기 전용 파일을 대표 미리보기로 선택합니다
          */
-        patch: operations["update_3"];
+        patch: operations["update_2"];
         trace?: never;
     };
     "/api/v1/parts/categories/{category}": {
@@ -1678,6 +1646,26 @@ export interface paths {
          * @description 카테고리 이름을 일괄 변경하고 변경 건수를 반환합니다
          */
         patch: operations["renameCategory"];
+        trace?: never;
+    };
+    "/api/v1/members/{userId}/seat": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * 멤버 좌석 변경
+         * @description 관리자(ADMIN 이상) 권한으로 멤버 좌석 타입을 변경합니다
+         */
+        patch: operations["changeMemberSeat"];
         trace?: never;
     };
     "/api/v1/members/{userId}/role": {
@@ -1840,66 +1828,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v2/synthesis/{jobId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * 개별 V2 합성 작업 상태를 조회합니다
-         * @description 개별 V2 합성 작업 상태를 조회합니다
-         */
-        get: operations["getSynthesisJob"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v2/synthesis/batches/{batchId}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * V2 합성 배치 진행 상태를 조회합니다
-         * @description V2 합성 배치 진행 상태를 조회합니다
-         */
-        get: operations["getSynthesisBatch"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v2/mappings": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * 활성 V2 매핑 목록을 최신순으로 조회합니다
-         * @description 활성 V2 매핑 목록을 최신순으로 조회합니다
-         */
-        get: operations["list"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/usage/storage": {
         parameters: {
             query?: never;
@@ -1991,7 +1919,7 @@ export interface paths {
          * 개별 합성 작업 상태를 조회합니다
          * @description 개별 합성 작업 상태를 조회합니다
          */
-        get: operations["getSynthesisJob_1"];
+        get: operations["getSynthesisJob"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2011,7 +1939,7 @@ export interface paths {
          * 합성 배치 진행 상태를 조회합니다
          * @description 합성 배치 진행 상태를 조회합니다
          */
-        get: operations["getSynthesisBatch_1"];
+        get: operations["getSynthesisBatch"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2032,6 +1960,26 @@ export interface paths {
          * @description company_name 또는 code로 공급사를 검색해 페이징 목록을 조회합니다
          */
         get: operations["listSuppliers"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/subscription": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 현재 구독 요약 조회
+         * @description 현재 로그인한 워크스페이스의 플랜/좌석/스토리지/AI 정책 요약을 조회합니다
+         */
+        get: operations["get_2"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2120,6 +2068,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/projects/{projectId}/issues": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 프로젝트에 연결된 이슈 목록을 조회합니다
+         * @description 프로젝트에 연결된 부품을 기준으로 연관 이슈 목록을 조회합니다
+         */
+        get: operations["listProjectIssues"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/projects/{projectId}/histories": {
         parameters: {
             query?: never;
@@ -2132,6 +2100,26 @@ export interface paths {
          * @description 프로젝트 활동 피드를 cursor 기반으로 조회합니다
          */
         get: operations["getProjectActivities"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/projects/{projectId}/changes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 프로젝트에 연결된 변경관리 목록을 조회합니다
+         * @description 프로젝트에 연결된 부품과 이슈를 기준으로 연관 변경관리 목록을 조회합니다
+         */
+        get: operations["listProjectChanges"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2611,7 +2599,7 @@ export interface paths {
          * 활성 매핑 목록을 최신순으로 조회합니다
          * @description 활성 매핑 목록을 최신순으로 조회합니다
          */
-        get: operations["list_1"];
+        get: operations["list"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2769,7 +2757,7 @@ export interface paths {
         };
         /**
          * 플랜 목록 조회
-         * @description 플랜 목록 조회
+         * @description 워크스페이스 시작 플랜 목록과 좌석 단가, 멤버 정책, 스토리지 기본 정책, AI 과금 모드를 조회합니다
          */
         get: operations["getPlans"];
         put?: never;
@@ -3004,156 +2992,6 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
-        /** @description 확장 속성 매핑 */
-        ExtendedPropertyMappingV2Dto: {
-            /**
-             * @description 원본 컬럼명
-             * @example 비고
-             */
-            source_column?: string;
-            /**
-             * @description 백엔드가 내부 생성하는 확장 속성 키
-             * @example _ext_remark
-             */
-            readonly generated_key?: string;
-            /**
-             * @description 데이터 타입
-             * @example string
-             * @enum {string}
-             */
-            data_type?: "string" | "integer" | "float" | "boolean";
-        };
-        /** @description V2 매핑 결과 */
-        MappingV2ResultDto: {
-            /** @description 행 안의 노드 목록 */
-            nodes?: components["schemas"]["NodeMappingV2Dto"][];
-            /** @description 노드 간 관계 목록 */
-            relations?: components["schemas"]["RelationMappingV2Dto"][];
-        };
-        /** @description V2 매핑 수정 요청 */
-        MappingV2UpdateRequest: {
-            /**
-             * Format: uuid
-             * @description 업로드 완료된 파일 ID
-             */
-            file_id: string;
-            /** @description 매핑 이름(변경 시 전달) */
-            name?: string;
-            /** @description Excel 시트명 */
-            sheet_name?: string;
-            /** @description 수정할 V2 매핑 */
-            mapping: components["schemas"]["MappingV2ResultDto"];
-        };
-        /** @description 행 안의 노드 매핑 */
-        NodeMappingV2Dto: {
-            /**
-             * @description 행 내부 노드 식별자
-             * @example part_child
-             */
-            node_id?: string;
-            /**
-             * @description 노드 라벨
-             * @example Part
-             */
-            label?: string;
-            /** @description 표준 속성 매핑 */
-            property_columns?: {
-                [key: string]: string;
-            };
-            /** @description 확장 속성 매핑 */
-            extended_properties?: components["schemas"]["ExtendedPropertyMappingV2Dto"][];
-            /**
-             * Format: int32
-             * @description 매핑 신뢰도(0-100)
-             * @example 95
-             */
-            confidence?: number;
-            /**
-             * @description 매핑 근거
-             * @example child part columns
-             */
-            reason?: string;
-        };
-        /** @description 노드 간 관계 매핑 */
-        RelationMappingV2Dto: {
-            /**
-             * @description 시작 노드 식별자
-             * @example part_parent
-             */
-            from_node_id?: string;
-            /**
-             * @description 관계 타입
-             * @example CONSISTS_OF
-             * @enum {string}
-             */
-            rel_type?: "CONSISTS_OF" | "DEFINED_BY" | "SUPPLIED_BY" | "HAS_ITEM";
-            /**
-             * @description 도착 노드 식별자
-             * @example part_child
-             */
-            to_node_id?: string;
-            /** @description 표준 관계 속성 매핑 */
-            property_columns?: {
-                [key: string]: string;
-            };
-            /** @description 표준 관계 속성 타입 */
-            property_column_types?: {
-                [key: string]: "string" | "integer" | "float" | "boolean";
-            };
-            /** @description 관계 확장 속성 매핑 */
-            extended_properties?: components["schemas"]["ExtendedPropertyMappingV2Dto"][];
-            /**
-             * Format: int32
-             * @description 매핑 신뢰도(0-100)
-             * @example 88
-             */
-            confidence?: number;
-            /**
-             * @description 매핑 근거
-             * @example parent child relationship
-             */
-            reason?: string;
-        };
-        /** @description V2 매핑 응답 */
-        MappingV2Response: {
-            /**
-             * Format: uuid
-             * @description V2 매핑 ID
-             */
-            id?: string;
-            /**
-             * Format: uuid
-             * @description 원본 파일 ID
-             */
-            file_id?: string;
-            /** @description 매핑 이름 */
-            name?: string;
-            /** @description 시트명 */
-            sheet_name?: string;
-            /** @description 원본 헤더 목록 */
-            original_headers?: string[];
-            /** @description 매핑에 사용된 헤더 목록 */
-            mapped_headers?: string[];
-            /** @description 저장된 V2 매핑 */
-            mapping?: components["schemas"]["MappingV2ResultDto"];
-            /** @description 활성 여부 */
-            active?: boolean;
-            /**
-             * Format: int32
-             * @description 사용 횟수
-             */
-            usage_count?: number;
-            /**
-             * Format: int32
-             * @description 리비전 버전
-             */
-            version?: number;
-            /**
-             * Format: date-time
-             * @description 생성 시각
-             */
-            created_at?: string;
-        };
         /** @description 조직 프로필 이미지 설정 요청 */
         SetProfileImageRequest: {
             /**
@@ -3201,12 +3039,31 @@ export interface components {
              */
             mode?: "DIRECT" | "ENGINEERING_CHANGE_REQUIRED";
         };
+        /** @description 확장 속성 매핑 */
+        ExtendedPropertyMappingDto: {
+            /**
+             * @description 원본 컬럼명
+             * @example 비고
+             */
+            source_column?: string;
+            /**
+             * @description 백엔드가 내부 생성하는 확장 속성 키
+             * @example _ext_remark
+             */
+            readonly generated_key?: string;
+            /**
+             * @description 데이터 타입
+             * @example string
+             * @enum {string}
+             */
+            data_type?: "string" | "integer" | "float" | "boolean";
+        };
         /** @description 매핑 결과 */
         MappingResultDto: {
-            /** @description Part 속성 매핑 목록 */
-            property_mappings?: components["schemas"]["PropertyMappingDto"][];
-            /** @description 관계 매핑 목록 */
-            relation_mappings?: components["schemas"]["RelationMappingDto"][];
+            /** @description 행 안의 노드 목록 */
+            nodes?: components["schemas"]["NodeMappingDto"][];
+            /** @description 노드 간 관계 목록 */
+            relations?: components["schemas"]["RelationMappingDto"][];
         };
         /** @description 매핑 수정 요청 */
         MappingUpdateRequest: {
@@ -3219,32 +3076,27 @@ export interface components {
             name?: string;
             /** @description Excel 시트명 */
             sheet_name?: string;
-            /** @description 수정 매핑 */
+            /** @description 수정할 매핑 */
             mapping: components["schemas"]["MappingResultDto"];
         };
-        /** @description Part 속성 매핑 */
-        PropertyMappingDto: {
+        /** @description 행 안의 노드 매핑 */
+        NodeMappingDto: {
             /**
-             * @description 원본 컬럼명
-             * @example 품번
+             * @description 행 내부 노드 식별자
+             * @example part_child
              */
-            source_column?: string;
+            node_id?: string;
             /**
-             * @description 대상 속성명
-             * @example part_number
+             * @description 노드 라벨
+             * @example Part
              */
-            target_property?: string;
-            /**
-             * @description 동일 컬럼의 확장 속성 대안 키
-             * @example _ext_number
-             */
-            suggested_extended_property?: string;
-            /**
-             * @description 데이터 타입
-             * @example string
-             * @enum {string}
-             */
-            data_type?: "string" | "integer" | "float" | "boolean";
+            label?: string;
+            /** @description 표준 속성 매핑 */
+            property_columns?: {
+                [key: string]: string;
+            };
+            /** @description 확장 속성 매핑 */
+            extended_properties?: components["schemas"]["ExtendedPropertyMappingDto"][];
             /**
              * Format: int32
              * @description 매핑 신뢰도(0-100)
@@ -3253,17 +3105,17 @@ export interface components {
             confidence?: number;
             /**
              * @description 매핑 근거
-             * @example header exact match
+             * @example child part columns
              */
             reason?: string;
-            /**
-             * @description 확장 속성 여부
-             * @example false
-             */
-            is_extended?: boolean;
         };
-        /** @description 관계 매핑 */
+        /** @description 노드 간 관계 매핑 */
         RelationMappingDto: {
+            /**
+             * @description 시작 노드 식별자
+             * @example part_parent
+             */
+            from_node_id?: string;
             /**
              * @description 관계 타입
              * @example CONSISTS_OF
@@ -3271,22 +3123,20 @@ export interface components {
              */
             rel_type?: "CONSISTS_OF" | "DEFINED_BY" | "SUPPLIED_BY" | "HAS_ITEM";
             /**
-             * @description 대상 노드 라벨
-             * @example Part
+             * @description 도착 노드 식별자
+             * @example part_child
              */
-            target_label?: string;
-            /** @description 대상 노드 속성 매핑 */
-            node_columns?: {
+            to_node_id?: string;
+            /** @description 표준 관계 속성 매핑 */
+            property_columns?: {
                 [key: string]: string;
             };
-            /** @description 관계 속성 매핑 */
-            rel_columns?: {
-                [key: string]: string;
-            };
-            /** @description 관계 속성 타입 */
-            rel_column_types?: {
+            /** @description 표준 관계 속성 타입 */
+            property_column_types?: {
                 [key: string]: "string" | "integer" | "float" | "boolean";
             };
+            /** @description 관계 확장 속성 매핑 */
+            extended_properties?: components["schemas"]["ExtendedPropertyMappingDto"][];
             /**
              * Format: int32
              * @description 매핑 신뢰도(0-100)
@@ -3295,11 +3145,11 @@ export interface components {
             confidence?: number;
             /**
              * @description 매핑 근거
-             * @example quantity + parent part headers
+             * @example parent child relationship
              */
             reason?: string;
         };
-        /** @description 매핑 상세 응답 */
+        /** @description 매핑 응답 */
         MappingResponse: {
             /**
              * Format: uuid
@@ -3317,21 +3167,15 @@ export interface components {
             sheet_name?: string;
             /** @description 원본 헤더 목록 */
             original_headers?: string[];
-            /** @description 실사용 컬럼 목록 */
+            /** @description 매핑에 사용된 헤더 목록 */
             mapped_headers?: string[];
-            /** @description 매핑 본문 */
+            /** @description 저장된 매핑 */
             mapping?: components["schemas"]["MappingResultDto"];
-            /**
-             * @description 매핑 스코프
-             * @example FULL_BOM
-             * @enum {string}
-             */
-            scope?: "PART_LIST" | "FULL_BOM" | "ROOT_BOM";
             /** @description 활성 여부 */
-            is_active?: boolean;
+            active?: boolean;
             /**
              * Format: int32
-             * @description 누적 사용 횟수
+             * @description 사용 횟수
              */
             usage_count?: number;
             /**
@@ -3528,17 +3372,16 @@ export interface components {
             created_at?: string;
         };
         JsonNode: {
-            number?: boolean;
             container?: boolean;
             pojo?: boolean;
             int?: boolean;
             long?: boolean;
-            /** @enum {string} */
-            node_type?: "ARRAY" | "BINARY" | "BOOLEAN" | "MISSING" | "NULL" | "NUMBER" | "OBJECT" | "POJO" | "STRING";
-            string?: boolean;
             value_node?: boolean;
             missing_node?: boolean;
             object?: boolean;
+            /** @enum {string} */
+            node_type?: "ARRAY" | "BINARY" | "BOOLEAN" | "MISSING" | "NULL" | "NUMBER" | "OBJECT" | "POJO" | "STRING";
+            string?: boolean;
             short?: boolean;
             double?: boolean;
             big_decimal?: boolean;
@@ -3547,6 +3390,7 @@ export interface components {
             textual?: boolean;
             boolean?: boolean;
             binary?: boolean;
+            number?: boolean;
             integral_number?: boolean;
             floating_point_number?: boolean;
             array?: boolean;
@@ -3597,6 +3441,35 @@ export interface components {
         SyncIssuesRequest: {
             /** @description 최종 이슈 ID 목록 */
             issue_ids?: string[];
+        };
+        /** @description 팀 생성 요청 */
+        CreateTeamRequest: {
+            name: string;
+            description?: string;
+        };
+        /** @description 응답 DTO */
+        TeamDetailResponse: {
+            /** Format: uuid */
+            id?: string;
+            name?: string;
+            description?: string;
+            /** Format: int32 */
+            member_count?: number;
+            /** Format: uuid */
+            created_by?: string;
+            /** Format: date-time */
+            created_at?: string;
+            /** Format: date-time */
+            updated_at?: string;
+        };
+        /** @description 팀 멤버 추가 요청 */
+        AddTeamMembersRequest: {
+            user_ids: string[];
+        };
+        /** @description 응답 DTO */
+        ManageTeamMembersResponse: {
+            /** Format: int32 */
+            count?: number;
         };
         /** @description 합성 시작 요청 */
         SynthesisStartRequest: {
@@ -3732,143 +3605,165 @@ export interface components {
              */
             created_at?: string;
         };
-        /** @description V2 매핑 검증 요청 */
-        MappingV2ValidateRequest: {
+        /** @description 멤버별 좌석 타입 지정 */
+        MemberSeatRequest: {
             /**
              * Format: uuid
-             * @description 업로드 완료된 파일 ID
+             * @description 좌석 타입을 지정할 멤버십 ID
+             * @example 019cf746-2095-7b80-9930-c099a25a2c7b
              */
-            file_id: string;
-            /** @description Excel 시트명 */
-            sheet_name?: string;
-            /** @description 검증 대상 V2 매핑 */
-            mapping: components["schemas"]["MappingV2ResultDto"];
-        };
-        /** @description 매핑 영향 요약 */
-        MappingImpactSummaryResponse: {
+            membership_id: string;
             /**
-             * Format: int32
-             * @description 비활성(미사용) 컬럼 수
-             */
-            disabled_column_count?: number;
-        };
-        /** @description V2 매핑 검증 응답 */
-        MappingV2ValidateResponse: {
-            /** @description 정규화된 V2 매핑 */
-            normalized_mapping?: components["schemas"]["MappingV2ResultDto"];
-            /** @description 오류 목록 */
-            errors?: components["schemas"]["ValidationIssueResponse"][];
-            /** @description 경고 목록 */
-            warnings?: components["schemas"]["ValidationIssueResponse"][];
-            /** @description 영향 요약 */
-            impact_summary?: components["schemas"]["MappingImpactSummaryResponse"];
-        };
-        /** @description 매핑 검증 이슈 */
-        ValidationIssueResponse: {
-            /**
-             * @description 이슈 코드
-             * @example MISSING_SOURCE_COLUMN
-             */
-            code?: string;
-            /**
-             * @description 심각도
-             * @example error
+             * @description 업그레이드 후 적용할 좌석 타입, 유료 플랜에서는 STARTER 좌석을 사용할 수 없음
+             * @example FULL
              * @enum {string}
              */
-            severity?: "error" | "warning";
-            /** @description 이슈 메시지 */
-            message?: string;
-            /** @description 필드 경로 */
-            path?: string;
-            /** @description dismiss 용도 사유 코드 */
-            dismissed_reason?: string;
+            seat_type: "VIEWER" | "COLLABORATOR" | "FULL";
         };
-        /** @description V2 매핑 미리보기 요청 */
-        MappingV2PreviewRequest: {
+        /** @description Starter 플랜 즉시 업그레이드 요청 */
+        UpgradeStarterSubscriptionRequest: {
             /**
-             * Format: uuid
-             * @description 업로드 완료된 파일 ID
+             * @description 즉시 업그레이드할 대상 플랜, 현재 Team 또는 Org만 지원
+             * @example TEAM
+             * @enum {string}
              */
-            file_id: string;
-            /** @description Excel 시트명 (미지정 시 전체 시트 시도) */
-            sheet_name?: string;
+            target_plan_type: "TEAM" | "ORG";
+            /** @description 현재 워크스페이스 멤버 전원의 좌석 타입 지정 */
+            member_seats: components["schemas"]["MemberSeatRequest"][];
         };
-        /** @description V2 매핑 미리보기 응답 */
-        MappingV2PreviewResponse: {
-            /** @description 대표 헤더 목록 */
-            headers?: string[];
-            /** @description 대표 샘플 행 목록 */
-            sample_rows?: components["schemas"]["JsonNode"][];
-            /** @description 대표 V2 매핑 결과 */
-            mapping?: components["schemas"]["MappingV2ResultDto"];
-            /** @description 시트별 미리보기 목록 */
-            sheets?: components["schemas"]["SheetPreviewV2Response"][];
-            /** @description 스킵된 시트 목록 */
-            skipped_sheets?: components["schemas"]["SkippedSheetResponse"][];
-        };
-        /** @description 시트별 V2 매핑 미리보기 */
-        SheetPreviewV2Response: {
-            /** @description 시트명 */
-            sheet_name?: string;
-            /** @description 헤더 목록 */
-            headers?: string[];
-            /** @description 샘플 행 목록 */
-            sample_rows?: components["schemas"]["JsonNode"][];
-            /** @description V2 매핑 결과 */
-            mapping?: components["schemas"]["MappingV2ResultDto"];
-        };
-        /** @description 스킵된 시트 정보 */
-        SkippedSheetResponse: {
-            /** @description 시트명 */
-            sheet_name?: string;
-            /** @description 스킵 사유 */
-            reason?: string;
-        };
-        /** @description V2 매핑 확정 요청 */
-        MappingV2ConfirmRequest: {
+        /** @description 현재 구독 요약 응답 */
+        CurrentSubscriptionDetailResponse: {
             /**
-             * Format: uuid
-             * @description 업로드 완료된 파일 ID
+             * @description 현재 플랜
+             * @example TEAM
+             * @enum {string}
              */
-            file_id: string;
+            plan_type?: "STARTER" | "TEAM" | "ORGANIZATION" | "ENTERPRISE";
             /**
-             * @description V2 매핑 이름
-             * @example 공용부품 BOM V2 매핑
+             * @description 구독 상태
+             * @example ACTIVE
+             * @enum {string}
              */
-            name: string;
-            /** @description Excel 시트명 */
-            sheet_name?: string;
-            /** @description 확정할 V2 매핑 */
-            mapping: components["schemas"]["MappingV2ResultDto"];
+            status?: "ACTIVE" | "PAST_DUE" | "CANCELED" | "EXPIRED";
+            /**
+             * @description 청구 주기
+             * @example MONTHLY
+             * @enum {string}
+             */
+            billing_cycle?: "MONTHLY" | "YEARLY";
+            /**
+             * Format: date-time
+             * @description 현재 청구 시작 시각
+             */
+            current_period_start?: string;
+            /**
+             * Format: date-time
+             * @description 현재 청구 종료 시각
+             */
+            current_period_end?: string;
+            /**
+             * @description 예약된 플랜 변경
+             * @example ORGANIZATION
+             * @enum {string}
+             */
+            scheduled_plan_type?: "STARTER" | "TEAM" | "ORGANIZATION" | "ENTERPRISE";
+            /**
+             * Format: date-time
+             * @description 예약된 플랜 변경 적용 시각
+             */
+            scheduled_change_effective_at?: string;
+            /**
+             * Format: int32
+             * @description 현재 사용 멤버 수
+             * @example 7
+             */
+            used_members?: number;
+            /**
+             * Format: int64
+             * @description 현재 스토리지 사용량(바이트)
+             * @example 524288000
+             */
+            storage_bytes_used?: number;
+            /**
+             * Format: int64
+             * @description 현재 포함 스토리지(바이트)
+             * @example 20000000000
+             */
+            storage_bytes_included?: number;
+            /**
+             * Format: int64
+             * @description 현재 초과 스토리지(바이트)
+             * @example 0
+             */
+            storage_bytes_overage?: number;
+            /**
+             * @description 스토리지 초과 허용 여부
+             * @example true
+             */
+            allow_storage_overage?: boolean;
+            /**
+             * @description AI 과금 방식
+             * @example METERED
+             * @enum {string}
+             */
+            ai_billing_mode?: "INCLUDED_ONLY" | "METERED";
+            /**
+             * Format: int32
+             * @description Starter 월 포함 AI 크레딧
+             * @example 100
+             */
+            starter_monthly_ai_credits?: number;
+            /**
+             * Format: int32
+             * @description 월간 AI 크레딧 한도
+             * @example 2000
+             */
+            ai_monthly_credit_limit?: number;
+            /**
+             * @description AI 한도 초과 시 즉시 차단 여부
+             * @example true
+             */
+            ai_hard_limit_enabled?: boolean;
+            /** @description 좌석 할당 요약 */
+            seat_allocations?: components["schemas"]["SeatAllocationResponse"][];
         };
-        /** @description 팀 생성 요청 */
-        CreateTeamRequest: {
-            name: string;
-            description?: string;
-        };
-        /** @description 응답 DTO */
-        TeamDetailResponse: {
-            /** Format: uuid */
-            id?: string;
-            name?: string;
-            description?: string;
-            /** Format: int32 */
-            member_count?: number;
-            /** Format: uuid */
-            created_by?: string;
-            /** Format: date-time */
-            created_at?: string;
-            /** Format: date-time */
-            updated_at?: string;
-        };
-        /** @description 팀 멤버 추가 요청 */
-        AddTeamMembersRequest: {
-            user_ids: string[];
-        };
-        /** @description 응답 DTO */
-        ManageTeamMembersResponse: {
-            /** Format: int32 */
-            count?: number;
+        SeatAllocationResponse: {
+            /**
+             * @description 좌석 타입
+             * @example FULL
+             * @enum {string}
+             */
+            seat_type?: "STARTER" | "VIEWER" | "COLLABORATOR" | "FULL";
+            /**
+             * Format: int32
+             * @description 현재 배정된 좌석 수
+             * @example 3
+             */
+            assigned_count?: number;
+            /**
+             * Format: int64
+             * @description 대기 중 초대로 예약된 좌석 수
+             * @example 1
+             */
+            reserved_count?: number;
+            /**
+             * Format: int32
+             * @description 현재 구매 좌석 수
+             * @example 5
+             */
+            purchased_quantity?: number;
+            /**
+             * Format: int32
+             * @description 즉시 배정 가능한 좌석 수
+             * @example 1
+             */
+            available_quantity?: number;
+            /**
+             * Format: int32
+             * @description 좌석 월 단가
+             * @example 29000
+             */
+            unit_price?: number;
         };
         /** @description 커스텀 속성 정의 생성 요청 */
         CreatePropertyDefinitionRequest: {
@@ -4351,7 +4246,7 @@ export interface components {
              */
             org_name: string;
             /**
-             * @description 워크스페이스 슬러그
+             * @description 워크스페이스 슬러그 (미입력 시 자동 생성)
              * @example fabbit-team
              */
             slug?: string;
@@ -4366,11 +4261,17 @@ export interface components {
              */
             team_size?: string;
             /**
-             * @description 플랜 유형
+             * @description 워크스페이스 시작 플랜 타입
              * @example STARTER
              * @enum {string}
              */
-            plan_type: "STARTER" | "TEAM" | "BUSINESS" | "ENTERPRISE";
+            plan_type: "STARTER" | "TEAM" | "ORGANIZATION" | "ENTERPRISE";
+            /**
+             * @description 유료 플랜 선택 시 생성자에게 즉시 배정할 좌석 타입
+             * @example FULL
+             * @enum {string}
+             */
+            owner_seat_type?: "VIEWER" | "COLLABORATOR" | "FULL";
         };
         CreateOrganizationResponse: {
             /** @description 생성된 조직 정보 */
@@ -4409,7 +4310,7 @@ export interface components {
              * @example STARTER
              * @enum {string}
              */
-            plan_type?: "STARTER" | "TEAM" | "BUSINESS" | "ENTERPRISE";
+            plan_type?: "STARTER" | "TEAM" | "ORGANIZATION" | "ENTERPRISE";
             /**
              * @description 조직 프로필 이미지 URL
              * @example https://cdn.example.com/org.png
@@ -4498,6 +4399,12 @@ export interface components {
              * @enum {string}
              */
             role: "MEMBER" | "ADMIN" | "OWNER";
+            /**
+             * @description 초대 시 예약할 좌석 타입. Starter 플랜에서는 생략하면 STARTER로 처리됩니다
+             * @example VIEWER
+             * @enum {string}
+             */
+            seat_type?: "STARTER" | "VIEWER" | "COLLABORATOR" | "FULL";
         };
         InvitationResponse: {
             /**
@@ -4517,6 +4424,11 @@ export interface components {
              * @enum {string}
              */
             role?: "MEMBER" | "ADMIN" | "OWNER";
+            /**
+             * @description 예약된 좌석 타입
+             * @enum {string}
+             */
+            seat_type?: "STARTER" | "VIEWER" | "COLLABORATOR" | "FULL";
             /**
              * @description 초대 상태
              * @enum {string}
@@ -4555,6 +4467,14 @@ export interface components {
             /** @description 검증 대상 매핑 */
             mapping: components["schemas"]["MappingResultDto"];
         };
+        /** @description 매핑 영향 요약 */
+        MappingImpactSummaryResponse: {
+            /**
+             * Format: int32
+             * @description 비활성(미사용) 컬럼 수
+             */
+            disabled_column_count?: number;
+        };
         /** @description 매핑 검증 응답 */
         MappingValidateResponse: {
             /** @description 정규화된 매핑 */
@@ -4565,6 +4485,26 @@ export interface components {
             warnings?: components["schemas"]["ValidationIssueResponse"][];
             /** @description 영향 요약 */
             impact_summary?: components["schemas"]["MappingImpactSummaryResponse"];
+        };
+        /** @description 매핑 검증 이슈 */
+        ValidationIssueResponse: {
+            /**
+             * @description 이슈 코드
+             * @example MISSING_SOURCE_COLUMN
+             */
+            code?: string;
+            /**
+             * @description 심각도
+             * @example error
+             * @enum {string}
+             */
+            severity?: "error" | "warning";
+            /** @description 이슈 메시지 */
+            message?: string;
+            /** @description 필드 경로 */
+            path?: string;
+            /** @description dismiss 용도 사유 코드 */
+            dismissed_reason?: string;
         };
         /** @description 매핑 미리보기 요청 */
         MappingPreviewRequest: {
@@ -4597,8 +4537,15 @@ export interface components {
             headers?: string[];
             /** @description 샘플 행 목록 */
             sample_rows?: components["schemas"]["JsonNode"][];
-            /** @description 시트 매핑 결과 */
+            /** @description 매핑 결과 */
             mapping?: components["schemas"]["MappingResultDto"];
+        };
+        /** @description 스킵된 시트 정보 */
+        SkippedSheetResponse: {
+            /** @description 시트명 */
+            sheet_name?: string;
+            /** @description 스킵 사유 */
+            reason?: string;
         };
         /** @description 매핑 확정 요청 */
         MappingConfirmRequest: {
@@ -4609,7 +4556,7 @@ export interface components {
             file_id: string;
             /**
              * @description 매핑 이름
-             * @example A사 BOM 기본 매핑
+             * @example 공용부품 BOM 매핑
              */
             name: string;
             /** @description Excel 시트명 */
@@ -4897,11 +4844,17 @@ export interface components {
              */
             team_size?: string;
             /**
-             * @description 요금제 타입
+             * @description 워크스페이스 시작 플랜 타입
              * @example STARTER
              * @enum {string}
              */
-            plan_type: "STARTER" | "TEAM" | "BUSINESS" | "ENTERPRISE";
+            plan_type: "STARTER" | "TEAM" | "ORGANIZATION" | "ENTERPRISE";
+            /**
+             * @description 유료 플랜 선택 시 생성자에게 즉시 배정할 좌석 타입
+             * @example FULL
+             * @enum {string}
+             */
+            owner_seat_type?: "VIEWER" | "COLLABORATOR" | "FULL";
             /**
              * @description 봇 방지 토큰(선택)
              * @example turnstile-token
@@ -5129,6 +5082,47 @@ export interface components {
             name?: string;
             description?: string;
         };
+        SeatQuantityRequest: {
+            /**
+             * @description 좌석 타입, 유료 플랜 좌석만 수량 변경 가능
+             * @example FULL
+             * @enum {string}
+             */
+            seat_type: "VIEWER" | "COLLABORATOR" | "FULL";
+            /**
+             * Format: int32
+             * @description 구매 좌석 수량
+             * @example 3
+             */
+            purchased_quantity?: number;
+        };
+        /** @description 좌석 수량 변경 요청 */
+        UpdateSubscriptionSeatQuotasRequest: {
+            /** @description 변경할 좌석 수량 목록 */
+            seat_quotas: components["schemas"]["SeatQuantityRequest"][];
+        };
+        /** @description 구독 플랜 변경 요청 */
+        UpdateSubscriptionPlanRequest: {
+            /**
+             * @description 다음 갱신일부터 적용할 플랜
+             * @example ORGANIZATION
+             * @enum {string}
+             */
+            plan_type: "STARTER" | "TEAM" | "ORGANIZATION" | "ENTERPRISE";
+        };
+        /** @description AI 한도 정책 변경 요청 */
+        UpdateSubscriptionAiLimitRequest: {
+            /**
+             * @description 월간 AI 크레딧 한도, null이면 한도 미설정
+             * @example 2000
+             */
+            ai_monthly_credit_limit?: number;
+            /**
+             * @description 월간 AI 한도 초과 시 즉시 차단 여부
+             * @example true
+             */
+            ai_hard_limit_enabled?: boolean;
+        };
         /** @description 시스템 속성 override 수정 요청 */
         UpsertSystemPropertyOverrideRequest: {
             /**
@@ -5291,6 +5285,15 @@ export interface components {
             /** Format: int32 */
             updated_count?: number;
         };
+        /** @description 멤버 좌석 변경 요청 */
+        ChangeSeatRequest: {
+            /**
+             * @description 변경할 좌석 타입
+             * @example COLLABORATOR
+             * @enum {string}
+             */
+            seat_type: "STARTER" | "VIEWER" | "COLLABORATOR" | "FULL";
+        };
         /** @description 멤버 역할 변경 요청 */
         ChangeRoleRequest: {
             /**
@@ -5335,153 +5338,6 @@ export interface components {
              * @example ok
              */
             status?: string;
-        };
-        /** @description 합성 작업 목록 응답 */
-        SynthesisListResponse: {
-            /** @description 합성 작업 목록 */
-            items?: components["schemas"]["SynthesisJobResponse"][];
-        };
-        /** @description 합성 배치 실패 항목 */
-        SynthesisBatchFailureResponse: {
-            /**
-             * Format: uuid
-             * @description 실패한 파일 ID
-             */
-            file_id?: string;
-            /**
-             * @description 실패 사유
-             * @example 매핑 헤더 불일치
-             */
-            reason?: string;
-        };
-        /** @description 합성 배치 작업 상태 항목 */
-        SynthesisBatchItemStatusResponse: {
-            /**
-             * Format: uuid
-             * @description 작업 ID
-             */
-            job_id?: string;
-            /**
-             * Format: uuid
-             * @description 원본 파일 ID
-             */
-            file_id?: string;
-            /**
-             * @description 작업 상태
-             * @example COMPLETED
-             * @enum {string}
-             */
-            status?: "PENDING" | "PROCESSING" | "COMPLETED" | "FAILED";
-            /**
-             * Format: int32
-             * @description 전체 행 수
-             * @example 100
-             */
-            total_rows?: number;
-            /**
-             * Format: int32
-             * @description 처리된 행 수
-             * @example 100
-             */
-            processed_rows?: number;
-            /**
-             * Format: int32
-             * @description 생성된 노드 수
-             * @example 120
-             */
-            nodes_created?: number;
-            /**
-             * Format: int32
-             * @description 생성된 관계 수
-             * @example 240
-             */
-            relationships_created?: number;
-            /**
-             * Format: int32
-             * @description 오류 건수
-             * @example 0
-             */
-            error_count?: number;
-            /**
-             * Format: date-time
-             * @description 시작 시각
-             */
-            started_at?: string;
-            /**
-             * Format: date-time
-             * @description 완료 시각
-             */
-            completed_at?: string;
-        };
-        /** @description 합성 배치 상태 응답 */
-        SynthesisBatchStatusResponse: {
-            /**
-             * Format: uuid
-             * @description 배치 ID
-             */
-            batch_id?: string;
-            /**
-             * Format: int32
-             * @description 요청 파일 수
-             * @example 3
-             */
-            requested_count?: number;
-            /**
-             * Format: int32
-             * @description 수락 파일 수
-             * @example 2
-             */
-            accepted_count?: number;
-            /**
-             * Format: int32
-             * @description 시작 실패 수
-             * @example 1
-             */
-            failed_count?: number;
-            /**
-             * Format: int32
-             * @description 대기 중 작업 수
-             * @example 0
-             */
-            pending_count?: number;
-            /**
-             * Format: int32
-             * @description 처리 중 작업 수
-             * @example 1
-             */
-            processing_count?: number;
-            /**
-             * Format: int32
-             * @description 완료 작업 수
-             * @example 1
-             */
-            completed_count?: number;
-            /**
-             * Format: int32
-             * @description 실패 작업 수
-             * @example 0
-             */
-            failed_job_count?: number;
-            /**
-             * @description 배치 상태
-             * @example PROCESSING
-             * @enum {string}
-             */
-            status?: "PENDING" | "PROCESSING" | "COMPLETED" | "FAILED" | "COMPLETED_WITH_ERRORS";
-            /** @description 실패 항목 목록 */
-            failed?: components["schemas"]["SynthesisBatchFailureResponse"][];
-            /** @description 배치 작업 항목 목록 */
-            items?: components["schemas"]["SynthesisBatchItemStatusResponse"][];
-            /**
-             * Format: date-time
-             * @description 배치 생성 시각
-             */
-            created_at?: string;
-        };
-        /** @description V2 매핑 목록 응답 */
-        MappingV2ListResponse: {
-            /** @description V2 매핑 목록 */
-            items?: components["schemas"]["MappingV2Response"][];
         };
         MeResponse: {
             /** @description 내 사용자 정보 */
@@ -5629,34 +5485,33 @@ export interface components {
             total_credits_used?: number;
             /**
              * Format: int32
-             * @description 플랜 크레딧 사용량
+             * @description 포함 크레딧 한도
              * @example 100
              */
-            plan_credits_used?: number;
+            included_credits_limit?: number;
             /**
              * Format: int32
-             * @description 플랜 크레딧 한도
-             * @example 1000
-             */
-            plan_credits_limit?: number;
-            /**
-             * Format: int32
-             * @description 플랜 잔여 크레딧
-             * @example 900
-             */
-            plan_credits_remaining?: number;
-            /**
-             * Format: int32
-             * @description 보너스 크레딧 사용량
+             * @description 포함 크레딧 사용량
              * @example 20
              */
-            bonus_credits_used?: number;
+            included_credits_used?: number;
             /**
              * Format: int32
-             * @description 보너스 잔여 크레딧
+             * @description 포함 크레딧 잔여량
              * @example 80
              */
-            bonus_credits_remaining?: number;
+            included_credits_remaining?: number;
+            /**
+             * Format: int32
+             * @description 월간 AI 한도(없으면 null)
+             * @example 2000
+             */
+            metered_credits_limit?: number;
+            /**
+             * @description 월간 AI 한도 초과 시 차단 여부
+             * @example true
+             */
+            hard_limit_enabled?: boolean;
             /** @description 카테고리별 사용량 목록 */
             categories?: components["schemas"]["CreditCategoryItemResponse"][];
         };
@@ -5696,6 +5551,148 @@ export interface components {
         /** @description 응답 DTO */
         TeamLookupResponse: {
             items?: components["schemas"]["TeamLookupItemResponse"][];
+        };
+        /** @description 합성 작업 목록 응답 */
+        SynthesisListResponse: {
+            /** @description 합성 작업 목록 */
+            items?: components["schemas"]["SynthesisJobResponse"][];
+        };
+        /** @description 합성 배치 실패 항목 */
+        SynthesisBatchFailureResponse: {
+            /**
+             * Format: uuid
+             * @description 실패한 파일 ID
+             */
+            file_id?: string;
+            /**
+             * @description 실패 사유
+             * @example 매핑 헤더 불일치
+             */
+            reason?: string;
+        };
+        /** @description 합성 배치 작업 상태 항목 */
+        SynthesisBatchItemStatusResponse: {
+            /**
+             * Format: uuid
+             * @description 작업 ID
+             */
+            job_id?: string;
+            /**
+             * Format: uuid
+             * @description 원본 파일 ID
+             */
+            file_id?: string;
+            /**
+             * @description 작업 상태
+             * @example COMPLETED
+             * @enum {string}
+             */
+            status?: "PENDING" | "PROCESSING" | "COMPLETED" | "FAILED";
+            /**
+             * Format: int32
+             * @description 전체 행 수
+             * @example 100
+             */
+            total_rows?: number;
+            /**
+             * Format: int32
+             * @description 처리된 행 수
+             * @example 100
+             */
+            processed_rows?: number;
+            /**
+             * Format: int32
+             * @description 생성된 노드 수
+             * @example 120
+             */
+            nodes_created?: number;
+            /**
+             * Format: int32
+             * @description 생성된 관계 수
+             * @example 240
+             */
+            relationships_created?: number;
+            /**
+             * Format: int32
+             * @description 오류 건수
+             * @example 0
+             */
+            error_count?: number;
+            /**
+             * Format: date-time
+             * @description 시작 시각
+             */
+            started_at?: string;
+            /**
+             * Format: date-time
+             * @description 완료 시각
+             */
+            completed_at?: string;
+        };
+        /** @description 합성 배치 상태 응답 */
+        SynthesisBatchStatusResponse: {
+            /**
+             * Format: uuid
+             * @description 배치 ID
+             */
+            batch_id?: string;
+            /**
+             * Format: int32
+             * @description 요청 파일 수
+             * @example 3
+             */
+            requested_count?: number;
+            /**
+             * Format: int32
+             * @description 수락 파일 수
+             * @example 2
+             */
+            accepted_count?: number;
+            /**
+             * Format: int32
+             * @description 시작 실패 수
+             * @example 1
+             */
+            failed_count?: number;
+            /**
+             * Format: int32
+             * @description 대기 중 작업 수
+             * @example 0
+             */
+            pending_count?: number;
+            /**
+             * Format: int32
+             * @description 처리 중 작업 수
+             * @example 1
+             */
+            processing_count?: number;
+            /**
+             * Format: int32
+             * @description 완료 작업 수
+             * @example 1
+             */
+            completed_count?: number;
+            /**
+             * Format: int32
+             * @description 실패 작업 수
+             * @example 0
+             */
+            failed_job_count?: number;
+            /**
+             * @description 배치 상태
+             * @example PROCESSING
+             * @enum {string}
+             */
+            status?: "PENDING" | "PROCESSING" | "COMPLETED" | "FAILED" | "COMPLETED_WITH_ERRORS";
+            /** @description 실패 항목 목록 */
+            failed?: components["schemas"]["SynthesisBatchFailureResponse"][];
+            /** @description 배치 작업 항목 목록 */
+            items?: components["schemas"]["SynthesisBatchItemStatusResponse"][];
+            /**
+             * Format: date-time
+             * @description 배치 생성 시각
+             */
+            created_at?: string;
         };
         /** @description 공급사 목록 응답 */
         SupplierListResponse: {
@@ -5939,6 +5936,44 @@ export interface components {
              */
             profile_image_url?: string;
         };
+        /** @description 이슈 목록 응답 */
+        IssueListResponse: {
+            /** Format: int64 */
+            open_count?: number;
+            /** Format: int64 */
+            closed_count?: number;
+            /** Format: int64 */
+            total?: number;
+            /** Format: int32 */
+            offset?: number;
+            /** Format: int32 */
+            limit?: number;
+            items?: components["schemas"]["IssueSummaryResponse"][];
+        };
+        /** @description 이슈 목록 항목 */
+        IssueSummaryResponse: {
+            /** Format: uuid */
+            id?: string;
+            /** Format: int32 */
+            number?: number;
+            title?: string;
+            /** @enum {string} */
+            state?: "OPEN" | "CLOSED";
+            /** Format: date-time */
+            closed_at?: string;
+            /** Format: date-time */
+            created_at?: string;
+            /** Format: date-time */
+            updated_at?: string;
+            created_by?: components["schemas"]["UserSummaryResponse"];
+            labels?: components["schemas"]["LabelBadgeResponse"][];
+            assignees?: components["schemas"]["UserSummaryResponse"][];
+            assigned_teams?: components["schemas"]["TeamBadgeResponse"][];
+            parts?: components["schemas"]["PartBadgeResponse"][];
+            files?: components["schemas"]["FileItemResponse"][];
+            /** Format: int32 */
+            comments_count?: number;
+        };
         /** @description 응답 DTO */
         ActivityListResponse: {
             items?: components["schemas"]["ActivityResponse"][];
@@ -5961,6 +5996,44 @@ export interface components {
             detail?: string;
             /** Format: date-time */
             created_at?: string;
+        };
+        /** @description 변경관리 목록 응답 */
+        EngineeringChangeListResponse: {
+            /** Format: int64 */
+            open_count?: number;
+            /** Format: int64 */
+            closed_count?: number;
+            /** Format: int64 */
+            total?: number;
+            /** Format: int32 */
+            offset?: number;
+            /** Format: int32 */
+            limit?: number;
+            items?: components["schemas"]["EngineeringChangeSummaryResponse"][];
+        };
+        /** @description 변경관리 목록 항목 */
+        EngineeringChangeSummaryResponse: {
+            /** Format: uuid */
+            id?: string;
+            /** Format: int32 */
+            number?: number;
+            title?: string;
+            /** @enum {string} */
+            state?: "DRAFT" | "REVIEW_PENDING" | "APPROVAL_PENDING" | "RELEASE_PENDING" | "RELEASED" | "CANCELED";
+            /** Format: date-time */
+            closed_at?: string;
+            /** Format: date-time */
+            created_at?: string;
+            /** Format: date-time */
+            updated_at?: string;
+            created_by?: components["schemas"]["UserSummaryResponse"];
+            steps?: components["schemas"]["EngineeringChangeStepResponse"][];
+            files?: components["schemas"]["FileItemResponse"][];
+            /** Format: int32 */
+            comments_count?: number;
+            /** Format: date-time */
+            released_at?: string;
+            released_by?: components["schemas"]["UserSummaryResponse"];
         };
         /** @description 응답 DTO */
         PartListResponse: {
@@ -6612,6 +6685,12 @@ export interface components {
              * @example 백엔드 엔지니어
              */
             job_role?: string;
+            /**
+             * @description 현재 좌석 타입
+             * @example FULL
+             * @enum {string}
+             */
+            seat_type?: "STARTER" | "VIEWER" | "COLLABORATOR" | "FULL";
         };
         /** @description 매핑 목록 응답 */
         MappingListResponse: {
@@ -6634,44 +6713,6 @@ export interface components {
         /** @description 응답 DTO */
         LabelLookupResponse: {
             items?: components["schemas"]["LabelLookupItemResponse"][];
-        };
-        /** @description 이슈 목록 응답 */
-        IssueListResponse: {
-            /** Format: int64 */
-            open_count?: number;
-            /** Format: int64 */
-            closed_count?: number;
-            /** Format: int64 */
-            total?: number;
-            /** Format: int32 */
-            offset?: number;
-            /** Format: int32 */
-            limit?: number;
-            items?: components["schemas"]["IssueSummaryResponse"][];
-        };
-        /** @description 이슈 목록 항목 */
-        IssueSummaryResponse: {
-            /** Format: uuid */
-            id?: string;
-            /** Format: int32 */
-            number?: number;
-            title?: string;
-            /** @enum {string} */
-            state?: "OPEN" | "CLOSED";
-            /** Format: date-time */
-            closed_at?: string;
-            /** Format: date-time */
-            created_at?: string;
-            /** Format: date-time */
-            updated_at?: string;
-            created_by?: components["schemas"]["UserSummaryResponse"];
-            labels?: components["schemas"]["LabelBadgeResponse"][];
-            assignees?: components["schemas"]["UserSummaryResponse"][];
-            assigned_teams?: components["schemas"]["TeamBadgeResponse"][];
-            parts?: components["schemas"]["PartBadgeResponse"][];
-            files?: components["schemas"]["FileItemResponse"][];
-            /** Format: int32 */
-            comments_count?: number;
         };
         /** @description 타임라인 상세 정보 */
         TimelineDetailResponse: {
@@ -6747,44 +6788,6 @@ export interface components {
         /** @description 이슈 lookup 응답 */
         IssueLookupResponse: {
             items?: components["schemas"]["IssueLookupItemResponse"][];
-        };
-        /** @description 변경관리 목록 응답 */
-        EngineeringChangeListResponse: {
-            /** Format: int64 */
-            open_count?: number;
-            /** Format: int64 */
-            closed_count?: number;
-            /** Format: int64 */
-            total?: number;
-            /** Format: int32 */
-            offset?: number;
-            /** Format: int32 */
-            limit?: number;
-            items?: components["schemas"]["EngineeringChangeSummaryResponse"][];
-        };
-        /** @description 변경관리 목록 항목 */
-        EngineeringChangeSummaryResponse: {
-            /** Format: uuid */
-            id?: string;
-            /** Format: int32 */
-            number?: number;
-            title?: string;
-            /** @enum {string} */
-            state?: "DRAFT" | "REVIEW_PENDING" | "APPROVAL_PENDING" | "RELEASE_PENDING" | "RELEASED" | "CANCELED";
-            /** Format: date-time */
-            closed_at?: string;
-            /** Format: date-time */
-            created_at?: string;
-            /** Format: date-time */
-            updated_at?: string;
-            created_by?: components["schemas"]["UserSummaryResponse"];
-            steps?: components["schemas"]["EngineeringChangeStepResponse"][];
-            files?: components["schemas"]["FileItemResponse"][];
-            /** Format: int32 */
-            comments_count?: number;
-            /** Format: date-time */
-            released_at?: string;
-            released_by?: components["schemas"]["UserSummaryResponse"];
         };
         /** @description 변경관리 lookup 항목 */
         EngineeringChangeLookupItemResponse: {
@@ -6887,7 +6890,7 @@ export interface components {
              * @example STARTER
              * @enum {string}
              */
-            plan_type?: "STARTER" | "TEAM" | "BUSINESS" | "ENTERPRISE";
+            plan_type?: "STARTER" | "TEAM" | "ORGANIZATION" | "ENTERPRISE";
             /**
              * @description 플랜 표시 이름
              * @example Starter
@@ -6900,28 +6903,63 @@ export interface components {
             description?: string;
             /**
              * Format: int32
-             * @description 최대 멤버 수
-             * @example 10
+             * @description 최대 멤버 수, -1이면 코드상 명시적 상한 없음
+             * @example 5
              */
             max_members?: number;
             /**
-             * Format: int32
-             * @description 스토리지(GB)
-             * @example 10
+             * Format: int64
+             * @description 플랜 기본 제공 스토리지 바이트
+             * @example 250000000
              */
-            storage_gb?: number;
+            base_storage_bytes?: number;
+            /**
+             * Format: int64
+             * @description Full 좌석 1개당 추가 스토리지 바이트
+             * @example 10000000000
+             */
+            extra_storage_bytes_per_full_seat?: number;
+            /**
+             * @description 플랜별 스토리지 초과 허용 여부
+             * @example false
+             */
+            allow_storage_overage?: boolean;
             /**
              * Format: int32
-             * @description AI 크레딧
-             * @example 1000
+             * @description Starter 월 포함 AI 크레딧
+             * @example 100
              */
-            ai_credits?: number;
+            starter_monthly_ai_credits?: number;
+            /**
+             * @description AI 과금 방식, Starter는 INCLUDED_ONLY이고 유료 플랜은 METERED
+             * @example INCLUDED_ONLY
+             * @enum {string}
+             */
+            ai_billing_mode?: "INCLUDED_ONLY" | "METERED";
             /**
              * Format: int32
-             * @description 월 과금 금액
-             * @example 0
+             * @description Viewer 월 과금 금액
+             * @example 5000
              */
-            price_monthly?: number;
+            viewer_monthly_price?: number;
+            /**
+             * Format: int32
+             * @description Collaborator 월 과금 금액
+             * @example 15000
+             */
+            collaborator_monthly_price?: number;
+            /**
+             * Format: int32
+             * @description Full Seat 월 과금 금액
+             * @example 29000
+             */
+            full_seat_monthly_price?: number;
+            /**
+             * Format: int32
+             * @description 스토리지 초과 1GB당 월 과금 금액
+             * @example 200
+             */
+            storage_overage_price_per_gb?: number;
         };
         VerifyInvitationResponse: {
             /**
@@ -6945,6 +6983,12 @@ export interface components {
              * @enum {string}
              */
             role?: "MEMBER" | "ADMIN" | "OWNER";
+            /**
+             * @description 예약된 좌석 타입
+             * @example VIEWER
+             * @enum {string}
+             */
+            seat_type?: "STARTER" | "VIEWER" | "COLLABORATOR" | "FULL";
             /**
              * @description 기존 가입 사용자 여부
              * @example false
@@ -7012,6 +7056,19 @@ export interface components {
             /** @description 제거할 사용자 ID 목록 */
             user_ids: string[];
         };
+        /** @description 공통 API 오류 응답 */
+        ApiErrorResponse: {
+            /**
+             * @description 오류 코드
+             * @example BAD_REQUEST
+             */
+            code: unknown;
+            /**
+             * @description 오류 메시지
+             * @example 잘못된 요청입니다
+             */
+            message: unknown;
+        };
     };
     responses: never;
     parameters: never;
@@ -7021,177 +7078,6 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    get: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description 조회할 V2 매핑 ID */
-                mappingId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description 조회 성공 */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["MappingV2Response"];
-                };
-            };
-            /** @description 잘못된 요청 */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["MappingV2Response"];
-                };
-            };
-            /** @description 인증 필요 */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["MappingV2Response"];
-                };
-            };
-            /** @description 권한 없음 */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["MappingV2Response"];
-                };
-            };
-            /** @description 리소스를 찾을 수 없음 */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["MappingV2Response"];
-                };
-            };
-        };
-    };
-    update: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description 수정할 V2 매핑 ID */
-                mappingId: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["MappingV2UpdateRequest"];
-            };
-        };
-        responses: {
-            /** @description 수정 성공 */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["MappingV2Response"];
-                };
-            };
-            /** @description 잘못된 요청 */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["MappingV2Response"];
-                };
-            };
-            /** @description 인증 필요 */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["MappingV2Response"];
-                };
-            };
-            /** @description 권한 없음 */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["MappingV2Response"];
-                };
-            };
-            /** @description 리소스를 찾을 수 없음 */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["MappingV2Response"];
-                };
-            };
-        };
-    };
-    delete: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description 비활성화할 V2 매핑 ID */
-                mappingId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description 삭제 성공 */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description 잘못된 요청 */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description 인증 필요 */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description 권한 없음 */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description 리소스를 찾을 수 없음 */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
     setProfileImage: {
         parameters: {
             query?: never;
@@ -7220,7 +7106,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ProfileImageResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -7229,7 +7115,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ProfileImageResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -7238,7 +7124,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ProfileImageResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -7247,7 +7133,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ProfileImageResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -7273,21 +7159,27 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 권한 없음 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 리소스를 찾을 수 없음 */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
         };
     };
@@ -7316,28 +7208,36 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 인증 필요 */
             401: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 권한 없음 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 리소스를 찾을 수 없음 */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
         };
     };
@@ -7369,7 +7269,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SettingsPartWorkflowPolicyResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -7378,7 +7278,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SettingsPartWorkflowPolicyResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -7387,7 +7287,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SettingsPartWorkflowPolicyResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -7396,7 +7296,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SettingsPartWorkflowPolicyResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -7429,7 +7329,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ProfileImageResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -7438,7 +7338,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ProfileImageResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -7447,7 +7347,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ProfileImageResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -7456,7 +7356,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ProfileImageResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -7482,28 +7382,36 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 인증 필요 */
             401: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 권한 없음 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 리소스를 찾을 수 없음 */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
         };
     };
@@ -7538,28 +7446,36 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 인증 필요 */
             401: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 권한 없음 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 리소스를 찾을 수 없음 */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
         };
     };
@@ -7591,32 +7507,40 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 인증 필요 */
             401: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 권한 없음 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 리소스를 찾을 수 없음 */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
         };
     };
-    get_1: {
+    get: {
         parameters: {
             query?: never;
             header?: never;
@@ -7643,7 +7567,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["MappingResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -7652,7 +7576,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["MappingResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -7661,7 +7585,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["MappingResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -7670,12 +7594,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["MappingResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
     };
-    update_1: {
+    update: {
         parameters: {
             query?: never;
             header?: never;
@@ -7706,7 +7630,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["MappingResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -7715,7 +7639,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["MappingResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -7724,7 +7648,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["MappingResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -7733,12 +7657,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["MappingResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
     };
-    delete_1: {
+    delete: {
         parameters: {
             query?: never;
             header?: never;
@@ -7762,28 +7686,36 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 인증 필요 */
             401: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 권한 없음 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 리소스를 찾을 수 없음 */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
         };
     };
@@ -7825,9 +7757,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": components["schemas"]["SyncDiffResponse"];
-                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {
@@ -7835,7 +7765,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SyncDiffResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -7844,7 +7774,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SyncDiffResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -7853,7 +7783,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SyncDiffResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -7862,7 +7792,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SyncDiffResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -7905,9 +7835,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": components["schemas"]["SyncDiffResponse"];
-                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {
@@ -7915,7 +7843,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SyncDiffResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -7924,7 +7852,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SyncDiffResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -7933,7 +7861,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SyncDiffResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -7942,7 +7870,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SyncDiffResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -7985,9 +7913,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": components["schemas"]["SyncDiffResponse"];
-                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {
@@ -7995,7 +7921,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SyncDiffResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -8004,7 +7930,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SyncDiffResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -8013,7 +7939,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SyncDiffResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -8022,7 +7948,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SyncDiffResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -8065,9 +7991,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": components["schemas"]["SyncDiffResponse"];
-                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {
@@ -8075,7 +7999,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SyncDiffResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -8084,7 +8008,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SyncDiffResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -8093,7 +8017,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SyncDiffResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -8102,7 +8026,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SyncDiffResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -8145,9 +8069,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": components["schemas"]["SyncDiffResponse"];
-                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {
@@ -8155,7 +8077,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SyncDiffResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -8164,7 +8086,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SyncDiffResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -8173,7 +8095,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SyncDiffResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -8182,7 +8104,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SyncDiffResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -8225,9 +8147,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": components["schemas"]["EngineeringChangeResponse"];
-                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {
@@ -8235,7 +8155,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["EngineeringChangeResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -8244,7 +8164,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["EngineeringChangeResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -8253,7 +8173,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["EngineeringChangeResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -8262,7 +8182,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["EngineeringChangeResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -8305,9 +8225,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": components["schemas"]["SyncDiffResponse"];
-                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {
@@ -8315,7 +8233,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SyncDiffResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -8324,7 +8242,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SyncDiffResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -8333,7 +8251,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SyncDiffResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -8342,7 +8260,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SyncDiffResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -8385,9 +8303,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": components["schemas"]["SyncDiffResponse"];
-                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {
@@ -8395,7 +8311,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SyncDiffResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -8404,7 +8320,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SyncDiffResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -8413,7 +8329,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SyncDiffResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -8422,303 +8338,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SyncDiffResponse"];
-                };
-            };
-        };
-    };
-    listSynthesisJobs: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description 조회 성공 */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SynthesisListResponse"];
-                };
-            };
-            /** @description 잘못된 요청 */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SynthesisListResponse"];
-                };
-            };
-            /** @description 인증 필요 */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SynthesisListResponse"];
-                };
-            };
-            /** @description 권한 없음 */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SynthesisListResponse"];
-                };
-            };
-            /** @description 리소스를 찾을 수 없음 */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SynthesisListResponse"];
-                };
-            };
-        };
-    };
-    startSynthesis: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["SynthesisStartRequest"];
-            };
-        };
-        responses: {
-            /** @description 합성 시작 성공 */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SynthesisBatchStartResponse"];
-                };
-            };
-            /** @description 잘못된 요청 */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SynthesisBatchStartResponse"];
-                };
-            };
-            /** @description 인증 필요 */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SynthesisBatchStartResponse"];
-                };
-            };
-            /** @description 권한 없음 */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SynthesisBatchStartResponse"];
-                };
-            };
-            /** @description 리소스를 찾을 수 없음 */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SynthesisBatchStartResponse"];
-                };
-            };
-        };
-    };
-    validate: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["MappingV2ValidateRequest"];
-            };
-        };
-        responses: {
-            /** @description 검증 성공 */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["MappingV2ValidateResponse"];
-                };
-            };
-            /** @description 잘못된 요청 */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["MappingV2ValidateResponse"];
-                };
-            };
-            /** @description 인증 필요 */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["MappingV2ValidateResponse"];
-                };
-            };
-            /** @description 권한 없음 */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["MappingV2ValidateResponse"];
-                };
-            };
-            /** @description 리소스를 찾을 수 없음 */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["MappingV2ValidateResponse"];
-                };
-            };
-        };
-    };
-    preview: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["MappingV2PreviewRequest"];
-            };
-        };
-        responses: {
-            /** @description 미리보기 생성 성공 */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["MappingV2PreviewResponse"];
-                };
-            };
-            /** @description 잘못된 요청 */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["MappingV2PreviewResponse"];
-                };
-            };
-            /** @description 인증 필요 */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["MappingV2PreviewResponse"];
-                };
-            };
-            /** @description 권한 없음 */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["MappingV2PreviewResponse"];
-                };
-            };
-            /** @description 리소스를 찾을 수 없음 */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["MappingV2PreviewResponse"];
-                };
-            };
-        };
-    };
-    confirm: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["MappingV2ConfirmRequest"];
-            };
-        };
-        responses: {
-            /** @description 매핑 확정 성공 */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["MappingV2Response"];
-                };
-            };
-            /** @description 잘못된 요청 */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["MappingV2Response"];
-                };
-            };
-            /** @description 인증 필요 */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["MappingV2Response"];
-                };
-            };
-            /** @description 권한 없음 */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["MappingV2Response"];
-                };
-            };
-            /** @description 리소스를 찾을 수 없음 */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["MappingV2Response"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -8755,9 +8375,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": components["schemas"]["TeamListResponse"];
-                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {
@@ -8765,7 +8383,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["TeamListResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -8774,7 +8392,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["TeamListResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -8783,7 +8401,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["TeamListResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -8792,7 +8410,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["TeamListResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -8833,9 +8451,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": components["schemas"]["TeamDetailResponse"];
-                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {
@@ -8843,7 +8459,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["TeamDetailResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -8852,7 +8468,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["TeamDetailResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -8861,7 +8477,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["TeamDetailResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -8870,7 +8486,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["TeamDetailResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -8910,9 +8526,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": components["schemas"]["TeamMemberListResponse"];
-                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {
@@ -8920,7 +8534,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["TeamMemberListResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -8929,7 +8543,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["TeamMemberListResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -8938,7 +8552,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["TeamMemberListResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -8947,7 +8561,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["TeamMemberListResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -8991,9 +8605,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": components["schemas"]["ManageTeamMembersResponse"];
-                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {
@@ -9001,7 +8613,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ManageTeamMembersResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -9010,7 +8622,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ManageTeamMembersResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -9019,7 +8631,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ManageTeamMembersResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -9028,7 +8640,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ManageTeamMembersResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -9075,32 +8687,40 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 인증 필요 */
             401: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 권한 없음 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 리소스를 찾을 수 없음 */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
         };
     };
-    listSynthesisJobs_1: {
+    listSynthesisJobs: {
         parameters: {
             query?: never;
             header?: never;
@@ -9124,7 +8744,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SynthesisListResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -9133,7 +8753,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SynthesisListResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -9142,7 +8762,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SynthesisListResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -9151,12 +8771,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SynthesisListResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
     };
-    startSynthesis_1: {
+    startSynthesis: {
         parameters: {
             query?: never;
             header?: never;
@@ -9184,7 +8804,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SynthesisBatchStartResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -9193,7 +8813,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SynthesisBatchStartResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -9202,7 +8822,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SynthesisBatchStartResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -9211,7 +8831,67 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SynthesisBatchStartResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    upgradeStarter: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpgradeStarterSubscriptionRequest"];
+            };
+        };
+        responses: {
+            /** @description 업그레이드 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CurrentSubscriptionDetailResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 조직 또는 구독을 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -9253,7 +8933,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PropertyMetaResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -9262,7 +8942,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PropertyMetaResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -9271,7 +8951,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PropertyMetaResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -9280,7 +8960,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PropertyMetaResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스 충돌 */
@@ -9289,7 +8969,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PropertyMetaResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 입력값 검증 실패 */
@@ -9298,7 +8978,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PropertyMetaResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -9343,7 +9023,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ProjectListResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -9352,7 +9032,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ProjectListResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -9361,7 +9041,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ProjectListResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -9370,7 +9050,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ProjectListResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -9403,7 +9083,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ProjectDetailResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -9412,7 +9092,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ProjectDetailResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -9421,7 +9101,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ProjectDetailResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -9430,7 +9110,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ProjectDetailResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -9459,28 +9139,36 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 인증 필요 */
             401: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 권한 없음 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 리소스를 찾을 수 없음 */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
         };
     };
@@ -9527,7 +9215,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ProjectPartsResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -9536,7 +9224,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ProjectPartsResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -9545,7 +9233,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ProjectPartsResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -9554,7 +9242,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ProjectPartsResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -9590,7 +9278,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["LinkPartsResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -9599,7 +9287,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["LinkPartsResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -9608,7 +9296,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["LinkPartsResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -9617,7 +9305,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["LinkPartsResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -9650,28 +9338,36 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 인증 필요 */
             401: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 권한 없음 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 리소스를 찾을 수 없음 */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
         };
     };
@@ -9702,7 +9398,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ProjectMemberListResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -9711,7 +9407,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ProjectMemberListResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -9720,7 +9416,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ProjectMemberListResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -9729,7 +9425,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ProjectMemberListResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -9765,7 +9461,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ManageMembersResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -9774,7 +9470,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ManageMembersResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -9783,7 +9479,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ManageMembersResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -9792,7 +9488,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ManageMembersResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -9825,28 +9521,36 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 인증 필요 */
             401: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 권한 없음 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 리소스를 찾을 수 없음 */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
         };
     };
@@ -9874,28 +9578,36 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 인증 필요 */
             401: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 권한 없음 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 리소스를 찾을 수 없음 */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
         };
     };
@@ -9941,9 +9653,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": components["schemas"]["PartListResponse"];
-                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {
@@ -9951,7 +9661,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartListResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -9960,7 +9670,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartListResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -9969,7 +9679,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartListResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -9978,7 +9688,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartListResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -10019,9 +9729,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": components["schemas"]["PartDetailResponse"];
-                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {
@@ -10029,7 +9737,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartDetailResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -10038,7 +9746,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartDetailResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -10047,7 +9755,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartDetailResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -10056,7 +9764,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartDetailResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스 충돌 */
@@ -10065,7 +9773,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartDetailResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 입력값 검증 실패 */
@@ -10074,7 +9782,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartDetailResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -10119,7 +9827,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartDetailResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -10128,7 +9836,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartDetailResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -10137,7 +9845,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartDetailResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -10146,7 +9854,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartDetailResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -10190,9 +9898,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": components["schemas"]["PartPreviewResponse"];
-                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {
@@ -10200,7 +9906,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartPreviewResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -10209,7 +9915,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartPreviewResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -10218,7 +9924,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartPreviewResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -10227,7 +9933,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartPreviewResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -10267,9 +9973,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": components["schemas"]["PartFilesResponse"];
-                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {
@@ -10277,7 +9981,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartFilesResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -10286,7 +9990,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartFilesResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -10295,7 +9999,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartFilesResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -10304,7 +10008,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartFilesResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -10348,9 +10052,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": components["schemas"]["PartAttachmentItemResponse"][];
-                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {
@@ -10358,7 +10060,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartAttachmentItemResponse"][];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -10367,7 +10069,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartAttachmentItemResponse"][];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -10376,7 +10078,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartAttachmentItemResponse"][];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -10385,7 +10087,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartAttachmentItemResponse"][];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -10429,9 +10131,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": components["schemas"]["RegisterDrawingResponse"];
-                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {
@@ -10439,7 +10139,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["RegisterDrawingResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -10448,7 +10148,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["RegisterDrawingResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -10457,7 +10157,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["RegisterDrawingResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -10466,7 +10166,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["RegisterDrawingResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -10511,7 +10211,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartDetailResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -10520,7 +10220,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartDetailResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -10529,7 +10229,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartDetailResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -10538,7 +10238,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartDetailResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스 충돌 */
@@ -10547,7 +10247,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartDetailResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -10592,7 +10292,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartDetailResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -10601,7 +10301,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartDetailResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -10610,7 +10310,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartDetailResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -10619,7 +10319,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartDetailResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -10652,7 +10352,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CreateOrganizationResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -10661,7 +10361,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CreateOrganizationResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -10670,7 +10370,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CreateOrganizationResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -10679,7 +10379,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CreateOrganizationResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -10712,7 +10412,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["LoginResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -10721,7 +10421,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["LoginResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -10730,7 +10430,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["LoginResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -10739,7 +10439,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["LoginResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -10768,7 +10468,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["InvitationListResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -10777,7 +10477,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["InvitationListResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -10786,7 +10486,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["InvitationListResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -10795,7 +10495,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["InvitationListResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -10828,7 +10528,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["InvitationResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -10837,7 +10537,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["InvitationResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -10846,7 +10546,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["InvitationResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -10855,12 +10555,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["InvitationResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
     };
-    validate_1: {
+    validate: {
         parameters: {
             query?: never;
             header?: never;
@@ -10873,7 +10573,7 @@ export interface operations {
             };
         };
         responses: {
-            /** @description 매핑 검증 성공 */
+            /** @description 검증 성공 */
             200: {
                 headers: {
                     [name: string]: unknown;
@@ -10888,7 +10588,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["MappingValidateResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -10897,7 +10597,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["MappingValidateResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -10906,7 +10606,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["MappingValidateResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -10915,12 +10615,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["MappingValidateResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
     };
-    preview_1: {
+    preview: {
         parameters: {
             query?: never;
             header?: never;
@@ -10948,7 +10648,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["MappingPreviewResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -10957,7 +10657,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["MappingPreviewResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -10966,7 +10666,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["MappingPreviewResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -10975,12 +10675,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["MappingPreviewResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
     };
-    confirm_1: {
+    confirm: {
         parameters: {
             query?: never;
             header?: never;
@@ -11008,7 +10708,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["MappingResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -11017,7 +10717,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["MappingResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -11026,7 +10726,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["MappingResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -11035,7 +10735,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["MappingResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -11072,9 +10772,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": components["schemas"]["LabelListResponse"];
-                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {
@@ -11082,7 +10780,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["LabelListResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -11091,7 +10789,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["LabelListResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -11100,7 +10798,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["LabelListResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -11109,7 +10807,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["LabelListResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -11150,9 +10848,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": components["schemas"]["LabelResponse"];
-                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {
@@ -11160,7 +10856,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["LabelResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -11169,7 +10865,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["LabelResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -11178,7 +10874,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["LabelResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -11187,7 +10883,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["LabelResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -11229,9 +10925,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": components["schemas"]["IssueListResponse"];
-                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {
@@ -11239,7 +10933,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["IssueListResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -11248,7 +10942,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["IssueListResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -11257,7 +10951,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["IssueListResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -11266,7 +10960,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["IssueListResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -11307,9 +11001,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": components["schemas"]["IssueResponse"];
-                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {
@@ -11317,7 +11009,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["IssueResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -11326,7 +11018,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["IssueResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -11335,7 +11027,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["IssueResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -11344,7 +11036,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["IssueResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -11383,9 +11075,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": components["schemas"]["IssueResponse"];
-                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {
@@ -11393,7 +11083,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["IssueResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -11402,7 +11092,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["IssueResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -11411,7 +11101,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["IssueResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -11420,7 +11110,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["IssueResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -11463,9 +11153,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": components["schemas"]["FileItemResponse"][];
-                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {
@@ -11473,7 +11161,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["FileItemResponse"][];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -11482,7 +11170,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["FileItemResponse"][];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -11491,7 +11179,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["FileItemResponse"][];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -11500,7 +11188,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["FileItemResponse"][];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -11543,9 +11231,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": components["schemas"]["CommentResponse"];
-                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {
@@ -11553,7 +11239,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CommentResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -11562,7 +11248,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CommentResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -11571,7 +11257,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CommentResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -11580,7 +11266,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CommentResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -11619,9 +11305,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": components["schemas"]["IssueResponse"];
-                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {
@@ -11629,7 +11313,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["IssueResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -11638,7 +11322,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["IssueResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -11647,7 +11331,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["IssueResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -11656,7 +11340,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["IssueResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -11697,9 +11381,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": components["schemas"]["CreateFileResponse"];
-                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {
@@ -11707,7 +11389,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CreateFileResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -11716,7 +11398,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CreateFileResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -11725,7 +11407,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CreateFileResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -11734,7 +11416,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CreateFileResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -11774,9 +11456,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": components["schemas"]["FileCompleteResponse"];
-                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {
@@ -11784,7 +11464,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["FileCompleteResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -11793,7 +11473,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["FileCompleteResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -11802,7 +11482,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["FileCompleteResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -11811,7 +11491,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["FileCompleteResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -11852,9 +11532,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": components["schemas"]["BatchCreateFileResponse"];
-                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {
@@ -11862,7 +11540,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["BatchCreateFileResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -11871,7 +11549,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["BatchCreateFileResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -11880,7 +11558,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["BatchCreateFileResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -11889,7 +11567,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["BatchCreateFileResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -11930,9 +11608,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": components["schemas"]["BatchCompleteResponse"];
-                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {
@@ -11940,7 +11616,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["BatchCompleteResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -11949,7 +11625,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["BatchCompleteResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -11958,7 +11634,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["BatchCompleteResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -11967,7 +11643,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["BatchCompleteResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -12013,9 +11689,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": components["schemas"]["EngineeringChangeListResponse"];
-                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {
@@ -12023,7 +11697,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["EngineeringChangeListResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -12032,7 +11706,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["EngineeringChangeListResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -12041,7 +11715,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["EngineeringChangeListResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -12050,7 +11724,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["EngineeringChangeListResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -12091,9 +11765,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": components["schemas"]["EngineeringChangeResponse"];
-                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {
@@ -12101,7 +11773,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["EngineeringChangeResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -12110,7 +11782,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["EngineeringChangeResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -12119,7 +11791,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["EngineeringChangeResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -12128,7 +11800,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["EngineeringChangeResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -12167,9 +11839,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": components["schemas"]["EngineeringChangeResponse"];
-                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {
@@ -12177,7 +11847,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["EngineeringChangeResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -12186,7 +11856,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["EngineeringChangeResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -12195,7 +11865,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["EngineeringChangeResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -12204,7 +11874,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["EngineeringChangeResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -12243,9 +11913,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": components["schemas"]["EngineeringChangeResponse"];
-                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {
@@ -12253,7 +11921,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["EngineeringChangeResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -12262,7 +11930,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["EngineeringChangeResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -12271,7 +11939,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["EngineeringChangeResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -12280,7 +11948,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["EngineeringChangeResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -12319,9 +11987,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": components["schemas"]["EngineeringChangeResponse"];
-                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {
@@ -12329,7 +11995,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["EngineeringChangeResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -12338,7 +12004,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["EngineeringChangeResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -12347,7 +12013,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["EngineeringChangeResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -12356,7 +12022,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["EngineeringChangeResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -12395,9 +12061,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": components["schemas"]["EngineeringChangeResponse"];
-                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {
@@ -12405,7 +12069,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["EngineeringChangeResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -12414,7 +12078,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["EngineeringChangeResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -12423,7 +12087,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["EngineeringChangeResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -12432,7 +12096,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["EngineeringChangeResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -12475,9 +12139,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": components["schemas"]["FileItemResponse"][];
-                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {
@@ -12485,7 +12147,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["FileItemResponse"][];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -12494,7 +12156,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["FileItemResponse"][];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -12503,7 +12165,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["FileItemResponse"][];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -12512,7 +12174,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["FileItemResponse"][];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -12555,9 +12217,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": components["schemas"]["CommentResponse"];
-                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {
@@ -12565,7 +12225,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CommentResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -12574,7 +12234,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CommentResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -12583,7 +12243,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CommentResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -12592,7 +12252,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CommentResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -12631,9 +12291,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": components["schemas"]["EngineeringChangeResponse"];
-                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {
@@ -12641,7 +12299,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["EngineeringChangeResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -12650,7 +12308,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["EngineeringChangeResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -12659,7 +12317,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["EngineeringChangeResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -12668,7 +12326,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["EngineeringChangeResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -12707,9 +12365,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": components["schemas"]["EngineeringChangeResponse"];
-                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {
@@ -12717,7 +12373,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["EngineeringChangeResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -12726,7 +12382,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["EngineeringChangeResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -12735,7 +12391,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["EngineeringChangeResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -12744,7 +12400,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["EngineeringChangeResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -12777,7 +12433,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["VerifyEmailResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -12786,7 +12442,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["VerifyEmailResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -12795,7 +12451,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["VerifyEmailResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -12804,7 +12460,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["VerifyEmailResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -12837,7 +12493,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SendVerificationResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -12846,7 +12502,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SendVerificationResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -12855,7 +12511,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SendVerificationResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -12864,7 +12520,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SendVerificationResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 이미 가입된 이메일 */
@@ -12873,7 +12529,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SendVerificationResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 요청 제한 */
@@ -12882,7 +12538,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SendVerificationResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -12915,7 +12571,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["RegisterResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -12924,7 +12580,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["RegisterResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -12933,7 +12589,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["RegisterResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -12942,7 +12598,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["RegisterResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 중복 리소스 */
@@ -12951,7 +12607,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["RegisterResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -12984,7 +12640,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["TokenResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -12993,7 +12649,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["TokenResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -13002,7 +12658,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["TokenResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -13011,7 +12667,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["TokenResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -13041,28 +12697,36 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 인증 필요 */
             401: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 권한 없음 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 리소스를 찾을 수 없음 */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
         };
     };
@@ -13100,7 +12764,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["LoginVariantResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -13109,7 +12773,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["LoginVariantResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -13118,7 +12782,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["LoginVariantResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -13127,7 +12791,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["LoginVariantResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -13160,7 +12824,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["AcceptInvitationResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -13169,7 +12833,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["AcceptInvitationResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -13178,7 +12842,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["AcceptInvitationResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -13187,7 +12851,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["AcceptInvitationResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -13220,7 +12884,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["QueryResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -13229,7 +12893,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["QueryResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -13238,7 +12902,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["QueryResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -13247,7 +12911,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["QueryResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -13276,7 +12940,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HealthCheckResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -13285,7 +12949,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HealthCheckResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -13294,7 +12958,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HealthCheckResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -13303,7 +12967,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["HealthCheckResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -13332,7 +12996,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["MeResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -13341,7 +13005,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["MeResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -13350,7 +13014,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["MeResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -13383,7 +13047,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["UpdateProfileResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -13392,7 +13056,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["UpdateProfileResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -13401,7 +13065,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["UpdateProfileResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -13410,7 +13074,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["UpdateProfileResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -13450,9 +13114,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": components["schemas"]["TeamDetailResponse"];
-                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {
@@ -13460,7 +13122,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["TeamDetailResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -13469,7 +13131,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["TeamDetailResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -13478,7 +13140,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["TeamDetailResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -13487,7 +13149,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["TeamDetailResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -13530,28 +13192,36 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 인증 필요 */
             401: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 권한 없음 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 리소스를 찾을 수 없음 */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
         };
     };
@@ -13594,9 +13264,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": components["schemas"]["TeamDetailResponse"];
-                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {
@@ -13604,7 +13272,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["TeamDetailResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -13613,7 +13281,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["TeamDetailResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -13622,7 +13290,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["TeamDetailResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -13631,7 +13299,187 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["TeamDetailResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    updateSeatQuotas: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateSubscriptionSeatQuotasRequest"];
+            };
+        };
+        responses: {
+            /** @description 좌석 수량 변경 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CurrentSubscriptionDetailResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 조직 또는 구독을 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    updatePlan: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateSubscriptionPlanRequest"];
+            };
+        };
+        responses: {
+            /** @description 변경 예약 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CurrentSubscriptionDetailResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 조직 또는 구독을 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    updateAiLimit: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateSubscriptionAiLimitRequest"];
+            };
+        };
+        responses: {
+            /** @description 정책 변경 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CurrentSubscriptionDetailResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 조직 또는 구독을 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -13684,7 +13532,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PropertyMetaResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -13693,7 +13541,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PropertyMetaResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -13702,7 +13550,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PropertyMetaResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -13711,7 +13559,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PropertyMetaResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -13756,7 +13604,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PropertyMetaResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -13765,7 +13613,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PropertyMetaResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -13774,7 +13622,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PropertyMetaResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -13783,7 +13631,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PropertyMetaResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -13815,7 +13663,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ProjectDetailResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -13824,7 +13672,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ProjectDetailResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -13833,7 +13681,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ProjectDetailResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -13842,7 +13690,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ProjectDetailResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -13871,28 +13719,36 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 인증 필요 */
             401: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 권한 없음 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 리소스를 찾을 수 없음 */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
         };
     };
@@ -13927,7 +13783,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ProjectDetailResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -13936,7 +13792,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ProjectDetailResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -13945,7 +13801,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ProjectDetailResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -13954,12 +13810,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ProjectDetailResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
     };
-    get_2: {
+    get_1: {
         parameters: {
             query?: never;
             header?: never;
@@ -13986,7 +13842,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartDetailResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -13995,7 +13851,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartDetailResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -14004,7 +13860,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartDetailResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -14013,12 +13869,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartDetailResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
     };
-    update_2: {
+    update_1: {
         parameters: {
             query?: never;
             header?: never;
@@ -14058,7 +13914,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartDetailResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -14067,7 +13923,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartDetailResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -14076,7 +13932,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartDetailResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -14085,12 +13941,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartDetailResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
     };
-    delete_2: {
+    delete_1: {
         parameters: {
             query?: never;
             header?: never;
@@ -14128,32 +13984,40 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 인증 필요 */
             401: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 권한 없음 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 리소스를 찾을 수 없음 */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
         };
     };
-    update_3: {
+    update_2: {
         parameters: {
             query?: never;
             header?: never;
@@ -14192,9 +14056,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": components["schemas"]["PartPreviewResponse"];
-                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {
@@ -14202,7 +14064,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartPreviewResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -14211,7 +14073,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartPreviewResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -14220,7 +14082,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartPreviewResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -14229,7 +14091,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartPreviewResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -14272,9 +14134,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": components["schemas"]["RenameCategoryResponse"];
-                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {
@@ -14282,7 +14142,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["RenameCategoryResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -14291,7 +14151,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["RenameCategoryResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -14300,7 +14160,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["RenameCategoryResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -14309,7 +14169,68 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["RenameCategoryResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    changeMemberSeat: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 좌석을 변경할 사용자 ID */
+                userId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChangeSeatRequest"];
+            };
+        };
+        responses: {
+            /** @description 변경 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -14342,28 +14263,36 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 인증 필요 */
             401: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 권한 없음 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 리소스를 찾을 수 없음 */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
         };
     };
@@ -14405,28 +14334,36 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 인증 필요 */
             401: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 권한 없음 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 리소스를 찾을 수 없음 */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
         };
     };
@@ -14469,9 +14406,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": components["schemas"]["LabelResponse"];
-                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {
@@ -14479,7 +14414,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["LabelResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -14488,7 +14423,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["LabelResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -14497,7 +14432,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["LabelResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -14506,7 +14441,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["LabelResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -14546,9 +14481,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": components["schemas"]["IssueResponse"];
-                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {
@@ -14556,7 +14489,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["IssueResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -14565,7 +14498,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["IssueResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -14574,7 +14507,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["IssueResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -14583,7 +14516,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["IssueResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -14627,9 +14560,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": components["schemas"]["IssueResponse"];
-                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {
@@ -14637,7 +14568,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["IssueResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -14646,7 +14577,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["IssueResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -14655,7 +14586,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["IssueResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -14664,7 +14595,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["IssueResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -14707,28 +14638,36 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 인증 필요 */
             401: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 권한 없음 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 리소스를 찾을 수 없음 */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
         };
     };
@@ -14771,9 +14710,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": components["schemas"]["CommentResponse"];
-                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {
@@ -14781,7 +14718,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CommentResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -14790,7 +14727,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CommentResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -14799,7 +14736,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CommentResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -14808,7 +14745,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CommentResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -14848,9 +14785,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": components["schemas"]["EngineeringChangeResponse"];
-                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {
@@ -14858,7 +14793,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["EngineeringChangeResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -14867,7 +14802,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["EngineeringChangeResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -14876,7 +14811,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["EngineeringChangeResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -14885,7 +14820,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["EngineeringChangeResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -14929,9 +14864,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": components["schemas"]["EngineeringChangeResponse"];
-                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {
@@ -14939,7 +14872,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["EngineeringChangeResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -14948,7 +14881,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["EngineeringChangeResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -14957,7 +14890,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["EngineeringChangeResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -14966,7 +14899,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["EngineeringChangeResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -15009,28 +14942,36 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 인증 필요 */
             401: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 권한 없음 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 리소스를 찾을 수 없음 */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
         };
     };
@@ -15073,9 +15014,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": components["schemas"]["CommentResponse"];
-                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {
@@ -15083,7 +15022,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CommentResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -15092,7 +15031,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CommentResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -15101,7 +15040,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CommentResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -15110,7 +15049,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CommentResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -15131,180 +15070,6 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HealthResponse"];
-                };
-            };
-        };
-    };
-    getSynthesisJob: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description 조회할 V2 합성 작업 ID */
-                jobId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description 조회 성공 */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SynthesisJobResponse"];
-                };
-            };
-            /** @description 잘못된 요청 */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SynthesisJobResponse"];
-                };
-            };
-            /** @description 인증 필요 */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SynthesisJobResponse"];
-                };
-            };
-            /** @description 권한 없음 */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SynthesisJobResponse"];
-                };
-            };
-            /** @description 리소스를 찾을 수 없음 */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SynthesisJobResponse"];
-                };
-            };
-        };
-    };
-    getSynthesisBatch: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description 조회할 V2 합성 배치 ID */
-                batchId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description 조회 성공 */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SynthesisBatchStatusResponse"];
-                };
-            };
-            /** @description 잘못된 요청 */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SynthesisBatchStatusResponse"];
-                };
-            };
-            /** @description 인증 필요 */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SynthesisBatchStatusResponse"];
-                };
-            };
-            /** @description 권한 없음 */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SynthesisBatchStatusResponse"];
-                };
-            };
-            /** @description 리소스를 찾을 수 없음 */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["SynthesisBatchStatusResponse"];
-                };
-            };
-        };
-    };
-    list: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description 조회 성공 */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["MappingV2ListResponse"];
-                };
-            };
-            /** @description 잘못된 요청 */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["MappingV2ListResponse"];
-                };
-            };
-            /** @description 인증 필요 */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["MappingV2ListResponse"];
-                };
-            };
-            /** @description 권한 없음 */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["MappingV2ListResponse"];
-                };
-            };
-            /** @description 리소스를 찾을 수 없음 */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["MappingV2ListResponse"];
                 };
             };
         };
@@ -15333,7 +15098,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["StorageUsageResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -15342,7 +15107,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["StorageUsageResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -15351,7 +15116,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["StorageUsageResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -15360,7 +15125,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["StorageUsageResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -15395,7 +15160,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["StorageTrendResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -15404,7 +15169,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["StorageTrendResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -15413,7 +15178,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["StorageTrendResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -15422,7 +15187,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["StorageTrendResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -15451,7 +15216,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CreditUsageResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -15460,7 +15225,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CreditUsageResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -15469,7 +15234,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CreditUsageResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -15478,7 +15243,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CreditUsageResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -15526,9 +15291,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": components["schemas"]["TeamLookupResponse"];
-                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {
@@ -15536,7 +15299,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["TeamLookupResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -15545,7 +15308,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["TeamLookupResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -15554,7 +15317,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["TeamLookupResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -15563,12 +15326,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["TeamLookupResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
     };
-    getSynthesisJob_1: {
+    getSynthesisJob: {
         parameters: {
             query?: never;
             header?: never;
@@ -15595,7 +15358,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SynthesisJobResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -15604,7 +15367,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SynthesisJobResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -15613,7 +15376,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SynthesisJobResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -15622,12 +15385,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SynthesisJobResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
     };
-    getSynthesisBatch_1: {
+    getSynthesisBatch: {
         parameters: {
             query?: never;
             header?: never;
@@ -15654,7 +15417,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SynthesisBatchStatusResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -15663,7 +15426,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SynthesisBatchStatusResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -15672,7 +15435,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SynthesisBatchStatusResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -15681,7 +15444,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SynthesisBatchStatusResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -15726,7 +15489,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SupplierListResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -15735,7 +15498,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SupplierListResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -15744,7 +15507,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SupplierListResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -15753,7 +15516,63 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SupplierListResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    get_2: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 조회 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CurrentSubscriptionDetailResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 조직 또는 구독을 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -15782,7 +15601,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SettingsResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -15791,7 +15610,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SettingsResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -15800,7 +15619,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SettingsResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -15809,7 +15628,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SettingsResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -15858,7 +15677,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PropertyMetaListResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -15867,7 +15686,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PropertyMetaListResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -15876,7 +15695,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PropertyMetaListResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -15885,7 +15704,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PropertyMetaListResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -15933,7 +15752,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ProjectPartLookupResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -15942,7 +15761,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ProjectPartLookupResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -15951,7 +15770,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ProjectPartLookupResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -15960,7 +15779,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ProjectPartLookupResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -16003,7 +15822,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["MemberLookupResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -16012,7 +15831,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["MemberLookupResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -16021,7 +15840,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["MemberLookupResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -16030,7 +15849,66 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["MemberLookupResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    listProjectIssues: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 이슈 목록을 조회할 프로젝트 ID */
+                projectId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 조회 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["IssueListResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -16080,7 +15958,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ActivityListResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -16089,7 +15967,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ActivityListResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -16098,7 +15976,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ActivityListResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -16107,7 +15985,66 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ActivityListResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    listProjectChanges: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 변경관리 목록을 조회할 프로젝트 ID */
+                projectId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 조회 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EngineeringChangeListResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -16139,7 +16076,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartSuppliersResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -16148,7 +16085,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartSuppliersResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -16157,7 +16094,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartSuppliersResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -16166,7 +16103,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartSuppliersResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -16198,7 +16135,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartProjectsResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -16207,7 +16144,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartProjectsResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -16216,7 +16153,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartProjectsResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -16225,7 +16162,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartProjectsResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -16265,9 +16202,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": components["schemas"]["PartPreviewSourcesResponse"];
-                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {
@@ -16275,7 +16210,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartPreviewSourcesResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -16284,7 +16219,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartPreviewSourcesResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -16293,7 +16228,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartPreviewSourcesResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -16302,7 +16237,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartPreviewSourcesResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -16342,9 +16277,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": components["schemas"]["PartPreviewProcessingResponse"];
-                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {
@@ -16352,7 +16285,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartPreviewProcessingResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -16361,7 +16294,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartPreviewProcessingResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -16370,7 +16303,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartPreviewProcessingResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -16379,7 +16312,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartPreviewProcessingResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -16413,7 +16346,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartRevisionDiffResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -16422,7 +16355,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartRevisionDiffResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -16431,7 +16364,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartRevisionDiffResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -16440,7 +16373,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartRevisionDiffResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -16472,7 +16405,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartBomResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -16481,7 +16414,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartBomResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -16490,7 +16423,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartBomResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -16499,7 +16432,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartBomResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -16533,7 +16466,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["BomTreeResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -16542,7 +16475,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["BomTreeResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -16551,7 +16484,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["BomTreeResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -16560,7 +16493,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["BomTreeResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -16595,7 +16528,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": string;
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -16604,7 +16537,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": string;
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -16613,7 +16546,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": string;
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -16622,7 +16555,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": string;
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -16653,7 +16586,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartRevisionHistoryResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -16662,7 +16595,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartRevisionHistoryResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -16671,7 +16604,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartRevisionHistoryResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -16680,7 +16613,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartRevisionHistoryResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -16720,9 +16653,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": components["schemas"]["PartRevisionLookupResponse"];
-                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {
@@ -16730,7 +16661,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartRevisionLookupResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -16739,7 +16670,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartRevisionLookupResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -16748,7 +16679,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartRevisionLookupResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -16757,7 +16688,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartRevisionLookupResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -16797,9 +16728,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": components["schemas"]["PartLookupResponse"];
-                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {
@@ -16807,7 +16736,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartLookupResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -16816,7 +16745,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartLookupResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -16825,7 +16754,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartLookupResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -16834,7 +16763,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartLookupResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -16883,9 +16812,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": components["schemas"]["PartInProgressListResponse"];
-                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {
@@ -16893,7 +16820,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartInProgressListResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -16902,7 +16829,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartInProgressListResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -16911,7 +16838,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartInProgressListResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -16920,7 +16847,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartInProgressListResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -16957,9 +16884,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": components["schemas"]["PartFilterOptionsResponse"];
-                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {
@@ -16967,7 +16892,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartFilterOptionsResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -16976,7 +16901,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartFilterOptionsResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -16985,7 +16910,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartFilterOptionsResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -16994,7 +16919,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartFilterOptionsResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -17040,9 +16965,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": string;
-                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {
@@ -17050,7 +16973,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": string;
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -17059,7 +16982,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": string;
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -17068,7 +16991,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": string;
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -17077,7 +17000,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": string;
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -17114,9 +17037,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": components["schemas"]["CategoryStatsResponse"];
-                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {
@@ -17124,7 +17045,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CategoryStatsResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -17133,7 +17054,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CategoryStatsResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -17142,7 +17063,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CategoryStatsResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -17151,7 +17072,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CategoryStatsResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -17188,9 +17109,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": components["schemas"]["CategoryLookupResponse"];
-                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {
@@ -17198,7 +17117,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CategoryLookupResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -17207,7 +17126,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CategoryLookupResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -17216,7 +17135,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CategoryLookupResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -17225,7 +17144,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CategoryLookupResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -17254,7 +17173,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["OntologySchemaResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -17263,7 +17182,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["OntologySchemaResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -17272,7 +17191,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["OntologySchemaResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -17281,7 +17200,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["OntologySchemaResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -17326,7 +17245,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["NodeSearchResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -17335,7 +17254,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["NodeSearchResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -17344,7 +17263,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["NodeSearchResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -17353,7 +17272,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["NodeSearchResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -17394,9 +17313,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": components["schemas"]["NotificationListResponse"];
-                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {
@@ -17404,7 +17321,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["NotificationListResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -17413,7 +17330,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["NotificationListResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -17422,7 +17339,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["NotificationListResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -17431,7 +17348,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["NotificationListResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -17459,9 +17376,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": components["schemas"]["UnreadCountResponse"];
-                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {
@@ -17469,7 +17384,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["UnreadCountResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -17478,7 +17393,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["UnreadCountResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -17487,7 +17402,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["UnreadCountResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -17496,7 +17411,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["UnreadCountResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -17524,9 +17439,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "text/event-stream": components["schemas"]["StreamingResponseBody"];
-                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {
@@ -17534,7 +17447,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "text/event-stream": components["schemas"]["StreamingResponseBody"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -17543,7 +17456,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "text/event-stream": components["schemas"]["StreamingResponseBody"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -17552,7 +17465,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "text/event-stream": components["schemas"]["StreamingResponseBody"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -17561,7 +17474,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "text/event-stream": components["schemas"]["StreamingResponseBody"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -17590,7 +17503,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["MemberListResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -17599,7 +17512,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["MemberListResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -17608,7 +17521,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["MemberListResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -17642,7 +17555,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["MemberLookupResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -17651,7 +17564,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["MemberLookupResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -17660,7 +17573,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["MemberLookupResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -17669,12 +17582,12 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["MemberLookupResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
     };
-    list_1: {
+    list: {
         parameters: {
             query?: never;
             header?: never;
@@ -17698,7 +17611,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["MappingListResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -17707,7 +17620,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["MappingListResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -17716,7 +17629,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["MappingListResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -17725,7 +17638,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["MappingListResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -17773,9 +17686,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": components["schemas"]["LabelLookupResponse"];
-                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {
@@ -17783,7 +17694,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["LabelLookupResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -17792,7 +17703,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["LabelLookupResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -17801,7 +17712,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["LabelLookupResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -17810,7 +17721,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["LabelLookupResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -17849,9 +17760,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": components["schemas"]["TimelineResponse"];
-                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {
@@ -17859,7 +17768,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["TimelineResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -17868,7 +17777,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["TimelineResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -17877,7 +17786,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["TimelineResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -17886,7 +17795,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["TimelineResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -17934,9 +17843,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": components["schemas"]["IssueLookupResponse"];
-                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {
@@ -17944,7 +17851,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["IssueLookupResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -17953,7 +17860,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["IssueLookupResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -17962,7 +17869,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["IssueLookupResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -17971,7 +17878,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["IssueLookupResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -18010,9 +17917,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": components["schemas"]["TimelineResponse"];
-                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {
@@ -18020,7 +17925,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["TimelineResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -18029,7 +17934,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["TimelineResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -18038,7 +17943,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["TimelineResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -18047,7 +17952,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["TimelineResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -18087,9 +17992,7 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content: {
-                    "*/*": components["schemas"]["EngineeringChangeLookupResponse"];
-                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {
@@ -18097,7 +18000,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["EngineeringChangeLookupResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -18106,7 +18009,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["EngineeringChangeLookupResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -18115,7 +18018,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["EngineeringChangeLookupResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -18124,7 +18027,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["EngineeringChangeLookupResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -18153,7 +18056,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DashboardStatsResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -18162,7 +18065,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DashboardStatsResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -18171,7 +18074,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DashboardStatsResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -18180,7 +18083,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["DashboardStatsResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -18215,7 +18118,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SiteResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -18224,7 +18127,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SiteResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -18233,7 +18136,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SiteResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -18242,7 +18145,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SiteResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -18271,7 +18174,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PlanResponse"][];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -18280,7 +18183,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PlanResponse"][];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -18289,7 +18192,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PlanResponse"][];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -18298,7 +18201,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PlanResponse"][];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -18333,7 +18236,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["VerifyInvitationResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -18342,7 +18245,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["VerifyInvitationResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -18351,7 +18254,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["VerifyInvitationResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -18360,7 +18263,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["VerifyInvitationResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -18395,7 +18298,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CheckSlugResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -18404,7 +18307,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CheckSlugResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -18413,7 +18316,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CheckSlugResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -18422,7 +18325,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CheckSlugResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -18457,7 +18360,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CheckEmailResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -18466,7 +18369,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CheckEmailResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -18475,7 +18378,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CheckEmailResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -18484,7 +18387,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["CheckEmailResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -18513,7 +18416,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["StartersResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 인증 필요 */
@@ -18522,7 +18425,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["StartersResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 권한 없음 */
@@ -18531,7 +18434,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["StartersResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
             /** @description 리소스를 찾을 수 없음 */
@@ -18540,7 +18443,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["StartersResponse"];
+                    "application/json": components["schemas"]["ApiErrorResponse"];
                 };
             };
         };
@@ -18584,28 +18487,36 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 인증 필요 */
             401: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 권한 없음 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 리소스를 찾을 수 없음 */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
         };
     };
@@ -18648,28 +18559,36 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 인증 필요 */
             401: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 권한 없음 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 리소스를 찾을 수 없음 */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
         };
     };
@@ -18712,28 +18631,36 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 인증 필요 */
             401: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 권한 없음 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 리소스를 찾을 수 없음 */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
         };
     };
@@ -18761,28 +18688,36 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 인증 필요 */
             401: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 권한 없음 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 리소스를 찾을 수 없음 */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
         };
     };
@@ -18810,21 +18745,27 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 권한 없음 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 리소스를 찾을 수 없음 */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
         };
     };
@@ -18866,28 +18807,36 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 인증 필요 */
             401: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 권한 없음 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 리소스를 찾을 수 없음 */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
         };
     };
@@ -18929,28 +18878,36 @@ export interface operations {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 인증 필요 */
             401: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 권한 없음 */
             403: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
             /** @description 리소스를 찾을 수 없음 */
             404: {
                 headers: {
                     [name: string]: unknown;
                 };
-                content?: never;
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
             };
         };
     };

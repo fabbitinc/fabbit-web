@@ -2,14 +2,16 @@ import { Button } from "@heroui/react";
 import { motion, useInView } from "framer-motion";
 import { useRef } from "react";
 import { ArrowRight, Mail, Clock, Users } from "lucide-react";
+import { APP_SIGNUP_URL } from "@/constants/urls";
+import { usePilotModal } from "@/app";
 
 export function CtaSection() {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: "-100px" });
+  const openPilot = usePilotModal();
 
   return (
     <section className="section-padding relative overflow-hidden" ref={ref}>
-      {/* Background glow */}
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute left-1/2 top-1/2 h-[600px] w-[600px] -translate-x-1/2 -translate-y-1/2">
           <div className="absolute inset-0 rounded-full bg-[var(--lp-brand)]/10 blur-[120px]" />
@@ -36,41 +38,39 @@ export function CtaSection() {
 
           <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <Button
+              as="a"
+              href={APP_SIGNUP_URL}
               size="lg"
               className="cta-pulse group bg-[var(--lp-brand)] px-10 font-[Outfit,sans-serif] font-semibold text-[var(--lp-on-brand)] shadow-xl shadow-[var(--lp-brand)]/25 transition-all hover:shadow-[var(--lp-brand)]/40 hover:scale-[1.02]"
               endContent={
-                <ArrowRight
-                  size={18}
-                  className="transition-transform group-hover:translate-x-0.5"
-                />
+                <ArrowRight size={18} className="transition-transform group-hover:translate-x-0.5" />
               }
             >
-              시작하기
+              무료로 시작
             </Button>
             <Button
               size="lg"
               variant="bordered"
               className="border-[var(--lp-border-hover)] px-8 font-[Outfit,sans-serif] text-[var(--lp-text-secondary)] hover:border-[var(--lp-border-hover)] hover:bg-[var(--lp-border-hover)]"
               startContent={<Mail size={16} className="text-[var(--lp-brand)]" />}
+              onPress={openPilot}
             >
-              파일럿 문의하기
+              파일럿 신청
             </Button>
           </div>
 
-          {/* Trust signals with icons */}
           <div className="mt-8 flex flex-wrap items-center justify-center gap-6 text-xs text-[var(--lp-text-muted)]">
             <span className="flex items-center gap-1.5">
               <Clock size={14} className="text-[var(--lp-text-dim)]" />
-              5분 안에 시작
+              Starter 무료로 시작
             </span>
             <span className="flex items-center gap-1.5">
               <Users size={14} className="text-[var(--lp-text-dim)]" />
-              팀 단위 요금제
+              역할별 좌석 과금
             </span>
           </div>
         </motion.div>
 
-        {/* Target market badges */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}

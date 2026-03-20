@@ -36,8 +36,8 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
  */
 export const listParts = (
     params?: ListPartsParams,
- options?: SecondParameter<typeof customInstance<PartListResponse | Blob>>,) => {
-      return customInstance<PartListResponse | Blob>(
+ options?: SecondParameter<typeof customInstance<PartListResponse | void>>,) => {
+      return customInstance<PartListResponse | void>(
       {url: `/api/v1/parts`, method: 'GET',
         params
     },
@@ -49,8 +49,8 @@ export const listParts = (
  */
 export const createPart = (
     createPartRequest: BodyType<CreatePartRequest>,
- options?: SecondParameter<typeof customInstance<PartDetailResponse | Blob>>,) => {
-      return customInstance<PartDetailResponse | Blob>(
+ options?: SecondParameter<typeof customInstance<PartDetailResponse | void>>,) => {
+      return customInstance<PartDetailResponse | void>(
       {url: `/api/v1/parts`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: createPartRequest
@@ -64,8 +64,8 @@ export const createPart = (
 export const renameCategory = (
     category: string,
     renameCategoryRequest: BodyType<RenameCategoryRequest>,
- options?: SecondParameter<typeof customInstance<RenameCategoryResponse | Blob>>,) => {
-      return customInstance<RenameCategoryResponse | Blob>(
+ options?: SecondParameter<typeof customInstance<RenameCategoryResponse | void>>,) => {
+      return customInstance<RenameCategoryResponse | void>(
       {url: `/api/v1/parts/categories/${category}`, method: 'PATCH',
       headers: {'Content-Type': 'application/json', },
       data: renameCategoryRequest
@@ -78,8 +78,8 @@ export const renameCategory = (
  */
 export const lookupRevisions = (
     params?: LookupRevisionsParams,
- options?: SecondParameter<typeof customInstance<PartRevisionLookupResponse | Blob>>,) => {
-      return customInstance<PartRevisionLookupResponse | Blob>(
+ options?: SecondParameter<typeof customInstance<PartRevisionLookupResponse | void>>,) => {
+      return customInstance<PartRevisionLookupResponse | void>(
       {url: `/api/v1/parts/revisions/lookup`, method: 'GET',
         params
     },
@@ -91,8 +91,8 @@ export const lookupRevisions = (
  */
 export const lookupParts1 = (
     params?: LookupParts1Params,
- options?: SecondParameter<typeof customInstance<PartLookupResponse | Blob>>,) => {
-      return customInstance<PartLookupResponse | Blob>(
+ options?: SecondParameter<typeof customInstance<PartLookupResponse | void>>,) => {
+      return customInstance<PartLookupResponse | void>(
       {url: `/api/v1/parts/lookup`, method: 'GET',
         params
     },
@@ -104,8 +104,8 @@ export const lookupParts1 = (
  */
 export const listInProgressParts = (
     params?: ListInProgressPartsParams,
- options?: SecondParameter<typeof customInstance<PartInProgressListResponse | Blob>>,) => {
-      return customInstance<PartInProgressListResponse | Blob>(
+ options?: SecondParameter<typeof customInstance<PartInProgressListResponse | void>>,) => {
+      return customInstance<PartInProgressListResponse | void>(
       {url: `/api/v1/parts/in-progress`, method: 'GET',
         params
     },
@@ -117,8 +117,8 @@ export const listInProgressParts = (
  */
 export const getFilterOptions = (
     
- options?: SecondParameter<typeof customInstance<PartFilterOptionsResponse | Blob>>,) => {
-      return customInstance<PartFilterOptionsResponse | Blob>(
+ options?: SecondParameter<typeof customInstance<PartFilterOptionsResponse | void>>,) => {
+      return customInstance<PartFilterOptionsResponse | void>(
       {url: `/api/v1/parts/filter-options`, method: 'GET'
     },
       options);
@@ -129,11 +129,10 @@ export const getFilterOptions = (
  */
 export const exportParts = (
     params?: ExportPartsParams,
- options?: SecondParameter<typeof customInstance<Blob>>,) => {
-      return customInstance<Blob>(
+ options?: SecondParameter<typeof customInstance<Blob | void>>,) => {
+      return customInstance<Blob | void>(
       {url: `/api/v1/parts/export`, method: 'GET',
-        params,
-        responseType: 'blob'
+        params
     },
       options);
     }
@@ -143,8 +142,8 @@ export const exportParts = (
  */
 export const listCategories = (
     
- options?: SecondParameter<typeof customInstance<CategoryStatsResponse | Blob>>,) => {
-      return customInstance<CategoryStatsResponse | Blob>(
+ options?: SecondParameter<typeof customInstance<CategoryStatsResponse | void>>,) => {
+      return customInstance<CategoryStatsResponse | void>(
       {url: `/api/v1/parts/categories`, method: 'GET'
     },
       options);
@@ -155,8 +154,8 @@ export const listCategories = (
  */
 export const lookupCategories = (
     
- options?: SecondParameter<typeof customInstance<CategoryLookupResponse | Blob>>,) => {
-      return customInstance<CategoryLookupResponse | Blob>(
+ options?: SecondParameter<typeof customInstance<CategoryLookupResponse | void>>,) => {
+      return customInstance<CategoryLookupResponse | void>(
       {url: `/api/v1/parts/categories/lookup`, method: 'GET'
     },
       options);

@@ -38,8 +38,8 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 export const replaceSteps = (
     engineeringChangeId: string,
     syncEngineeringChangeStepsRequest: BodyType<SyncEngineeringChangeStepsRequest>,
- options?: SecondParameter<typeof customInstance<EngineeringChangeResponse | Blob>>,) => {
-      return customInstance<EngineeringChangeResponse | Blob>(
+ options?: SecondParameter<typeof customInstance<EngineeringChangeResponse | void>>,) => {
+      return customInstance<EngineeringChangeResponse | void>(
       {url: `/api/v1/engineering-changes/${engineeringChangeId}/steps`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
       data: syncEngineeringChangeStepsRequest
@@ -53,8 +53,8 @@ export const replaceSteps = (
 export const syncPartRevisions = (
     engineeringChangeId: string,
     syncPartRevisionsRequest: BodyType<SyncPartRevisionsRequest>,
- options?: SecondParameter<typeof customInstance<SyncDiffResponse | Blob>>,) => {
-      return customInstance<SyncDiffResponse | Blob>(
+ options?: SecondParameter<typeof customInstance<SyncDiffResponse | void>>,) => {
+      return customInstance<SyncDiffResponse | void>(
       {url: `/api/v1/engineering-changes/${engineeringChangeId}/part-revisions`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
       data: syncPartRevisionsRequest
@@ -68,8 +68,8 @@ export const syncPartRevisions = (
 export const syncIssues = (
     engineeringChangeId: string,
     syncIssuesRequest: BodyType<SyncIssuesRequest>,
- options?: SecondParameter<typeof customInstance<SyncDiffResponse | Blob>>,) => {
-      return customInstance<SyncDiffResponse | Blob>(
+ options?: SecondParameter<typeof customInstance<SyncDiffResponse | void>>,) => {
+      return customInstance<SyncDiffResponse | void>(
       {url: `/api/v1/engineering-changes/${engineeringChangeId}/issues`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
       data: syncIssuesRequest
@@ -82,8 +82,8 @@ export const syncIssues = (
  */
 export const listEngineeringChanges = (
     params?: ListEngineeringChangesParams,
- options?: SecondParameter<typeof customInstance<EngineeringChangeListResponse | Blob>>,) => {
-      return customInstance<EngineeringChangeListResponse | Blob>(
+ options?: SecondParameter<typeof customInstance<EngineeringChangeListResponse | void>>,) => {
+      return customInstance<EngineeringChangeListResponse | void>(
       {url: `/api/v1/engineering-changes`, method: 'GET',
         params
     },
@@ -95,8 +95,8 @@ export const listEngineeringChanges = (
  */
 export const createEngineeringChange = (
     createEngineeringChangeRequest: BodyType<CreateEngineeringChangeRequest>,
- options?: SecondParameter<typeof customInstance<EngineeringChangeResponse | Blob>>,) => {
-      return customInstance<EngineeringChangeResponse | Blob>(
+ options?: SecondParameter<typeof customInstance<EngineeringChangeResponse | void>>,) => {
+      return customInstance<EngineeringChangeResponse | void>(
       {url: `/api/v1/engineering-changes`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: createEngineeringChangeRequest
@@ -109,8 +109,8 @@ export const createEngineeringChange = (
  */
 export const submit = (
     engineeringChangeId: string,
- options?: SecondParameter<typeof customInstance<EngineeringChangeResponse | Blob>>,) => {
-      return customInstance<EngineeringChangeResponse | Blob>(
+ options?: SecondParameter<typeof customInstance<EngineeringChangeResponse | void>>,) => {
+      return customInstance<EngineeringChangeResponse | void>(
       {url: `/api/v1/engineering-changes/${engineeringChangeId}/submit`, method: 'POST'
     },
       options);
@@ -121,8 +121,8 @@ export const submit = (
  */
 export const approveReview = (
     engineeringChangeId: string,
- options?: SecondParameter<typeof customInstance<EngineeringChangeResponse | Blob>>,) => {
-      return customInstance<EngineeringChangeResponse | Blob>(
+ options?: SecondParameter<typeof customInstance<EngineeringChangeResponse | void>>,) => {
+      return customInstance<EngineeringChangeResponse | void>(
       {url: `/api/v1/engineering-changes/${engineeringChangeId}/review/approve`, method: 'POST'
     },
       options);
@@ -133,8 +133,8 @@ export const approveReview = (
  */
 export const release1 = (
     engineeringChangeId: string,
- options?: SecondParameter<typeof customInstance<EngineeringChangeResponse | Blob>>,) => {
-      return customInstance<EngineeringChangeResponse | Blob>(
+ options?: SecondParameter<typeof customInstance<EngineeringChangeResponse | void>>,) => {
+      return customInstance<EngineeringChangeResponse | void>(
       {url: `/api/v1/engineering-changes/${engineeringChangeId}/release`, method: 'POST'
     },
       options);
@@ -145,8 +145,8 @@ export const release1 = (
  */
 export const reject = (
     engineeringChangeId: string,
- options?: SecondParameter<typeof customInstance<EngineeringChangeResponse | Blob>>,) => {
-      return customInstance<EngineeringChangeResponse | Blob>(
+ options?: SecondParameter<typeof customInstance<EngineeringChangeResponse | void>>,) => {
+      return customInstance<EngineeringChangeResponse | void>(
       {url: `/api/v1/engineering-changes/${engineeringChangeId}/reject`, method: 'POST'
     },
       options);
@@ -158,8 +158,8 @@ export const reject = (
 export const addFiles1 = (
     engineeringChangeId: string,
     attachFilesRequest: BodyType<AttachFilesRequest>,
- options?: SecondParameter<typeof customInstance<FileItemResponse[] | Blob>>,) => {
-      return customInstance<FileItemResponse[] | Blob>(
+ options?: SecondParameter<typeof customInstance<FileItemResponse[] | void>>,) => {
+      return customInstance<FileItemResponse[] | void>(
       {url: `/api/v1/engineering-changes/${engineeringChangeId}/files`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: attachFilesRequest
@@ -173,8 +173,8 @@ export const addFiles1 = (
 export const createComment1 = (
     engineeringChangeId: string,
     createCommentRequest: BodyType<CreateCommentRequest>,
- options?: SecondParameter<typeof customInstance<CommentResponse | Blob>>,) => {
-      return customInstance<CommentResponse | Blob>(
+ options?: SecondParameter<typeof customInstance<CommentResponse | void>>,) => {
+      return customInstance<CommentResponse | void>(
       {url: `/api/v1/engineering-changes/${engineeringChangeId}/comments`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: createCommentRequest
@@ -187,8 +187,8 @@ export const createComment1 = (
  */
 export const cancel1 = (
     engineeringChangeId: string,
- options?: SecondParameter<typeof customInstance<EngineeringChangeResponse | Blob>>,) => {
-      return customInstance<EngineeringChangeResponse | Blob>(
+ options?: SecondParameter<typeof customInstance<EngineeringChangeResponse | void>>,) => {
+      return customInstance<EngineeringChangeResponse | void>(
       {url: `/api/v1/engineering-changes/${engineeringChangeId}/cancel`, method: 'POST'
     },
       options);
@@ -199,8 +199,8 @@ export const cancel1 = (
  */
 export const approve = (
     engineeringChangeId: string,
- options?: SecondParameter<typeof customInstance<EngineeringChangeResponse | Blob>>,) => {
-      return customInstance<EngineeringChangeResponse | Blob>(
+ options?: SecondParameter<typeof customInstance<EngineeringChangeResponse | void>>,) => {
+      return customInstance<EngineeringChangeResponse | void>(
       {url: `/api/v1/engineering-changes/${engineeringChangeId}/approve`, method: 'POST'
     },
       options);
@@ -211,8 +211,8 @@ export const approve = (
  */
 export const getEngineeringChange = (
     engineeringChangeId: string,
- options?: SecondParameter<typeof customInstance<EngineeringChangeResponse | Blob>>,) => {
-      return customInstance<EngineeringChangeResponse | Blob>(
+ options?: SecondParameter<typeof customInstance<EngineeringChangeResponse | void>>,) => {
+      return customInstance<EngineeringChangeResponse | void>(
       {url: `/api/v1/engineering-changes/${engineeringChangeId}`, method: 'GET'
     },
       options);
@@ -224,8 +224,8 @@ export const getEngineeringChange = (
 export const updateEngineeringChange = (
     engineeringChangeId: string,
     updateEngineeringChangeRequest: BodyType<UpdateEngineeringChangeRequest>,
- options?: SecondParameter<typeof customInstance<EngineeringChangeResponse | Blob>>,) => {
-      return customInstance<EngineeringChangeResponse | Blob>(
+ options?: SecondParameter<typeof customInstance<EngineeringChangeResponse | void>>,) => {
+      return customInstance<EngineeringChangeResponse | void>(
       {url: `/api/v1/engineering-changes/${engineeringChangeId}`, method: 'PATCH',
       headers: {'Content-Type': 'application/json', },
       data: updateEngineeringChangeRequest
@@ -253,8 +253,8 @@ export const updateComment1 = (
     engineeringChangeId: string,
     commentId: string,
     updateCommentRequest: BodyType<UpdateCommentRequest>,
- options?: SecondParameter<typeof customInstance<CommentResponse | Blob>>,) => {
-      return customInstance<CommentResponse | Blob>(
+ options?: SecondParameter<typeof customInstance<CommentResponse | void>>,) => {
+      return customInstance<CommentResponse | void>(
       {url: `/api/v1/engineering-changes/${engineeringChangeId}/comments/${commentId}`, method: 'PATCH',
       headers: {'Content-Type': 'application/json', },
       data: updateCommentRequest
@@ -267,8 +267,8 @@ export const updateComment1 = (
  */
 export const getTimeline1 = (
     engineeringChangeId: string,
- options?: SecondParameter<typeof customInstance<TimelineResponse | Blob>>,) => {
-      return customInstance<TimelineResponse | Blob>(
+ options?: SecondParameter<typeof customInstance<TimelineResponse | void>>,) => {
+      return customInstance<TimelineResponse | void>(
       {url: `/api/v1/engineering-changes/${engineeringChangeId}/timeline`, method: 'GET'
     },
       options);
@@ -279,8 +279,8 @@ export const getTimeline1 = (
  */
 export const lookupEngineeringChanges = (
     params?: LookupEngineeringChangesParams,
- options?: SecondParameter<typeof customInstance<EngineeringChangeLookupResponse | Blob>>,) => {
-      return customInstance<EngineeringChangeLookupResponse | Blob>(
+ options?: SecondParameter<typeof customInstance<EngineeringChangeLookupResponse | void>>,) => {
+      return customInstance<EngineeringChangeLookupResponse | void>(
       {url: `/api/v1/engineering-changes/lookup`, method: 'GET',
         params
     },

@@ -5,6 +5,7 @@
  * OpenAPI spec version: v0
  */
 import type { VerifyInvitationResponseRole } from './verifyInvitationResponseRole';
+import type { VerifyInvitationResponseSeatType } from './verifyInvitationResponseSeatType';
 
 export interface VerifyInvitationResponse {
   /** 초대 대상 이메일 */
@@ -15,6 +16,8 @@ export interface VerifyInvitationResponse {
   inviter_name?: string;
   /** 초대 역할 */
   role?: VerifyInvitationResponseRole;
+  /** 예약된 좌석 타입 */
+  seat_type?: VerifyInvitationResponseSeatType;
   /** 기존 가입 사용자 여부 */
   is_existing_user?: boolean;
   /** 초대 만료 시각 */

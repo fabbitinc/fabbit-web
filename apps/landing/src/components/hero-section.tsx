@@ -1,7 +1,9 @@
 import { Button } from "@heroui/react";
 import { motion, useInView, useMotionValue, useTransform, animate } from "framer-motion";
 import { useRef, useEffect, useState } from "react";
-import { ArrowRight, Play } from "lucide-react";
+import { ArrowRight, Mail } from "lucide-react";
+import { APP_SIGNUP_URL } from "@/constants/urls";
+import { usePilotModal } from "@/app";
 
 function CountUp({ target, suffix = "", duration = 2 }: { target: number; suffix?: string; duration?: number }) {
   const [display, setDisplay] = useState("0");
@@ -25,6 +27,8 @@ function CountUp({ target, suffix = "", duration = 2 }: { target: number; suffix
 }
 
 export function HeroSection() {
+  const openPilot = usePilotModal();
+
   return (
     <section className="hero-glow grid-pattern relative overflow-hidden pt-36 pb-24 md:pt-44 md:pb-36 min-h-[70vh] flex items-center">
       {/* Decorative orbs */}
@@ -58,9 +62,9 @@ export function HeroSection() {
           className="mx-auto max-w-4xl text-center"
         >
           <h1 className="font-[Outfit,sans-serif] text-4xl font-bold leading-[1.12] tracking-tight sm:text-5xl md:text-6xl lg:text-[4.25rem]">
-            BOM 마이그레이션,
+            도면·BOM 관리부터 생산 연결까지,
             <br />
-            <span className="gradient-text-animated">10분이면 끝납니다</span>
+            <span className="gradient-text-animated">엑셀 없이 한 번에</span>
           </h1>
         </motion.div>
 
@@ -71,10 +75,10 @@ export function HeroSection() {
           transition={{ duration: 0.6, delay: 0.35 }}
           className="mx-auto mt-8 max-w-2xl text-center text-lg leading-relaxed text-[var(--lp-text-tertiary)] md:text-xl"
         >
-          엑셀 BOM을 그대로 올리면, AI가 자동으로 매핑합니다.
+          설계부터 생산까지 연결하는 제조 데이터 플랫폼.
           <br className="hidden sm:block" />
           <span className="text-[var(--lp-text-secondary)]">
-            기존 양식을 바꿀 필요 없이, 지금 바로 시작하세요.
+            엑셀 BOM을 그대로 올리면, AI가 자동으로 구조화합니다.
           </span>
         </motion.p>
 
@@ -86,6 +90,8 @@ export function HeroSection() {
           className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row"
         >
           <Button
+            as="a"
+            href={APP_SIGNUP_URL}
             size="lg"
             className="cta-pulse group bg-[var(--lp-brand)] px-8 font-[Outfit,sans-serif] font-semibold text-[var(--lp-on-brand)] shadow-xl shadow-[var(--lp-brand)]/25 transition-all hover:shadow-[var(--lp-brand)]/40 hover:scale-[1.02]"
             endContent={
@@ -95,15 +101,16 @@ export function HeroSection() {
               />
             }
           >
-            시작하기
+            무료로 시작
           </Button>
           <Button
             size="lg"
             variant="bordered"
             className="border-[var(--lp-border-hover)] px-8 font-[Outfit,sans-serif] text-[var(--lp-text-secondary)] hover:border-[var(--lp-border-hover)] hover:bg-[var(--lp-border-hover)]"
-            startContent={<Play size={16} className="text-[var(--lp-brand)]" />}
+            startContent={<Mail size={16} className="text-[var(--lp-brand)]" />}
+            onPress={openPilot}
           >
-            데모 보기
+            파일럿 신청
           </Button>
         </motion.div>
 
@@ -161,27 +168,19 @@ export function HeroSection() {
             </div>
             {/* App content mockup */}
             <div className="p-6 md:p-8">
-              {/* Sidebar + Main area */}
               <div className="flex gap-6">
-                {/* Sidebar */}
                 <div className="hidden w-48 flex-shrink-0 space-y-3 md:block">
                   <div className="flex items-center gap-2 rounded-lg bg-[var(--lp-brand)]/10 px-3 py-2">
                     <div className="h-4 w-4 rounded bg-[var(--lp-brand)]/30" />
                     <span className="text-xs text-[var(--lp-brand)]">BOM 매핑</span>
                   </div>
-                  {["도면 관리", "부품 목록", "변경 이력", "설정"].map(
-                    (item) => (
-                      <div
-                        key={item}
-                        className="flex items-center gap-2 rounded-lg px-3 py-2 text-[var(--lp-text-dim)]"
-                      >
-                        <div className="h-4 w-4 rounded bg-[var(--lp-surface)]" />
-                        <span className="text-xs">{item}</span>
-                      </div>
-                    ),
-                  )}
+                  {["도면 관리", "부품 목록", "변경 이력", "설정"].map((item) => (
+                    <div key={item} className="flex items-center gap-2 rounded-lg px-3 py-2 text-[var(--lp-text-dim)]">
+                      <div className="h-4 w-4 rounded bg-[var(--lp-surface)]" />
+                      <span className="text-xs">{item}</span>
+                    </div>
+                  ))}
                 </div>
-                {/* Main */}
                 <div className="flex-1 space-y-4">
                   <div className="flex items-center justify-between">
                     <div>
@@ -196,18 +195,11 @@ export function HeroSection() {
                       매핑 완료
                     </div>
                   </div>
-                  {/* Mapping table mockup */}
                   <div className="overflow-hidden rounded-lg border border-[var(--lp-border-hover)]">
                     <div className="grid grid-cols-3 gap-px bg-[var(--lp-border)] text-xs">
-                      <div className="bg-[var(--lp-surface)] px-4 py-2.5 font-medium text-[var(--lp-text-tertiary)]">
-                        엑셀 컬럼
-                      </div>
-                      <div className="bg-[var(--lp-surface)] px-4 py-2.5 font-medium text-[var(--lp-text-tertiary)]">
-                        시스템 필드
-                      </div>
-                      <div className="bg-[var(--lp-surface)] px-4 py-2.5 font-medium text-[var(--lp-text-tertiary)]">
-                        신뢰도
-                      </div>
+                      <div className="bg-[var(--lp-surface)] px-4 py-2.5 font-medium text-[var(--lp-text-tertiary)]">엑셀 컬럼</div>
+                      <div className="bg-[var(--lp-surface)] px-4 py-2.5 font-medium text-[var(--lp-text-tertiary)]">시스템 필드</div>
+                      <div className="bg-[var(--lp-surface)] px-4 py-2.5 font-medium text-[var(--lp-text-tertiary)]">신뢰도</div>
                     </div>
                     {[
                       { excel: "PART NO", field: "품번", conf: "98%" },
@@ -223,17 +215,13 @@ export function HeroSection() {
                         transition={{ duration: 0.4, delay: 1.0 + i * 0.1 }}
                         className="grid grid-cols-3 gap-px border-t border-[var(--lp-border)] text-xs"
                       >
-                        <div className="bg-[var(--lp-surface-dim)]/50 px-4 py-2.5 text-[var(--lp-text-secondary)]">
-                          {row.excel}
-                        </div>
+                        <div className="bg-[var(--lp-surface-dim)]/50 px-4 py-2.5 text-[var(--lp-text-secondary)]">{row.excel}</div>
                         <div className="flex items-center gap-1.5 bg-[var(--lp-surface-dim)]/50 px-4 py-2.5">
                           <span className="text-[var(--lp-brand)]">→</span>
                           <span className="text-[var(--lp-text-strong)]">{row.field}</span>
                         </div>
                         <div className="bg-[var(--lp-surface-dim)]/50 px-4 py-2.5">
-                          <span className="rounded bg-emerald-500/10 px-1.5 py-0.5 text-emerald-400">
-                            {row.conf}
-                          </span>
+                          <span className="rounded bg-emerald-500/10 px-1.5 py-0.5 text-emerald-400">{row.conf}</span>
                         </div>
                       </motion.div>
                     ))}
@@ -242,8 +230,6 @@ export function HeroSection() {
               </div>
             </div>
           </div>
-
-          {/* Bottom gradient fade */}
           <div className="absolute inset-x-0 -bottom-1 h-32 bg-gradient-to-t from-[var(--lp-bg)] to-transparent" />
         </motion.div>
       </div>

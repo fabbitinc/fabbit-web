@@ -26,8 +26,8 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 export const getFiles = (
     partId: string,
     revisionId: string,
- options?: SecondParameter<typeof customInstance<PartFilesResponse | Blob>>,) => {
-      return customInstance<PartFilesResponse | Blob>(
+ options?: SecondParameter<typeof customInstance<PartFilesResponse | void>>,) => {
+      return customInstance<PartFilesResponse | void>(
       {url: `/api/v1/parts/${partId}/revisions/${revisionId}/files`, method: 'GET'
     },
       options);
@@ -40,8 +40,8 @@ export const attachFiles = (
     partId: string,
     revisionId: string,
     attachFilesRequest: BodyType<AttachFilesRequest>,
- options?: SecondParameter<typeof customInstance<PartAttachmentItemResponse[] | Blob>>,) => {
-      return customInstance<PartAttachmentItemResponse[] | Blob>(
+ options?: SecondParameter<typeof customInstance<PartAttachmentItemResponse[] | void>>,) => {
+      return customInstance<PartAttachmentItemResponse[] | void>(
       {url: `/api/v1/parts/${partId}/revisions/${revisionId}/files`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: attachFilesRequest
@@ -56,8 +56,8 @@ export const createDrawing = (
     partId: string,
     revisionId: string,
     registerDrawingRequest: BodyType<RegisterDrawingRequest>,
- options?: SecondParameter<typeof customInstance<RegisterDrawingResponse | Blob>>,) => {
-      return customInstance<RegisterDrawingResponse | Blob>(
+ options?: SecondParameter<typeof customInstance<RegisterDrawingResponse | void>>,) => {
+      return customInstance<RegisterDrawingResponse | void>(
       {url: `/api/v1/parts/${partId}/revisions/${revisionId}/drawings`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: registerDrawingRequest

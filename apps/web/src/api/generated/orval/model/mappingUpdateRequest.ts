@@ -20,6 +20,6 @@ export interface MappingUpdateRequest {
   name?: string;
   /** Excel 시트명 */
   sheet_name?: string;
-  /** 수정 매핑 */
+  /** 수정할 매핑 */
   mapping: MappingResultDto;
 }

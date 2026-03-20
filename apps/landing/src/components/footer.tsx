@@ -57,9 +57,9 @@ export function Footer() {
               </h4>
               <ul className="mt-4 space-y-3">
                 {[
-                  { label: "기능 소개", href: "#features" },
-                  { label: "요금제", href: "#pricing" },
-                  { label: "데모 신청", href: "#" },
+                  { label: "기능 소개", href: "/#features" },
+                  { label: "요금제", href: "/pricing" },
+                  { label: "파일럿 신청", href: "#" },
                   { label: "업데이트", href: "#" },
                 ].map((item) => (
                   <li key={item.label}>

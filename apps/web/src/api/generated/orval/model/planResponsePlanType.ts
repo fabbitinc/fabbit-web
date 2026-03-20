@@ -14,6 +14,6 @@ export type PlanResponsePlanType = typeof PlanResponsePlanType[keyof typeof Plan
 export const PlanResponsePlanType = {
   STARTER: 'STARTER',
   TEAM: 'TEAM',
-  BUSINESS: 'BUSINESS',
+  ORGANIZATION: 'ORGANIZATION',
   ENTERPRISE: 'ENTERPRISE',
 } as const;

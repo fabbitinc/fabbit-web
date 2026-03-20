@@ -26,8 +26,8 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
  */
 export const listLabels = (
     
- options?: SecondParameter<typeof customInstance<LabelListResponse | Blob>>,) => {
-      return customInstance<LabelListResponse | Blob>(
+ options?: SecondParameter<typeof customInstance<LabelListResponse | void>>,) => {
+      return customInstance<LabelListResponse | void>(
       {url: `/api/v1/labels`, method: 'GET'
     },
       options);
@@ -38,8 +38,8 @@ export const listLabels = (
  */
 export const createLabel = (
     createLabelRequest: BodyType<CreateLabelRequest>,
- options?: SecondParameter<typeof customInstance<LabelResponse | Blob>>,) => {
-      return customInstance<LabelResponse | Blob>(
+ options?: SecondParameter<typeof customInstance<LabelResponse | void>>,) => {
+      return customInstance<LabelResponse | void>(
       {url: `/api/v1/labels`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: createLabelRequest
@@ -65,8 +65,8 @@ export const deleteLabel = (
 export const updateLabel = (
     labelId: string,
     updateLabelRequest: BodyType<UpdateLabelRequest>,
- options?: SecondParameter<typeof customInstance<LabelResponse | Blob>>,) => {
-      return customInstance<LabelResponse | Blob>(
+ options?: SecondParameter<typeof customInstance<LabelResponse | void>>,) => {
+      return customInstance<LabelResponse | void>(
       {url: `/api/v1/labels/${labelId}`, method: 'PATCH',
       headers: {'Content-Type': 'application/json', },
       data: updateLabelRequest
@@ -79,8 +79,8 @@ export const updateLabel = (
  */
 export const lookupLabels = (
     params?: LookupLabelsParams,
- options?: SecondParameter<typeof customInstance<LabelLookupResponse | Blob>>,) => {
-      return customInstance<LabelLookupResponse | Blob>(
+ options?: SecondParameter<typeof customInstance<LabelLookupResponse | void>>,) => {
+      return customInstance<LabelLookupResponse | void>(
       {url: `/api/v1/labels/lookup`, method: 'GET',
         params
     },

@@ -50,8 +50,8 @@ export const deleteProfileImage1 = (
       options);
     }
   /**
- * 스코프 토큰(scope=create_org)으로 조직을 생성하고 access/refresh 토큰을 발급합니다
- * @summary 스코프 토큰(scope=create_org)으로 조직을 생성하고 access/refresh 토큰을 발급합니다
+ * scope=create_org 토큰으로 워크스페이스를 생성하고 시작 플랜을 선택합니다. 유료 플랜이면 ownerSeatType을 함께 지정해야 합니다
+ * @summary 스코프 토큰으로 워크스페이스를 생성하고 access/refresh 토큰을 발급합니다
  */
 export const createOrganization = (
     createOrganizationRequest: BodyType<CreateOrganizationRequest>,

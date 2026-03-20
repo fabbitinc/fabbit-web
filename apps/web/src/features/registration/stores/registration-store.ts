@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import type {
+  OwnerSeatType,
   PlanTier,
   SignupFormData,
   WorkspaceFormData,
@@ -9,10 +10,12 @@ interface RegistrationStoreState {
   signupData: SignupFormData;
   workspaceData: WorkspaceFormData;
   selectedPlan: PlanTier;
+  ownerSeatType: OwnerSeatType | null;
   scopedToken: string;
   setSignupData: (data: Partial<SignupFormData>) => void;
   setWorkspaceData: (data: Partial<WorkspaceFormData>) => void;
   setSelectedPlan: (plan: PlanTier) => void;
+  setOwnerSeatType: (seatType: OwnerSeatType | null) => void;
   setScopedToken: (token: string) => void;
   clearScopedToken: () => void;
   reset: () => void;
@@ -39,6 +42,7 @@ export const useRegistrationStore = create<RegistrationStoreState>()((set) => ({
   signupData: initialSignupData,
   workspaceData: initialWorkspaceData,
   selectedPlan: "starter",
+  ownerSeatType: null,
   scopedToken: "",
   setSignupData: (data) =>
     set((state) => ({
@@ -48,7 +52,8 @@ export const useRegistrationStore = create<RegistrationStoreState>()((set) => ({
     set((state) => ({
       workspaceData: { ...state.workspaceData, ...data },
     })),
-  setSelectedPlan: (selectedPlan) => set({ selectedPlan }),
+  setSelectedPlan: (selectedPlan) => set({ selectedPlan, ownerSeatType: null }),
+  setOwnerSeatType: (ownerSeatType) => set({ ownerSeatType }),
   setScopedToken: (scopedToken) => set({ scopedToken }),
   clearScopedToken: () => set({ scopedToken: "" }),
   reset: () =>
@@ -56,6 +61,7 @@ export const useRegistrationStore = create<RegistrationStoreState>()((set) => ({
       signupData: initialSignupData,
       workspaceData: initialWorkspaceData,
       selectedPlan: "starter",
+      ownerSeatType: null,
       scopedToken: "",
     }),
 }));

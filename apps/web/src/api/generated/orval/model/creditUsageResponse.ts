@@ -16,16 +16,16 @@ export interface CreditUsageResponse {
   current_period_end?: string;
   /** 총 사용 크레딧 */
   total_credits_used?: number;
-  /** 플랜 크레딧 사용량 */
-  plan_credits_used?: number;
-  /** 플랜 크레딧 한도 */
-  plan_credits_limit?: number;
-  /** 플랜 잔여 크레딧 */
-  plan_credits_remaining?: number;
-  /** 보너스 크레딧 사용량 */
-  bonus_credits_used?: number;
-  /** 보너스 잔여 크레딧 */
-  bonus_credits_remaining?: number;
+  /** 포함 크레딧 한도 */
+  included_credits_limit?: number;
+  /** 포함 크레딧 사용량 */
+  included_credits_used?: number;
+  /** 포함 크레딧 잔여량 */
+  included_credits_remaining?: number;
+  /** 월간 AI 한도(없으면 null) */
+  metered_credits_limit?: number;
+  /** 월간 AI 한도 초과 시 차단 여부 */
+  hard_limit_enabled?: boolean;
   /** 카테고리별 사용량 목록 */
   categories?: CreditCategoryItemResponse[];
 }

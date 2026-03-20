@@ -15,16 +15,6 @@ export interface WorkspaceFormData {
   role: string;
 }
 
-export type PlanTier = "starter" | "team" | "enterprise";
+export type PlanTier = "starter" | "team" | "organization" | "enterprise";
 
-export interface PlanOption {
-  tier: PlanTier;
-  name: string;
-  price: number;
-  priceLabel: string;
-  description: string;
-  features: string[];
-  highlighted?: boolean;
-  badge?: string;
-  disabled?: boolean;
-}
+export type OwnerSeatType = "VIEWER" | "COLLABORATOR" | "FULL";
