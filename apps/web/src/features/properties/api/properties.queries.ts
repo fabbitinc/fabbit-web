@@ -1,12 +1,15 @@
 import { mutationOptions, queryOptions } from "@tanstack/react-query";
 import {
   createPropertyDefinition,
+  deletePropertyDefinition,
   fetchPropertyMeta,
+  reorderProperties,
   updatePropertyDefinition,
   upsertSystemPropertyOverride,
 } from "@/features/properties/api/properties.api";
 import type {
   CreatePropertyDefinitionRequestDto,
+  ReorderPropertyRequestDto,
   UpdatePropertyDefinitionRequestDto,
   UpsertSystemPropertyOverrideRequestDto,
 } from "@/features/properties/api/properties.types";
@@ -57,6 +60,16 @@ export const propertiesMutations = {
         propertyKey: string;
         request: UpsertSystemPropertyOverrideRequestDto;
       }) => upsertSystemPropertyOverride(ownerType, propertyKey, request),
+    }),
+  deleteDefinition: () =>
+    mutationOptions({
+      mutationKey: ["properties", "delete-definition"],
+      mutationFn: (propertyDefinitionId: string) => deletePropertyDefinition(propertyDefinitionId),
+    }),
+  reorder: () =>
+    mutationOptions({
+      mutationKey: ["properties", "reorder"],
+      mutationFn: (request: ReorderPropertyRequestDto) => reorderProperties(request),
     }),
 };
 

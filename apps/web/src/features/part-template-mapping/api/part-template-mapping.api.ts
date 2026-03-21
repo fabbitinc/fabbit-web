@@ -1,9 +1,9 @@
 import {
-  confirm1 as confirmMappingApiV1MappingsConfirmPost,
-  list1 as listMappingsApiV1MappingsGet,
-  preview1 as previewMappingApiV1MappingsPreviewPost,
-  update1 as updateMappingApiV1MappingsMappingIdPut,
-  validate1 as validateMappingApiV1MappingsValidatePost,
+  confirm as confirmMappingApiV1MappingsConfirmPost,
+  list as listMappingsApiV1MappingsGet,
+  preview as previewMappingApiV1MappingsPreviewPost,
+  update as updateMappingApiV1MappingsMappingIdPut,
+  validate as validateMappingApiV1MappingsValidatePost,
 } from "@/api/generated/orval/mappings/mappings";
 import { getOntologySchema as getOntologySchemaApiV1OntologySchemaGet } from "@/api/generated/orval/ontology/ontology";
 import type {

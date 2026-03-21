@@ -9,6 +9,7 @@ import type {
   ListMetaParams,
   PropertyMetaListResponse,
   PropertyMetaResponse,
+  ReorderPropertyRequest,
   UpdatePropertyDefinitionRequest,
   UpsertSystemPropertyOverrideRequest
 } from '../model';
@@ -26,8 +27,8 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
  */
 export const createPropertyDefinition = (
     createPropertyDefinitionRequest: BodyType<CreatePropertyDefinitionRequest>,
- options?: SecondParameter<typeof customInstance<PropertyMetaResponse>>,) => {
-      return customInstance<PropertyMetaResponse>(
+ options?: SecondParameter<typeof customInstance<PropertyMetaResponse | void>>,) => {
+      return customInstance<PropertyMetaResponse | void>(
       {url: `/api/v1/properties/definitions`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: createPropertyDefinitionRequest
@@ -42,11 +43,37 @@ export const upsertSystemPropertyOverride = (
     ownerType: string,
     propertyKey: string,
     upsertSystemPropertyOverrideRequest: BodyType<UpsertSystemPropertyOverrideRequest>,
- options?: SecondParameter<typeof customInstance<PropertyMetaResponse>>,) => {
-      return customInstance<PropertyMetaResponse>(
+ options?: SecondParameter<typeof customInstance<PropertyMetaResponse | void>>,) => {
+      return customInstance<PropertyMetaResponse | void>(
       {url: `/api/v1/properties/system-overrides/${ownerType}/${propertyKey}`, method: 'PATCH',
       headers: {'Content-Type': 'application/json', },
       data: upsertSystemPropertyOverrideRequest
+    },
+      options);
+    }
+  /**
+ * 조직 관리자 권한으로 속성의 최종 순서를 한 번에 변경합니다
+ * @summary 속성 순서를 변경합니다
+ */
+export const reorder = (
+    reorderPropertyRequest: BodyType<ReorderPropertyRequest>,
+ options?: SecondParameter<typeof customInstance<void>>,) => {
+      return customInstance<void>(
+      {url: `/api/v1/properties/order`, method: 'PATCH',
+      headers: {'Content-Type': 'application/json', },
+      data: reorderPropertyRequest
+    },
+      options);
+    }
+  /**
+ * 조직 관리자 권한으로 커스텀 속성 정의를 삭제합니다
+ * @summary 커스텀 속성을 삭제합니다
+ */
+export const deletePropertyDefinition = (
+    propertyDefinitionId: string,
+ options?: SecondParameter<typeof customInstance<void>>,) => {
+      return customInstance<void>(
+      {url: `/api/v1/properties/definitions/${propertyDefinitionId}`, method: 'DELETE'
     },
       options);
     }
@@ -57,8 +84,8 @@ export const upsertSystemPropertyOverride = (
 export const updatePropertyDefinition = (
     propertyDefinitionId: string,
     updatePropertyDefinitionRequest: BodyType<UpdatePropertyDefinitionRequest>,
- options?: SecondParameter<typeof customInstance<PropertyMetaResponse>>,) => {
-      return customInstance<PropertyMetaResponse>(
+ options?: SecondParameter<typeof customInstance<PropertyMetaResponse | void>>,) => {
+      return customInstance<PropertyMetaResponse | void>(
       {url: `/api/v1/properties/definitions/${propertyDefinitionId}`, method: 'PATCH',
       headers: {'Content-Type': 'application/json', },
       data: updatePropertyDefinitionRequest
@@ -71,8 +98,8 @@ export const updatePropertyDefinition = (
  */
 export const listMeta = (
     params: ListMetaParams,
- options?: SecondParameter<typeof customInstance<PropertyMetaListResponse>>,) => {
-      return customInstance<PropertyMetaListResponse>(
+ options?: SecondParameter<typeof customInstance<PropertyMetaListResponse | void>>,) => {
+      return customInstance<PropertyMetaListResponse | void>(
       {url: `/api/v1/properties/meta`, method: 'GET',
         params
     },
@@ -80,5 +107,7 @@ export const listMeta = (
     }
   export type CreatePropertyDefinitionResult = NonNullable<Awaited<ReturnType<typeof createPropertyDefinition>>>
 export type UpsertSystemPropertyOverrideResult = NonNullable<Awaited<ReturnType<typeof upsertSystemPropertyOverride>>>
+export type ReorderResult = NonNullable<Awaited<ReturnType<typeof reorder>>>
+export type DeletePropertyDefinitionResult = NonNullable<Awaited<ReturnType<typeof deletePropertyDefinition>>>
 export type UpdatePropertyDefinitionResult = NonNullable<Awaited<ReturnType<typeof updatePropertyDefinition>>>
 export type ListMetaResult = NonNullable<Awaited<ReturnType<typeof listMeta>>>

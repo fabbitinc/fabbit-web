@@ -1,4 +1,6 @@
 export { ActivityList } from "./activity-list";
+export { SortableList } from "./sortable-list";
+export type { SortableListColumn, SortableListProps } from "./sortable-list";
 export { CommentInput } from "./comment-input";
 export type { CommentInputProps } from "./comment-input";
 export type { ActivityItem, ActivityListProps } from "./activity-list";
@@ -217,8 +219,10 @@ export type {
 } from "./project-work-items-panel";
 export { PlanSelectionScreen } from "./plan-selection-screen";
 export type {
+  PlanSeatPricing,
   PlanSelectionScreenPlanOption,
   PlanSelectionScreenProps,
+  SeatDescription,
 } from "./plan-selection-screen";
 export { PartsListTable } from "./parts-list-table";
 export type {

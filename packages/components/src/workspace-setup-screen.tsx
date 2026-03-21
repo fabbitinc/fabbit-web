@@ -22,6 +22,7 @@ export interface WorkspaceSetupScreenOption {
 export interface WorkspaceSetupScreenProps {
   organizationName: string;
   slug: string;
+  domain: string;
   industry: string;
   teamSize: string;
   role: string;
@@ -46,6 +47,7 @@ export interface WorkspaceSetupScreenProps {
 export function WorkspaceSetupScreen({
   organizationName,
   slug,
+  domain,
   industry,
   teamSize,
   role,
@@ -86,13 +88,16 @@ export function WorkspaceSetupScreen({
 
         <div className="space-y-2">
           <Label htmlFor="workspace-slug">접속 주소</Label>
-          <Input
-            id="workspace-slug"
-            className="h-12"
-            placeholder="예: fabbit-lab"
-            value={slug}
-            onChange={(event) => onSlugChange(event.target.value)}
-          />
+          <div className="flex items-center gap-2">
+            <Input
+              id="workspace-slug"
+              className="h-12"
+              placeholder="예: fabbit-lab"
+              value={slug}
+              onChange={(event) => onSlugChange(event.target.value)}
+            />
+            <span className="shrink-0 text-sm text-muted-foreground">.{domain}</span>
+          </div>
           <div className="flex items-center gap-2 text-xs text-muted-foreground">
             {slugStatus === "checking" ? <Loader2 className="size-3.5 animate-spin" /> : null}
             {slugStatus === "available" ? <Check className="size-3.5 text-primary" /> : null}

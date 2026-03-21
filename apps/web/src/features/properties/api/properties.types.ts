@@ -18,4 +18,5 @@ export type UpsertSystemPropertyOverrideRequestDto =
   ApiRequestBody<"/api/v1/properties/system-overrides/{ownerType}/{propertyKey}", "patch">;
 export type UpsertSystemPropertyOverrideResponseDto =
   ResponseOf<"/api/v1/properties/system-overrides/{ownerType}/{propertyKey}", "patch">;
+export type ReorderPropertyRequestDto = ApiRequestBody<"/api/v1/properties/order", "patch">;
 

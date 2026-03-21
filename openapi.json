@@ -6,7 +6,7 @@
     },
     "servers": [
         {
-            "url": "http://localhost:8080",
+            "url": "http://localhost:10010",
             "description": "Generated server url"
         }
     ],
@@ -82,6 +82,10 @@
         {
             "name": "organizations",
             "description": "\uc870\uc9c1 \ucd08\ub300 API"
+        },
+        {
+            "name": "chat",
+            "description": "LLM \ucc57 \uc2a4\ub808\ub4dc/\uba54\uc2dc\uc9c0/\uc2a4\ud2b8\ub9bc API"
         },
         {
             "name": "subscription",
@@ -2314,6 +2318,9 @@
                                 }
                             }
                         }
+                    },
+                    "204": {
+                        "description": "\uc0ad\uc81c \uc131\uacf5"
                     },
                     "400": {
                         "description": "\uc798\ubabb\ub41c \uc694\uccad",
@@ -6624,6 +6631,559 @@
                 }
             }
         },
+        "/api/v1/chat/threads": {
+            "get": {
+                "tags": [
+                    "chat"
+                ],
+                "summary": "\ucc57 \uc2a4\ub808\ub4dc \ubaa9\ub85d\uc744 \uc870\ud68c\ud569\ub2c8\ub2e4",
+                "description": "\ud604\uc7ac \uc0ac\uc6a9\uc790\uc758 \ucc57 \uc2a4\ub808\ub4dc \ubaa9\ub85d\uc744 \uc870\ud68c\ud569\ub2c8\ub2e4",
+                "operationId": "listThreads",
+                "responses": {
+                    "200": {
+                        "description": "\uc694\uccad \uc131\uacf5",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ChatThreadListResponse"
+                                }
+                            }
+                        }
+                    },
+                    "201": {
+                        "description": "\uc0dd\uc131 \uc131\uacf5",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ChatThreadListResponse"
+                                }
+                            }
+                        }
+                    },
+                    "202": {
+                        "description": "\ube44\ub3d9\uae30 \uc2e4\ud589 \uc2dc\uc791",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ChatThreadListResponse"
+                                }
+                            }
+                        }
+                    },
+                    "204": {
+                        "description": "\uc694\uccad \uc131\uacf5"
+                    },
+                    "400": {
+                        "description": "\uc798\ubabb\ub41c \uc694\uccad",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "\uc778\uc99d \ud544\uc694",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "\uad8c\ud55c \uc5c6\uc74c",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "\ub9ac\uc18c\uc2a4\ub97c \ucc3e\uc744 \uc218 \uc5c6\uc74c",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "chat"
+                ],
+                "summary": "\ucc57 \uc2a4\ub808\ub4dc\ub97c \uc0dd\uc131\ud569\ub2c8\ub2e4",
+                "description": "\uc0c8\ub85c\uc6b4 \ucc57 \uc2a4\ub808\ub4dc\ub97c \uc0dd\uc131\ud569\ub2c8\ub2e4",
+                "operationId": "createThread",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CreateChatThreadRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "\uc694\uccad \uc131\uacf5",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CreateChatThreadResponse"
+                                }
+                            }
+                        }
+                    },
+                    "201": {
+                        "description": "\uc0dd\uc131 \uc131\uacf5",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CreateChatThreadResponse"
+                                }
+                            }
+                        }
+                    },
+                    "202": {
+                        "description": "\ube44\ub3d9\uae30 \uc2e4\ud589 \uc2dc\uc791",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/CreateChatThreadResponse"
+                                }
+                            }
+                        }
+                    },
+                    "204": {
+                        "description": "\uc694\uccad \uc131\uacf5"
+                    },
+                    "400": {
+                        "description": "\uc798\ubabb\ub41c \uc694\uccad",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "\uc778\uc99d \ud544\uc694",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "\uad8c\ud55c \uc5c6\uc74c",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "\ub9ac\uc18c\uc2a4\ub97c \ucc3e\uc744 \uc218 \uc5c6\uc74c",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/chat/threads/{threadId}/messages": {
+            "get": {
+                "tags": [
+                    "chat"
+                ],
+                "summary": "\ucc57 \uba54\uc2dc\uc9c0 \ubaa9\ub85d\uc744 \uc870\ud68c\ud569\ub2c8\ub2e4",
+                "description": "\uc2a4\ub808\ub4dc\uc5d0 \uc18d\ud55c \uba54\uc2dc\uc9c0 \ubaa9\ub85d\uc744 \uc870\ud68c\ud569\ub2c8\ub2e4",
+                "operationId": "listMessages",
+                "parameters": [
+                    {
+                        "name": "threadId",
+                        "in": "path",
+                        "description": "\uc870\ud68c\ud560 \uc2a4\ub808\ub4dc ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "\uc694\uccad \uc131\uacf5",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ChatMessageListResponse"
+                                }
+                            }
+                        }
+                    },
+                    "201": {
+                        "description": "\uc0dd\uc131 \uc131\uacf5",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ChatMessageListResponse"
+                                }
+                            }
+                        }
+                    },
+                    "202": {
+                        "description": "\ube44\ub3d9\uae30 \uc2e4\ud589 \uc2dc\uc791",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ChatMessageListResponse"
+                                }
+                            }
+                        }
+                    },
+                    "204": {
+                        "description": "\uc694\uccad \uc131\uacf5"
+                    },
+                    "400": {
+                        "description": "\uc798\ubabb\ub41c \uc694\uccad",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "\uc778\uc99d \ud544\uc694",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "\uad8c\ud55c \uc5c6\uc74c",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "\ub9ac\uc18c\uc2a4\ub97c \ucc3e\uc744 \uc218 \uc5c6\uc74c",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "chat"
+                ],
+                "summary": "\ucc57 \uba54\uc2dc\uc9c0\ub97c \uc804\uc1a1\ud569\ub2c8\ub2e4",
+                "description": "\uc0ac\uc6a9\uc790 \uba54\uc2dc\uc9c0\ub97c \uc800\uc7a5\ud558\uace0 \ube44\ub3d9\uae30 \ucc57 \uc2e4\ud589\uc744 \uc2dc\uc791\ud569\ub2c8\ub2e4",
+                "operationId": "sendMessage",
+                "parameters": [
+                    {
+                        "name": "threadId",
+                        "in": "path",
+                        "description": "\uba54\uc2dc\uc9c0\ub97c \ucd94\uac00\ud560 \uc2a4\ub808\ub4dc ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SendChatMessageRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "\uc694\uccad \uc131\uacf5",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SendChatMessageResponse"
+                                }
+                            }
+                        }
+                    },
+                    "201": {
+                        "description": "\uc0dd\uc131 \uc131\uacf5",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SendChatMessageResponse"
+                                }
+                            }
+                        }
+                    },
+                    "202": {
+                        "description": "\ube44\ub3d9\uae30 \uc2e4\ud589 \uc2dc\uc791",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SendChatMessageResponse"
+                                }
+                            }
+                        }
+                    },
+                    "204": {
+                        "description": "\uc694\uccad \uc131\uacf5"
+                    },
+                    "400": {
+                        "description": "\uc798\ubabb\ub41c \uc694\uccad",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "\uc778\uc99d \ud544\uc694",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "\uad8c\ud55c \uc5c6\uc74c",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "\ub9ac\uc18c\uc2a4\ub97c \ucc3e\uc744 \uc218 \uc5c6\uc74c",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/chat/action-requests/{actionRequestId}/reject": {
+            "post": {
+                "tags": [
+                    "chat"
+                ],
+                "summary": "\ucc57 \uc561\uc158 \uc694\uccad\uc744 \uac70\uc808\ud569\ub2c8\ub2e4",
+                "description": "\uc0ac\uc6a9\uc790 \ud655\uc778\uc774 \ud544\uc694\ud55c \uc561\uc158 \uc694\uccad\uc744 \ucde8\uc18c\ud569\ub2c8\ub2e4",
+                "operationId": "rejectAction",
+                "parameters": [
+                    {
+                        "name": "actionRequestId",
+                        "in": "path",
+                        "description": "\uac70\uc808\ud560 \uc561\uc158 \uc694\uccad ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "\uc694\uccad \uc131\uacf5"
+                    },
+                    "201": {
+                        "description": "\uc0dd\uc131 \uc131\uacf5"
+                    },
+                    "202": {
+                        "description": "\ube44\ub3d9\uae30 \uc2e4\ud589 \uc2dc\uc791"
+                    },
+                    "204": {
+                        "description": "\uc694\uccad \uc131\uacf5"
+                    },
+                    "400": {
+                        "description": "\uc798\ubabb\ub41c \uc694\uccad",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "\uc778\uc99d \ud544\uc694",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "\uad8c\ud55c \uc5c6\uc74c",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "\ub9ac\uc18c\uc2a4\ub97c \ucc3e\uc744 \uc218 \uc5c6\uc74c",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/chat/action-requests/{actionRequestId}/confirm": {
+            "post": {
+                "tags": [
+                    "chat"
+                ],
+                "summary": "\ucc57 \uc561\uc158 \uc694\uccad\uc744 \ud655\uc778\ud569\ub2c8\ub2e4",
+                "description": "\uc0ac\uc6a9\uc790 \ud655\uc778\uc774 \ud544\uc694\ud55c \uc561\uc158 \uc694\uccad\uc744 \uc2e4\uc81c\ub85c \uc2e4\ud589\ud569\ub2c8\ub2e4",
+                "operationId": "confirmAction",
+                "parameters": [
+                    {
+                        "name": "actionRequestId",
+                        "in": "path",
+                        "description": "\ud655\uc778\ud560 \uc561\uc158 \uc694\uccad ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "\uc694\uccad \uc131\uacf5",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ConfirmChatActionResponse"
+                                }
+                            }
+                        }
+                    },
+                    "201": {
+                        "description": "\uc0dd\uc131 \uc131\uacf5",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ConfirmChatActionResponse"
+                                }
+                            }
+                        }
+                    },
+                    "202": {
+                        "description": "\ube44\ub3d9\uae30 \uc2e4\ud589 \uc2dc\uc791",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ConfirmChatActionResponse"
+                                }
+                            }
+                        }
+                    },
+                    "204": {
+                        "description": "\uc694\uccad \uc131\uacf5"
+                    },
+                    "400": {
+                        "description": "\uc798\ubabb\ub41c \uc694\uccad",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "\uc778\uc99d \ud544\uc694",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "\uad8c\ud55c \uc5c6\uc74c",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "\ub9ac\uc18c\uc2a4\ub97c \ucc3e\uc744 \uc218 \uc5c6\uc74c",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/auth/verify-email": {
             "post": {
                 "tags": [
@@ -7949,6 +8509,80 @@
                             }
                         }
                     },
+                    "204": {
+                        "description": "\uc0ad\uc81c \uc131\uacf5"
+                    },
+                    "400": {
+                        "description": "\uc798\ubabb\ub41c \uc694\uccad",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "\uc778\uc99d \ud544\uc694",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "\uad8c\ud55c \uc5c6\uc74c",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "\ub9ac\uc18c\uc2a4\ub97c \ucc3e\uc744 \uc218 \uc5c6\uc74c",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/properties/order": {
+            "patch": {
+                "tags": [
+                    "properties"
+                ],
+                "summary": "\uc18d\uc131 \uc21c\uc11c\ub97c \ubcc0\uacbd\ud569\ub2c8\ub2e4",
+                "description": "\uc870\uc9c1 \uad00\ub9ac\uc790 \uad8c\ud55c\uc73c\ub85c \uc18d\uc131\uc758 \ucd5c\uc885 \uc21c\uc11c\ub97c \ud55c \ubc88\uc5d0 \ubcc0\uacbd\ud569\ub2c8\ub2e4",
+                "operationId": "reorder",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ReorderPropertyRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "204": {
+                        "description": "\uc0ad\uc81c \uc131\uacf5"
+                    },
+                    "200": {
+                        "description": "\uc694\uccad \uc131\uacf5"
+                    },
+                    "201": {
+                        "description": "\uc0dd\uc131 \uc131\uacf5"
+                    },
                     "400": {
                         "description": "\uc798\ubabb\ub41c \uc694\uccad",
                         "content": {
@@ -7993,6 +8627,87 @@
             }
         },
         "/api/v1/properties/definitions/{propertyDefinitionId}": {
+            "delete": {
+                "tags": [
+                    "properties"
+                ],
+                "summary": "\ucee4\uc2a4\ud140 \uc18d\uc131\uc744 \uc0ad\uc81c\ud569\ub2c8\ub2e4",
+                "description": "\uc870\uc9c1 \uad00\ub9ac\uc790 \uad8c\ud55c\uc73c\ub85c \ucee4\uc2a4\ud140 \uc18d\uc131 \uc815\uc758\ub97c \uc0ad\uc81c\ud569\ub2c8\ub2e4",
+                "operationId": "deletePropertyDefinition",
+                "parameters": [
+                    {
+                        "name": "propertyDefinitionId",
+                        "in": "path",
+                        "description": "\uc0ad\uc81c\ud560 \ucee4\uc2a4\ud140 \uc18d\uc131 \uc815\uc758 ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "\uc0ad\uc81c \uc131\uacf5"
+                    },
+                    "409": {
+                        "description": "\uc0ac\uc6a9 \uc911\uc778 \uc18d\uc131\uc774\ub77c \uc0ad\uc81c \ubd88\uac00",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "200": {
+                        "description": "\uc694\uccad \uc131\uacf5"
+                    },
+                    "201": {
+                        "description": "\uc0dd\uc131 \uc131\uacf5"
+                    },
+                    "400": {
+                        "description": "\uc798\ubabb\ub41c \uc694\uccad",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "\uc778\uc99d \ud544\uc694",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "\uad8c\ud55c \uc5c6\uc74c",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "\ub9ac\uc18c\uc2a4\ub97c \ucc3e\uc744 \uc218 \uc5c6\uc74c",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
             "patch": {
                 "tags": [
                     "properties"
@@ -8042,6 +8757,9 @@
                                 }
                             }
                         }
+                    },
+                    "204": {
+                        "description": "\uc0ad\uc81c \uc131\uacf5"
                     },
                     "400": {
                         "description": "\uc798\ubabb\ub41c \uc694\uccad",
@@ -10568,6 +11286,9 @@
                                 }
                             }
                         }
+                    },
+                    "204": {
+                        "description": "\uc0ad\uc81c \uc131\uacf5"
                     },
                     "400": {
                         "description": "\uc798\ubabb\ub41c \uc694\uccad",
@@ -13750,6 +14471,200 @@
                 }
             }
         },
+        "/api/v1/chat/threads/{threadId}": {
+            "get": {
+                "tags": [
+                    "chat"
+                ],
+                "summary": "\ucc57 \uc2a4\ub808\ub4dc \uc0c1\uc138\ub97c \uc870\ud68c\ud569\ub2c8\ub2e4",
+                "description": "\ucc57 \uc2a4\ub808\ub4dc \uba54\ud0c0\ub370\uc774\ud130\ub97c \uc870\ud68c\ud569\ub2c8\ub2e4",
+                "operationId": "getThread",
+                "parameters": [
+                    {
+                        "name": "threadId",
+                        "in": "path",
+                        "description": "\uc870\ud68c\ud560 \uc2a4\ub808\ub4dc ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "\uc694\uccad \uc131\uacf5",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ChatThreadDetailResponse"
+                                }
+                            }
+                        }
+                    },
+                    "201": {
+                        "description": "\uc0dd\uc131 \uc131\uacf5",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ChatThreadDetailResponse"
+                                }
+                            }
+                        }
+                    },
+                    "202": {
+                        "description": "\ube44\ub3d9\uae30 \uc2e4\ud589 \uc2dc\uc791",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ChatThreadDetailResponse"
+                                }
+                            }
+                        }
+                    },
+                    "204": {
+                        "description": "\uc694\uccad \uc131\uacf5"
+                    },
+                    "400": {
+                        "description": "\uc798\ubabb\ub41c \uc694\uccad",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "\uc778\uc99d \ud544\uc694",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "\uad8c\ud55c \uc5c6\uc74c",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "\ub9ac\uc18c\uc2a4\ub97c \ucc3e\uc744 \uc218 \uc5c6\uc74c",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/chat/runs/{runId}/stream": {
+            "get": {
+                "tags": [
+                    "chat"
+                ],
+                "summary": "\ucc57 \uc2e4\ud589 \uc2a4\ud2b8\ub9bc\uc744 \uad6c\ub3c5\ud569\ub2c8\ub2e4",
+                "description": "\uc2e4\ud589 \uc774\ubca4\ud2b8\uc640 \uc751\ub2f5\uc744 SSE \uc2a4\ud2b8\ub9bc\uc73c\ub85c \uc218\uc2e0\ud569\ub2c8\ub2e4",
+                "operationId": "streamRun",
+                "parameters": [
+                    {
+                        "name": "runId",
+                        "in": "path",
+                        "description": "\uc2a4\ud2b8\ub9bc\uc73c\ub85c \uad6c\ub3c5\ud560 \uc2e4\ud589 ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "\uc694\uccad \uc131\uacf5",
+                        "content": {
+                            "text/event-stream": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/StreamingResponseBody"
+                                }
+                            }
+                        }
+                    },
+                    "201": {
+                        "description": "\uc0dd\uc131 \uc131\uacf5",
+                        "content": {
+                            "text/event-stream": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/StreamingResponseBody"
+                                }
+                            }
+                        }
+                    },
+                    "202": {
+                        "description": "\ube44\ub3d9\uae30 \uc2e4\ud589 \uc2dc\uc791",
+                        "content": {
+                            "text/event-stream": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/StreamingResponseBody"
+                                }
+                            }
+                        }
+                    },
+                    "204": {
+                        "description": "\uc694\uccad \uc131\uacf5"
+                    },
+                    "400": {
+                        "description": "\uc798\ubabb\ub41c \uc694\uccad",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "\uc778\uc99d \ud544\uc694",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "\uad8c\ud55c \uc5c6\uc74c",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "\ub9ac\uc18c\uc2a4\ub97c \ucc3e\uc744 \uc218 \uc5c6\uc74c",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/auth/site": {
             "get": {
                 "tags": [
@@ -15428,15 +16343,6 @@
                     "number": {
                         "type": "boolean"
                     },
-                    "pojo": {
-                        "type": "boolean"
-                    },
-                    "int": {
-                        "type": "boolean"
-                    },
-                    "long": {
-                        "type": "boolean"
-                    },
                     "value_node": {
                         "type": "boolean"
                     },
@@ -15486,6 +16392,15 @@
                         "type": "boolean"
                     },
                     "binary": {
+                        "type": "boolean"
+                    },
+                    "pojo": {
+                        "type": "boolean"
+                    },
+                    "int": {
+                        "type": "boolean"
+                    },
+                    "long": {
                         "type": "boolean"
                     },
                     "integral_number": {
@@ -17900,6 +18815,108 @@
                     "title"
                 ]
             },
+            "CreateChatThreadRequest": {
+                "type": "object",
+                "description": "\ucc57 \uc2a4\ub808\ub4dc \uc0dd\uc131 \uc694\uccad",
+                "properties": {
+                    "project_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "\ud504\ub85c\uc81d\ud2b8 \ubb38\ub9e5 ID"
+                    },
+                    "context_type": {
+                        "type": "string",
+                        "description": "\ubb38\ub9e5 \ud0c0\uc785",
+                        "example": "GLOBAL"
+                    },
+                    "context_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "\ubb38\ub9e5 \ub300\uc0c1 ID"
+                    },
+                    "title": {
+                        "type": "string",
+                        "description": "\uc2a4\ub808\ub4dc \uc81c\ubaa9",
+                        "example": "\ubd80\ud488 \uc9c8\uc758"
+                    }
+                }
+            },
+            "CreateChatThreadResponse": {
+                "type": "object",
+                "description": "\ucc57 \uc2a4\ub808\ub4dc \uc0dd\uc131 \uc751\ub2f5",
+                "properties": {
+                    "thread_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "\uc0dd\uc131\ub41c \uc2a4\ub808\ub4dc ID"
+                    }
+                }
+            },
+            "SendChatMessageRequest": {
+                "type": "object",
+                "description": "\ucc57 \uba54\uc2dc\uc9c0 \uc804\uc1a1 \uc694\uccad",
+                "properties": {
+                    "text": {
+                        "type": "string",
+                        "description": "\uc0ac\uc6a9\uc790 \uc785\ub825 \ud14d\uc2a4\ud2b8",
+                        "example": "A-1000 \ud488\ubc88 \ucc3e\uc544\uc918",
+                        "maxLength": 4000,
+                        "minLength": 0
+                    }
+                },
+                "required": [
+                    "text"
+                ]
+            },
+            "SendChatMessageResponse": {
+                "type": "object",
+                "description": "\ucc57 \uba54\uc2dc\uc9c0 \uc804\uc1a1 \uc751\ub2f5",
+                "properties": {
+                    "message_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "\uc0ac\uc6a9\uc790 \uba54\uc2dc\uc9c0 ID"
+                    },
+                    "run_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "\uc0dd\uc131\ub41c \uc2e4\ud589 ID"
+                    },
+                    "status": {
+                        "type": "string",
+                        "description": "\uc2e4\ud589 \uc0c1\ud0dc",
+                        "example": "QUEUED"
+                    }
+                }
+            },
+            "ConfirmChatActionResponse": {
+                "type": "object",
+                "description": "\ucc57 \uc561\uc158 \ud655\uc778 \uc751\ub2f5",
+                "properties": {
+                    "action_request_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "\uc561\uc158 \uc694\uccad ID"
+                    },
+                    "status": {
+                        "type": "string",
+                        "description": "\uc561\uc158 \uc694\uccad \uc0c1\ud0dc",
+                        "enum": [
+                            "PENDING",
+                            "CONFIRMED",
+                            "REJECTED",
+                            "EXECUTED",
+                            "FAILED",
+                            "EXPIRED"
+                        ]
+                    },
+                    "issue_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "\uc0dd\uc131\ub41c \uc774\uc288 ID"
+                    }
+                }
+            },
             "VerifyEmailRequest": {
                 "type": "object",
                 "description": "\uc774\uba54\uc77c \uc778\uc99d\ucf54\ub4dc \uac80\uc99d \uc694\uccad",
@@ -18510,6 +19527,50 @@
                         "example": true
                     }
                 }
+            },
+            "ReorderPropertyItemRequest": {
+                "type": "object",
+                "description": "\uc21c\uc11c \ubcc0\uacbd \ub300\uc0c1 \uc18d\uc131",
+                "properties": {
+                    "property_key": {
+                        "type": "string",
+                        "description": "\uc18d\uc131 key. \uc2dc\uc2a4\ud15c \uc18d\uc131\uc740 property_key, \ucee4\uc2a4\ud140 \uc18d\uc131\uc740 property_definition.id(UUID)",
+                        "example": "material",
+                        "minLength": 1
+                    },
+                    "system": {
+                        "type": "boolean",
+                        "description": "\uc2dc\uc2a4\ud15c \uc18d\uc131 \uc5ec\ubd80",
+                        "example": true
+                    }
+                },
+                "required": [
+                    "property_key",
+                    "system"
+                ]
+            },
+            "ReorderPropertyRequest": {
+                "type": "object",
+                "description": "\uc18d\uc131 \uc21c\uc11c \ubcc0\uacbd \uc694\uccad",
+                "properties": {
+                    "owner_type": {
+                        "type": "string",
+                        "description": "\uc18d\uc131 \uc18c\uc720 \ud0c0\uc785",
+                        "example": "PART"
+                    },
+                    "properties": {
+                        "type": "array",
+                        "description": "\ubcc0\uacbd\ud560 \ucd5c\uc885 \uc18d\uc131 \uc21c\uc11c",
+                        "items": {
+                            "$ref": "#/components/schemas/ReorderPropertyItemRequest"
+                        },
+                        "minItems": 1
+                    }
+                },
+                "required": [
+                    "owner_type",
+                    "properties"
+                ]
             },
             "UpdatePropertyDefinitionRequest": {
                 "type": "object",
@@ -21723,6 +22784,187 @@
                         "format": "int32",
                         "description": "\uc774\ubc88 \uc8fc \ucd94\uac00\ub41c Part \uc218",
                         "example": 42
+                    }
+                }
+            },
+            "ChatThreadItemResponse": {
+                "type": "object",
+                "description": "\ucc57 \uc2a4\ub808\ub4dc \uc694\uc57d",
+                "properties": {
+                    "thread_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "\uc2a4\ub808\ub4dc ID"
+                    },
+                    "project_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "\ud504\ub85c\uc81d\ud2b8 ID"
+                    },
+                    "context_type": {
+                        "type": "string",
+                        "description": "\ubb38\ub9e5 \ud0c0\uc785",
+                        "example": "GLOBAL"
+                    },
+                    "context_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "\ubb38\ub9e5 \ub300\uc0c1 ID"
+                    },
+                    "title": {
+                        "type": "string",
+                        "description": "\uc2a4\ub808\ub4dc \uc81c\ubaa9"
+                    },
+                    "status": {
+                        "type": "string",
+                        "description": "\uc2a4\ub808\ub4dc \uc0c1\ud0dc",
+                        "enum": [
+                            "ACTIVE",
+                            "ARCHIVED"
+                        ]
+                    },
+                    "last_message_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "\ub9c8\uc9c0\ub9c9 \uba54\uc2dc\uc9c0 \uc2dc\uac01"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "\uc0dd\uc131 \uc2dc\uac01"
+                    }
+                }
+            },
+            "ChatThreadListResponse": {
+                "type": "object",
+                "description": "\ucc57 \uc2a4\ub808\ub4dc \ubaa9\ub85d \uc751\ub2f5",
+                "properties": {
+                    "items": {
+                        "type": "array",
+                        "description": "\uc2a4\ub808\ub4dc \ubaa9\ub85d",
+                        "items": {
+                            "$ref": "#/components/schemas/ChatThreadItemResponse"
+                        }
+                    }
+                }
+            },
+            "ChatThreadDetailResponse": {
+                "type": "object",
+                "description": "\ucc57 \uc2a4\ub808\ub4dc \uc0c1\uc138 \uc751\ub2f5",
+                "properties": {
+                    "thread_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "\uc2a4\ub808\ub4dc ID"
+                    },
+                    "project_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "\ud504\ub85c\uc81d\ud2b8 ID"
+                    },
+                    "context_type": {
+                        "type": "string",
+                        "description": "\ubb38\ub9e5 \ud0c0\uc785",
+                        "example": "GLOBAL"
+                    },
+                    "context_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "\ubb38\ub9e5 \ub300\uc0c1 ID"
+                    },
+                    "title": {
+                        "type": "string",
+                        "description": "\uc2a4\ub808\ub4dc \uc81c\ubaa9"
+                    },
+                    "status": {
+                        "type": "string",
+                        "description": "\uc2a4\ub808\ub4dc \uc0c1\ud0dc",
+                        "enum": [
+                            "ACTIVE",
+                            "ARCHIVED"
+                        ]
+                    },
+                    "last_message_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "\ub9c8\uc9c0\ub9c9 \uba54\uc2dc\uc9c0 \uc2dc\uac01"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "\uc0dd\uc131 \uc2dc\uac01"
+                    }
+                }
+            },
+            "ChatMessageListResponse": {
+                "type": "object",
+                "description": "\ucc57 \uba54\uc2dc\uc9c0 \ubaa9\ub85d \uc751\ub2f5",
+                "properties": {
+                    "items": {
+                        "type": "array",
+                        "description": "\uba54\uc2dc\uc9c0 \ubaa9\ub85d",
+                        "items": {
+                            "$ref": "#/components/schemas/ChatMessageResponse"
+                        }
+                    }
+                }
+            },
+            "ChatMessageResponse": {
+                "type": "object",
+                "description": "\ucc57 \uba54\uc2dc\uc9c0",
+                "properties": {
+                    "message_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "\uba54\uc2dc\uc9c0 ID"
+                    },
+                    "run_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "\uc2e4\ud589 ID"
+                    },
+                    "role": {
+                        "type": "string",
+                        "description": "\uba54\uc2dc\uc9c0 \uc5ed\ud560",
+                        "enum": [
+                            "USER",
+                            "ASSISTANT",
+                            "SYSTEM",
+                            "TOOL"
+                        ]
+                    },
+                    "message_type": {
+                        "type": "string",
+                        "description": "\uba54\uc2dc\uc9c0 \ud0c0\uc785",
+                        "enum": [
+                            "TEXT",
+                            "STRUCTURED",
+                            "ERROR"
+                        ]
+                    },
+                    "status": {
+                        "type": "string",
+                        "description": "\uba54\uc2dc\uc9c0 \uc0c1\ud0dc",
+                        "enum": [
+                            "CREATED",
+                            "STREAMING",
+                            "COMPLETED",
+                            "FAILED"
+                        ]
+                    },
+                    "sequence": {
+                        "type": "integer",
+                        "format": "int64",
+                        "description": "\uba54\uc2dc\uc9c0 \uc21c\uc11c"
+                    },
+                    "content": {
+                        "$ref": "#/components/schemas/JsonNode",
+                        "description": "\uba54\uc2dc\uc9c0 \ub0b4\uc6a9"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "\uc0dd\uc131 \uc2dc\uac01"
                     }
                 }
             },

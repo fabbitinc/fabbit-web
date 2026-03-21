@@ -4,13 +4,20 @@ import { useQuery } from "@tanstack/react-query";
 import {
   PlanSelectionScreen as PlanSelectionScreenView,
   type PlanSelectionScreenPlanOption,
-  type SeatTypeOption,
+  type PlanSeatPricing,
+  type SeatDescription,
 } from "@fabbit/components";
 import { planQueries } from "@/features/auth/api/plan.queries";
 import { useCreateWorkspaceAction } from "@/features/auth/hooks/use-create-workspace-action";
 import type { PlanModel } from "@/features/auth/types/plan-model";
 import { useRegistrationStore } from "@/features/registration/stores/registration-store";
-import type { OwnerSeatType, PlanTier } from "@/features/registration/types/registration.types";
+import type { PlanTier } from "@/features/registration/types/registration.types";
+
+const SEAT_DESCRIPTIONS: SeatDescription[] = [
+  { label: "Full 시트", description: "— 모든 기능 사용 (설계, 편집, 관리)" },
+  { label: "Collaborator 시트", description: "— 댓글, 리뷰, 제한된 편집" },
+  { label: "Viewer 시트", description: "— 열람 전용" },
+];
 
 const STARTER_FALLBACK: PlanSelectionScreenPlanOption[] = [
   {
@@ -48,6 +55,31 @@ function toPlanTier(planType: string): PlanTier {
   }
 }
 
+function toSeatPricing(plan: PlanModel): PlanSeatPricing[] {
+  if (plan.fullSeatMonthlyPrice === 0) return [];
+
+  const aiDescription =
+    plan.aiBillingMode === "INCLUDED_ONLY"
+      ? `+ 월 ${plan.starterMonthlyAiCredits} AI 크레딧`
+      : "AI 사용량 과금";
+
+  return [
+    {
+      label: "Full 시트",
+      price: `${formatPrice(plan.fullSeatMonthlyPrice)}/월`,
+      description: aiDescription,
+    },
+    {
+      label: "Collaborator 시트",
+      price: `${formatPrice(plan.collaboratorMonthlyPrice)}/월`,
+    },
+    {
+      label: "Viewer 시트",
+      price: `${formatPrice(plan.viewerMonthlyPrice)}/월`,
+    },
+  ];
+}
+
 function toPlanOption(plan: PlanModel): PlanSelectionScreenPlanOption {
   const tier = toPlanTier(plan.planType);
   const isPaid = plan.fullSeatMonthlyPrice > 0;
@@ -59,29 +91,20 @@ function toPlanOption(plan: PlanModel): PlanSelectionScreenPlanOption {
 
   const storageLabel = formatBytes(plan.baseStorageBytes);
   if (plan.extraStorageBytesPerFullSeat > 0) {
-    features.push(`기본 스토리지 ${storageLabel} + Full 좌석당 ${formatBytes(plan.extraStorageBytesPerFullSeat)}`);
+    features.push(`기본 스토리지 ${storageLabel}`);
+    features.push(`Full 시트당 +${formatBytes(plan.extraStorageBytesPerFullSeat)}`);
   } else {
     features.push(`스토리지 ${storageLabel}`);
   }
 
-  if (plan.aiBillingMode === "INCLUDED_ONLY") {
+  if (!isPaid && plan.aiBillingMode === "INCLUDED_ONLY") {
     features.push(`AI 크레딧 월 ${plan.starterMonthlyAiCredits} 포함`);
-  } else {
-    features.push("AI 사용량 과금");
   }
 
-  if (isPaid) {
-    features.push(
-      `Viewer ${formatPrice(plan.viewerMonthlyPrice)} / Collaborator ${formatPrice(plan.collaboratorMonthlyPrice)} / Full ${formatPrice(plan.fullSeatMonthlyPrice)}`,
-    );
-  }
-
-  let priceLabel: string;
+  let priceLabel: string | undefined;
   if (plan.contactRequired) {
     priceLabel = "별도 문의";
-  } else if (isPaid) {
-    priceLabel = `${formatPrice(plan.fullSeatMonthlyPrice)}~/좌석`;
-  } else {
+  } else if (!isPaid) {
     priceLabel = "무료";
   }
 
@@ -102,26 +125,16 @@ function toPlanOption(plan: PlanModel): PlanSelectionScreenPlanOption {
     priceLabel,
     description: plan.description,
     features,
+    seatPricing: toSeatPricing(plan),
     badge,
     disabled: plan.contactRequired || (!plan.availableForSignup && isPaid),
     paymentRequired: isPaid && plan.availableForSignup,
   };
 }
 
-function toSeatTypeOptions(plan: PlanModel | undefined): SeatTypeOption[] {
-  if (!plan || plan.fullSeatMonthlyPrice === 0) return [];
-  return [
-    { value: "VIEWER", label: "Viewer", price: `${formatPrice(plan.viewerMonthlyPrice)}/월` },
-    { value: "COLLABORATOR", label: "Collaborator", price: `${formatPrice(plan.collaboratorMonthlyPrice)}/월` },
-    { value: "FULL", label: "Full", price: `${formatPrice(plan.fullSeatMonthlyPrice)}/월` },
-  ];
-}
-
 export function PlanSelectionScreen() {
   const selectedPlan = useRegistrationStore((state) => state.selectedPlan);
   const setSelectedPlan = useRegistrationStore((state) => state.setSelectedPlan);
-  const ownerSeatType = useRegistrationStore((state) => state.ownerSeatType);
-  const setOwnerSeatType = useRegistrationStore((state) => state.setOwnerSeatType);
   const signupData = useRegistrationStore((state) => state.signupData);
   const scopedToken = useRegistrationStore((state) => state.scopedToken);
   const workspaceData = useRegistrationStore((state) => state.workspaceData);
@@ -139,16 +152,6 @@ export function PlanSelectionScreen() {
     }
     return [];
   }, [plansQuery.data, plansQuery.isError, plansQuery.isLoading]);
-
-  const selectedPlanModel = useMemo(
-    () => plansQuery.data?.find((p) => toPlanTier(p.planType) === selectedPlan),
-    [plansQuery.data, selectedPlan],
-  );
-
-  const seatTypeOptions = useMemo(
-    () => toSeatTypeOptions(selectedPlanModel),
-    [selectedPlanModel],
-  );
 
   if (!scopedToken && !signupData.verificationToken) {
     return <Navigate replace to="/signup" />;
@@ -170,15 +173,13 @@ export function PlanSelectionScreen() {
       isSubmitting={createWorkspaceAction.isPending}
       organizationName={workspaceData.organizationName}
       planOptions={planOptions}
-      seatTypeOptions={seatTypeOptions}
+      seatDescriptions={SEAT_DESCRIPTIONS}
       selectedPlan={selectedPlan}
-      selectedSeatType={ownerSeatType}
       onConfirm={() => {
         void handleConfirm();
       }}
       onOpenConfirmChange={setConfirmOpen}
       onSelectPlan={(plan) => setSelectedPlan(plan as PlanTier)}
-      onSelectSeatType={(seat) => setOwnerSeatType(seat as OwnerSeatType)}
     />
   );
 }

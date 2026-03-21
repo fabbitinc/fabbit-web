@@ -169,6 +169,7 @@ export function WorkspaceSetupScreen() {
 
   return (
     <WorkspaceSetupScreenView
+      domain={import.meta.env.VITE_APP_DOMAIN}
       industry={workspaceData.industry}
       industryOptions={industryOptions}
       isCustomIndustry={isCustomIndustry}

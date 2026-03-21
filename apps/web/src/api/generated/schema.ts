@@ -1220,6 +1220,94 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/chat/threads": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 챗 스레드 목록을 조회합니다
+         * @description 현재 사용자의 챗 스레드 목록을 조회합니다
+         */
+        get: operations["listThreads"];
+        put?: never;
+        /**
+         * 챗 스레드를 생성합니다
+         * @description 새로운 챗 스레드를 생성합니다
+         */
+        post: operations["createThread"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/chat/threads/{threadId}/messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 챗 메시지 목록을 조회합니다
+         * @description 스레드에 속한 메시지 목록을 조회합니다
+         */
+        get: operations["listMessages"];
+        put?: never;
+        /**
+         * 챗 메시지를 전송합니다
+         * @description 사용자 메시지를 저장하고 비동기 챗 실행을 시작합니다
+         */
+        post: operations["sendMessage"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/chat/action-requests/{actionRequestId}/reject": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 챗 액션 요청을 거절합니다
+         * @description 사용자 확인이 필요한 액션 요청을 취소합니다
+         */
+        post: operations["rejectAction"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/chat/action-requests/{actionRequestId}/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 챗 액션 요청을 확인합니다
+         * @description 사용자 확인이 필요한 액션 요청을 실제로 실행합니다
+         */
+        post: operations["confirmAction"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/auth/verify-email": {
         parameters: {
             query?: never;
@@ -1532,7 +1620,7 @@ export interface paths {
         patch: operations["upsertSystemPropertyOverride"];
         trace?: never;
     };
-    "/api/v1/properties/definitions/{propertyDefinitionId}": {
+    "/api/v1/properties/order": {
         parameters: {
             query?: never;
             header?: never;
@@ -1543,6 +1631,30 @@ export interface paths {
         put?: never;
         post?: never;
         delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * 속성 순서를 변경합니다
+         * @description 조직 관리자 권한으로 속성의 최종 순서를 한 번에 변경합니다
+         */
+        patch: operations["reorder"];
+        trace?: never;
+    };
+    "/api/v1/properties/definitions/{propertyDefinitionId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * 커스텀 속성을 삭제합니다
+         * @description 조직 관리자 권한으로 커스텀 속성 정의를 삭제합니다
+         */
+        delete: operations["deletePropertyDefinition"];
         options?: never;
         head?: never;
         /**
@@ -2728,6 +2840,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/chat/threads/{threadId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 챗 스레드 상세를 조회합니다
+         * @description 챗 스레드 메타데이터를 조회합니다
+         */
+        get: operations["getThread"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/chat/runs/{runId}/stream": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 챗 실행 스트림을 구독합니다
+         * @description 실행 이벤트와 응답을 SSE 스트림으로 수신합니다
+         */
+        get: operations["streamRun"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/auth/site": {
         parameters: {
             query?: never;
@@ -3373,9 +3525,6 @@ export interface components {
         };
         JsonNode: {
             number?: boolean;
-            pojo?: boolean;
-            int?: boolean;
-            long?: boolean;
             value_node?: boolean;
             container?: boolean;
             missing_node?: boolean;
@@ -3391,6 +3540,9 @@ export interface components {
             textual?: boolean;
             boolean?: boolean;
             binary?: boolean;
+            pojo?: boolean;
+            int?: boolean;
+            long?: boolean;
             integral_number?: boolean;
             floating_point_number?: boolean;
             array?: boolean;
@@ -4754,6 +4906,81 @@ export interface components {
             /** @description 변경관리 단계 목록 */
             steps?: components["schemas"]["EngineeringChangeStepRequest"][];
         };
+        /** @description 챗 스레드 생성 요청 */
+        CreateChatThreadRequest: {
+            /**
+             * Format: uuid
+             * @description 프로젝트 문맥 ID
+             */
+            project_id?: string;
+            /**
+             * @description 문맥 타입
+             * @example GLOBAL
+             */
+            context_type?: string;
+            /**
+             * Format: uuid
+             * @description 문맥 대상 ID
+             */
+            context_id?: string;
+            /**
+             * @description 스레드 제목
+             * @example 부품 질의
+             */
+            title?: string;
+        };
+        /** @description 챗 스레드 생성 응답 */
+        CreateChatThreadResponse: {
+            /**
+             * Format: uuid
+             * @description 생성된 스레드 ID
+             */
+            thread_id?: string;
+        };
+        /** @description 챗 메시지 전송 요청 */
+        SendChatMessageRequest: {
+            /**
+             * @description 사용자 입력 텍스트
+             * @example A-1000 품번 찾아줘
+             */
+            text: string;
+        };
+        /** @description 챗 메시지 전송 응답 */
+        SendChatMessageResponse: {
+            /**
+             * Format: uuid
+             * @description 사용자 메시지 ID
+             */
+            message_id?: string;
+            /**
+             * Format: uuid
+             * @description 생성된 실행 ID
+             */
+            run_id?: string;
+            /**
+             * @description 실행 상태
+             * @example QUEUED
+             */
+            status?: string;
+        };
+        /** @description 챗 액션 확인 응답 */
+        ConfirmChatActionResponse: {
+            /**
+             * Format: uuid
+             * @description 액션 요청 ID
+             */
+            action_request_id?: string;
+            /**
+             * @description 액션 요청 상태
+             * @enum {string}
+             */
+            status?: "PENDING" | "CONFIRMED" | "REJECTED" | "EXECUTED" | "FAILED" | "EXPIRED";
+            /**
+             * Format: uuid
+             * @description 생성된 이슈 ID
+             */
+            issue_id?: string;
+        };
         /** @description 이메일 인증코드 검증 요청 */
         VerifyEmailRequest: {
             /**
@@ -5141,6 +5368,29 @@ export interface components {
              * @example true
              */
             active?: boolean;
+        };
+        /** @description 순서 변경 대상 속성 */
+        ReorderPropertyItemRequest: {
+            /**
+             * @description 속성 key. 시스템 속성은 property_key, 커스텀 속성은 property_definition.id(UUID)
+             * @example material
+             */
+            property_key: string;
+            /**
+             * @description 시스템 속성 여부
+             * @example true
+             */
+            system: boolean;
+        };
+        /** @description 속성 순서 변경 요청 */
+        ReorderPropertyRequest: {
+            /**
+             * @description 속성 소유 타입
+             * @example PART
+             */
+            owner_type: string;
+            /** @description 변경할 최종 속성 순서 */
+            properties: components["schemas"]["ReorderPropertyItemRequest"][];
         };
         /** @description 커스텀 속성 정의 수정 요청 */
         UpdatePropertyDefinitionRequest: {
@@ -6866,6 +7116,136 @@ export interface components {
              * @example 42
              */
             added_this_week?: number;
+        };
+        /** @description 챗 스레드 요약 */
+        ChatThreadItemResponse: {
+            /**
+             * Format: uuid
+             * @description 스레드 ID
+             */
+            thread_id?: string;
+            /**
+             * Format: uuid
+             * @description 프로젝트 ID
+             */
+            project_id?: string;
+            /**
+             * @description 문맥 타입
+             * @example GLOBAL
+             */
+            context_type?: string;
+            /**
+             * Format: uuid
+             * @description 문맥 대상 ID
+             */
+            context_id?: string;
+            /** @description 스레드 제목 */
+            title?: string;
+            /**
+             * @description 스레드 상태
+             * @enum {string}
+             */
+            status?: "ACTIVE" | "ARCHIVED";
+            /**
+             * Format: date-time
+             * @description 마지막 메시지 시각
+             */
+            last_message_at?: string;
+            /**
+             * Format: date-time
+             * @description 생성 시각
+             */
+            created_at?: string;
+        };
+        /** @description 챗 스레드 목록 응답 */
+        ChatThreadListResponse: {
+            /** @description 스레드 목록 */
+            items?: components["schemas"]["ChatThreadItemResponse"][];
+        };
+        /** @description 챗 스레드 상세 응답 */
+        ChatThreadDetailResponse: {
+            /**
+             * Format: uuid
+             * @description 스레드 ID
+             */
+            thread_id?: string;
+            /**
+             * Format: uuid
+             * @description 프로젝트 ID
+             */
+            project_id?: string;
+            /**
+             * @description 문맥 타입
+             * @example GLOBAL
+             */
+            context_type?: string;
+            /**
+             * Format: uuid
+             * @description 문맥 대상 ID
+             */
+            context_id?: string;
+            /** @description 스레드 제목 */
+            title?: string;
+            /**
+             * @description 스레드 상태
+             * @enum {string}
+             */
+            status?: "ACTIVE" | "ARCHIVED";
+            /**
+             * Format: date-time
+             * @description 마지막 메시지 시각
+             */
+            last_message_at?: string;
+            /**
+             * Format: date-time
+             * @description 생성 시각
+             */
+            created_at?: string;
+        };
+        /** @description 챗 메시지 목록 응답 */
+        ChatMessageListResponse: {
+            /** @description 메시지 목록 */
+            items?: components["schemas"]["ChatMessageResponse"][];
+        };
+        /** @description 챗 메시지 */
+        ChatMessageResponse: {
+            /**
+             * Format: uuid
+             * @description 메시지 ID
+             */
+            message_id?: string;
+            /**
+             * Format: uuid
+             * @description 실행 ID
+             */
+            run_id?: string;
+            /**
+             * @description 메시지 역할
+             * @enum {string}
+             */
+            role?: "USER" | "ASSISTANT" | "SYSTEM" | "TOOL";
+            /**
+             * @description 메시지 타입
+             * @enum {string}
+             */
+            message_type?: "TEXT" | "STRUCTURED" | "ERROR";
+            /**
+             * @description 메시지 상태
+             * @enum {string}
+             */
+            status?: "CREATED" | "STREAMING" | "COMPLETED" | "FAILED";
+            /**
+             * Format: int64
+             * @description 메시지 순서
+             */
+            sequence?: number;
+            /** @description 메시지 내용 */
+            content?: components["schemas"]["JsonNode"];
+            /**
+             * Format: date-time
+             * @description 생성 시각
+             */
+            created_at?: string;
         };
         SiteResponse: {
             /**
@@ -8941,6 +9321,13 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["PropertyMetaResponse"];
                 };
+            };
+            /** @description 삭제 성공 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {
@@ -12420,6 +12807,506 @@ export interface operations {
             };
         };
     };
+    listThreads: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatThreadListResponse"];
+                };
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatThreadListResponse"];
+                };
+            };
+            /** @description 비동기 실행 시작 */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatThreadListResponse"];
+                };
+            };
+            /** @description 요청 성공 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    createThread: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateChatThreadRequest"];
+            };
+        };
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreateChatThreadResponse"];
+                };
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreateChatThreadResponse"];
+                };
+            };
+            /** @description 비동기 실행 시작 */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CreateChatThreadResponse"];
+                };
+            };
+            /** @description 요청 성공 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    listMessages: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 조회할 스레드 ID */
+                threadId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatMessageListResponse"];
+                };
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatMessageListResponse"];
+                };
+            };
+            /** @description 비동기 실행 시작 */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatMessageListResponse"];
+                };
+            };
+            /** @description 요청 성공 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    sendMessage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 메시지를 추가할 스레드 ID */
+                threadId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SendChatMessageRequest"];
+            };
+        };
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SendChatMessageResponse"];
+                };
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SendChatMessageResponse"];
+                };
+            };
+            /** @description 비동기 실행 시작 */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SendChatMessageResponse"];
+                };
+            };
+            /** @description 요청 성공 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    rejectAction: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 거절할 액션 요청 ID */
+                actionRequestId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 비동기 실행 시작 */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 요청 성공 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    confirmAction: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 확인할 액션 요청 ID */
+                actionRequestId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConfirmChatActionResponse"];
+                };
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConfirmChatActionResponse"];
+                };
+            };
+            /** @description 비동기 실행 시작 */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ConfirmChatActionResponse"];
+                };
+            };
+            /** @description 요청 성공 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
     verifyEmail: {
         parameters: {
             query?: never;
@@ -13541,6 +14428,13 @@ export interface operations {
                     "application/json": components["schemas"]["PropertyMetaResponse"];
                 };
             };
+            /** @description 삭제 성공 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
             /** @description 잘못된 요청 */
             400: {
                 headers: {
@@ -13570,6 +14464,158 @@ export interface operations {
             };
             /** @description 리소스를 찾을 수 없음 */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    reorder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ReorderPropertyRequest"];
+            };
+        };
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 삭제 성공 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    deletePropertyDefinition: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 삭제할 커스텀 속성 정의 ID */
+                propertyDefinitionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 삭제 성공 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 사용 중인 속성이라 삭제 불가 */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -13612,6 +14658,13 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["PropertyMetaResponse"];
                 };
+            };
+            /** @description 삭제 성공 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {
@@ -15685,6 +16738,13 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["PropertyMetaListResponse"];
                 };
+            };
+            /** @description 삭제 성공 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {
@@ -18064,6 +19124,174 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["DashboardStatsResponse"];
                 };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    getThread: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 조회할 스레드 ID */
+                threadId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatThreadDetailResponse"];
+                };
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatThreadDetailResponse"];
+                };
+            };
+            /** @description 비동기 실행 시작 */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatThreadDetailResponse"];
+                };
+            };
+            /** @description 요청 성공 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    streamRun: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 스트림으로 구독할 실행 ID */
+                runId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/event-stream": components["schemas"]["StreamingResponseBody"];
+                };
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/event-stream": components["schemas"]["StreamingResponseBody"];
+                };
+            };
+            /** @description 비동기 실행 시작 */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "text/event-stream": components["schemas"]["StreamingResponseBody"];
+                };
+            };
+            /** @description 요청 성공 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {

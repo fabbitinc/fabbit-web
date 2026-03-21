@@ -9,19 +9,19 @@ import {
   cancel as cancelPartRevisionApiV1PartRevisionCancelPost,
   createDraft as createDraftApiV1PartRevisionDraftPost,
   release as releasePartRevisionApiV1PartRevisionReleasePost,
-  update2 as updatePartRevisionApiV1PartRevisionPatch,
+  update1 as updatePartRevisionApiV1PartRevisionPatch,
 } from "@/api/generated/orval/part-revision-commands/part-revision-commands";
 import {
   createPreviewFile as createPreviewFileApiV1PartRevisionPreviewFilesPost,
-  delete2 as clearPartPreviewApiV1PartRevisionPreviewDelete,
+  delete1 as clearPartPreviewApiV1PartRevisionPreviewDelete,
   deletePreviewFile as deletePreviewFileApiV1PartRevisionPreviewFilesDelete,
   getProcessing as getPreviewProcessingApiV1PartRevisionPreviewProcessingGet,
   getSources as getPreviewSourcesApiV1PartRevisionPreviewSourcesGet,
-  update3 as selectPreviewSourceApiV1PartRevisionPreviewPatch,
+  update2 as selectPreviewSourceApiV1PartRevisionPreviewPatch,
 } from "@/api/generated/orval/part-revision-previews/part-revision-previews";
 import {
   exportBomTree as exportBomTreeApiV1PartRevisionBomTreeExportGet,
-  get2 as getPartRevisionApiV1PartRevisionGet,
+  get1 as getPartRevisionApiV1PartRevisionGet,
   getBom as getBomApiV1PartRevisionBomGet,
   getBomTree as getBomTreeApiV1PartRevisionBomTreeGet,
   getDiff as getDiffApiV1PartRevisionDiffGet,

@@ -1,6 +1,8 @@
 import {
   createPropertyDefinition as createPropertyDefinitionApiV1PropertiesDefinitionsPost,
+  deletePropertyDefinition as deletePropertyDefinitionApiV1PropertiesDefinitionsDelete,
   listMeta as listMetaApiV1PropertiesMetaGet,
+  reorder as reorderApiV1PropertiesOrderPatch,
   updatePropertyDefinition as updatePropertyDefinitionApiV1PropertiesDefinitionsPropertyDefinitionIdPatch,
   upsertSystemPropertyOverride as upsertSystemPropertyOverrideApiV1PropertiesSystemOverridesOwnerTypePropertyKeyPatch,
 } from "@/api/generated/orval/properties/properties";
@@ -10,6 +12,7 @@ import type {
   ListPropertyMetaQueryDto,
   PropertyMetaListResponseDto,
   PropertyMetaResponseDto,
+  ReorderPropertyRequestDto,
   UpdatePropertyDefinitionRequestDto,
   UpdatePropertyDefinitionResponseDto,
   UpsertSystemPropertyOverrideRequestDto,
@@ -68,6 +71,14 @@ export async function updatePropertyDefinition(
   );
 
   return toPropertyMetaModel(response as UpdatePropertyDefinitionResponseDto);
+}
+
+export async function deletePropertyDefinition(propertyDefinitionId: string) {
+  await deletePropertyDefinitionApiV1PropertiesDefinitionsDelete(propertyDefinitionId);
+}
+
+export async function reorderProperties(request: ReorderPropertyRequestDto) {
+  await reorderApiV1PropertiesOrderPatch(request);
 }
 
 export async function upsertSystemPropertyOverride(
