@@ -5,16 +5,18 @@ import {
   FolderKanban,
   GitPullRequestArrow,
   LayoutDashboard,
+  MessageSquare,
   Package,
   User,
 } from "lucide-react";
 import { AppHeader, AppShell, AppSidebar } from "@fabbit/components";
-import { BrandLogo } from "@fabbit/ui";
+import { BrandLogo, Button } from "@fabbit/ui";
 import { useAuthStore } from "@/features/auth";
 import { useLogoutAction } from "@/features/auth/hooks/use-logout-action";
 import { useSwitchOrganizationAction } from "@/features/auth/hooks/use-switch-organization-action";
 import { PartsUploadDialog } from "@/features/parts/components/parts-upload-dialog";
 import { useSettingsQuery } from "@/features/settings";
+import { ChatSidePanel, useChatStore } from "@/features/chat";
 
 const SIDENAV_WIDTH = 240;
 
@@ -42,6 +44,7 @@ export function MainAppLayout() {
   const switchOrganizationAction = useSwitchOrganizationAction();
   const logoutAction = useLogoutAction();
   const settingsQuery = useSettingsQuery();
+  const toggleChatPanel = useChatStore((s) => s.togglePanel);
   const [isDesktop, setIsDesktop] = useState(() => window.innerWidth >= 1024);
   const [isSideNavCollapsed, setIsSideNavCollapsed] = useState(
     () => localStorage.getItem("fabbit-side-nav-collapsed") === "true",
@@ -209,6 +212,17 @@ export function MainAppLayout() {
             organizationMenu={organizationMenu}
             primaryAction={{ label: "생성" }}
             search={{ triggerLabel: "검색" }}
+            actions={
+              <Button
+                variant="ghost"
+                size="icon"
+                className="size-9"
+                onClick={toggleChatPanel}
+                aria-label="AI 어시스턴트"
+              >
+                <MessageSquare className="size-4" />
+              </Button>
+            }
             menuItems={menuItems}
             onLogout={handleLogout}
           />
@@ -232,6 +246,7 @@ export function MainAppLayout() {
         <Outlet />
       </AppShell>
       <PartsUploadDialog />
+      <ChatSidePanel />
     </>
   );
 }

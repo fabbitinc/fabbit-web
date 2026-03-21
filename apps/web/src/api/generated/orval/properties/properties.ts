@@ -10,8 +10,7 @@ import type {
   PropertyMetaListResponse,
   PropertyMetaResponse,
   ReorderPropertyRequest,
-  UpdatePropertyDefinitionRequest,
-  UpsertSystemPropertyOverrideRequest
+  UpdatePropertyDefinitionRequest
 } from '../model';
 
 import { customInstance } from '../../../orval/custom-instance.js';
@@ -36,22 +35,6 @@ export const createPropertyDefinition = (
       options);
     }
   /**
- * 조직 관리자 권한으로 시스템 속성의 표시명/순서/활성 여부를 조정합니다
- * @summary 시스템 속성 override를 수정합니다
- */
-export const upsertSystemPropertyOverride = (
-    ownerType: string,
-    propertyKey: string,
-    upsertSystemPropertyOverrideRequest: BodyType<UpsertSystemPropertyOverrideRequest>,
- options?: SecondParameter<typeof customInstance<PropertyMetaResponse | void>>,) => {
-      return customInstance<PropertyMetaResponse | void>(
-      {url: `/api/v1/properties/system-overrides/${ownerType}/${propertyKey}`, method: 'PATCH',
-      headers: {'Content-Type': 'application/json', },
-      data: upsertSystemPropertyOverrideRequest
-    },
-      options);
-    }
-  /**
  * 조직 관리자 권한으로 속성의 최종 순서를 한 번에 변경합니다
  * @summary 속성 순서를 변경합니다
  */
@@ -66,34 +49,36 @@ export const reorder = (
       options);
     }
   /**
- * 조직 관리자 권한으로 커스텀 속성 정의를 삭제합니다
- * @summary 커스텀 속성을 삭제합니다
+ * 조직 관리자 권한으로 커스텀 속성 정의를 삭제합니다. 시스템 속성은 삭제할 수 없습니다
+ * @summary 속성을 삭제합니다
  */
 export const deletePropertyDefinition = (
-    propertyDefinitionId: string,
+    ownerType: string,
+    propertyKey: string,
  options?: SecondParameter<typeof customInstance<void>>,) => {
       return customInstance<void>(
-      {url: `/api/v1/properties/definitions/${propertyDefinitionId}`, method: 'DELETE'
+      {url: `/api/v1/properties/definitions/${ownerType}/${propertyKey}`, method: 'DELETE'
     },
       options);
     }
   /**
- * 조직 관리자 권한으로 커스텀 속성 정의를 부분 수정합니다
- * @summary 커스텀 속성을 수정합니다
+ * 조직 관리자 권한으로 시스템/커스텀 속성 정의를 부분 수정합니다
+ * @summary 속성을 수정합니다
  */
 export const updatePropertyDefinition = (
-    propertyDefinitionId: string,
+    ownerType: string,
+    propertyKey: string,
     updatePropertyDefinitionRequest: BodyType<UpdatePropertyDefinitionRequest>,
  options?: SecondParameter<typeof customInstance<PropertyMetaResponse | void>>,) => {
       return customInstance<PropertyMetaResponse | void>(
-      {url: `/api/v1/properties/definitions/${propertyDefinitionId}`, method: 'PATCH',
+      {url: `/api/v1/properties/definitions/${ownerType}/${propertyKey}`, method: 'PATCH',
       headers: {'Content-Type': 'application/json', },
       data: updatePropertyDefinitionRequest
     },
       options);
     }
   /**
- * 시스템 속성과 커스텀 속성을 합친 최종 메타 목록을 조회합니다
+ * 시스템 속성과 커스텀 속성을 통합한 최종 property catalog 목록을 조회합니다
  * @summary 속성 메타 목록을 조회합니다
  */
 export const listMeta = (
@@ -106,7 +91,6 @@ export const listMeta = (
       options);
     }
   export type CreatePropertyDefinitionResult = NonNullable<Awaited<ReturnType<typeof createPropertyDefinition>>>
-export type UpsertSystemPropertyOverrideResult = NonNullable<Awaited<ReturnType<typeof upsertSystemPropertyOverride>>>
 export type ReorderResult = NonNullable<Awaited<ReturnType<typeof reorder>>>
 export type DeletePropertyDefinitionResult = NonNullable<Awaited<ReturnType<typeof deletePropertyDefinition>>>
 export type UpdatePropertyDefinitionResult = NonNullable<Awaited<ReturnType<typeof updatePropertyDefinition>>>

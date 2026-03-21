@@ -9,7 +9,7 @@ import type { UpdatePropertyDefinitionRequestOptionMode } from './updateProperty
 import type { UpdatePropertyDefinitionRequestValueType } from './updatePropertyDefinitionRequestValueType';
 
 /**
- * 커스텀 속성 정의 수정 요청
+ * 속성 정의 수정 요청
  */
 export interface UpdatePropertyDefinitionRequest {
   display_name_set?: boolean;

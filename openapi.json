@@ -45,7 +45,7 @@
         },
         {
             "name": "properties",
-            "description": "\uc18d\uc131 \uba54\ud0c0/\uad00\ub9ac API"
+            "description": "\ud1b5\ud569 property catalog \uad00\ub9ac API"
         },
         {
             "name": "health",
@@ -8448,113 +8448,6 @@
                 }
             }
         },
-        "/api/v1/properties/system-overrides/{ownerType}/{propertyKey}": {
-            "patch": {
-                "tags": [
-                    "properties"
-                ],
-                "summary": "\uc2dc\uc2a4\ud15c \uc18d\uc131 override\ub97c \uc218\uc815\ud569\ub2c8\ub2e4",
-                "description": "\uc870\uc9c1 \uad00\ub9ac\uc790 \uad8c\ud55c\uc73c\ub85c \uc2dc\uc2a4\ud15c \uc18d\uc131\uc758 \ud45c\uc2dc\uba85/\uc21c\uc11c/\ud65c\uc131 \uc5ec\ubd80\ub97c \uc870\uc815\ud569\ub2c8\ub2e4",
-                "operationId": "upsertSystemPropertyOverride",
-                "parameters": [
-                    {
-                        "name": "ownerType",
-                        "in": "path",
-                        "description": "\uc18d\uc131 \uc18c\uc720 \ud0c0\uc785",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        },
-                        "example": "PART"
-                    },
-                    {
-                        "name": "propertyKey",
-                        "in": "path",
-                        "description": "\uc2dc\uc2a4\ud15c \uc18d\uc131 key",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
-                        },
-                        "example": "category"
-                    }
-                ],
-                "requestBody": {
-                    "content": {
-                        "application/json": {
-                            "schema": {
-                                "$ref": "#/components/schemas/UpsertSystemPropertyOverrideRequest"
-                            }
-                        }
-                    },
-                    "required": true
-                },
-                "responses": {
-                    "200": {
-                        "description": "\uc694\uccad \uc131\uacf5",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/PropertyMetaResponse"
-                                }
-                            }
-                        }
-                    },
-                    "201": {
-                        "description": "\uc0dd\uc131 \uc131\uacf5",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/PropertyMetaResponse"
-                                }
-                            }
-                        }
-                    },
-                    "204": {
-                        "description": "\uc0ad\uc81c \uc131\uacf5"
-                    },
-                    "400": {
-                        "description": "\uc798\ubabb\ub41c \uc694\uccad",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiErrorResponse"
-                                }
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "\uc778\uc99d \ud544\uc694",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiErrorResponse"
-                                }
-                            }
-                        }
-                    },
-                    "403": {
-                        "description": "\uad8c\ud55c \uc5c6\uc74c",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiErrorResponse"
-                                }
-                            }
-                        }
-                    },
-                    "404": {
-                        "description": "\ub9ac\uc18c\uc2a4\ub97c \ucc3e\uc744 \uc218 \uc5c6\uc74c",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "$ref": "#/components/schemas/ApiErrorResponse"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
         "/api/v1/properties/order": {
             "patch": {
                 "tags": [
@@ -8626,24 +8519,34 @@
                 }
             }
         },
-        "/api/v1/properties/definitions/{propertyDefinitionId}": {
+        "/api/v1/properties/definitions/{ownerType}/{propertyKey}": {
             "delete": {
                 "tags": [
                     "properties"
                 ],
-                "summary": "\ucee4\uc2a4\ud140 \uc18d\uc131\uc744 \uc0ad\uc81c\ud569\ub2c8\ub2e4",
-                "description": "\uc870\uc9c1 \uad00\ub9ac\uc790 \uad8c\ud55c\uc73c\ub85c \ucee4\uc2a4\ud140 \uc18d\uc131 \uc815\uc758\ub97c \uc0ad\uc81c\ud569\ub2c8\ub2e4",
+                "summary": "\uc18d\uc131\uc744 \uc0ad\uc81c\ud569\ub2c8\ub2e4",
+                "description": "\uc870\uc9c1 \uad00\ub9ac\uc790 \uad8c\ud55c\uc73c\ub85c \ucee4\uc2a4\ud140 \uc18d\uc131 \uc815\uc758\ub97c \uc0ad\uc81c\ud569\ub2c8\ub2e4. \uc2dc\uc2a4\ud15c \uc18d\uc131\uc740 \uc0ad\uc81c\ud560 \uc218 \uc5c6\uc2b5\ub2c8\ub2e4",
                 "operationId": "deletePropertyDefinition",
                 "parameters": [
                     {
-                        "name": "propertyDefinitionId",
+                        "name": "ownerType",
                         "in": "path",
-                        "description": "\uc0ad\uc81c\ud560 \ucee4\uc2a4\ud140 \uc18d\uc131 \uc815\uc758 ID",
+                        "description": "\uc18d\uc131 \uc18c\uc720 \ud0c0\uc785",
                         "required": true,
                         "schema": {
-                            "type": "string",
-                            "format": "uuid"
-                        }
+                            "type": "string"
+                        },
+                        "example": "PART"
+                    },
+                    {
+                        "name": "propertyKey",
+                        "in": "path",
+                        "description": "\uc0ad\uc81c\ud560 \uc18d\uc131 key",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "019d0000-0000-7000-8000-000000000001"
                     }
                 ],
                 "responses": {
@@ -8712,19 +8615,29 @@
                 "tags": [
                     "properties"
                 ],
-                "summary": "\ucee4\uc2a4\ud140 \uc18d\uc131\uc744 \uc218\uc815\ud569\ub2c8\ub2e4",
-                "description": "\uc870\uc9c1 \uad00\ub9ac\uc790 \uad8c\ud55c\uc73c\ub85c \ucee4\uc2a4\ud140 \uc18d\uc131 \uc815\uc758\ub97c \ubd80\ubd84 \uc218\uc815\ud569\ub2c8\ub2e4",
+                "summary": "\uc18d\uc131\uc744 \uc218\uc815\ud569\ub2c8\ub2e4",
+                "description": "\uc870\uc9c1 \uad00\ub9ac\uc790 \uad8c\ud55c\uc73c\ub85c \uc2dc\uc2a4\ud15c/\ucee4\uc2a4\ud140 \uc18d\uc131 \uc815\uc758\ub97c \ubd80\ubd84 \uc218\uc815\ud569\ub2c8\ub2e4",
                 "operationId": "updatePropertyDefinition",
                 "parameters": [
                     {
-                        "name": "propertyDefinitionId",
+                        "name": "ownerType",
                         "in": "path",
-                        "description": "\uc218\uc815\ud560 \ucee4\uc2a4\ud140 \uc18d\uc131 \uc815\uc758 ID",
+                        "description": "\uc18d\uc131 \uc18c\uc720 \ud0c0\uc785",
                         "required": true,
                         "schema": {
-                            "type": "string",
-                            "format": "uuid"
-                        }
+                            "type": "string"
+                        },
+                        "example": "PART"
+                    },
+                    {
+                        "name": "propertyKey",
+                        "in": "path",
+                        "description": "\uc218\uc815\ud560 \uc18d\uc131 key",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        },
+                        "example": "material"
                     }
                 ],
                 "requestBody": {
@@ -11241,7 +11154,7 @@
                     "properties"
                 ],
                 "summary": "\uc18d\uc131 \uba54\ud0c0 \ubaa9\ub85d\uc744 \uc870\ud68c\ud569\ub2c8\ub2e4",
-                "description": "\uc2dc\uc2a4\ud15c \uc18d\uc131\uacfc \ucee4\uc2a4\ud140 \uc18d\uc131\uc744 \ud569\uce5c \ucd5c\uc885 \uba54\ud0c0 \ubaa9\ub85d\uc744 \uc870\ud68c\ud569\ub2c8\ub2e4",
+                "description": "\uc2dc\uc2a4\ud15c \uc18d\uc131\uacfc \ucee4\uc2a4\ud140 \uc18d\uc131\uc744 \ud1b5\ud569\ud55c \ucd5c\uc885 property catalog \ubaa9\ub85d\uc744 \uc870\ud68c\ud569\ub2c8\ub2e4",
                 "operationId": "listMeta",
                 "parameters": [
                     {
@@ -14586,6 +14499,25 @@
                             "type": "string",
                             "format": "uuid"
                         }
+                    },
+                    {
+                        "name": "last_event_sequence",
+                        "in": "query",
+                        "description": "\uc774 sequence \uc774\ud6c4 \uc774\ubca4\ud2b8\ub9cc \uc7ac\uc0dd\ud569\ub2c8\ub2e4",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "format": "int64"
+                        }
+                    },
+                    {
+                        "name": "Last-Event-ID",
+                        "in": "header",
+                        "description": "SSE \uc7ac\uc5f0\uacb0 \uc2dc \ub9c8\uc9c0\ub9c9\uc73c\ub85c \uc218\uc2e0\ud55c \uc774\ubca4\ud2b8 ID\uc785\ub2c8\ub2e4",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
                     }
                 ],
                 "responses": {
@@ -16340,19 +16272,19 @@
             "JsonNode": {
                 "type": "object",
                 "properties": {
-                    "number": {
+                    "pojo": {
                         "type": "boolean"
                     },
-                    "value_node": {
+                    "int": {
                         "type": "boolean"
                     },
-                    "container": {
+                    "long": {
                         "type": "boolean"
                     },
-                    "missing_node": {
+                    "integral_number": {
                         "type": "boolean"
                     },
-                    "object": {
+                    "floating_point_number": {
                         "type": "boolean"
                     },
                     "node_type": {
@@ -16370,6 +16302,18 @@
                         ]
                     },
                     "string": {
+                        "type": "boolean"
+                    },
+                    "value_node": {
+                        "type": "boolean"
+                    },
+                    "container": {
+                        "type": "boolean"
+                    },
+                    "missing_node": {
+                        "type": "boolean"
+                    },
+                    "object": {
                         "type": "boolean"
                     },
                     "short": {
@@ -16394,19 +16338,7 @@
                     "binary": {
                         "type": "boolean"
                     },
-                    "pojo": {
-                        "type": "boolean"
-                    },
-                    "int": {
-                        "type": "boolean"
-                    },
-                    "long": {
-                        "type": "boolean"
-                    },
-                    "integral_number": {
-                        "type": "boolean"
-                    },
-                    "floating_point_number": {
+                    "number": {
                         "type": "boolean"
                     },
                     "array": {
@@ -17122,7 +17054,7 @@
                     "definition_id": {
                         "type": "string",
                         "format": "uuid",
-                        "description": "\ucee4\uc2a4\ud140 \uc18d\uc131 \uc815\uc758 ID. \uc2dc\uc2a4\ud15c \uc18d\uc131\uc774\uba74 null",
+                        "description": "property catalog row ID",
                         "example": "019d0000-0000-7000-8000-000000000001"
                     },
                     "owner_type": {
@@ -17139,7 +17071,7 @@
                     },
                     "property_key": {
                         "type": "string",
-                        "description": "\uc18d\uc131 key. \uc2dc\uc2a4\ud15c \uc18d\uc131\uc740 property_key, \ucee4\uc2a4\ud140 \uc18d\uc131\uc740 property_definition.id",
+                        "description": "\uc18d\uc131 key. \uc2dc\uc2a4\ud15c \uc18d\uc131\uc740 property_key, \ucee4\uc2a4\ud140 \uc18d\uc131\uc740 UUID \ubb38\uc790\uc5f4",
                         "example": "category"
                     },
                     "system": {
@@ -19503,38 +19435,13 @@
                     }
                 }
             },
-            "UpsertSystemPropertyOverrideRequest": {
-                "type": "object",
-                "description": "\uc2dc\uc2a4\ud15c \uc18d\uc131 override \uc218\uc815 \uc694\uccad",
-                "properties": {
-                    "display_name_override": {
-                        "type": "string",
-                        "description": "\ud45c\uc2dc\uba85 override",
-                        "example": "\ud488\ubaa9\uad70",
-                        "maxLength": 200,
-                        "minLength": 0
-                    },
-                    "display_order": {
-                        "type": "integer",
-                        "format": "int32",
-                        "description": "\ud45c\uc2dc \uc21c\uc11c override",
-                        "example": 70,
-                        "minimum": 0
-                    },
-                    "active": {
-                        "type": "boolean",
-                        "description": "\ud65c\uc131 \uc5ec\ubd80",
-                        "example": true
-                    }
-                }
-            },
             "ReorderPropertyItemRequest": {
                 "type": "object",
                 "description": "\uc21c\uc11c \ubcc0\uacbd \ub300\uc0c1 \uc18d\uc131",
                 "properties": {
                     "property_key": {
                         "type": "string",
-                        "description": "\uc18d\uc131 key. \uc2dc\uc2a4\ud15c \uc18d\uc131\uc740 property_key, \ucee4\uc2a4\ud140 \uc18d\uc131\uc740 property_definition.id(UUID)",
+                        "description": "\uc18d\uc131 key. \uc2dc\uc2a4\ud15c \uc18d\uc131\uc740 property_key, \ucee4\uc2a4\ud140 \uc18d\uc131\uc740 property catalog key(UUID \ubb38\uc790\uc5f4)",
                         "example": "material",
                         "minLength": 1
                     },
@@ -19574,7 +19481,7 @@
             },
             "UpdatePropertyDefinitionRequest": {
                 "type": "object",
-                "description": "\ucee4\uc2a4\ud140 \uc18d\uc131 \uc815\uc758 \uc218\uc815 \uc694\uccad",
+                "description": "\uc18d\uc131 \uc815\uc758 \uc218\uc815 \uc694\uccad",
                 "properties": {
                     "display_name_set": {
                         "type": "boolean"

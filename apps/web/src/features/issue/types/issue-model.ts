@@ -74,7 +74,7 @@ export interface IssueTimelineActivityModel {
   id: string;
   action: string;
   scope: string | null;
-  actorId: string;
+  actorId: string | null;
   actor: IssueUserModel | null;
   detail: Record<string, unknown> | null;
   createdAt: string;

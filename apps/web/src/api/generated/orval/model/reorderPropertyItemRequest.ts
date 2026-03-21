@@ -10,7 +10,7 @@
  */
 export interface ReorderPropertyItemRequest {
   /**
-   * 속성 key. 시스템 속성은 property_key, 커스텀 속성은 property_definition.id(UUID)
+   * 속성 key. 시스템 속성은 property_key, 커스텀 속성은 property catalog key(UUID 문자열)
    * @minLength 1
    */
   property_key: string;

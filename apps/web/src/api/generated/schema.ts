@@ -1600,26 +1600,6 @@ export interface paths {
         patch: operations["updateAiLimit"];
         trace?: never;
     };
-    "/api/v1/properties/system-overrides/{ownerType}/{propertyKey}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /**
-         * 시스템 속성 override를 수정합니다
-         * @description 조직 관리자 권한으로 시스템 속성의 표시명/순서/활성 여부를 조정합니다
-         */
-        patch: operations["upsertSystemPropertyOverride"];
-        trace?: never;
-    };
     "/api/v1/properties/order": {
         parameters: {
             query?: never;
@@ -1640,7 +1620,7 @@ export interface paths {
         patch: operations["reorder"];
         trace?: never;
     };
-    "/api/v1/properties/definitions/{propertyDefinitionId}": {
+    "/api/v1/properties/definitions/{ownerType}/{propertyKey}": {
         parameters: {
             query?: never;
             header?: never;
@@ -1651,15 +1631,15 @@ export interface paths {
         put?: never;
         post?: never;
         /**
-         * 커스텀 속성을 삭제합니다
-         * @description 조직 관리자 권한으로 커스텀 속성 정의를 삭제합니다
+         * 속성을 삭제합니다
+         * @description 조직 관리자 권한으로 커스텀 속성 정의를 삭제합니다. 시스템 속성은 삭제할 수 없습니다
          */
         delete: operations["deletePropertyDefinition"];
         options?: never;
         head?: never;
         /**
-         * 커스텀 속성을 수정합니다
-         * @description 조직 관리자 권한으로 커스텀 속성 정의를 부분 수정합니다
+         * 속성을 수정합니다
+         * @description 조직 관리자 권한으로 시스템/커스텀 속성 정의를 부분 수정합니다
          */
         patch: operations["updatePropertyDefinition"];
         trace?: never;
@@ -2129,7 +2109,7 @@ export interface paths {
         };
         /**
          * 속성 메타 목록을 조회합니다
-         * @description 시스템 속성과 커스텀 속성을 합친 최종 메타 목록을 조회합니다
+         * @description 시스템 속성과 커스텀 속성을 통합한 최종 property catalog 목록을 조회합니다
          */
         get: operations["listMeta"];
         put?: never;
@@ -3524,14 +3504,18 @@ export interface components {
             created_at?: string;
         };
         JsonNode: {
-            number?: boolean;
+            pojo?: boolean;
+            int?: boolean;
+            long?: boolean;
+            integral_number?: boolean;
+            floating_point_number?: boolean;
+            /** @enum {string} */
+            node_type?: "ARRAY" | "BINARY" | "BOOLEAN" | "MISSING" | "NULL" | "NUMBER" | "OBJECT" | "POJO" | "STRING";
+            string?: boolean;
             value_node?: boolean;
             container?: boolean;
             missing_node?: boolean;
             object?: boolean;
-            /** @enum {string} */
-            node_type?: "ARRAY" | "BINARY" | "BOOLEAN" | "MISSING" | "NULL" | "NUMBER" | "OBJECT" | "POJO" | "STRING";
-            string?: boolean;
             short?: boolean;
             double?: boolean;
             big_decimal?: boolean;
@@ -3540,11 +3524,7 @@ export interface components {
             textual?: boolean;
             boolean?: boolean;
             binary?: boolean;
-            pojo?: boolean;
-            int?: boolean;
-            long?: boolean;
-            integral_number?: boolean;
-            floating_point_number?: boolean;
+            number?: boolean;
             array?: boolean;
             empty?: boolean;
             null?: boolean;
@@ -3988,7 +3968,7 @@ export interface components {
         PropertyMetaResponse: {
             /**
              * Format: uuid
-             * @description 커스텀 속성 정의 ID. 시스템 속성이면 null
+             * @description property catalog row ID
              * @example 019d0000-0000-7000-8000-000000000001
              */
             definition_id?: string;
@@ -3999,7 +3979,7 @@ export interface components {
              */
             owner_type?: "PART" | "SUPPLIER" | "DRAWING" | "BOM_LINK" | "PART_SUPPLIER";
             /**
-             * @description 속성 key. 시스템 속성은 property_key, 커스텀 속성은 property_definition.id
+             * @description 속성 key. 시스템 속성은 property_key, 커스텀 속성은 UUID 문자열
              * @example category
              */
             property_key?: string;
@@ -5350,29 +5330,10 @@ export interface components {
              */
             ai_hard_limit_enabled?: boolean;
         };
-        /** @description 시스템 속성 override 수정 요청 */
-        UpsertSystemPropertyOverrideRequest: {
-            /**
-             * @description 표시명 override
-             * @example 품목군
-             */
-            display_name_override?: string;
-            /**
-             * Format: int32
-             * @description 표시 순서 override
-             * @example 70
-             */
-            display_order?: number;
-            /**
-             * @description 활성 여부
-             * @example true
-             */
-            active?: boolean;
-        };
         /** @description 순서 변경 대상 속성 */
         ReorderPropertyItemRequest: {
             /**
-             * @description 속성 key. 시스템 속성은 property_key, 커스텀 속성은 property_definition.id(UUID)
+             * @description 속성 key. 시스템 속성은 property_key, 커스텀 속성은 property catalog key(UUID 문자열)
              * @example material
              */
             property_key: string;
@@ -5392,7 +5353,7 @@ export interface components {
             /** @description 변경할 최종 속성 순서 */
             properties: components["schemas"]["ReorderPropertyItemRequest"][];
         };
-        /** @description 커스텀 속성 정의 수정 요청 */
+        /** @description 속성 정의 수정 요청 */
         UpdatePropertyDefinitionRequest: {
             display_name_set?: boolean;
             description_set?: boolean;
@@ -14386,93 +14347,6 @@ export interface operations {
             };
         };
     };
-    upsertSystemPropertyOverride: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /**
-                 * @description 속성 소유 타입
-                 * @example PART
-                 */
-                ownerType: string;
-                /**
-                 * @description 시스템 속성 key
-                 * @example category
-                 */
-                propertyKey: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["UpsertSystemPropertyOverrideRequest"];
-            };
-        };
-        responses: {
-            /** @description 요청 성공 */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PropertyMetaResponse"];
-                };
-            };
-            /** @description 생성 성공 */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PropertyMetaResponse"];
-                };
-            };
-            /** @description 삭제 성공 */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description 잘못된 요청 */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiErrorResponse"];
-                };
-            };
-            /** @description 인증 필요 */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiErrorResponse"];
-                };
-            };
-            /** @description 권한 없음 */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiErrorResponse"];
-                };
-            };
-            /** @description 리소스를 찾을 수 없음 */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiErrorResponse"];
-                };
-            };
-        };
-    };
     reorder: {
         parameters: {
             query?: never;
@@ -14550,8 +14424,16 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description 삭제할 커스텀 속성 정의 ID */
-                propertyDefinitionId: string;
+                /**
+                 * @description 속성 소유 타입
+                 * @example PART
+                 */
+                ownerType: string;
+                /**
+                 * @description 삭제할 속성 key
+                 * @example 019d0000-0000-7000-8000-000000000001
+                 */
+                propertyKey: string;
             };
             cookie?: never;
         };
@@ -14630,8 +14512,16 @@ export interface operations {
             query?: never;
             header?: never;
             path: {
-                /** @description 수정할 커스텀 속성 정의 ID */
-                propertyDefinitionId: string;
+                /**
+                 * @description 속성 소유 타입
+                 * @example PART
+                 */
+                ownerType: string;
+                /**
+                 * @description 수정할 속성 key
+                 * @example material
+                 */
+                propertyKey: string;
             };
             cookie?: never;
         };
@@ -19249,8 +19139,14 @@ export interface operations {
     };
     streamRun: {
         parameters: {
-            query?: never;
-            header?: never;
+            query?: {
+                /** @description 이 sequence 이후 이벤트만 재생합니다 */
+                last_event_sequence?: number;
+            };
+            header?: {
+                /** @description SSE 재연결 시 마지막으로 수신한 이벤트 ID입니다 */
+                "Last-Event-ID"?: string;
+            };
             path: {
                 /** @description 스트림으로 구독할 실행 ID */
                 runId: string;

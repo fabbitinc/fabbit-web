@@ -13,6 +13,7 @@ import type {
   CreateChatThreadResponse,
   SendChatMessageRequest,
   SendChatMessageResponse,
+  StreamRunParams,
   StreamingResponseBody
 } from '../model';
 
@@ -118,9 +119,11 @@ export const getThread = (
  */
 export const streamRun = (
     runId: string,
+    params?: StreamRunParams,
  options?: SecondParameter<typeof customInstance<StreamingResponseBody | void>>,) => {
       return customInstance<StreamingResponseBody | void>(
-      {url: `/api/v1/chat/runs/${runId}/stream`, method: 'GET'
+      {url: `/api/v1/chat/runs/${runId}/stream`, method: 'GET',
+        params
     },
       options);
     }

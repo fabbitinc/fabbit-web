@@ -23,12 +23,12 @@ interface ChangeManagementSourceLabel {
 }
 
 interface ChangeManagementSourceItem {
-  id: string;
-  number: number;
-  title: string;
-  state: string;
-  created_at: string;
-  updated_at: string;
+  id?: string;
+  number?: number;
+  title?: string;
+  state?: string;
+  created_at?: string;
+  updated_at?: string;
   created_by?: { full_name: string } | null;
   labels?: ChangeManagementSourceLabel[];
   assignees?: ChangeManagementSourceUser[];
@@ -39,12 +39,12 @@ export async function fetchIssueList(query: IssueListQueryDto): Promise<ChangeMa
   const response = await listIssuesApiV1IssuesGet(query);
 
   return {
-    openCount: response.open_count,
-    closedCount: response.closed_count,
-    total: response.total,
-    offset: response.offset,
-    limit: response.limit,
-    items: response.items.map((item) => toChangeManagementItemModel("issues", item)),
+    openCount: response.open_count ?? 0,
+    closedCount: response.closed_count ?? 0,
+    total: response.total ?? 0,
+    offset: response.offset ?? 0,
+    limit: response.limit ?? query.limit ?? 20,
+    items: (response.items ?? []).map((item) => toChangeManagementItemModel("issues", item)),
   };
 }
 
@@ -52,12 +52,12 @@ export async function fetchEngineeringChangeList(query: EngineeringChangeListQue
   const response = await listEngineeringChangesApiV1EngineeringChangesGet(query);
 
   return {
-    openCount: response.open_count,
-    closedCount: response.closed_count,
-    total: response.total,
-    offset: response.offset,
-    limit: response.limit,
-    items: response.items.map((item) => toChangeManagementItemModel("engineering-changes", item)),
+    openCount: response.open_count ?? 0,
+    closedCount: response.closed_count ?? 0,
+    total: response.total ?? 0,
+    offset: response.offset ?? 0,
+    limit: response.limit ?? query.limit ?? 20,
+    items: (response.items ?? []).map((item) => toChangeManagementItemModel("engineering-changes", item)),
   };
 }
 
@@ -76,14 +76,14 @@ function toChangeManagementItemModel(
   item: ChangeManagementSourceItem,
 ): ChangeManagementItemModel {
   return {
-    id: item.id,
-    number: item.number,
+    id: item.id ?? "",
+    number: item.number ?? 0,
     kind,
-    title: item.title,
-    state: item.state,
-    engineeringChangeState: kind === "engineering-changes" ? item.state : null,
-    createdAt: item.created_at,
-    updatedAt: item.updated_at,
+    title: item.title ?? "",
+    state: item.state ?? "",
+    engineeringChangeState: kind === "engineering-changes" ? (item.state ?? "") : null,
+    createdAt: item.created_at ?? "",
+    updatedAt: item.updated_at ?? "",
     createdBy: item.created_by?.full_name ?? null,
     labels: (item.labels ?? []).map((label) => ({
       id: label.id,

@@ -106,7 +106,7 @@ export function ChangeManagementScreen({
         navigate(queryState.view === "issues" ? "/changes/issues/new" : "/changes/engineering-changes/new");
       }}
       onItemClick={(item) => {
-        navigate(item.kind === "issues" ? `/changes/issues/${item.number}` : `/changes/engineering-changes/${item.number}`);
+        navigate(item.kind === "issues" ? `/changes/issues/${item.id}` : `/changes/engineering-changes/${item.id}`);
       }}
       onPageChange={onPageChange}
       onPageSizeChange={onPageSizeChange}

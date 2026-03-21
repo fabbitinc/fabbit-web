@@ -134,9 +134,7 @@ export function AppHeader({
   }, [onSearchClick]);
 
   const resolvedSearch = search ?? (searchPlaceholder ? { triggerLabel: searchPlaceholder } : undefined);
-  const resolvedPrimaryAction = actions
-    ? null
-    : primaryAction;
+  const resolvedPrimaryAction = primaryAction;
 
   return (
     <header
@@ -178,8 +176,6 @@ export function AppHeader({
             /
           </kbd>
         </button>
-
-        {actions}
 
         {resolvedPrimaryAction ? (
           <Button
@@ -302,6 +298,8 @@ export function AppHeader({
         >
           <Bell className="size-5" />
         </Button>
+
+        {actions}
 
         {user ? (
           <DropdownMenu>
