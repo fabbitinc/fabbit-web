@@ -6,7 +6,7 @@
     },
     "servers": [
         {
-            "url": "http://127.0.0.1:18080",
+            "url": "http://localhost:8080",
             "description": "Generated server url"
         }
     ],
@@ -15425,6 +15425,9 @@
             "JsonNode": {
                 "type": "object",
                 "properties": {
+                    "number": {
+                        "type": "boolean"
+                    },
                     "pojo": {
                         "type": "boolean"
                     },
@@ -15483,9 +15486,6 @@
                         "type": "boolean"
                     },
                     "binary": {
-                        "type": "boolean"
-                    },
-                    "number": {
                         "type": "boolean"
                     },
                     "integral_number": {
