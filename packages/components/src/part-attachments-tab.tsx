@@ -1,7 +1,8 @@
-import { useEffect, useRef, useState, type DragEvent } from "react";
+import { useEffect, useRef, useState, type DragEvent, type ChangeEvent } from "react";
 import {
   CircleAlert,
   Download,
+  FolderOpen,
   Loader2,
   Trash2,
   Upload,
@@ -151,6 +152,85 @@ const DRAWING_FORMAT_GROUPS = [
 function isAcceptedDrawingFile(file: File) {
   const extension = `.${file.name.split(".").pop()?.toLowerCase() ?? ""}`;
   return DRAWING_ACCEPT.includes(extension as (typeof DRAWING_ACCEPT)[number]);
+}
+
+function sanitizePath(path: string): string {
+  return path
+    .replace(/\\/g, "/")
+    .split("/")
+    .filter((segment) => segment !== ".." && segment !== "." && segment !== "")
+    .join("/");
+}
+
+async function readFileEntry(entry: FileSystemFileEntry): Promise<File> {
+  return new Promise((resolve, reject) => {
+    entry.file(resolve, reject);
+  });
+}
+
+async function readDirectoryEntries(
+  reader: FileSystemDirectoryReader,
+): Promise<FileSystemEntry[]> {
+  return new Promise((resolve, reject) => {
+    reader.readEntries(resolve, reject);
+  });
+}
+
+async function collectFilesFromEntries(
+  items: DataTransferItemList,
+): Promise<File[]> {
+  const entries: FileSystemEntry[] = [];
+
+  for (let i = 0; i < items.length; i++) {
+    const entry = items[i].webkitGetAsEntry?.();
+
+    if (entry) {
+      entries.push(entry);
+    }
+  }
+
+  if (entries.length === 0) {
+    return [];
+  }
+
+  const files: File[] = [];
+  const queue: FileSystemEntry[] = [...entries];
+
+  while (queue.length > 0) {
+    const current = queue.shift()!;
+
+    if (current.isFile) {
+      try {
+        const file = await readFileEntry(current as FileSystemFileEntry);
+        const safePath = sanitizePath(current.fullPath);
+
+        if (safePath) {
+          Object.defineProperty(file, "webkitRelativePath", {
+            value: safePath,
+            writable: false,
+          });
+        }
+
+        files.push(file);
+      } catch {
+        // 읽을 수 없는 파일은 건너뜀
+      }
+    } else if (current.isDirectory) {
+      try {
+        const reader = (current as FileSystemDirectoryEntry).createReader();
+        let batch = await readDirectoryEntries(reader);
+
+        while (batch.length > 0) {
+          queue.push(...batch);
+          batch = await readDirectoryEntries(reader);
+        }
+      } catch {
+        // 읽을 수 없는 폴더는 건너뜀
+      }
+    }
+  }
+
+  return files;
 }
 
 function splitDrawingFiles(fileList: FileList | File[]) {
@@ -594,7 +674,9 @@ export function PartAttachmentsTab({
   onRejectDrawings,
 }: PartAttachmentsTabProps) {
   const drawingInputRef = useRef<HTMLInputElement>(null);
+  const drawingFolderInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const fileFolderInputRef = useRef<HTMLInputElement>(null);
   const [activeDropTarget, setActiveDropTarget] = useState<
     "drawing" | "file" | null
   >(null);
@@ -677,6 +759,26 @@ export function PartAttachmentsTab({
     }
   }
 
+  async function resolveDroppedFiles(
+    dataTransfer: DataTransfer,
+  ): Promise<File[]> {
+    const hasEntryApi =
+      dataTransfer.items.length > 0 &&
+      typeof dataTransfer.items[0].webkitGetAsEntry === "function";
+
+    if (hasEntryApi) {
+      const hasDirectory = Array.from(dataTransfer.items).some(
+        (item) => item.webkitGetAsEntry?.()?.isDirectory,
+      );
+
+      if (hasDirectory) {
+        return collectFilesFromEntries(dataTransfer.items);
+      }
+    }
+
+    return Array.from(dataTransfer.files);
+  }
+
   async function handleDrawingDrop(event: DragEvent<HTMLElement>) {
     if (isLoading || !isEditable || isDrawingUploading) {
       return;
@@ -684,9 +786,8 @@ export function PartAttachmentsTab({
 
     event.preventDefault();
     setActiveDropTarget(null);
-    const { acceptedFiles, rejectedFiles } = splitDrawingFiles(
-      event.dataTransfer.files,
-    );
+    const allFiles = await resolveDroppedFiles(event.dataTransfer);
+    const { acceptedFiles, rejectedFiles } = splitDrawingFiles(allFiles);
 
     if (rejectedFiles.length > 0) {
       onRejectDrawings?.({ acceptedFiles, rejectedFiles });
@@ -706,7 +807,7 @@ export function PartAttachmentsTab({
 
     event.preventDefault();
     setActiveDropTarget(null);
-    const droppedFiles = Array.from(event.dataTransfer.files);
+    const droppedFiles = await resolveDroppedFiles(event.dataTransfer);
 
     if (droppedFiles.length === 0) {
       return;
@@ -806,16 +907,28 @@ export function PartAttachmentsTab({
                 </Button>
               ) : null}
               {isEditable ? (
-                <Button
-                  disabled={isDrawingUploading || isLoading}
-                  size="sm"
-                  type="button"
-                  variant="outline"
-                  onClick={() => drawingInputRef.current?.click()}
-                >
-                  <Upload className="size-4" />
-                  도면 추가
-                </Button>
+                <>
+                  <Button
+                    disabled={isDrawingUploading || isLoading}
+                    size="sm"
+                    type="button"
+                    variant="outline"
+                    onClick={() => drawingFolderInputRef.current?.click()}
+                  >
+                    <FolderOpen className="size-4" />
+                    폴더
+                  </Button>
+                  <Button
+                    disabled={isDrawingUploading || isLoading}
+                    size="sm"
+                    type="button"
+                    variant="outline"
+                    onClick={() => drawingInputRef.current?.click()}
+                  >
+                    <Upload className="size-4" />
+                    도면 추가
+                  </Button>
+                </>
               ) : null}
             </div>
           }
@@ -827,7 +940,35 @@ export function PartAttachmentsTab({
             className="hidden"
             multiple
             type="file"
-            onChange={async (event) => {
+            onChange={async (event: ChangeEvent<HTMLInputElement>) => {
+              const { acceptedFiles, rejectedFiles } = splitDrawingFiles(
+                event.target.files ?? [],
+              );
+
+              if (rejectedFiles.length > 0) {
+                onRejectDrawings?.({ acceptedFiles, rejectedFiles });
+              }
+
+              if (acceptedFiles.length === 0) {
+                return;
+              }
+
+              try {
+                await Promise.resolve(onUploadDrawings(acceptedFiles));
+              } finally {
+                event.target.value = "";
+              }
+            }}
+          />
+          <input
+            ref={drawingFolderInputRef}
+            accept={DRAWING_ACCEPT_STRING}
+            aria-label="폴더에서 도면 업로드"
+            className="hidden"
+            multiple
+            type="file"
+            {...{ webkitdirectory: "", directory: "" } as Record<string, string>}
+            onChange={async (event: ChangeEvent<HTMLInputElement>) => {
               const { acceptedFiles, rejectedFiles } = splitDrawingFiles(
                 event.target.files ?? [],
               );
@@ -957,16 +1098,28 @@ export function PartAttachmentsTab({
                 </Button>
               ) : null}
               {isEditable ? (
-                <Button
-                  disabled={isFileUploading || isLoading}
-                  size="sm"
-                  type="button"
-                  variant="outline"
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  <Upload className="size-4" />
-                  파일 추가
-                </Button>
+                <>
+                  <Button
+                    disabled={isFileUploading || isLoading}
+                    size="sm"
+                    type="button"
+                    variant="outline"
+                    onClick={() => fileFolderInputRef.current?.click()}
+                  >
+                    <FolderOpen className="size-4" />
+                    폴더
+                  </Button>
+                  <Button
+                    disabled={isFileUploading || isLoading}
+                    size="sm"
+                    type="button"
+                    variant="outline"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <Upload className="size-4" />
+                    파일 추가
+                  </Button>
+                </>
               ) : null}
             </div>
           }
@@ -977,7 +1130,28 @@ export function PartAttachmentsTab({
             className="hidden"
             multiple
             type="file"
-            onChange={async (event) => {
+            onChange={async (event: ChangeEvent<HTMLInputElement>) => {
+              const nextFiles = Array.from(event.target.files ?? []);
+
+              if (nextFiles.length === 0) {
+                return;
+              }
+
+              try {
+                await Promise.resolve(onUploadFiles(nextFiles));
+              } finally {
+                event.target.value = "";
+              }
+            }}
+          />
+          <input
+            ref={fileFolderInputRef}
+            aria-label="폴더에서 파일 업로드"
+            className="hidden"
+            multiple
+            type="file"
+            {...{ webkitdirectory: "", directory: "" } as Record<string, string>}
+            onChange={async (event: ChangeEvent<HTMLInputElement>) => {
               const nextFiles = Array.from(event.target.files ?? []);
 
               if (nextFiles.length === 0) {
