@@ -18,7 +18,9 @@ interface BomExploreScreenProps {
   viewType: PartBomExploreView;
   searchQuery: string;
   singleLevelRootKey: string;
+  expandedKeys?: Set<string>;
   onDirectionChange: (direction: PartBomDirection) => void;
+  onExpandedKeysChange?: (keys: Set<string>) => void;
   onViewTypeChange: (viewType: PartBomExploreView) => void;
   onSearchChange: (query: string) => void;
   onSingleLevelRootKeyChange: (nodeKey: string) => void;
@@ -31,7 +33,9 @@ export function BomExploreScreen({
   viewType,
   searchQuery,
   singleLevelRootKey,
+  expandedKeys,
   onDirectionChange,
+  onExpandedKeysChange,
   onViewTypeChange,
   onSearchChange,
   onSingleLevelRootKeyChange,
@@ -50,6 +54,7 @@ export function BomExploreScreen({
   return (
     <BomExploreScreenView
       direction={direction}
+      expandedKeys={expandedKeys}
       isError={bomTreeQuery.isError}
       isExporting={exportBomAction.isPending}
       isLoading={bomTreeQuery.isLoading}
@@ -60,6 +65,7 @@ export function BomExploreScreen({
       tree={tree}
       viewType={viewType}
       onDirectionChange={onDirectionChange}
+      onExpandedKeysChange={onExpandedKeysChange}
       onExport={() => exportBomAction.mutate({ direction })}
       onNavigateBom={() => {}}
       onNavigateDetail={() => {}}

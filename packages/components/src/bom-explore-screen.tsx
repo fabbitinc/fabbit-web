@@ -75,7 +75,9 @@ export interface BomExploreScreenProps {
   isExporting: boolean;
   isLoading?: boolean;
   isError?: boolean;
+  expandedKeys?: Set<string>;
   onDirectionChange: (direction: BomExploreDirection) => void;
+  onExpandedKeysChange?: (keys: Set<string>) => void;
   onExport: () => void;
   onNavigateBom: (partId: string) => void;
   onNavigateDetail: (partId: string) => void;
@@ -88,10 +90,12 @@ const GRID_COLS = "grid-cols-[48px_minmax(240px,1fr)_80px_64px_120px_64px_80px_1
 
 export function BomExploreScreen({
   direction,
+  expandedKeys: externalExpandedKeys,
   isError = false,
   isExporting,
   isLoading = false,
   onDirectionChange,
+  onExpandedKeysChange,
   onExport,
   onNavigateBom,
   onNavigateDetail,
@@ -105,7 +109,19 @@ export function BomExploreScreen({
   tree,
   viewType,
 }: BomExploreScreenProps) {
-  const [expandedKeys, setExpandedKeys] = useState<Set<string>>(new Set(["root"]));
+  const [internalExpandedKeys, setInternalExpandedKeys] = useState<Set<string>>(new Set(["root"]));
+  const isControlled = externalExpandedKeys !== undefined;
+  const expandedKeys = isControlled ? externalExpandedKeys : internalExpandedKeys;
+  const setExpandedKeys = useCallback(
+    (updater: Set<string> | ((previous: Set<string>) => Set<string>)) => {
+      const next = typeof updater === "function" ? updater(expandedKeys) : updater;
+      if (!isControlled) {
+        setInternalExpandedKeys(next);
+      }
+      onExpandedKeysChange?.(next);
+    },
+    [expandedKeys, isControlled, onExpandedKeysChange],
+  );
   const [previewNode, setPreviewNode] = useState<PartPreview | null>(null);
 
   const handleExpandAll = useCallback(() => {

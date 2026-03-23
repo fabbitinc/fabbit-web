@@ -3,6 +3,31 @@ import { useParams, useSearchParams } from "react-router-dom";
 import { BomExploreScreen } from "@/features/parts/components/bom-explore-screen";
 import type { PartBomDirection, PartBomExploreView } from "@/features/parts/types/parts-model";
 
+function parseExpandedKeys(value: string | null): Set<string> {
+  if (!value) {
+    return new Set(["root"]);
+  }
+
+  const keys = value.split(",").filter(Boolean);
+
+  if (keys.length === 0) {
+    return new Set(["root"]);
+  }
+
+  keys.push("root");
+  return new Set(keys);
+}
+
+function serializeExpandedKeys(keys: Set<string>): string | null {
+  const filtered = [...keys].filter((key) => key !== "root");
+
+  if (filtered.length === 0) {
+    return null;
+  }
+
+  return filtered.join(",");
+}
+
 export function BomExplorePage() {
   const { partId, revisionId } = useParams<{
     partId: string;
@@ -23,6 +48,10 @@ export function BomExplorePage() {
   }, [searchParams]);
   const searchQuery = searchParams.get("q") ?? "";
   const singleLevelRootKey = searchParams.get("root") ?? "root";
+  const expandedKeys = useMemo(
+    () => parseExpandedKeys(searchParams.get("expanded")),
+    [searchParams],
+  );
 
   if (!partId || !revisionId) {
     return null;
@@ -36,6 +65,19 @@ export function BomExplorePage() {
       viewType={viewType}
       searchQuery={searchQuery}
       singleLevelRootKey={singleLevelRootKey}
+      expandedKeys={expandedKeys}
+      onExpandedKeysChange={(keys) => {
+        setSearchParams((previous) => {
+          const next = new URLSearchParams(previous);
+          const serialized = serializeExpandedKeys(keys);
+          if (serialized) {
+            next.set("expanded", serialized);
+          } else {
+            next.delete("expanded");
+          }
+          return next;
+        });
+      }}
       onDirectionChange={(nextDirection) => {
         setSearchParams((previous) => {
           const next = new URLSearchParams(previous);
