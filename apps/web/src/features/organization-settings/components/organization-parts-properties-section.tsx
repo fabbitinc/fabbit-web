@@ -23,7 +23,6 @@ import { PropertyMetaResponseValueType } from "@/api/generated/orval/model/prope
 import { useCreatePropertyDefinitionAction } from "@/features/properties/hooks/use-create-property-definition-action";
 import { usePropertyMetaQuery } from "@/features/properties/hooks/use-property-meta-query";
 import { useUpdatePropertyDefinitionAction } from "@/features/properties/hooks/use-update-property-definition-action";
-import { useUpsertSystemPropertyOverrideAction } from "@/features/properties/hooks/use-upsert-system-property-override-action";
 import { sortPropertyMeta } from "@/features/properties/lib/property-values";
 import type {
   PropertyMetaModel,
@@ -147,7 +146,7 @@ export function OrganizationPartsPropertiesSection() {
   const [customForm, setCustomForm] = useState<CustomPropertyFormState>(() => createCustomPropertyFormState());
   const [systemForm, setSystemForm] = useState<SystemOverrideFormState | null>(null);
   const updatePropertyDefinitionAction = useUpdatePropertyDefinitionAction();
-  const upsertSystemOverrideAction = useUpsertSystemPropertyOverrideAction();
+  const systemUpdateAction = useUpdatePropertyDefinitionAction();
 
   const propertyMetas = useMemo(
     () => sortPropertyMeta(propertyMetaQuery.data ?? []),
@@ -200,7 +199,8 @@ export function OrganizationPartsPropertiesSection() {
 
       if (dialogState?.kind === "edit-custom") {
         await updatePropertyDefinitionAction.mutateAsync({
-          propertyDefinitionId: dialogState.meta.definitionId ?? "",
+          ownerType: dialogState.meta.ownerType || "PART",
+          propertyKey: dialogState.meta.propertyKey,
           request: {
             display_name: customForm.displayName.trim(),
             display_name_set: true,
@@ -225,13 +225,16 @@ export function OrganizationPartsPropertiesSection() {
       }
 
       if (dialogState?.kind === "edit-system" && systemForm) {
-        await upsertSystemOverrideAction.mutateAsync({
+        await systemUpdateAction.mutateAsync({
           ownerType: dialogState.meta.ownerType || "PART",
           propertyKey: dialogState.meta.propertyKey,
           request: {
-            display_name_override: systemForm.displayNameOverride.trim() || undefined,
+            display_name: systemForm.displayNameOverride.trim() || undefined,
+            display_name_set: true,
             display_order: parseDisplayOrder(systemForm.displayOrder),
+            display_order_set: true,
             active: systemForm.active,
+            active_set: true,
           },
         });
         setDialogState(null);
@@ -245,7 +248,7 @@ export function OrganizationPartsPropertiesSection() {
   const isPending =
     createPropertyDefinitionAction.isPending ||
     updatePropertyDefinitionAction.isPending ||
-    upsertSystemOverrideAction.isPending;
+    systemUpdateAction.isPending;
 
   return (
     <div className="space-y-6">

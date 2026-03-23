@@ -5,13 +5,11 @@ import {
   fetchPropertyMeta,
   reorderProperties,
   updatePropertyDefinition,
-  upsertSystemPropertyOverride,
 } from "@/features/properties/api/properties.api";
 import type {
   CreatePropertyDefinitionRequestDto,
   ReorderPropertyRequestDto,
   UpdatePropertyDefinitionRequestDto,
-  UpsertSystemPropertyOverrideRequestDto,
 } from "@/features/properties/api/properties.types";
 
 export const propertiesKeys = {
@@ -41,30 +39,20 @@ export const propertiesMutations = {
     mutationOptions({
       mutationKey: ["properties", "update-definition"],
       mutationFn: ({
-        propertyDefinitionId,
-        request,
-      }: {
-        propertyDefinitionId: string;
-        request: UpdatePropertyDefinitionRequestDto;
-      }) => updatePropertyDefinition(propertyDefinitionId, request),
-    }),
-  upsertSystemOverride: () =>
-    mutationOptions({
-      mutationKey: ["properties", "upsert-system-override"],
-      mutationFn: ({
         ownerType,
         propertyKey,
         request,
       }: {
         ownerType: string;
         propertyKey: string;
-        request: UpsertSystemPropertyOverrideRequestDto;
-      }) => upsertSystemPropertyOverride(ownerType, propertyKey, request),
+        request: UpdatePropertyDefinitionRequestDto;
+      }) => updatePropertyDefinition(ownerType, propertyKey, request),
     }),
   deleteDefinition: () =>
     mutationOptions({
       mutationKey: ["properties", "delete-definition"],
-      mutationFn: (propertyDefinitionId: string) => deletePropertyDefinition(propertyDefinitionId),
+      mutationFn: ({ ownerType, propertyKey }: { ownerType: string; propertyKey: string }) =>
+        deletePropertyDefinition(ownerType, propertyKey),
     }),
   reorder: () =>
     mutationOptions({
@@ -72,4 +60,3 @@ export const propertiesMutations = {
       mutationFn: (request: ReorderPropertyRequestDto) => reorderProperties(request),
     }),
 };
-

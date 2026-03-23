@@ -27,11 +27,11 @@ export function useChatStreamListener() {
   useEffect(() => {
     if (!isStreaming || !streamingRunId) return;
 
+    const runId = streamingRunId;
     const abortController = new AbortController();
     let reconnectTimer: ReturnType<typeof setTimeout> | null = null;
 
     function handleEvent(event: ChatSseEvent) {
-      // 중복 이벤트 방지
       if (event.sequence > 0 && processedSequencesRef.current.has(event.sequence)) {
         return;
       }
@@ -44,12 +44,10 @@ export function useChatStreamListener() {
       }
 
       switch (event.type) {
-        // ── Tool timeline 이벤트 ──
         case "tool.started": {
-          // toolCallId가 없으면 sequence 기반 고유 ID 생성
-          const startCallId = event.toolCallId || `step-${event.sequence}`;
-          addToolStep({
-            toolCallId: startCallId,
+          const callId = event.toolCallId || `step-${event.sequence}`;
+          addToolStep(runId, {
+            toolCallId: callId,
             toolName: event.toolName,
             displayName: event.displayName ?? event.toolName,
             status: "running",
@@ -60,8 +58,8 @@ export function useChatStreamListener() {
         }
 
         case "tool.completed": {
-          const completeCallId = event.toolCallId || `step-${event.sequence}`;
-          updateToolStep(completeCallId, {
+          const callId = event.toolCallId || `step-${event.sequence}`;
+          updateToolStep(runId, callId, {
             status: "completed",
             message: event.message ?? event.summary ?? "완료",
             summary: event.summary,
@@ -72,7 +70,7 @@ export function useChatStreamListener() {
         }
 
         case "tool.failed":
-          updateToolStep(event.toolCallId, {
+          updateToolStep(runId, event.toolCallId, {
             status: "failed",
             message: event.error || "실패",
           });
@@ -80,12 +78,9 @@ export function useChatStreamListener() {
           break;
 
         case "trace.updated":
-          // trace는 현재 진행 중인 마지막 tool step의 메시지를 업데이트
-          // 별도 step으로 추가하지 않고, 스트리밍 표시에 반영
           setLastEventSequence(event.sequence);
           break;
 
-        // ── 메시지 이벤트 ──
         case "message.delta":
           appendStreamingText(event.delta);
           setLastEventSequence(event.sequence);
@@ -109,7 +104,6 @@ export function useChatStreamListener() {
           }
           break;
 
-        // ── Run 종료 이벤트 ──
         case "run.completed":
           setLastEventSequence(event.sequence);
           stopStreaming();
@@ -159,18 +153,14 @@ export function useChatStreamListener() {
       }, delay);
     }
 
-    function handleClose() {
-      // 정상 종료
-    }
-
     function startConnection() {
       connectSseStream({
-        runId: streamingRunId!,
+        runId,
         lastEventSequence,
         signal: abortController.signal,
         onEvent: handleEvent,
         onError: handleError,
-        onClose: handleClose,
+        onClose: () => {},
       });
     }
 

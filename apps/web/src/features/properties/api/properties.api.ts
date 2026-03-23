@@ -1,10 +1,9 @@
 import {
-  createPropertyDefinition as createPropertyDefinitionApiV1PropertiesDefinitionsPost,
-  deletePropertyDefinition as deletePropertyDefinitionApiV1PropertiesDefinitionsDelete,
-  listMeta as listMetaApiV1PropertiesMetaGet,
-  reorder as reorderApiV1PropertiesOrderPatch,
-  updatePropertyDefinition as updatePropertyDefinitionApiV1PropertiesDefinitionsPropertyDefinitionIdPatch,
-  upsertSystemPropertyOverride as upsertSystemPropertyOverrideApiV1PropertiesSystemOverridesOwnerTypePropertyKeyPatch,
+  createPropertyDefinition as createPropertyDefinitionApi,
+  deletePropertyDefinition as deletePropertyDefinitionApi,
+  listMeta as listMetaApi,
+  reorder as reorderApi,
+  updatePropertyDefinition as updatePropertyDefinitionApi,
 } from "@/api/generated/orval/properties/properties";
 import type {
   CreatePropertyDefinitionRequestDto,
@@ -15,8 +14,6 @@ import type {
   ReorderPropertyRequestDto,
   UpdatePropertyDefinitionRequestDto,
   UpdatePropertyDefinitionResponseDto,
-  UpsertSystemPropertyOverrideRequestDto,
-  UpsertSystemPropertyOverrideResponseDto,
 } from "@/features/properties/api/properties.types";
 import type { PropertyMetaModel, PropertyOptionModel } from "@/features/properties/types/properties-model";
 
@@ -50,48 +47,30 @@ function toPropertyMetaModel(property: PropertyMetaResponseDto): PropertyMetaMod
 }
 
 export async function fetchPropertyMeta(query: ListPropertyMetaQueryDto) {
-  const response = await listMetaApiV1PropertiesMetaGet(query);
+  const response = await listMetaApi(query);
   return ((response as PropertyMetaListResponseDto).items ?? [])
     .map(toPropertyMetaModel)
     .filter((property) => property.propertyKey.trim().length > 0);
 }
 
 export async function createPropertyDefinition(request: CreatePropertyDefinitionRequestDto) {
-  const response = await createPropertyDefinitionApiV1PropertiesDefinitionsPost(request);
+  const response = await createPropertyDefinitionApi(request);
   return toPropertyMetaModel(response as CreatePropertyDefinitionResponseDto);
 }
 
 export async function updatePropertyDefinition(
-  propertyDefinitionId: string,
+  ownerType: string,
+  propertyKey: string,
   request: UpdatePropertyDefinitionRequestDto,
 ) {
-  const response = await updatePropertyDefinitionApiV1PropertiesDefinitionsPropertyDefinitionIdPatch(
-    propertyDefinitionId,
-    request,
-  );
-
+  const response = await updatePropertyDefinitionApi(ownerType, propertyKey, request);
   return toPropertyMetaModel(response as UpdatePropertyDefinitionResponseDto);
 }
 
-export async function deletePropertyDefinition(propertyDefinitionId: string) {
-  await deletePropertyDefinitionApiV1PropertiesDefinitionsDelete(propertyDefinitionId);
+export async function deletePropertyDefinition(ownerType: string, propertyKey: string) {
+  await deletePropertyDefinitionApi(ownerType, propertyKey);
 }
 
 export async function reorderProperties(request: ReorderPropertyRequestDto) {
-  await reorderApiV1PropertiesOrderPatch(request);
-}
-
-export async function upsertSystemPropertyOverride(
-  ownerType: string,
-  propertyKey: string,
-  request: UpsertSystemPropertyOverrideRequestDto,
-) {
-  const response =
-    await upsertSystemPropertyOverrideApiV1PropertiesSystemOverridesOwnerTypePropertyKeyPatch(
-      ownerType,
-      propertyKey,
-      request,
-    );
-
-  return toPropertyMetaModel(response as UpsertSystemPropertyOverrideResponseDto);
+  await reorderApi(request);
 }

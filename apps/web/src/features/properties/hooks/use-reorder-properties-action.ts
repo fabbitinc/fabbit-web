@@ -12,6 +12,7 @@ export function useReorderPropertiesAction() {
     mutationKey: reorderMutation.mutationKey,
     mutationFn: reorderMutation.mutationFn,
     onSuccess: async (_data, request: ReorderPropertyRequestDto) => {
+      toast.success("순서를 변경했습니다.");
       await queryClient.invalidateQueries({
         queryKey: propertiesKeys.metaScope(request.owner_type),
       });

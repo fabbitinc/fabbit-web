@@ -8,7 +8,6 @@ import {
   usePropertyMetaQuery,
   useReorderPropertiesAction,
   useUpdatePropertyDefinitionAction,
-  useUpsertSystemPropertyOverrideAction,
   type PropertyMetaModel,
 } from "@/features/properties";
 import {
@@ -115,7 +114,6 @@ export function OrganizationPartsPropertiesTab() {
   const propertyMetaQuery = usePropertyMetaQuery(PROPERTY_OWNER_TYPE, true);
   const createPropertyDefinitionAction = useCreatePropertyDefinitionAction();
   const updatePropertyDefinitionAction = useUpdatePropertyDefinitionAction();
-  const upsertSystemPropertyOverrideAction = useUpsertSystemPropertyOverrideAction();
   const deletePropertyDefinitionAction = useDeletePropertyDefinitionAction({ ownerType: PROPERTY_OWNER_TYPE });
   const reorderPropertiesAction = useReorderPropertiesAction();
 
@@ -183,32 +181,19 @@ export function OrganizationPartsPropertiesTab() {
   function handleToggleActive(property: PropertyMetaModel) {
     const nextActive = !property.active;
 
-    // 로컬 즉시 반영
     beginMutation();
     setLocalItems((prev) =>
       prev.map((p) => (p.propertyKey === property.propertyKey ? { ...p, active: nextActive } : p)),
     );
 
-    const onSettled = endMutation;
-
-    if (property.system) {
-      upsertSystemPropertyOverrideAction.mutate(
-        {
-          ownerType: PROPERTY_OWNER_TYPE,
-          propertyKey: property.propertyKey,
-          request: { active: nextActive },
-        },
-        { onSettled },
-      );
-    } else if (property.definitionId) {
-      updatePropertyDefinitionAction.mutate(
-        {
-          propertyDefinitionId: property.definitionId,
-          request: { active: nextActive, active_set: true },
-        },
-        { onSettled },
-      );
-    }
+    updatePropertyDefinitionAction.mutate(
+      {
+        ownerType: PROPERTY_OWNER_TYPE,
+        propertyKey: property.propertyKey,
+        request: { active: nextActive, active_set: true },
+      },
+      { onSettled: endMutation },
+    );
   }
 
   /* ── 편집 ── */
@@ -226,11 +211,12 @@ export function OrganizationPartsPropertiesTab() {
   /* ── 삭제 ── */
 
   function handleDeleteConfirm() {
-    if (!deleteTarget?.definitionId) return;
+    if (!deleteTarget) return;
 
-    deletePropertyDefinitionAction.mutate(deleteTarget.definitionId, {
-      onSuccess: () => setDeleteTarget(null),
-    });
+    deletePropertyDefinitionAction.mutate(
+      { ownerType: PROPERTY_OWNER_TYPE, propertyKey: deleteTarget.propertyKey },
+      { onSuccess: () => setDeleteTarget(null) },
+    );
   }
 
   /* ── 생성 ── */
@@ -259,11 +245,12 @@ export function OrganizationPartsPropertiesTab() {
   /* ── 커스텀 속성 수정 ── */
 
   function handleCustomUpdateSubmit() {
-    if (!editingCustomProperty?.definitionId) return;
+    if (!editingCustomProperty) return;
 
     updatePropertyDefinitionAction.mutate(
       {
-        propertyDefinitionId: editingCustomProperty.definitionId,
+        ownerType: PROPERTY_OWNER_TYPE,
+        propertyKey: editingCustomProperty.propertyKey,
         request: {
           display_name: toRequiredString(editingCustomDraft.displayName, "표시명"),
           display_name_set: true,
@@ -292,14 +279,17 @@ export function OrganizationPartsPropertiesTab() {
   function handleSystemOverrideSubmit() {
     if (!editingSystemProperty) return;
 
-    upsertSystemPropertyOverrideAction.mutate(
+    updatePropertyDefinitionAction.mutate(
       {
         ownerType: PROPERTY_OWNER_TYPE,
         propertyKey: editingSystemProperty.propertyKey,
         request: {
-          display_name_override: editingSystemDraft.displayNameOverride.trim(),
+          display_name: editingSystemDraft.displayNameOverride.trim(),
+          display_name_set: true,
           display_order: toOptionalDisplayOrder(editingSystemDraft.displayOrder),
+          display_order_set: true,
           active: editingSystemDraft.activeConfigurable ? editingSystemDraft.active : undefined,
+          active_set: editingSystemDraft.activeConfigurable,
         },
       },
       { onSuccess: () => setEditingSystemProperty(null) },
@@ -416,7 +406,7 @@ export function OrganizationPartsPropertiesTab() {
 
       <SystemOverrideDialog
         draft={editingSystemDraft}
-        isPending={upsertSystemPropertyOverrideAction.isPending}
+        isPending={updatePropertyDefinitionAction.isPending}
         open={editingSystemProperty !== null}
         onClose={() => setEditingSystemProperty(null)}
         onDraftChange={setEditingSystemDraft}

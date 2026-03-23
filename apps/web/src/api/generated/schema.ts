@@ -2860,6 +2860,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/chat/runs/{runId}/events": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 챗 실행 이벤트 목록을 조회합니다
+         * @description 실행에 속한 단계 이벤트 목록을 조회합니다
+         */
+        get: operations["listRunEvents"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/auth/site": {
         parameters: {
             query?: never;
@@ -7202,6 +7222,43 @@ export interface components {
             sequence?: number;
             /** @description 메시지 내용 */
             content?: components["schemas"]["JsonNode"];
+            /**
+             * Format: date-time
+             * @description 생성 시각
+             */
+            created_at?: string;
+        };
+        /** @description 챗 실행 이벤트 목록 응답 */
+        ChatRunEventListResponse: {
+            /** @description 실행 이벤트 목록 */
+            items?: components["schemas"]["ChatRunEventResponse"][];
+        };
+        /** @description 챗 실행 이벤트 */
+        ChatRunEventResponse: {
+            /**
+             * Format: uuid
+             * @description 이벤트 ID
+             */
+            event_id?: string;
+            /**
+             * Format: uuid
+             * @description 실행 ID
+             */
+            run_id?: string;
+            /**
+             * Format: int64
+             * @description 이벤트 순서
+             */
+            sequence?: number;
+            /** @description 이벤트 타입 */
+            event_type?: string;
+            /**
+             * @description 이벤트 노출 수준
+             * @enum {string}
+             */
+            visibility?: "USER_VISIBLE" | "INTERNAL";
+            /** @description 이벤트 payload */
+            payload?: components["schemas"]["JsonNode"];
             /**
              * Format: date-time
              * @description 생성 시각
@@ -19180,6 +19237,90 @@ export interface operations {
                 };
                 content: {
                     "text/event-stream": components["schemas"]["StreamingResponseBody"];
+                };
+            };
+            /** @description 요청 성공 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    listRunEvents: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 조회할 실행 ID */
+                runId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatRunEventListResponse"];
+                };
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatRunEventListResponse"];
+                };
+            };
+            /** @description 비동기 실행 시작 */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChatRunEventListResponse"];
                 };
             };
             /** @description 요청 성공 */

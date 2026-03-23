@@ -11,12 +11,7 @@ export type PropertyMetaResponseDto = NonNullable<PropertyMetaListResponseDto["i
 export type CreatePropertyDefinitionRequestDto = ApiRequestBody<"/api/v1/properties/definitions", "post">;
 export type CreatePropertyDefinitionResponseDto = ResponseOf<"/api/v1/properties/definitions", "post">;
 export type UpdatePropertyDefinitionRequestDto =
-  ApiRequestBody<"/api/v1/properties/definitions/{propertyDefinitionId}", "patch">;
+  ApiRequestBody<"/api/v1/properties/definitions/{ownerType}/{propertyKey}", "patch">;
 export type UpdatePropertyDefinitionResponseDto =
-  ResponseOf<"/api/v1/properties/definitions/{propertyDefinitionId}", "patch">;
-export type UpsertSystemPropertyOverrideRequestDto =
-  ApiRequestBody<"/api/v1/properties/system-overrides/{ownerType}/{propertyKey}", "patch">;
-export type UpsertSystemPropertyOverrideResponseDto =
-  ResponseOf<"/api/v1/properties/system-overrides/{ownerType}/{propertyKey}", "patch">;
+  ResponseOf<"/api/v1/properties/definitions/{ownerType}/{propertyKey}", "patch">;
 export type ReorderPropertyRequestDto = ApiRequestBody<"/api/v1/properties/order", "patch">;
-

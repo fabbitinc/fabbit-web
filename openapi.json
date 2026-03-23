@@ -14597,6 +14597,103 @@
                 }
             }
         },
+        "/api/v1/chat/runs/{runId}/events": {
+            "get": {
+                "tags": [
+                    "chat"
+                ],
+                "summary": "\ucc57 \uc2e4\ud589 \uc774\ubca4\ud2b8 \ubaa9\ub85d\uc744 \uc870\ud68c\ud569\ub2c8\ub2e4",
+                "description": "\uc2e4\ud589\uc5d0 \uc18d\ud55c \ub2e8\uacc4 \uc774\ubca4\ud2b8 \ubaa9\ub85d\uc744 \uc870\ud68c\ud569\ub2c8\ub2e4",
+                "operationId": "listRunEvents",
+                "parameters": [
+                    {
+                        "name": "runId",
+                        "in": "path",
+                        "description": "\uc870\ud68c\ud560 \uc2e4\ud589 ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "\uc694\uccad \uc131\uacf5",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ChatRunEventListResponse"
+                                }
+                            }
+                        }
+                    },
+                    "201": {
+                        "description": "\uc0dd\uc131 \uc131\uacf5",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ChatRunEventListResponse"
+                                }
+                            }
+                        }
+                    },
+                    "202": {
+                        "description": "\ube44\ub3d9\uae30 \uc2e4\ud589 \uc2dc\uc791",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ChatRunEventListResponse"
+                                }
+                            }
+                        }
+                    },
+                    "204": {
+                        "description": "\uc694\uccad \uc131\uacf5"
+                    },
+                    "400": {
+                        "description": "\uc798\ubabb\ub41c \uc694\uccad",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "\uc778\uc99d \ud544\uc694",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "\uad8c\ud55c \uc5c6\uc74c",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "\ub9ac\uc18c\uc2a4\ub97c \ucc3e\uc744 \uc218 \uc5c6\uc74c",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/auth/site": {
             "get": {
                 "tags": [
@@ -22867,6 +22964,61 @@
                     "content": {
                         "$ref": "#/components/schemas/JsonNode",
                         "description": "\uba54\uc2dc\uc9c0 \ub0b4\uc6a9"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "\uc0dd\uc131 \uc2dc\uac01"
+                    }
+                }
+            },
+            "ChatRunEventListResponse": {
+                "type": "object",
+                "description": "\ucc57 \uc2e4\ud589 \uc774\ubca4\ud2b8 \ubaa9\ub85d \uc751\ub2f5",
+                "properties": {
+                    "items": {
+                        "type": "array",
+                        "description": "\uc2e4\ud589 \uc774\ubca4\ud2b8 \ubaa9\ub85d",
+                        "items": {
+                            "$ref": "#/components/schemas/ChatRunEventResponse"
+                        }
+                    }
+                }
+            },
+            "ChatRunEventResponse": {
+                "type": "object",
+                "description": "\ucc57 \uc2e4\ud589 \uc774\ubca4\ud2b8",
+                "properties": {
+                    "event_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "\uc774\ubca4\ud2b8 ID"
+                    },
+                    "run_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "\uc2e4\ud589 ID"
+                    },
+                    "sequence": {
+                        "type": "integer",
+                        "format": "int64",
+                        "description": "\uc774\ubca4\ud2b8 \uc21c\uc11c"
+                    },
+                    "event_type": {
+                        "type": "string",
+                        "description": "\uc774\ubca4\ud2b8 \ud0c0\uc785"
+                    },
+                    "visibility": {
+                        "type": "string",
+                        "description": "\uc774\ubca4\ud2b8 \ub178\ucd9c \uc218\uc900",
+                        "enum": [
+                            "USER_VISIBLE",
+                            "INTERNAL"
+                        ]
+                    },
+                    "payload": {
+                        "$ref": "#/components/schemas/JsonNode",
+                        "description": "\uc774\ubca4\ud2b8 payload"
                     },
                     "created_at": {
                         "type": "string",

@@ -6,6 +6,7 @@
  */
 import type {
   ChatMessageListResponse,
+  ChatRunEventListResponse,
   ChatThreadDetailResponse,
   ChatThreadListResponse,
   ConfirmChatActionResponse,
@@ -127,6 +128,18 @@ export const streamRun = (
     },
       options);
     }
+  /**
+ * 실행에 속한 단계 이벤트 목록을 조회합니다
+ * @summary 챗 실행 이벤트 목록을 조회합니다
+ */
+export const listRunEvents = (
+    runId: string,
+ options?: SecondParameter<typeof customInstance<ChatRunEventListResponse | void>>,) => {
+      return customInstance<ChatRunEventListResponse | void>(
+      {url: `/api/v1/chat/runs/${runId}/events`, method: 'GET'
+    },
+      options);
+    }
   export type ListThreadsResult = NonNullable<Awaited<ReturnType<typeof listThreads>>>
 export type CreateThreadResult = NonNullable<Awaited<ReturnType<typeof createThread>>>
 export type ListMessagesResult = NonNullable<Awaited<ReturnType<typeof listMessages>>>
@@ -135,3 +148,4 @@ export type RejectActionResult = NonNullable<Awaited<ReturnType<typeof rejectAct
 export type ConfirmActionResult = NonNullable<Awaited<ReturnType<typeof confirmAction>>>
 export type GetThreadResult = NonNullable<Awaited<ReturnType<typeof getThread>>>
 export type StreamRunResult = NonNullable<Awaited<ReturnType<typeof streamRun>>>
+export type ListRunEventsResult = NonNullable<Awaited<ReturnType<typeof listRunEvents>>>

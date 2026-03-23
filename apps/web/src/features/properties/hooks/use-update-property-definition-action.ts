@@ -16,10 +16,12 @@ export function useUpdatePropertyDefinitionAction(options?: UseUpdatePropertyDef
   return useMutation({
     mutationKey: updateDefinitionMutation.mutationKey,
     mutationFn: ({
-      propertyDefinitionId,
+      ownerType,
+      propertyKey,
       request,
     }: {
-      propertyDefinitionId: string;
+      ownerType: string;
+      propertyKey: string;
       request: UpdatePropertyDefinitionRequestDto;
     }, context) => {
       const mutationFn = updateDefinitionMutation.mutationFn;
@@ -28,15 +30,15 @@ export function useUpdatePropertyDefinitionAction(options?: UseUpdatePropertyDef
         throw new Error("속성 정의 수정 mutationFn이 정의되지 않았습니다.");
       }
 
-      return mutationFn({ propertyDefinitionId, request }, context);
+      return mutationFn({ ownerType, propertyKey, request }, context);
     },
     onSuccess: async (property) => {
-      toast.success("커스텀 속성을 수정했습니다.");
+      toast.success("속성을 수정했습니다.");
       await queryClient.invalidateQueries({ queryKey: propertiesKeys.metaScope(property.ownerType) });
       options?.onSuccess?.(property);
     },
     onError: (error) => {
-      toast.error(extractApiError(error, "커스텀 속성 수정에 실패했습니다."));
+      toast.error(extractApiError(error, "속성 수정에 실패했습니다."));
     },
   });
 }

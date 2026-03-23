@@ -16,7 +16,7 @@ export function useDeletePropertyDefinitionAction(options?: UseDeletePropertyDef
     mutationKey: deleteDefinitionMutation.mutationKey,
     mutationFn: deleteDefinitionMutation.mutationFn,
     onSuccess: async () => {
-      toast.success("커스텀 속성을 삭제했습니다.");
+      toast.success("속성을 삭제했습니다.");
       await queryClient.invalidateQueries({
         queryKey: options?.ownerType
           ? propertiesKeys.metaScope(options.ownerType)
@@ -27,7 +27,7 @@ export function useDeletePropertyDefinitionAction(options?: UseDeletePropertyDef
     onError: (error) => {
       toast.error(
         extractApiError(error, {
-          fallback: "커스텀 속성 삭제에 실패했습니다.",
+          fallback: "속성 삭제에 실패했습니다.",
           statusMessages: {
             409: "사용 중인 속성이라 삭제할 수 없습니다.",
           },

@@ -10,12 +10,13 @@ import {
   sendMessage as sendMessageApi,
   confirmAction as confirmActionApi,
   rejectAction as rejectActionApi,
+  listRunEvents as listRunEventsApi,
 } from "@/api/generated/orval/chat/chat";
-import { customInstance } from "@/api/orval/custom-instance";
 import type {
   ChatThreadItemResponse,
   ChatThreadDetailResponse,
   ChatMessageResponse,
+  ChatRunEventResponse,
   CreateChatThreadRequest,
 } from "@/api/generated/orval/model";
 import type {
@@ -57,31 +58,25 @@ export async function fetchChatMessages(
 
 // ── Run Events 조회 (재진입 시 timeline 복원) ──
 
-interface RunEventResponse {
-  event_type?: string;
-  tool_call_id?: string;
-  tool_name?: string;
-  display_name?: string;
-  message?: string;
-  summary?: string;
-  blocks?: unknown[];
-  error?: string;
-}
-
 export async function fetchRunEvents(runId: string): Promise<ToolStep[]> {
   try {
-    const response = await customInstance<RunEventResponse[] | void>({
-      url: `/api/v1/chat/runs/${runId}/events`,
-      method: "GET",
-    });
+    const response = await listRunEventsApi(runId);
+    if (!response) return [];
 
-    if (!response || !Array.isArray(response)) return [];
+    const items = (response as { items?: ChatRunEventResponse[] }).items;
+    if (!items || items.length === 0) return [];
 
     const steps: ToolStep[] = [];
     const stepMap = new Map<string, ToolStep>();
 
-    for (const event of response) {
-      const toolCallId = event.tool_call_id ?? "";
+    for (const event of items) {
+      // USER_VISIBLE 이벤트만 timeline에 표시
+      if (event.visibility && event.visibility !== "USER_VISIBLE") continue;
+
+      const payload = event.payload as Record<string, unknown> | undefined;
+      if (!payload) continue;
+
+      const toolCallId = String(payload.toolCallId ?? payload.tool_call_id ?? "");
       if (!toolCallId) continue;
 
       const eventType = event.event_type ?? "";
@@ -89,10 +84,10 @@ export async function fetchRunEvents(runId: string): Promise<ToolStep[]> {
       if (eventType === "tool.started" || eventType === "TOOL_STARTED") {
         const step: ToolStep = {
           toolCallId,
-          toolName: event.tool_name ?? "",
-          displayName: event.display_name ?? event.tool_name ?? "",
+          toolName: String(payload.toolName ?? payload.tool_name ?? ""),
+          displayName: String(payload.displayName ?? payload.display_name ?? payload.toolName ?? payload.tool_name ?? ""),
           status: "running",
-          message: event.message ?? `${event.display_name ?? event.tool_name ?? ""} 실행 중...`,
+          message: String(payload.message ?? `${payload.displayName ?? payload.display_name ?? ""} 실행 중...`),
         };
         stepMap.set(toolCallId, step);
         steps.push(step);
@@ -100,32 +95,33 @@ export async function fetchRunEvents(runId: string): Promise<ToolStep[]> {
         const existing = stepMap.get(toolCallId);
         if (existing) {
           existing.status = "completed";
-          existing.message = event.message ?? event.summary ?? "완료";
-          existing.summary = event.summary;
-          existing.blocks = event.blocks;
+          existing.message = String(payload.message ?? payload.summary ?? "완료");
+          existing.summary = payload.summary ? String(payload.summary) : undefined;
+          existing.blocks = Array.isArray(payload.blocks) ? payload.blocks : undefined;
         } else {
           steps.push({
             toolCallId,
-            toolName: event.tool_name ?? "",
-            displayName: event.display_name ?? event.tool_name ?? "",
+            toolName: String(payload.toolName ?? payload.tool_name ?? ""),
+            displayName: String(payload.displayName ?? payload.display_name ?? ""),
             status: "completed",
-            message: event.message ?? event.summary ?? "완료",
-            summary: event.summary,
-            blocks: event.blocks,
+            message: String(payload.message ?? payload.summary ?? "완료"),
+            summary: payload.summary ? String(payload.summary) : undefined,
+            blocks: Array.isArray(payload.blocks) ? payload.blocks : undefined,
           });
         }
       } else if (eventType === "tool.failed" || eventType === "TOOL_FAILED") {
+        const errorMsg = String(payload.error ?? payload.message ?? "실패");
         const existing = stepMap.get(toolCallId);
         if (existing) {
           existing.status = "failed";
-          existing.message = event.error ?? "실패";
+          existing.message = errorMsg;
         } else {
           steps.push({
             toolCallId,
-            toolName: event.tool_name ?? "",
-            displayName: event.display_name ?? event.tool_name ?? "",
+            toolName: String(payload.toolName ?? payload.tool_name ?? ""),
+            displayName: String(payload.displayName ?? payload.display_name ?? ""),
             status: "failed",
-            message: event.error ?? "실패",
+            message: errorMsg,
           });
         }
       }
