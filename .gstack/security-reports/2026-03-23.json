@@ -1,0 +1,49 @@
+{
+  "date": "2026-03-23",
+  "audit_type": "full",
+  "scope": "fabbit-web (frontend monorepo)",
+  "methodology": "OWASP Top 10 + STRIDE + Attack Surface Mapping",
+  "findings": [],
+  "findings_by_severity": {
+    "critical": 0,
+    "high": 0,
+    "medium": 0
+  },
+  "candidates_scanned": 6,
+  "false_positives_filtered": 6,
+  "findings_reported": 0,
+  "verification_method": "self-verified",
+  "attack_surface": {
+    "public_endpoints_frontend": 3,
+    "authenticated_routes": 20,
+    "file_upload_points": 4,
+    "external_integrations": 1,
+    "websocket_channels": 0,
+    "sse_streams": 1
+  },
+  "recommendations": [
+    {
+      "category": "crypto",
+      "description": "Auth cookies missing Secure flag in setAuthCookies(). 60-second TTL mitigates risk but Secure flag should be added for defense in depth.",
+      "file": "apps/web/src/lib/auth-cookies.ts",
+      "line": 32,
+      "confidence": 7
+    },
+    {
+      "category": "config",
+      "description": "VITE_OPENROUTER_API_KEY in .env uses VITE_ prefix which would embed the key in client bundle if referenced. Should use server-side proxy pattern instead.",
+      "file": "apps/web/.env",
+      "line": 7,
+      "confidence": 6
+    }
+  ],
+  "positive_findings": [
+    "DOMPurify with strict allowlist for markdown rendering (no XSS)",
+    "React default escaping preserved throughout",
+    "Presigned URL pattern for file uploads (no direct server upload)",
+    "JWT refresh token rotation implemented",
+    "Auth bootstrap properly clears stale tokens",
+    "No raw SQL or command injection vectors (frontend-only)",
+    "Turnstile CAPTCHA integration for registration"
+  ]
+}
