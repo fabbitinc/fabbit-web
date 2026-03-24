@@ -54,11 +54,18 @@ function getChangeValue(
     return null;
   }
 
-  const changes = detail.changes as Record<string, { new?: string; old?: string }>;
+  const changes = detail.changes as Record<
+    string,
+    { new?: string; new_value?: string; old?: string; old_value?: string }
+  >;
 
   for (const field of fields) {
     if (changes[field]) {
-      return changes[field];
+      const raw = changes[field];
+      return {
+        new: raw.new ?? raw.new_value,
+        old: raw.old ?? raw.old_value,
+      };
     }
   }
 

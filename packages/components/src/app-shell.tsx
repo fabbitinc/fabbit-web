@@ -48,7 +48,10 @@ export function AppShell({
 
   return (
     <div
-      className={cn("relative grid h-screen overflow-hidden bg-background", className)}
+      className={cn(
+        "relative grid h-screen overflow-hidden bg-background",
+        className,
+      )}
       style={{
         gridTemplateRows: `${banner ? "44px " : ""}48px minmax(0,1fr)`,
         gridTemplateColumns: `${sideColumn} minmax(0,1fr)`,
@@ -80,7 +83,10 @@ export function AppShell({
 
       <main
         style={{ gridColumn: sidebar ? 2 : "1 / -1", gridRow: contentRow }}
-        className={cn("relative z-0 min-h-0 overflow-auto p-6", mainClassName)}
+        className={cn(
+          "relative z-0 min-h-0 overflow-auto p-6 pb-24",
+          mainClassName,
+        )}
       >
         {children}
       </main>

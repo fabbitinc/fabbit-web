@@ -5,6 +5,8 @@ const COOKIE_MAX_AGE = 60;
 const LOGOUT_COOKIE = "fabbit_logged_out";
 const LOGOUT_COOKIE_MAX_AGE = 7 * 24 * 60 * 60;
 
+const isSecure = window.location.protocol === "https:";
+
 function getRootDomain() {
   const domain = import.meta.env.VITE_APP_DOMAIN || "localhost";
   return domain.split(":")[0];
@@ -29,7 +31,7 @@ export function clearStoredTokens() {
 
 export function setAuthCookies(accessToken: string, refreshToken: string) {
   const domain = getRootDomain();
-  const options = `domain=.${domain}; path=/; max-age=${COOKIE_MAX_AGE}; SameSite=Lax`;
+  const options = `domain=.${domain}; path=/; max-age=${COOKIE_MAX_AGE}; SameSite=Lax${isSecure ? "; Secure" : ""}`;
 
   document.cookie = `${TOKEN_COOKIE_PREFIX}access=${accessToken}; ${options}`;
   document.cookie = `${TOKEN_COOKIE_PREFIX}refresh=${refreshToken}; ${options}`;
@@ -61,7 +63,7 @@ export function clearAuthCookies() {
 
 export function setLogoutCookie() {
   const domain = getRootDomain();
-  document.cookie = `${LOGOUT_COOKIE}=1; domain=.${domain}; path=/; max-age=${LOGOUT_COOKIE_MAX_AGE}; SameSite=Lax`;
+  document.cookie = `${LOGOUT_COOKIE}=1; domain=.${domain}; path=/; max-age=${LOGOUT_COOKIE_MAX_AGE}; SameSite=Lax${isSecure ? "; Secure" : ""}`;
 }
 
 export function hasLogoutCookie() {

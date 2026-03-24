@@ -5,7 +5,6 @@ import {
   AvatarFallback,
   Badge,
   Button,
-  ConfirmDialog,
   Input,
   TiptapEditor,
   type TiptapEditorProps,
@@ -353,7 +352,6 @@ export function IssueDetailScreen({
   const [commentBody, setCommentBody] = useState<TiptapEditorProps["content"] | null>(null);
   const [commentEditorKey, setCommentEditorKey] = useState(0);
   const [commentText, setCommentText] = useState("");
-  const [isCloseConfirmOpen, setIsCloseConfirmOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [titleDraft, setTitleDraft] = useState(issue?.title ?? "");
 
@@ -570,7 +568,9 @@ export function IssueDetailScreen({
                       size="sm"
                       variant="outline"
                       disabled={isClosingIssue}
-                      onClick={() => setIsCloseConfirmOpen(true)}
+                      onClick={() => {
+                        void onCloseIssue();
+                      }}
                     >
                       <XCircle className="mr-1.5 h-3.5 w-3.5" />
                       이슈 닫기
@@ -685,20 +685,6 @@ export function IssueDetailScreen({
         </div>
       </div>
 
-      <ConfirmDialog
-        open={isCloseConfirmOpen}
-        title="이슈를 닫을까요?"
-        description="닫힌 이슈는 다시 열 수 있지만, 현재 작업 흐름에서는 닫힘 상태로 집계됩니다."
-        confirmLabel="이슈 닫기"
-        cancelLabel="취소"
-        variant="destructive"
-        onCancel={() => setIsCloseConfirmOpen(false)}
-        onConfirm={() => {
-          setIsCloseConfirmOpen(false);
-          void onCloseIssue();
-        }}
-        onOpenChange={setIsCloseConfirmOpen}
-      />
     </div>
   );
 }
