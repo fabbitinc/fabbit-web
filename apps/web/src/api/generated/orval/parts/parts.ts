@@ -7,6 +7,8 @@
 import type {
   CategoryLookupResponse,
   CategoryStatsResponse,
+  ChangePartLifecycleStateRequest,
+  ChangePartLifecycleStateResponse,
   CreatePartRequest,
   ExportPartsParams,
   ListInProgressPartsParams,
@@ -54,6 +56,21 @@ export const createPart = (
       {url: `/api/v1/parts`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: createPartRequest
+    },
+      options);
+    }
+  /**
+ * 부품의 수명주기 상태를 변경합니다 (ACTIVE → EOL → OBSOLETE)
+ * @summary 부품의 수명주기 상태를 변경합니다
+ */
+export const changeLifecycleState = (
+    partId: string,
+    changePartLifecycleStateRequest: BodyType<ChangePartLifecycleStateRequest>,
+ options?: SecondParameter<typeof customInstance<ChangePartLifecycleStateResponse | void>>,) => {
+      return customInstance<ChangePartLifecycleStateResponse | void>(
+      {url: `/api/v1/parts/${partId}/lifecycle`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: changePartLifecycleStateRequest
     },
       options);
     }
@@ -162,6 +179,7 @@ export const lookupCategories = (
     }
   export type ListPartsResult = NonNullable<Awaited<ReturnType<typeof listParts>>>
 export type CreatePartResult = NonNullable<Awaited<ReturnType<typeof createPart>>>
+export type ChangeLifecycleStateResult = NonNullable<Awaited<ReturnType<typeof changeLifecycleState>>>
 export type RenameCategoryResult = NonNullable<Awaited<ReturnType<typeof renameCategory>>>
 export type LookupRevisionsResult = NonNullable<Awaited<ReturnType<typeof lookupRevisions>>>
 export type LookupParts1Result = NonNullable<Awaited<ReturnType<typeof lookupParts1>>>

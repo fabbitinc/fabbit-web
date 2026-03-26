@@ -16,7 +16,7 @@ const defaultQueryState: ChangeManagementQueryState = {
 };
 
 const validViews = new Set<ChangeManagementView>(["issues", "engineering-changes"]);
-const validStates = new Set<ChangeManagementState>(["open", "closed"]);
+const validStates = new Set<ChangeManagementState>(["open", "in_progress", "done"]);
 const validPageSizes = new Set([20, 40, 80]);
 
 function parsePositiveInteger(value: string | null, fallback: number) {

@@ -9,6 +9,7 @@ import {
   fetchEngineeringChangeTimeline,
   replaceEngineeringChangeSteps,
   submitEngineeringChange,
+  syncAffectedItems,
   syncEngineeringChangeIssues,
   updateEngineeringChange,
   updateEngineeringChangeComment,
@@ -18,6 +19,7 @@ import type {
   CreateEngineeringChangeCommentRequestDto,
   CreateEngineeringChangeDto,
   ReplaceEngineeringChangeStepsRequestDto,
+  SyncAffectedItemsRequestDto,
   SyncEngineeringChangeIssuesRequestDto,
   UpdateEngineeringChangeCommentRequestDto,
   UpdateEngineeringChangeDto,
@@ -60,6 +62,12 @@ export const engineeringChangeMutations = {
       mutationKey: ["engineering-change", engineeringChangeId, "sync-issues"],
       mutationFn: (request: SyncEngineeringChangeIssuesRequestDto) =>
         syncEngineeringChangeIssues(engineeringChangeId, request),
+    }),
+  syncAffectedItems: (engineeringChangeId: string) =>
+    mutationOptions({
+      mutationKey: ["engineering-change", engineeringChangeId, "sync-affected-items"],
+      mutationFn: (request: SyncAffectedItemsRequestDto) =>
+        syncAffectedItems(engineeringChangeId, request),
     }),
   syncReviewers: (engineeringChangeId: string) =>
     mutationOptions({

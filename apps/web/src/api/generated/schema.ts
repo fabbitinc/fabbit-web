@@ -280,26 +280,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/engineering-changes/{engineeringChangeId}/part-revisions": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        /**
-         * 변경관리에 연결할 부품 초안 목록을 동기화합니다
-         * @description 변경관리에 연결할 부품 초안 목록을 동기화합니다
-         */
-        put: operations["syncPartRevisions"];
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/engineering-changes/{engineeringChangeId}/issues": {
         parameters: {
             query?: never;
@@ -313,6 +293,26 @@ export interface paths {
          * @description 변경관리에 연결된 이슈 목록을 동기화합니다
          */
         put: operations["syncIssues"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/engineering-changes/{engineeringChangeId}/affected-items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * 변경관리 영향 항목 목록을 동기화합니다
+         * @description 변경관리 영향 항목 목록을 동기화합니다
+         */
+        put: operations["syncAffectedItems"];
         post?: never;
         delete?: never;
         options?: never;
@@ -698,6 +698,26 @@ export interface paths {
          * @description DRAFT 상태 리비전을 폐기합니다
          */
         post: operations["cancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/parts/{partId}/lifecycle": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 부품의 수명주기 상태를 변경합니다
+         * @description 부품의 수명주기 상태를 변경합니다 (ACTIVE → EOL → OBSOLETE)
+         */
+        post: operations["changeLifecycleState"];
         delete?: never;
         options?: never;
         head?: never;
@@ -3404,16 +3424,29 @@ export interface components {
             /** @description 변경관리 단계 목록 */
             steps: components["schemas"]["EngineeringChangeStepRequest"][];
         };
-        /** @description 변경관리에 연결된 부품 초안 */
-        EngineeringChangePartRevisionResponse: {
+        /** @description 변경관리 영향 항목 */
+        EngineeringChangeAffectedItemResponse: {
             /**
              * Format: uuid
-             * @description 리비전 ID
+             * @description 영향 항목 ID
              */
-            revision_id?: string;
+            id?: string;
+            /**
+             * @description 항목 유형
+             * @example REVISION_RELEASE
+             * @enum {string}
+             */
+            item_type?: "REVISION_RELEASE" | "LIFECYCLE_CHANGE";
             /**
              * Format: uuid
-             * @description 부품 ID
+             * @description 대상 ID (리비전 ID 또는 부품 ID)
+             */
+            target_id?: string;
+            /** @description 액션 상세 (JSON) */
+            action_detail?: string;
+            /**
+             * Format: uuid
+             * @description 부품 ID (리비전 릴리즈 시)
              */
             part_id?: string;
             /**
@@ -3422,26 +3455,20 @@ export interface components {
              */
             part_number?: string;
             /**
-             * @description 기준 공식 리비전 코드
+             * @description 리비전 코드
              * @example 1
-             */
-            base_revision_code?: string;
-            /**
-             * @description 현재 리비전 코드
-             * @example 2
              */
             revision_code?: string;
             /**
-             * @description 초안 이름
+             * @description 이름
              * @example 메인 하우징
              */
             name?: string;
             /**
-             * @description 초안 상태
+             * @description 상태
              * @example DRAFT
-             * @enum {string}
              */
-            status?: "DRAFT" | "RELEASED" | "SUPERSEDED" | "CANCELED";
+            status?: string;
         };
         /** @description 변경관리 상세 응답 */
         EngineeringChangeResponse: {
@@ -3463,7 +3490,7 @@ export interface components {
             created_by?: components["schemas"]["UserSummaryResponse"];
             source_issue?: components["schemas"]["LinkedIssueSummaryResponse"];
             steps?: components["schemas"]["EngineeringChangeStepResponse"][];
-            part_revisions?: components["schemas"]["EngineeringChangePartRevisionResponse"][];
+            affected_items?: components["schemas"]["EngineeringChangeAffectedItemResponse"][];
             files?: components["schemas"]["FileItemResponse"][];
             /** Format: int32 */
             comments_count?: number;
@@ -3524,16 +3551,15 @@ export interface components {
             created_at?: string;
         };
         JsonNode: {
+            number?: boolean;
+            container?: boolean;
             pojo?: boolean;
             int?: boolean;
             long?: boolean;
-            integral_number?: boolean;
-            floating_point_number?: boolean;
             /** @enum {string} */
             node_type?: "ARRAY" | "BINARY" | "BOOLEAN" | "MISSING" | "NULL" | "NUMBER" | "OBJECT" | "POJO" | "STRING";
             string?: boolean;
             value_node?: boolean;
-            container?: boolean;
             missing_node?: boolean;
             object?: boolean;
             short?: boolean;
@@ -3544,7 +3570,8 @@ export interface components {
             textual?: boolean;
             boolean?: boolean;
             binary?: boolean;
-            number?: boolean;
+            integral_number?: boolean;
+            floating_point_number?: boolean;
             array?: boolean;
             empty?: boolean;
             null?: boolean;
@@ -3576,23 +3603,35 @@ export interface components {
             phone?: string;
             profile_image_url?: string;
         };
-        /** @description 변경관리에 연결할 부품 초안 식별자 */
-        EngineeringChangePartRevisionTargetRequest: {
-            /**
-             * Format: uuid
-             * @description 리비전 ID
-             */
-            revision_id: string;
-        };
-        /** @description 변경관리 부품 초안 동기화 요청 */
-        SyncPartRevisionsRequest: {
-            /** @description 최종 초안 목록 */
-            items?: components["schemas"]["EngineeringChangePartRevisionTargetRequest"][];
-        };
         /** @description 연결 이슈 동기화 요청 */
         SyncIssuesRequest: {
             /** @description 최종 이슈 ID 목록 */
             issue_ids?: string[];
+        };
+        /** @description 변경관리 영향 항목 대상 */
+        EngineeringChangeAffectedItemTargetRequest: {
+            /**
+             * @description 항목 유형
+             * @example REVISION_RELEASE
+             * @enum {string}
+             */
+            item_type: "REVISION_RELEASE" | "LIFECYCLE_CHANGE";
+            /**
+             * Format: uuid
+             * @description 대상 ID (리비전 ID 또는 부품 ID)
+             */
+            target_id: string;
+            /**
+             * @description lifecycle 변경 시 대상 상태
+             * @example EOL
+             * @enum {string}
+             */
+            target_state?: "ACTIVE" | "EOL" | "OBSOLETE";
+        };
+        /** @description 변경관리 영향 항목 동기화 요청 */
+        SyncAffectedItemsRequest: {
+            /** @description 최종 영향 항목 목록 */
+            items?: components["schemas"]["EngineeringChangeAffectedItemTargetRequest"][];
         };
         /** @description 팀 생성 요청 */
         CreateTeamRequest: {
@@ -4390,6 +4429,28 @@ export interface components {
              */
             reason?: string;
         };
+        /** @description 부품 수명주기 상태 변경 요청 */
+        ChangePartLifecycleStateRequest: {
+            /**
+             * @description 대상 상태
+             * @example EOL
+             * @enum {string}
+             */
+            target_state: "ACTIVE" | "EOL" | "OBSOLETE";
+        };
+        /** @description 부품 수명주기 상태 변경 응답 */
+        ChangePartLifecycleStateResponse: {
+            /**
+             * Format: uuid
+             * @description 부품 ID
+             */
+            part_id?: string;
+            /**
+             * @description 변경된 수명주기 상태
+             * @enum {string}
+             */
+            lifecycle_state?: "ACTIVE" | "EOL" | "OBSOLETE";
+        };
         /** @description 조직 생성 요청 */
         CreateOrganizationRequest: {
             /**
@@ -4899,8 +4960,8 @@ export interface components {
              * @description 연결할 원본 이슈 ID
              */
             source_issue_id?: string;
-            /** @description 연결할 부품 초안 목록 */
-            part_revisions?: components["schemas"]["EngineeringChangePartRevisionTargetRequest"][];
+            /** @description 영향 항목 목록 */
+            affected_items?: components["schemas"]["EngineeringChangeAffectedItemTargetRequest"][];
             /** @description 첨부 파일 ID 목록(최대 20) */
             file_ids?: string[];
             /** @description 변경관리 단계 목록 */
@@ -6230,10 +6291,21 @@ export interface components {
         };
         /** @description 변경관리 목록 응답 */
         EngineeringChangeListResponse: {
-            /** Format: int64 */
+            /**
+             * Format: int64
+             * @description 열림(DRAFT) 건수
+             */
             open_count?: number;
-            /** Format: int64 */
-            closed_count?: number;
+            /**
+             * Format: int64
+             * @description 진행중(REVIEW_PENDING, APPROVAL_PENDING, RELEASE_PENDING) 건수
+             */
+            progress_count?: number;
+            /**
+             * Format: int64
+             * @description 완료(RELEASED, CANCELED) 건수
+             */
+            done_count?: number;
             /** Format: int64 */
             total?: number;
             /** Format: int32 */
@@ -8600,7 +8672,7 @@ export interface operations {
             };
         };
     };
-    syncPartRevisions: {
+    syncIssues: {
         parameters: {
             query?: never;
             header?: never;
@@ -8611,7 +8683,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["SyncPartRevisionsRequest"];
+                "application/json": components["schemas"]["SyncIssuesRequest"];
             };
         };
         responses: {
@@ -8678,7 +8750,7 @@ export interface operations {
             };
         };
     };
-    syncIssues: {
+    syncAffectedItems: {
         parameters: {
             query?: never;
             header?: never;
@@ -8689,7 +8761,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["SyncIssuesRequest"];
+                "application/json": components["schemas"]["SyncAffectedItemsRequest"];
             };
         };
         responses: {
@@ -8699,7 +8771,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SyncDiffResponse"];
+                    "application/json": components["schemas"]["EngineeringChangeResponse"];
                 };
             };
             /** @description 생성 성공 */
@@ -8708,7 +8780,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["SyncDiffResponse"];
+                    "application/json": components["schemas"]["EngineeringChangeResponse"];
                 };
             };
             /** @description 삭제 성공 */
@@ -10744,6 +10816,84 @@ export interface operations {
             };
         };
     };
+    changeLifecycleState: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                partId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChangePartLifecycleStateRequest"];
+            };
+        };
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChangePartLifecycleStateResponse"];
+                };
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChangePartLifecycleStateResponse"];
+                };
+            };
+            /** @description 삭제 성공 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
     createOrganization: {
         parameters: {
             query?: never;
@@ -11312,6 +11462,10 @@ export interface operations {
         parameters: {
             query?: {
                 search?: string;
+                /**
+                 * @description 이슈 상태 필터
+                 * @example OPEN
+                 */
                 state?: string;
                 offset?: number;
                 limit?: number;
@@ -12076,7 +12230,11 @@ export interface operations {
                  * @example 품번
                  */
                 search?: string;
-                state?: string;
+                /**
+                 * @description 변경관리 상태 필터 (OPEN: 열림, IN_PROGRESS: 진행중, CLOSED: 닫힘)
+                 * @example OPEN
+                 */
+                state?: "OPEN" | "IN_PROGRESS" | "DONE";
                 offset?: number;
                 limit?: number;
             };

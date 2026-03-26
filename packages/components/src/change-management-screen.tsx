@@ -3,6 +3,7 @@ import {
   CheckCircle2,
   FilePen,
   HelpCircle,
+  Loader,
   MessageSquare,
   Plus,
 } from "lucide-react";
@@ -13,7 +14,7 @@ import {
 } from "./work-item-status";
 
 export type ChangeManagementScreenView = "issues" | "engineering-changes";
-export type ChangeManagementScreenState = "open" | "closed";
+export type ChangeManagementScreenState = "open" | "in_progress" | "done";
 
 export interface ChangeManagementScreenLabel {
   id: string;
@@ -44,7 +45,8 @@ export interface ChangeManagementScreenItem {
 
 export interface ChangeManagementScreenListData {
   openCount: number;
-  closedCount: number;
+  inProgressCount: number;
+  doneCount: number;
   total: number;
   items: ChangeManagementScreenItem[];
 }
@@ -176,15 +178,27 @@ export function ChangeManagementScreen({
               <AlertCircle className="size-4" />
               {listData?.openCount ?? 0} 열림
             </button>
+            {queryState.view === "engineering-changes" ? (
+              <button
+                className={`inline-flex cursor-pointer items-center gap-1.5 text-sm font-medium transition-colors ${
+                  queryState.state === "in_progress" ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+                }`}
+                type="button"
+                onClick={() => onStateChange("in_progress")}
+              >
+                <Loader className="size-4" />
+                {listData?.inProgressCount ?? 0} 진행중
+              </button>
+            ) : null}
             <button
               className={`inline-flex cursor-pointer items-center gap-1.5 text-sm font-medium transition-colors ${
-                queryState.state === "closed" ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+                queryState.state === "done" ? "text-foreground" : "text-muted-foreground hover:text-foreground"
               }`}
               type="button"
-              onClick={() => onStateChange("closed")}
+              onClick={() => onStateChange("done")}
             >
               <CheckCircle2 className="size-4" />
-              {listData?.closedCount ?? 0} 닫힘
+              {listData?.doneCount ?? 0} {queryState.view === "engineering-changes" ? "완료" : "닫힘"}
             </button>
           </div>
           <Button size="sm" type="button" onClick={onCreateClick}>

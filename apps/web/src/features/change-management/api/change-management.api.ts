@@ -40,7 +40,8 @@ export async function fetchIssueList(query: IssueListQueryDto): Promise<ChangeMa
 
   return {
     openCount: response.open_count ?? 0,
-    closedCount: response.closed_count ?? 0,
+    inProgressCount: 0,
+    doneCount: response.closed_count ?? 0,
     total: response.total ?? 0,
     offset: response.offset ?? 0,
     limit: response.limit ?? query.limit ?? 20,
@@ -50,10 +51,10 @@ export async function fetchIssueList(query: IssueListQueryDto): Promise<ChangeMa
 
 export async function fetchEngineeringChangeList(query: EngineeringChangeListQueryDto): Promise<ChangeManagementListModel> {
   const response = await listEngineeringChangesApiV1EngineeringChangesGet(query);
-
   return {
     openCount: response.open_count ?? 0,
-    closedCount: response.closed_count ?? 0,
+    inProgressCount: response.progress_count ?? 0,
+    doneCount: response.done_count ?? 0,
     total: response.total ?? 0,
     offset: response.offset ?? 0,
     limit: response.limit ?? query.limit ?? 20,

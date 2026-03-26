@@ -13,6 +13,7 @@ import {
   release1 as releaseEngineeringChangeApi,
   replaceSteps as replaceEngineeringChangeStepsApi,
   submit as submitEngineeringChangeApi,
+  syncAffectedItems as syncAffectedItemsApi,
   syncIssues as syncEngineeringChangeIssuesApi,
   updateComment1 as updateEngineeringChangeCommentApi,
   updateEngineeringChange as updateEngineeringChangeApi,
@@ -26,6 +27,7 @@ import type {
   EngineeringChangeTimelineResponseDto,
   ReplaceEngineeringChangeStepsRequestDto,
   ReplaceEngineeringChangeStepsResponseDto,
+  SyncAffectedItemsRequestDto,
   SyncEngineeringChangeIssuesRequestDto,
   SyncEngineeringChangeIssuesResponseDto,
   UpdateEngineeringChangeCommentRequestDto,
@@ -33,6 +35,7 @@ import type {
   UpdateEngineeringChangeDto,
 } from "@/features/engineering-change/api/engineering-change.types";
 import type {
+  EngineeringChangeAffectedItemModel,
   EngineeringChangeDetailModel,
   EngineeringChangeFileModel,
   EngineeringChangeLinkedIssueModel,
@@ -71,6 +74,14 @@ export async function syncEngineeringChangeIssues(
   request: SyncEngineeringChangeIssuesRequestDto,
 ): Promise<SyncEngineeringChangeIssuesResponseDto> {
   return syncEngineeringChangeIssuesApi(engineeringChangeId, request);
+}
+
+export async function syncAffectedItems(
+  engineeringChangeId: string,
+  request: SyncAffectedItemsRequestDto,
+): Promise<EngineeringChangeDetailModel> {
+  const response = await syncAffectedItemsApi(engineeringChangeId, request);
+  return toEngineeringChangeDetailModel(response as EngineeringChangeDetailResponseDto);
 }
 
 export async function replaceEngineeringChangeSteps(
@@ -197,6 +208,7 @@ function toEngineeringChangeDetailModel(change: EngineeringChangeDetailResponseD
     reviewerTeams: [],
     parts: partRevisions.map(toEngineeringChangePartModel),
     partRevisions,
+    affectedItems: (change.affected_items ?? []).map(toEngineeringChangeAffectedItemModel),
     files: (change.files ?? []).map(toEngineeringChangeFileModel),
     commentsCount: change.comments_count ?? 0,
     linkedIssues: (change.linked_issues ?? []).map(toEngineeringChangeLinkedIssueModel),
@@ -280,6 +292,30 @@ function toEngineeringChangePartModel(part: EngineeringChangePartRevisionModel):
     id: part.partId || part.revisionId,
     partNumber: part.partNumber,
     name: part.name,
+  };
+}
+
+function toEngineeringChangeAffectedItemModel(item: {
+  id?: string;
+  item_type?: string;
+  target_id?: string;
+  action_detail?: string;
+  part_id?: string;
+  part_number?: string;
+  revision_code?: string;
+  name?: string;
+  status?: string;
+}): EngineeringChangeAffectedItemModel {
+  return {
+    id: item.id ?? "",
+    itemType: (item.item_type as EngineeringChangeAffectedItemModel["itemType"]) ?? "REVISION_RELEASE",
+    targetId: item.target_id ?? "",
+    actionDetail: item.action_detail ?? null,
+    partId: item.part_id ?? null,
+    partNumber: item.part_number ?? null,
+    revisionCode: item.revision_code ?? null,
+    name: item.name ?? null,
+    status: item.status ?? null,
   };
 }
 

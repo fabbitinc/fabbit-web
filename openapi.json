@@ -1443,14 +1443,14 @@
                 }
             }
         },
-        "/api/v1/engineering-changes/{engineeringChangeId}/part-revisions": {
+        "/api/v1/engineering-changes/{engineeringChangeId}/issues": {
             "put": {
                 "tags": [
                     "engineering-changes"
                 ],
-                "summary": "\ubcc0\uacbd\uad00\ub9ac\uc5d0 \uc5f0\uacb0\ud560 \ubd80\ud488 \ucd08\uc548 \ubaa9\ub85d\uc744 \ub3d9\uae30\ud654\ud569\ub2c8\ub2e4",
-                "description": "\ubcc0\uacbd\uad00\ub9ac\uc5d0 \uc5f0\uacb0\ud560 \ubd80\ud488 \ucd08\uc548 \ubaa9\ub85d\uc744 \ub3d9\uae30\ud654\ud569\ub2c8\ub2e4",
-                "operationId": "syncPartRevisions",
+                "summary": "\ubcc0\uacbd\uad00\ub9ac\uc5d0 \uc5f0\uacb0\ub41c \uc774\uc288 \ubaa9\ub85d\uc744 \ub3d9\uae30\ud654\ud569\ub2c8\ub2e4",
+                "description": "\ubcc0\uacbd\uad00\ub9ac\uc5d0 \uc5f0\uacb0\ub41c \uc774\uc288 \ubaa9\ub85d\uc744 \ub3d9\uae30\ud654\ud569\ub2c8\ub2e4",
+                "operationId": "syncIssues",
                 "parameters": [
                     {
                         "name": "engineeringChangeId",
@@ -1466,7 +1466,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/SyncPartRevisionsRequest"
+                                "$ref": "#/components/schemas/SyncIssuesRequest"
                             }
                         }
                     },
@@ -1539,14 +1539,14 @@
                 }
             }
         },
-        "/api/v1/engineering-changes/{engineeringChangeId}/issues": {
+        "/api/v1/engineering-changes/{engineeringChangeId}/affected-items": {
             "put": {
                 "tags": [
                     "engineering-changes"
                 ],
-                "summary": "\ubcc0\uacbd\uad00\ub9ac\uc5d0 \uc5f0\uacb0\ub41c \uc774\uc288 \ubaa9\ub85d\uc744 \ub3d9\uae30\ud654\ud569\ub2c8\ub2e4",
-                "description": "\ubcc0\uacbd\uad00\ub9ac\uc5d0 \uc5f0\uacb0\ub41c \uc774\uc288 \ubaa9\ub85d\uc744 \ub3d9\uae30\ud654\ud569\ub2c8\ub2e4",
-                "operationId": "syncIssues",
+                "summary": "\ubcc0\uacbd\uad00\ub9ac \uc601\ud5a5 \ud56d\ubaa9 \ubaa9\ub85d\uc744 \ub3d9\uae30\ud654\ud569\ub2c8\ub2e4",
+                "description": "\ubcc0\uacbd\uad00\ub9ac \uc601\ud5a5 \ud56d\ubaa9 \ubaa9\ub85d\uc744 \ub3d9\uae30\ud654\ud569\ub2c8\ub2e4",
+                "operationId": "syncAffectedItems",
                 "parameters": [
                     {
                         "name": "engineeringChangeId",
@@ -1562,7 +1562,7 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "$ref": "#/components/schemas/SyncIssuesRequest"
+                                "$ref": "#/components/schemas/SyncAffectedItemsRequest"
                             }
                         }
                     },
@@ -1574,7 +1574,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/SyncDiffResponse"
+                                    "$ref": "#/components/schemas/EngineeringChangeResponse"
                                 }
                             }
                         }
@@ -1584,7 +1584,7 @@
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "$ref": "#/components/schemas/SyncDiffResponse"
+                                    "$ref": "#/components/schemas/EngineeringChangeResponse"
                                 }
                             }
                         }
@@ -4155,6 +4155,102 @@
                 }
             }
         },
+        "/api/v1/parts/{partId}/lifecycle": {
+            "post": {
+                "tags": [
+                    "parts"
+                ],
+                "summary": "\ubd80\ud488\uc758 \uc218\uba85\uc8fc\uae30 \uc0c1\ud0dc\ub97c \ubcc0\uacbd\ud569\ub2c8\ub2e4",
+                "description": "\ubd80\ud488\uc758 \uc218\uba85\uc8fc\uae30 \uc0c1\ud0dc\ub97c \ubcc0\uacbd\ud569\ub2c8\ub2e4 (ACTIVE \u2192 EOL \u2192 OBSOLETE)",
+                "operationId": "changeLifecycleState",
+                "parameters": [
+                    {
+                        "name": "partId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ChangePartLifecycleStateRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "\uc694\uccad \uc131\uacf5",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ChangePartLifecycleStateResponse"
+                                }
+                            }
+                        }
+                    },
+                    "201": {
+                        "description": "\uc0dd\uc131 \uc131\uacf5",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ChangePartLifecycleStateResponse"
+                                }
+                            }
+                        }
+                    },
+                    "204": {
+                        "description": "\uc0ad\uc81c \uc131\uacf5"
+                    },
+                    "400": {
+                        "description": "\uc798\ubabb\ub41c \uc694\uccad",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "\uc778\uc99d \ud544\uc694",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "\uad8c\ud55c \uc5c6\uc74c",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "\ub9ac\uc18c\uc2a4\ub97c \ucc3e\uc744 \uc218 \uc5c6\uc74c",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/organizations": {
             "post": {
                 "tags": [
@@ -4825,10 +4921,12 @@
                     {
                         "name": "state",
                         "in": "query",
+                        "description": "\uc774\uc288 \uc0c1\ud0dc \ud544\ud130",
                         "required": false,
                         "schema": {
                             "type": "string"
-                        }
+                        },
+                        "example": "OPEN"
                     },
                     {
                         "name": "offset",
@@ -5738,10 +5836,17 @@
                     {
                         "name": "state",
                         "in": "query",
+                        "description": "\ubcc0\uacbd\uad00\ub9ac \uc0c1\ud0dc \ud544\ud130 (OPEN: \uc5f4\ub9bc, IN_PROGRESS: \uc9c4\ud589\uc911, CLOSED: \ub2eb\ud798)",
                         "required": false,
                         "schema": {
-                            "type": "string"
-                        }
+                            "type": "string",
+                            "enum": [
+                                "OPEN",
+                                "IN_PROGRESS",
+                                "DONE"
+                            ]
+                        },
+                        "example": "OPEN"
                     },
                     {
                         "name": "offset",
@@ -16146,49 +16251,56 @@
                     "steps"
                 ]
             },
-            "EngineeringChangePartRevisionResponse": {
+            "EngineeringChangeAffectedItemResponse": {
                 "type": "object",
-                "description": "\ubcc0\uacbd\uad00\ub9ac\uc5d0 \uc5f0\uacb0\ub41c \ubd80\ud488 \ucd08\uc548",
+                "description": "\ubcc0\uacbd\uad00\ub9ac \uc601\ud5a5 \ud56d\ubaa9",
                 "properties": {
-                    "revision_id": {
+                    "id": {
                         "type": "string",
                         "format": "uuid",
-                        "description": "\ub9ac\ube44\uc804 ID"
+                        "description": "\uc601\ud5a5 \ud56d\ubaa9 ID"
+                    },
+                    "item_type": {
+                        "type": "string",
+                        "description": "\ud56d\ubaa9 \uc720\ud615",
+                        "enum": [
+                            "REVISION_RELEASE",
+                            "LIFECYCLE_CHANGE"
+                        ],
+                        "example": "REVISION_RELEASE"
+                    },
+                    "target_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "\ub300\uc0c1 ID (\ub9ac\ube44\uc804 ID \ub610\ub294 \ubd80\ud488 ID)"
+                    },
+                    "action_detail": {
+                        "type": "string",
+                        "description": "\uc561\uc158 \uc0c1\uc138 (JSON)"
                     },
                     "part_id": {
                         "type": "string",
                         "format": "uuid",
-                        "description": "\ubd80\ud488 ID"
+                        "description": "\ubd80\ud488 ID (\ub9ac\ube44\uc804 \ub9b4\ub9ac\uc988 \uc2dc)"
                     },
                     "part_number": {
                         "type": "string",
                         "description": "\ud488\ubc88",
                         "example": "AES-100"
                     },
-                    "base_revision_code": {
-                        "type": "string",
-                        "description": "\uae30\uc900 \uacf5\uc2dd \ub9ac\ube44\uc804 \ucf54\ub4dc",
-                        "example": "1"
-                    },
                     "revision_code": {
                         "type": "string",
-                        "description": "\ud604\uc7ac \ub9ac\ube44\uc804 \ucf54\ub4dc",
-                        "example": "2"
+                        "description": "\ub9ac\ube44\uc804 \ucf54\ub4dc",
+                        "example": "1"
                     },
                     "name": {
                         "type": "string",
-                        "description": "\ucd08\uc548 \uc774\ub984",
+                        "description": "\uc774\ub984",
                         "example": "\uba54\uc778 \ud558\uc6b0\uc9d5"
                     },
                     "status": {
                         "type": "string",
-                        "description": "\ucd08\uc548 \uc0c1\ud0dc",
-                        "enum": [
-                            "DRAFT",
-                            "RELEASED",
-                            "SUPERSEDED",
-                            "CANCELED"
-                        ],
+                        "description": "\uc0c1\ud0dc",
                         "example": "DRAFT"
                     }
                 }
@@ -16249,10 +16361,10 @@
                             "$ref": "#/components/schemas/EngineeringChangeStepResponse"
                         }
                     },
-                    "part_revisions": {
+                    "affected_items": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/EngineeringChangePartRevisionResponse"
+                            "$ref": "#/components/schemas/EngineeringChangeAffectedItemResponse"
                         }
                     },
                     "files": {
@@ -16369,6 +16481,12 @@
             "JsonNode": {
                 "type": "object",
                 "properties": {
+                    "number": {
+                        "type": "boolean"
+                    },
+                    "container": {
+                        "type": "boolean"
+                    },
                     "pojo": {
                         "type": "boolean"
                     },
@@ -16376,12 +16494,6 @@
                         "type": "boolean"
                     },
                     "long": {
-                        "type": "boolean"
-                    },
-                    "integral_number": {
-                        "type": "boolean"
-                    },
-                    "floating_point_number": {
                         "type": "boolean"
                     },
                     "node_type": {
@@ -16402,9 +16514,6 @@
                         "type": "boolean"
                     },
                     "value_node": {
-                        "type": "boolean"
-                    },
-                    "container": {
                         "type": "boolean"
                     },
                     "missing_node": {
@@ -16435,7 +16544,10 @@
                     "binary": {
                         "type": "boolean"
                     },
-                    "number": {
+                    "integral_number": {
+                        "type": "boolean"
+                    },
+                    "floating_point_number": {
                         "type": "boolean"
                     },
                     "array": {
@@ -16514,33 +16626,6 @@
                     }
                 }
             },
-            "EngineeringChangePartRevisionTargetRequest": {
-                "type": "object",
-                "description": "\ubcc0\uacbd\uad00\ub9ac\uc5d0 \uc5f0\uacb0\ud560 \ubd80\ud488 \ucd08\uc548 \uc2dd\ubcc4\uc790",
-                "properties": {
-                    "revision_id": {
-                        "type": "string",
-                        "format": "uuid",
-                        "description": "\ub9ac\ube44\uc804 ID"
-                    }
-                },
-                "required": [
-                    "revision_id"
-                ]
-            },
-            "SyncPartRevisionsRequest": {
-                "type": "object",
-                "description": "\ubcc0\uacbd\uad00\ub9ac \ubd80\ud488 \ucd08\uc548 \ub3d9\uae30\ud654 \uc694\uccad",
-                "properties": {
-                    "items": {
-                        "type": "array",
-                        "description": "\ucd5c\uc885 \ucd08\uc548 \ubaa9\ub85d",
-                        "items": {
-                            "$ref": "#/components/schemas/EngineeringChangePartRevisionTargetRequest"
-                        }
-                    }
-                }
-            },
             "SyncIssuesRequest": {
                 "type": "object",
                 "description": "\uc5f0\uacb0 \uc774\uc288 \ub3d9\uae30\ud654 \uc694\uccad",
@@ -16551,6 +16636,53 @@
                         "items": {
                             "type": "string",
                             "format": "uuid"
+                        }
+                    }
+                }
+            },
+            "EngineeringChangeAffectedItemTargetRequest": {
+                "type": "object",
+                "description": "\ubcc0\uacbd\uad00\ub9ac \uc601\ud5a5 \ud56d\ubaa9 \ub300\uc0c1",
+                "properties": {
+                    "item_type": {
+                        "type": "string",
+                        "description": "\ud56d\ubaa9 \uc720\ud615",
+                        "enum": [
+                            "REVISION_RELEASE",
+                            "LIFECYCLE_CHANGE"
+                        ],
+                        "example": "REVISION_RELEASE"
+                    },
+                    "target_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "\ub300\uc0c1 ID (\ub9ac\ube44\uc804 ID \ub610\ub294 \ubd80\ud488 ID)"
+                    },
+                    "target_state": {
+                        "type": "string",
+                        "description": "lifecycle \ubcc0\uacbd \uc2dc \ub300\uc0c1 \uc0c1\ud0dc",
+                        "enum": [
+                            "ACTIVE",
+                            "EOL",
+                            "OBSOLETE"
+                        ],
+                        "example": "EOL"
+                    }
+                },
+                "required": [
+                    "item_type",
+                    "target_id"
+                ]
+            },
+            "SyncAffectedItemsRequest": {
+                "type": "object",
+                "description": "\ubcc0\uacbd\uad00\ub9ac \uc601\ud5a5 \ud56d\ubaa9 \ub3d9\uae30\ud654 \uc694\uccad",
+                "properties": {
+                    "items": {
+                        "type": "array",
+                        "description": "\ucd5c\uc885 \uc601\ud5a5 \ud56d\ubaa9 \ubaa9\ub85d",
+                        "items": {
+                            "$ref": "#/components/schemas/EngineeringChangeAffectedItemTargetRequest"
                         }
                     }
                 }
@@ -17796,6 +17928,45 @@
                     }
                 }
             },
+            "ChangePartLifecycleStateRequest": {
+                "type": "object",
+                "description": "\ubd80\ud488 \uc218\uba85\uc8fc\uae30 \uc0c1\ud0dc \ubcc0\uacbd \uc694\uccad",
+                "properties": {
+                    "target_state": {
+                        "type": "string",
+                        "description": "\ub300\uc0c1 \uc0c1\ud0dc",
+                        "enum": [
+                            "ACTIVE",
+                            "EOL",
+                            "OBSOLETE"
+                        ],
+                        "example": "EOL"
+                    }
+                },
+                "required": [
+                    "target_state"
+                ]
+            },
+            "ChangePartLifecycleStateResponse": {
+                "type": "object",
+                "description": "\ubd80\ud488 \uc218\uba85\uc8fc\uae30 \uc0c1\ud0dc \ubcc0\uacbd \uc751\ub2f5",
+                "properties": {
+                    "part_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "\ubd80\ud488 ID"
+                    },
+                    "lifecycle_state": {
+                        "type": "string",
+                        "description": "\ubcc0\uacbd\ub41c \uc218\uba85\uc8fc\uae30 \uc0c1\ud0dc",
+                        "enum": [
+                            "ACTIVE",
+                            "EOL",
+                            "OBSOLETE"
+                        ]
+                    }
+                }
+            },
             "CreateOrganizationRequest": {
                 "type": "object",
                 "description": "\uc870\uc9c1 \uc0dd\uc131 \uc694\uccad",
@@ -18815,11 +18986,11 @@
                         "format": "uuid",
                         "description": "\uc5f0\uacb0\ud560 \uc6d0\ubcf8 \uc774\uc288 ID"
                     },
-                    "part_revisions": {
+                    "affected_items": {
                         "type": "array",
-                        "description": "\uc5f0\uacb0\ud560 \ubd80\ud488 \ucd08\uc548 \ubaa9\ub85d",
+                        "description": "\uc601\ud5a5 \ud56d\ubaa9 \ubaa9\ub85d",
                         "items": {
-                            "$ref": "#/components/schemas/EngineeringChangePartRevisionTargetRequest"
+                            "$ref": "#/components/schemas/EngineeringChangeAffectedItemTargetRequest"
                         }
                     },
                     "file_ids": {
@@ -20956,11 +21127,18 @@
                 "properties": {
                     "open_count": {
                         "type": "integer",
-                        "format": "int64"
+                        "format": "int64",
+                        "description": "\uc5f4\ub9bc(DRAFT) \uac74\uc218"
                     },
-                    "closed_count": {
+                    "progress_count": {
                         "type": "integer",
-                        "format": "int64"
+                        "format": "int64",
+                        "description": "\uc9c4\ud589\uc911(REVIEW_PENDING, APPROVAL_PENDING, RELEASE_PENDING) \uac74\uc218"
+                    },
+                    "done_count": {
+                        "type": "integer",
+                        "format": "int64",
+                        "description": "\uc644\ub8cc(RELEASED, CANCELED) \uac74\uc218"
                     },
                     "total": {
                         "type": "integer",

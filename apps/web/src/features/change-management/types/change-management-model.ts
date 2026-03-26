@@ -1,5 +1,5 @@
 export type ChangeManagementView = "issues" | "engineering-changes";
-export type ChangeManagementState = "open" | "closed";
+export type ChangeManagementState = "open" | "in_progress" | "done";
 
 export interface ChangeManagementLabelModel {
   id: string;
@@ -30,7 +30,8 @@ export interface ChangeManagementItemModel {
 
 export interface ChangeManagementListModel {
   openCount: number;
-  closedCount: number;
+  inProgressCount: number;
+  doneCount: number;
   total: number;
   offset: number;
   limit: number;

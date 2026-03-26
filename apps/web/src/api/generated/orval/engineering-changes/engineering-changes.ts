@@ -15,10 +15,10 @@ import type {
   FileItemResponse,
   ListEngineeringChangesParams,
   LookupEngineeringChangesParams,
+  SyncAffectedItemsRequest,
   SyncDiffResponse,
   SyncEngineeringChangeStepsRequest,
   SyncIssuesRequest,
-  SyncPartRevisionsRequest,
   TimelineResponse,
   UpdateCommentRequest,
   UpdateEngineeringChangeRequest
@@ -47,21 +47,6 @@ export const replaceSteps = (
       options);
     }
   /**
- * 변경관리에 연결할 부품 초안 목록을 동기화합니다
- * @summary 변경관리에 연결할 부품 초안 목록을 동기화합니다
- */
-export const syncPartRevisions = (
-    engineeringChangeId: string,
-    syncPartRevisionsRequest: BodyType<SyncPartRevisionsRequest>,
- options?: SecondParameter<typeof customInstance<SyncDiffResponse | void>>,) => {
-      return customInstance<SyncDiffResponse | void>(
-      {url: `/api/v1/engineering-changes/${engineeringChangeId}/part-revisions`, method: 'PUT',
-      headers: {'Content-Type': 'application/json', },
-      data: syncPartRevisionsRequest
-    },
-      options);
-    }
-  /**
  * 변경관리에 연결된 이슈 목록을 동기화합니다
  * @summary 변경관리에 연결된 이슈 목록을 동기화합니다
  */
@@ -73,6 +58,21 @@ export const syncIssues = (
       {url: `/api/v1/engineering-changes/${engineeringChangeId}/issues`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
       data: syncIssuesRequest
+    },
+      options);
+    }
+  /**
+ * 변경관리 영향 항목 목록을 동기화합니다
+ * @summary 변경관리 영향 항목 목록을 동기화합니다
+ */
+export const syncAffectedItems = (
+    engineeringChangeId: string,
+    syncAffectedItemsRequest: BodyType<SyncAffectedItemsRequest>,
+ options?: SecondParameter<typeof customInstance<EngineeringChangeResponse | void>>,) => {
+      return customInstance<EngineeringChangeResponse | void>(
+      {url: `/api/v1/engineering-changes/${engineeringChangeId}/affected-items`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: syncAffectedItemsRequest
     },
       options);
     }
@@ -300,8 +300,8 @@ export const deleteFile2 = (
       options);
     }
   export type ReplaceStepsResult = NonNullable<Awaited<ReturnType<typeof replaceSteps>>>
-export type SyncPartRevisionsResult = NonNullable<Awaited<ReturnType<typeof syncPartRevisions>>>
 export type SyncIssuesResult = NonNullable<Awaited<ReturnType<typeof syncIssues>>>
+export type SyncAffectedItemsResult = NonNullable<Awaited<ReturnType<typeof syncAffectedItems>>>
 export type ListEngineeringChangesResult = NonNullable<Awaited<ReturnType<typeof listEngineeringChanges>>>
 export type CreateEngineeringChangeResult = NonNullable<Awaited<ReturnType<typeof createEngineeringChange>>>
 export type SubmitResult = NonNullable<Awaited<ReturnType<typeof submit>>>

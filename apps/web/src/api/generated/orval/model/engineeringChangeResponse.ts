@@ -4,7 +4,7 @@
  * OpenAPI definition
  * OpenAPI spec version: v0
  */
-import type { EngineeringChangePartRevisionResponse } from './engineeringChangePartRevisionResponse';
+import type { EngineeringChangeAffectedItemResponse } from './engineeringChangeAffectedItemResponse';
 import type { EngineeringChangeResponseState } from './engineeringChangeResponseState';
 import type { EngineeringChangeStepResponse } from './engineeringChangeStepResponse';
 import type { FileItemResponse } from './fileItemResponse';
@@ -28,7 +28,7 @@ export interface EngineeringChangeResponse {
   created_by?: UserSummaryResponse;
   source_issue?: LinkedIssueSummaryResponse;
   steps?: EngineeringChangeStepResponse[];
-  part_revisions?: EngineeringChangePartRevisionResponse[];
+  affected_items?: EngineeringChangeAffectedItemResponse[];
   files?: FileItemResponse[];
   comments_count?: number;
   released_at?: string;

@@ -22,6 +22,11 @@ export interface UpdateEngineeringChangeDto
   body?: RichTextDocument | null;
 }
 
+export type SyncAffectedItemsRequestDto = ApiRequestBody<
+  "/api/v1/engineering-changes/{engineeringChangeId}/affected-items",
+  "put"
+>;
+
 export type SyncEngineeringChangeIssuesRequestDto = ApiRequestBody<
   "/api/v1/engineering-changes/{engineeringChangeId}/issues",
   "put"

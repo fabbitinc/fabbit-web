@@ -7,6 +7,9 @@
 
 export type ListIssuesParams = {
 search?: string;
+/**
+ * 이슈 상태 필터
+ */
 state?: string;
 /**
  * @minimum 0

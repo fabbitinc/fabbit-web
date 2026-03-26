@@ -10,8 +10,12 @@ import type { EngineeringChangeSummaryResponse } from './engineeringChangeSummar
  * 변경관리 목록 응답
  */
 export interface EngineeringChangeListResponse {
+  /** 열림(DRAFT) 건수 */
   open_count?: number;
-  closed_count?: number;
+  /** 진행중(REVIEW_PENDING, APPROVAL_PENDING, RELEASE_PENDING) 건수 */
+  progress_count?: number;
+  /** 완료(RELEASED, CANCELED) 건수 */
+  done_count?: number;
   total?: number;
   offset?: number;
   limit?: number;

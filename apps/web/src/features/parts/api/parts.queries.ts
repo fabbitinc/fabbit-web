@@ -3,6 +3,7 @@ import {
   approvePartDraft,
   attachPartFiles,
   cancelPartDraft,
+  changePartLifecycleState,
   clearPartPreview,
   createPart,
   createPartDraftFromRevision,
@@ -248,5 +249,10 @@ export const partsMutations = {
     mutationOptions({
       mutationKey: ["projects", projectId, "link-parts"],
       mutationFn: (request: LinkProjectPartsRequestDto) => linkPartsToProject(projectId, request),
+    }),
+  changeLifecycleState: (partId: string) =>
+    mutationOptions({
+      mutationKey: ["parts", partId, "change-lifecycle"],
+      mutationFn: (targetState: string) => changePartLifecycleState(partId, targetState),
     }),
 };

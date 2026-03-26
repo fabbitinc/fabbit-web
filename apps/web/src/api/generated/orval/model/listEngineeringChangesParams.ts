@@ -4,13 +4,17 @@
  * OpenAPI definition
  * OpenAPI spec version: v0
  */
+import type { ListEngineeringChangesState } from './listEngineeringChangesState';
 
 export type ListEngineeringChangesParams = {
 /**
  * 변경관리 제목 검색어
  */
 search?: string;
-state?: string;
+/**
+ * 변경관리 상태 필터 (OPEN: 열림, IN_PROGRESS: 진행중, CLOSED: 닫힘)
+ */
+state?: ListEngineeringChangesState;
 /**
  * @minimum 0
  */

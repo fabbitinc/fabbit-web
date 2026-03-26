@@ -4,7 +4,7 @@
  * OpenAPI definition
  * OpenAPI spec version: v0
  */
-import type { EngineeringChangePartRevisionTargetRequest } from './engineeringChangePartRevisionTargetRequest';
+import type { EngineeringChangeAffectedItemTargetRequest } from './engineeringChangeAffectedItemTargetRequest';
 import type { EngineeringChangeStepRequest } from './engineeringChangeStepRequest';
 import type { JsonNode } from './jsonNode';
 
@@ -22,8 +22,8 @@ export interface CreateEngineeringChangeRequest {
   body?: JsonNode;
   /** 연결할 원본 이슈 ID */
   source_issue_id?: string;
-  /** 연결할 부품 초안 목록 */
-  part_revisions?: EngineeringChangePartRevisionTargetRequest[];
+  /** 영향 항목 목록 */
+  affected_items?: EngineeringChangeAffectedItemTargetRequest[];
   /**
    * 첨부 파일 ID 목록(최대 20)
    * @minItems 0

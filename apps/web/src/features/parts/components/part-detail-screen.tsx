@@ -15,11 +15,13 @@ import {
   type PartRevisionDiffRevisionOption,
   type PartPropertiesTableRow,
 } from "@fabbit/components";
-import { Badge, Button, Dialog, DialogContent, DialogHeader, DialogTitle } from "@fabbit/ui";
+import { Button, Dialog, DialogContent, DialogHeader, DialogTitle } from "@fabbit/ui";
 import { partsKeys } from "@/features/parts/api/parts.queries";
 import { PartAttachmentsTab } from "@/features/parts/components/part-attachments-tab";
 import { PartBomTab } from "@/features/parts/components/part-bom-tab";
 import { PartDirectWorkflowActions } from "@/features/parts/components/part-direct-workflow-actions";
+import { PartEcWorkflowActions } from "@/features/parts/components/part-ec-workflow-actions";
+import { PartLifecycleActions } from "@/features/parts/components/part-lifecycle-actions";
 import { PartProjectsTab } from "@/features/parts/components/part-projects-tab";
 import { PartSuppliersTab } from "@/features/parts/components/part-suppliers-tab";
 import { useClearPartPreviewAction } from "@/features/parts/hooks/use-clear-part-preview-action";
@@ -35,6 +37,7 @@ import { useUploadPartPreviewFileAction } from "@/features/parts/hooks/use-uploa
 import { buildPartCustomPropertyRows } from "@/features/parts/lib/part-custom-properties";
 import { DEFAULT_PART_DRAWING_FAILURE_MESSAGE } from "@/features/parts/lib/part-drawing-failure";
 import { buildPartSystemFields } from "@/features/parts/lib/part-property-meta";
+import { getAvailablePartActions } from "@/features/parts/lib/part-actions";
 import { buildPartDetailPath, buildPartEditPath } from "@/features/parts/lib/part-route";
 import { openPartDrawingViewer } from "@/features/parts/lib/open-part-drawing-viewer";
 import type {
@@ -179,38 +182,6 @@ function buildWebViewRequirement(
   };
 }
 
-function getLifecycleVariant(lifecycleState: string | null): "outline" | "neutral" | "accent" | "success" {
-  if (lifecycleState === "ACTIVE") {
-    return "success";
-  }
-
-  if (lifecycleState === "EOL") {
-    return "accent";
-  }
-
-  if (lifecycleState === "OBSOLETE") {
-    return "neutral";
-  }
-
-  return "outline";
-}
-
-function getLifecycleBadgeClassName(lifecycleState: string | null) {
-  if (lifecycleState === "ACTIVE") {
-    return "border-[var(--status-success-border)] bg-[var(--status-success-bg)] text-[var(--status-success)]";
-  }
-
-  if (lifecycleState === "EOL") {
-    return "border-[var(--status-warning-border)] bg-[var(--status-warning-bg)] text-[var(--status-warning)]";
-  }
-
-  if (lifecycleState === "OBSOLETE") {
-    return "border-[var(--status-neutral-border)] bg-[var(--status-neutral-bg)] text-muted-foreground";
-  }
-
-  return undefined;
-}
-
 export function PartDetailScreen({
   activeTab,
   availableTabs,
@@ -321,8 +292,12 @@ export function PartDetailScreen({
           resolvedPart?.drawing?.conversionStatus === "PROCESSING"
         ? "processing"
         : "idle";
-  const isDirectWorkflowMode = settingsQuery.data?.partWorkflowMode === "DIRECT";
-  const canUseDirectWorkflowActions = isDirectWorkflowMode && canEditDraft;
+  const partActions = getAvailablePartActions({
+    workflowMode: settingsQuery.data?.partWorkflowMode ?? null,
+    revisionStatus: currentRevisionStatus,
+    lifecycleState: partQuery.data?.lifecycleState ?? null,
+  });
+  const canUseDirectWorkflowActions = partActions.canRelease || partActions.canCancel;
   const systemFields = useMemo(
     () => buildPartSystemFields(propertyMetaQuery.data),
     [propertyMetaQuery.data],
@@ -356,12 +331,15 @@ export function PartDetailScreen({
         lifecycleState: {
           label: "상태",
           value: resolvedPart.lifecycleState ? (
-            <Badge
-              className={getLifecycleBadgeClassName(resolvedPart.lifecycleState)}
-              variant={getLifecycleVariant(resolvedPart.lifecycleState)}
-            >
-              {resolvedPart.lifecycleState}
-            </Badge>
+            <PartLifecycleActions
+              currentState={resolvedPart.lifecycleState}
+              partId={partId}
+              revisionId={revisionId}
+              partNumber={resolvedPart.partNumber}
+              partName={resolvedPart.name}
+              transitions={partActions.lifecycleTransitions}
+              disabledReason={partActions.disabledReason}
+            />
           ) : (
             <span className="text-muted-foreground/40">—</span>
           ),
@@ -514,8 +492,9 @@ export function PartDetailScreen({
     setIsRevisionDiffOpen(true);
   }
 
+  const showEcDisabledActions = canEditDraft && partActions.disabledReason !== null;
   const headerActions =
-    canCreateRevisionDraft || canEditDraft || canUseDirectWorkflowActions ? (
+    canCreateRevisionDraft || canEditDraft || canUseDirectWorkflowActions || showEcDisabledActions ? (
       <div className="flex w-full flex-col items-stretch gap-2 sm:w-[90px]">
         {canCreateRevisionDraft ? (
           <>
@@ -571,6 +550,12 @@ export function PartDetailScreen({
             onReleased={(nextPart) =>
               navigate(buildPartDetailPath(nextPart.partId, nextPart.revisionId), { replace: true })
             }
+          />
+        ) : null}
+        {canEditDraft && partActions.disabledReason ? (
+          <PartEcWorkflowActions
+            className="w-full"
+            disabledReason={partActions.disabledReason}
           />
         ) : null}
       </div>

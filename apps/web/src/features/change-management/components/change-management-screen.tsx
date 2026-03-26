@@ -31,10 +31,12 @@ export function ChangeManagementScreen({
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const handledForbiddenRef = useRef(false);
+  // 이슈 API는 OPEN/CLOSED만 지원, done → CLOSED로 변환
+  const issueState = queryState.state === "done" ? "CLOSED" : queryState.state.toUpperCase();
   const issuesQuery = useIssueListQuery(
     {
       search: queryState.query || undefined,
-      state: queryState.state.toUpperCase(),
+      state: issueState,
       offset: (queryState.page - 1) * queryState.pageSize,
       limit: queryState.pageSize,
     },

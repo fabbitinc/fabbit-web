@@ -246,7 +246,7 @@ export function EngineeringChangeDetailScreen({
       isLoading={engineeringChangeQuery.isLoading}
       isMergingEngineeringChange={mergeEngineeringChangeAction.isPending}
       isNotFound={!engineeringChangeQuery.isLoading && !engineeringChangeQuery.isError && !engineeringChange}
-      isReopeningEngineeringChange={reopenEngineeringChangeAction.isPending || engineeringChange?.state === "CANCELED"}
+      isReopeningEngineeringChange={reopenEngineeringChangeAction.isPending}
       isSavingEngineeringChange={updateEngineeringChangeAction.isPending}
       isSubmittingEngineeringChange={submitEngineeringChangeAction.isPending}
       isTimelineLoading={timelineQuery.isLoading}

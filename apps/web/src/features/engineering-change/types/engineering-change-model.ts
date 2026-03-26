@@ -28,6 +28,20 @@ export interface EngineeringChangePartModel {
   name: string | null;
 }
 
+export type EngineeringChangeAffectedItemType = "REVISION_RELEASE" | "LIFECYCLE_CHANGE";
+
+export interface EngineeringChangeAffectedItemModel {
+  id: string;
+  itemType: EngineeringChangeAffectedItemType;
+  targetId: string;
+  actionDetail: string | null;
+  partId: string | null;
+  partNumber: string | null;
+  revisionCode: string | null;
+  name: string | null;
+  status: string | null;
+}
+
 export interface EngineeringChangeFileModel {
   fileId: string;
   originalName: string;
@@ -72,6 +86,7 @@ export interface EngineeringChangeDetailModel {
   reviewerTeams: EngineeringChangeReviewerTeamModel[];
   parts: EngineeringChangePartModel[];
   partRevisions: EngineeringChangePartRevisionModel[];
+  affectedItems: EngineeringChangeAffectedItemModel[];
   files: EngineeringChangeFileModel[];
   commentsCount: number;
   linkedIssues: EngineeringChangeLinkedIssueModel[];

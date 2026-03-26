@@ -30,6 +30,7 @@ import {
   getSuppliers as getSuppliersApiV1PartRevisionSuppliersGet,
 } from "@/api/generated/orval/part-revisions/part-revisions";
 import {
+  changeLifecycleState as changeLifecycleStateApiV1PartsLifecyclePost,
   createPart as createPartApiV1PartsPost,
   exportParts as exportPartsApiV1PartsExportGet,
   getFilterOptions as getFilterOptionsApiV1PartsFilterOptionsGet,
@@ -181,6 +182,21 @@ export async function cancelPartDraft(
   request: PartRevisionChangeReasonRequestDto,
 ): Promise<void> {
   await cancelPartRevisionApiV1PartRevisionCancelPost(partId, revisionId, request);
+}
+
+export async function changePartLifecycleState(
+  partId: string,
+  targetState: string,
+): Promise<{ partId: string; lifecycleState: string }> {
+  const response = await changeLifecycleStateApiV1PartsLifecyclePost(partId, {
+    target_state: targetState as "ACTIVE" | "EOL" | "OBSOLETE",
+  });
+  const result = response as { part_id?: string; lifecycle_state?: string } | undefined;
+
+  return {
+    partId: result?.part_id ?? partId,
+    lifecycleState: result?.lifecycle_state ?? targetState,
+  };
 }
 
 export async function fetchPartFilterOptions(): Promise<PartFilterOptionsModel> {
