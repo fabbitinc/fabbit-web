@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { josa } from "es-hangul";
 import { AlertCircle, AlertTriangle, CheckCircle2, ChevronDown, ChevronUp, Loader2, Sparkles, Upload, X } from "lucide-react";
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
 import { SynthesisProgressPanel } from "@fabbit/components";
 import {
   Button,
@@ -56,25 +56,29 @@ function isSupportedFile(file: File) {
 }
 
 async function parseFileHeaders(file: File): Promise<string[]> {
+  const workbook = new ExcelJS.Workbook();
   const isCsv = file.name.toLowerCase().endsWith(".csv");
-  const workbook = isCsv
-    ? XLSX.read(await file.text(), { type: "string", sheetRows: 1 })
-    : XLSX.read(await file.arrayBuffer(), { type: "array", sheetRows: 1 });
 
-  const sheetName = workbook.SheetNames[0];
+  if (isCsv) {
+    await workbook.csv.read(file.stream() as unknown as NodeJS.ReadableStream);
+  } else {
+    await workbook.xlsx.load(await file.arrayBuffer());
+  }
 
-  if (!sheetName) {
+  const sheet = workbook.worksheets[0];
+
+  if (!sheet) {
     return [];
   }
 
-  const sheet = workbook.Sheets[sheetName];
-  const rows = XLSX.utils.sheet_to_json<string[]>(sheet, {
-    header: 1,
-    defval: "",
-    rawNumbers: false,
-  });
+  const firstRow = sheet.getRow(1);
 
-  return (rows[0] ?? []).map((header) => String(header ?? "").trim()).filter(Boolean);
+  return firstRow.values
+    ? (firstRow.values as (string | undefined)[])
+        .slice(1)
+        .map((value) => String(value ?? "").trim())
+        .filter(Boolean)
+    : [];
 }
 
 function validateHeaders(fileHeaders: string[], mappedHeaders: string[]) {

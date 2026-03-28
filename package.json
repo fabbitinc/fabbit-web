@@ -18,6 +18,16 @@
     "build-storybook": "turbo run build-storybook --filter=@fabbit/storybook"
   },
   "devDependencies": {
-    "turbo": "^2.8.11"
+    "turbo": "^2.8.20"
+  },
+  "pnpm": {
+    "overrides": {
+      "flatted": ">=3.4.2",
+      "picomatch": ">=4.0.4",
+      "brace-expansion@<1.1.13": ">=1.1.13",
+      "brace-expansion@>=2.0.0 <2.0.3": ">=2.0.3",
+      "brace-expansion@>=4.0.0 <5.0.5": ">=5.0.5",
+      "yaml@>=2.0.0 <2.8.3": ">=2.8.3"
+    }
   }
 }

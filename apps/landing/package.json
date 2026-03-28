@@ -16,7 +16,8 @@
     "framer-motion": "^11.18.0",
     "lucide-react": "^0.513.0",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "react-dom": "^19.1.0",
+    "react-router-dom": "^7.13.1"
   },
   "devDependencies": {
     "@heroui/theme": "^2.4.14",
