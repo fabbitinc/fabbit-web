@@ -141,12 +141,8 @@ export function PartCreateScreen({ onBack, onCreated }: PartCreateScreenProps) {
     const trimmed = value.trim();
     if (trimmed) {
       setPartNumberForCheck(trimmed);
-      // 다음 틱에 refetch를 트리거해야 partNumberForCheck가 반영됨
-      setTimeout(() => {
-        checkNumberQuery.refetch();
-      }, 0);
     }
-  }, [checkNumberQuery]);
+  }, []);
 
   const handleNumberingCategoryChange = useCallback((categoryId: string) => {
     setSelectedCategoryId(categoryId);
