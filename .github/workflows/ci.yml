@@ -9,7 +9,7 @@ on:
 jobs:
   build-and-lint:
     name: Build & Lint
-    runs-on: ubuntu
+    runs-on: self-hosted
 
     steps:
       - name: Checkout

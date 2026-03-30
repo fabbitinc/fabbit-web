@@ -1,4 +1,4 @@
-import { getPlans as getPlansApiV1AuthPlansGet } from "@/api/generated/orval/auth/auth";
+import { authGetPlans as getPlansApiV1AuthPlansGet } from "@/api/generated/orval/auth/auth";
 import type { PlanResponse } from "@/api/generated/orval/model/planResponse";
 import type { AiBillingMode, PlanModel, PlanType } from "@/features/auth/types/plan-model";
 

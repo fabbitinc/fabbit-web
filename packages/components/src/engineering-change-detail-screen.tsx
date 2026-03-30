@@ -78,12 +78,13 @@ export interface EngineeringChangeDetailScreenCurrentUser {
 
 export interface EngineeringChangeDetailScreenProps {
   activeTab: string;
-  assigneePicker?: EngineeringChangeSidebarProps["assigneePicker"];
+  conversationAccessory?: ReactNode;
   engineeringChange?: EngineeringChangeDetailScreenEngineeringChange;
   changesContent?: ReactNode;
   commentCount: number;
   currentUser?: EngineeringChangeDetailScreenCurrentUser | null;
   dialog?: unknown | null;
+  headerAccessory?: ReactNode;
   isAttachingFiles?: boolean;
   isCreatingComment?: boolean;
   isError?: boolean;
@@ -106,11 +107,9 @@ export interface EngineeringChangeDetailScreenProps {
   onCreateComment: (body: TiptapEditorProps["content"] | null) => Promise<void>;
   onDeleteComment: (commentId: string) => Promise<void>;
   onDeleteFile: (fileId: string) => Promise<void>;
-  onEditAssignees?: () => void;
   onEditIssues?: () => void;
   onEditLabels?: () => void;
   onEditParts?: () => void;
-  onEditReviewers?: () => void;
   onMergeEngineeringChange: () => Promise<void> | void;
   onNavigateToIssue: (issueNumber: number) => void;
   onNavigateToIssueMention: (issueNumber: number, issueType: "issue" | "engineering_change") => void;
@@ -121,7 +120,6 @@ export interface EngineeringChangeDetailScreenProps {
   onTabChange: (tab: string) => void;
   onUpdateComment: (commentId: string, body: TiptapEditorProps["content"] | null) => Promise<void>;
   partPicker?: EngineeringChangeSidebarProps["partPicker"];
-  reviewerPicker?: EngineeringChangeSidebarProps["reviewerPicker"];
   tabs: readonly EngineeringChangeDetailTabItem[];
   timelineItems: EngineeringChangeDetailScreenTimelineItem[];
 }
@@ -285,11 +283,12 @@ function ChangeTimelineCommentItem({
 
 export function EngineeringChangeDetailScreen({
   activeTab,
-  assigneePicker,
+  conversationAccessory,
   engineeringChange,
   changesContent,
   commentCount,
   currentUser,
+  headerAccessory,
   isAttachingFiles = false,
   isCreatingComment = false,
   isError = false,
@@ -309,11 +308,9 @@ export function EngineeringChangeDetailScreen({
   onCreateComment,
   onDeleteComment: _onDeleteComment,
   onDeleteFile,
-  onEditAssignees,
   onEditIssues,
   onEditLabels,
   onEditParts,
-  onEditReviewers,
   onMergeEngineeringChange,
   onNavigateToIssue,
   onNavigateToIssueMention,
@@ -324,7 +321,6 @@ export function EngineeringChangeDetailScreen({
   onTabChange,
   onUpdateComment,
   partPicker,
-  reviewerPicker,
   tabs,
   timelineItems,
 }: EngineeringChangeDetailScreenProps) {
@@ -399,7 +395,6 @@ export function EngineeringChangeDetailScreen({
     engineeringChange.engineeringChangeState !== "MERGED" &&
     engineeringChange.engineeringChangeState !== "CLOSED";
   const createdByName = engineeringChange.createdBy?.fullName ?? "알 수 없음";
-
   const startEditing = () => {
     setTitleDraft(engineeringChange.title);
     setBodyDraft(engineeringChange.body);
@@ -440,18 +435,14 @@ export function EngineeringChangeDetailScreen({
         )}
         <div className="mt-2 flex flex-wrap items-center gap-2">
           <EngineeringChangeStatusBadge state={engineeringChange.engineeringChangeState} />
-          <span className="text-sm text-muted-foreground">
-            <span className="font-medium text-foreground">{createdByName}</span>
-            {" 님이 "}
-            {formatFullDate(engineeringChange.createdAt)}
-            {" 에 열었습니다"}
-          </span>
+          <span className="text-sm text-muted-foreground">{formatFullDate(engineeringChange.createdAt)} 생성</span>
           <span className="text-sm text-muted-foreground">·</span>
           <span className="flex items-center gap-1 text-sm text-muted-foreground">
             <MessageSquare className="h-3.5 w-3.5" />
             댓글 {commentCount}개
           </span>
         </div>
+        {headerAccessory ? <div className="mt-4">{headerAccessory}</div> : null}
       </div>
 
       <div className="mt-5 flex gap-1 border-b">
@@ -473,56 +464,56 @@ export function EngineeringChangeDetailScreen({
       </div>
 
       {activeTab === "conversation" ? (
-        <div className="mt-6 flex gap-6">
-          <div className="min-w-0 flex-1 space-y-4">
-            {isEditing ? (
-              <div>
-                <TiptapEditor
-                  content={bodyDraft ?? undefined}
-                  placeholder="변경관리 본문을 입력하세요"
-                  minHeight={100}
-                  userMentionFetcher={mentionFetchers?.user}
-                  issueMentionFetcher={mentionFetchers?.issue}
-                  onChangeJson={(content) => setBodyDraft(content)}
-                />
-                <div className="mt-3 flex justify-end gap-2">
-                  <Button type="button" variant="outline" onClick={cancelEditing} disabled={isSavingEngineeringChange}>
-                    취소
-                  </Button>
-                  <Button
-                    disabled={!titleDraft.trim() || isSavingEngineeringChange}
-                    type="button"
-                    onClick={async () => {
-                      try {
-                        await onSaveEngineeringChange({ title: titleDraft.trim(), body: bodyDraft });
-                        setIsEditing(false);
-                      } catch {
-                        return;
-                      }
-                    }}
-                  >
-                    {isSavingEngineeringChange ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : null}
-                    저장
-                  </Button>
+        <div className="mt-6 space-y-5">
+          {conversationAccessory ? <div>{conversationAccessory}</div> : null}
+          <div className="flex gap-6">
+            <div className="min-w-0 flex-1 space-y-4">
+              {isEditing ? (
+                <div>
+                  <TiptapEditor
+                    content={bodyDraft ?? undefined}
+                    placeholder="변경관리 본문을 입력하세요"
+                    minHeight={100}
+                    userMentionFetcher={mentionFetchers?.user}
+                    issueMentionFetcher={mentionFetchers?.issue}
+                    onChangeJson={(content) => setBodyDraft(content)}
+                  />
+                  <div className="mt-3 flex justify-end gap-2">
+                    <Button type="button" variant="outline" onClick={cancelEditing} disabled={isSavingEngineeringChange}>
+                      취소
+                    </Button>
+                    <Button
+                      disabled={!titleDraft.trim() || isSavingEngineeringChange}
+                      type="button"
+                      onClick={async () => {
+                        try {
+                          await onSaveEngineeringChange({ title: titleDraft.trim(), body: bodyDraft });
+                          setIsEditing(false);
+                        } catch {
+                          return;
+                        }
+                      }}
+                    >
+                      {isSavingEngineeringChange ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : null}
+                      저장
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            ) : (
-              <div className="flex gap-3">
-                <UserAvatar
-                  name={createdByName}
-                  imageUrl={engineeringChange.createdBy?.profileImageUrl}
-                  className="h-8 w-8 shrink-0"
-                />
-                <div className="min-w-0 flex-1 rounded-lg border bg-card">
+              ) : (
+                <div className="min-w-0 rounded-lg border bg-card">
                   <div className="flex items-center gap-2 border-b bg-muted/30 px-4 py-2">
-                    <span className="text-sm font-medium text-foreground">{createdByName}</span>
-                    <span className="text-xs text-muted-foreground">{timeAgo(engineeringChange.createdAt)}</span>
+                    <span className="text-sm font-medium text-foreground">변경 제안</span>
+                    <Badge variant="outline" className="text-[10px]">
+                      본문
+                    </Badge>
+                    <div className="ml-auto flex items-center gap-2 text-xs text-muted-foreground">
+                      <span className="truncate">작성 {createdByName}</span>
+                      <span>·</span>
+                      <span>{timeAgo(engineeringChange.createdAt)}</span>
+                    </div>
                     {engineeringChange.isModified ? (
                       <span className="text-xs text-muted-foreground">· 수정됨</span>
                     ) : null}
-                    <Badge variant="outline" className="ml-auto text-[10px]">
-                      작성자
-                    </Badge>
                     {isEditable ? (
                       <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0" onClick={startEditing}>
                         <Pencil className="h-3 w-3" />
@@ -544,145 +535,141 @@ export function EngineeringChangeDetailScreen({
                     )}
                   </div>
                 </div>
-              </div>
-            )}
+              )}
 
-            {isTimelineLoading ? (
-              <div className="py-6 text-center text-sm text-muted-foreground">타임라인을 불러오는 중입니다.</div>
-            ) : (
-              timelineItems.map((item) =>
-                item.kind === "comment" ? (
-                  <ChangeTimelineCommentItem
-                    key={item.id}
-                    comment={item}
-                    canEdit={Boolean(currentUser?.id && item.authorId && currentUser.id === item.authorId)}
-                    issueMentionFetcher={mentionFetchers?.issue}
-                    onNavigateToIssueMention={onNavigateToIssueMention}
-                    onUpdate={onUpdateComment}
+              {isTimelineLoading ? (
+                <div className="py-6 text-center text-sm text-muted-foreground">타임라인을 불러오는 중입니다.</div>
+              ) : (
+                timelineItems.map((item) =>
+                  item.kind === "comment" ? (
+                    <ChangeTimelineCommentItem
+                      key={item.id}
+                      comment={item}
+                      canEdit={Boolean(currentUser?.id && item.authorId && currentUser.id === item.authorId)}
+                      issueMentionFetcher={mentionFetchers?.issue}
+                      onNavigateToIssueMention={onNavigateToIssueMention}
+                      onUpdate={onUpdateComment}
+                      userMentionFetcher={mentionFetchers?.user}
+                    />
+                  ) : (
+                    <TimelineEventItem key={item.id} event={item.event} onNavigate={onNavigateToIssueMention} />
+                  ),
+                )
+              )}
+
+              <div className="border-t" />
+
+              <div className="flex gap-3">
+                <Avatar className="h-8 w-8 shrink-0">
+                  <AvatarFallback className="text-xs">나</AvatarFallback>
+                </Avatar>
+                <div className="min-w-0 flex-1">
+                  <TiptapEditor
+                    key={commentEditorKey}
+                    placeholder="댓글을 작성하세요..."
+                    minHeight={100}
                     userMentionFetcher={mentionFetchers?.user}
+                    issueMentionFetcher={mentionFetchers?.issue}
+                    onChangeJson={(content) => setCommentBody(content)}
+                    onChangeText={setCommentText}
                   />
-                ) : (
-                  <TimelineEventItem key={item.id} event={item.event} onNavigate={onNavigateToIssueMention} />
-                ),
-              )
-            )}
-
-            <div className="border-t" />
-
-            <div className="flex gap-3">
-              <Avatar className="h-8 w-8 shrink-0">
-                <AvatarFallback className="text-xs">나</AvatarFallback>
-              </Avatar>
-              <div className="min-w-0 flex-1">
-                <TiptapEditor
-                  key={commentEditorKey}
-                  placeholder="댓글을 작성하세요..."
-                  minHeight={100}
-                  userMentionFetcher={mentionFetchers?.user}
-                  issueMentionFetcher={mentionFetchers?.issue}
-                  onChangeJson={(content) => setCommentBody(content)}
-                  onChangeText={setCommentText}
-                />
-                <div className="mt-3 flex items-center justify-between">
-                  <div />
-                  <div className="flex gap-2">
-                    {canClose ? (
-                      <Button size="sm" variant="outline" onClick={() => setIsCloseConfirmOpen(true)}>
-                        <XCircle className="mr-1.5 h-3.5 w-3.5" />
-                        변경관리 닫기
-                      </Button>
-                    ) : null}
-                    {canSubmit ? (
+                  <div className="mt-3 flex items-center justify-between">
+                    <div />
+                    <div className="flex gap-2">
+                      {canClose ? (
+                        <Button size="sm" variant="outline" onClick={() => setIsCloseConfirmOpen(true)}>
+                          <XCircle className="mr-1.5 h-3.5 w-3.5" />
+                          변경관리 닫기
+                        </Button>
+                      ) : null}
+                      {canSubmit ? (
+                        <Button
+                          size="sm"
+                          disabled={isSubmittingEngineeringChange}
+                          onClick={() => {
+                            void onSubmitEngineeringChange();
+                          }}
+                        >
+                          {isSubmittingEngineeringChange ? (
+                            <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <FileCheck className="mr-1.5 h-3.5 w-3.5" />
+                          )}
+                          제출
+                        </Button>
+                      ) : null}
+                      {canMerge ? (
+                        <Button
+                          size="sm"
+                          className="bg-green-600 text-white hover:bg-green-700"
+                          disabled={isMergingEngineeringChange}
+                          onClick={() => {
+                            void onMergeEngineeringChange();
+                          }}
+                        >
+                          {isMergingEngineeringChange ? (
+                            <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" />
+                          )}
+                          변경 반영
+                        </Button>
+                      ) : null}
+                      {canReopen ? (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={isReopeningEngineeringChange}
+                          onClick={() => {
+                            void onReopenEngineeringChange();
+                          }}
+                        >
+                          {isReopeningEngineeringChange ? (
+                            <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <AlertCircle className="mr-1.5 h-3.5 w-3.5" />
+                          )}
+                          다시 제출
+                        </Button>
+                      ) : null}
                       <Button
                         size="sm"
-                        disabled={isSubmittingEngineeringChange}
-                        onClick={() => {
-                          void onSubmitEngineeringChange();
-                        }}
-                      >
-                        {isSubmittingEngineeringChange ? (
-                          <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-                        ) : (
-                          <FileCheck className="mr-1.5 h-3.5 w-3.5" />
-                        )}
-                        제출
-                      </Button>
-                    ) : null}
-                    {canMerge ? (
-                      <Button
-                        size="sm"
-                        className="bg-green-600 text-white hover:bg-green-700"
-                        disabled={isMergingEngineeringChange}
-                        onClick={() => {
-                          void onMergeEngineeringChange();
-                        }}
-                      >
-                        {isMergingEngineeringChange ? (
-                          <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-                        ) : (
-                          <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" />
-                        )}
-                        변경 반영
-                      </Button>
-                    ) : null}
-                    {canReopen ? (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        disabled={isReopeningEngineeringChange}
-                        onClick={() => {
-                          void onReopenEngineeringChange();
-                        }}
-                      >
-                        {isReopeningEngineeringChange ? (
-                          <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-                        ) : (
-                          <AlertCircle className="mr-1.5 h-3.5 w-3.5" />
-                        )}
-                        다시 제출
-                      </Button>
-                    ) : null}
-                    <Button
-                      size="sm"
-                      disabled={isCreatingComment}
-                      onClick={async () => {
-                        if (!commentBody || !commentText.trim()) {
-                          return;
-                        }
+                        disabled={isCreatingComment}
+                        onClick={async () => {
+                          if (!commentBody || !commentText.trim()) {
+                            return;
+                          }
 
-                        await onCreateComment(commentBody);
-                        setCommentBody(null);
-                        setCommentText("");
-                        setCommentEditorKey((previous) => previous + 1);
-                      }}
-                    >
-                      {isCreatingComment ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : null}
-                      댓글
-                    </Button>
+                          await onCreateComment(commentBody);
+                          setCommentBody(null);
+                          setCommentText("");
+                          setCommentEditorKey((previous) => previous + 1);
+                        }}
+                      >
+                        {isCreatingComment ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : null}
+                        댓글
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
-          </div>
 
-          <div className="hidden w-70 shrink-0 lg:block">
-            <EngineeringChangeSidebar
-              engineeringChange={engineeringChange}
-              assigneePicker={assigneePicker}
-              reviewerPicker={reviewerPicker}
-              labelPicker={labelPicker}
-              partPicker={partPicker}
-              linkedIssuePicker={linkedIssuePicker}
-              isAttachingFiles={isAttachingFiles}
-              onAttachFiles={onAttachFiles}
-              onDeleteFile={onDeleteFile}
-              onEditAssignees={onEditAssignees}
-              onEditIssues={onEditIssues}
-              onEditLabels={onEditLabels}
-              onEditParts={onEditParts}
-              onEditReviewers={onEditReviewers}
-              onNavigateToIssue={onNavigateToIssue}
-            />
+            <div className="hidden w-70 shrink-0 lg:block">
+              <EngineeringChangeSidebar
+                engineeringChange={engineeringChange}
+                labelPicker={labelPicker}
+                partPicker={partPicker}
+                linkedIssuePicker={linkedIssuePicker}
+                isAttachingFiles={isAttachingFiles}
+                onAttachFiles={onAttachFiles}
+                onDeleteFile={onDeleteFile}
+                onEditIssues={onEditIssues}
+                onEditLabels={onEditLabels}
+                onEditParts={onEditParts}
+                onNavigateToIssue={onNavigateToIssue}
+              />
+            </div>
           </div>
         </div>
       ) : (

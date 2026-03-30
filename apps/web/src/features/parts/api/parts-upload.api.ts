@@ -1,7 +1,7 @@
-import { searchNodes as searchNodesApiV1OntologyNodesSearchGet } from "@/api/generated/orval/ontology/ontology";
+import { ontologySearchNodes as searchNodesApiV1OntologyNodesSearchGet } from "@/api/generated/orval/ontology/ontology";
 import {
-  getSynthesisBatch as getSynthesisBatchApiV1SynthesisBatchesBatchIdGet,
-  startSynthesis as startSynthesisApiV1SynthesisPost,
+  synthesisGetSynthesisBatch as getSynthesisBatchApiV1SynthesisBatchesBatchIdGet,
+  synthesisStart as startSynthesisApiV1SynthesisPost,
 } from "@/api/generated/orval/synthesis/synthesis";
 import type {
   NodeSearchQueryDto,

@@ -1,6 +1,6 @@
 import {
-  createProject as createProjectApiV1ProjectsPost,
-  listProjects as listProjectsApiV1ProjectsGet,
+  projectCreate as createProjectApiV1ProjectsPost,
+  projectList as listProjectsApiV1ProjectsGet,
 } from "@/api/generated/orval/projects/projects";
 import type {
   CreateProjectRequestDto,

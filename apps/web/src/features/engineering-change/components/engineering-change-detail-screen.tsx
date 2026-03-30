@@ -10,11 +10,9 @@ import {
 import { useAuthStore } from "@/features/auth";
 import type {
   LookupIssueModel,
-  LookupMemberModel,
 } from "@/features/change-shared/types/change-shared-model";
 import { useTiptapMentionFetchers } from "@/features/change-shared/hooks/use-tiptap-mention-fetchers";
 import { useIssueLookupQuery } from "@/features/change-shared/hooks/use-issue-lookup-query";
-import { useMemberLookupQuery } from "@/features/change-shared/hooks/use-member-lookup-query";
 import { useAddEngineeringChangeFilesAction } from "@/features/engineering-change/hooks/use-add-engineering-change-files-action";
 import { useEngineeringChangeDetailQuery } from "@/features/engineering-change/hooks/use-engineering-change-detail-query";
 import { useEngineeringChangeTimelineQuery } from "@/features/engineering-change/hooks/use-engineering-change-timeline-query";
@@ -26,7 +24,6 @@ import { useMergeEngineeringChangeAction } from "@/features/engineering-change/h
 import { useReopenEngineeringChangeAction } from "@/features/engineering-change/hooks/use-reopen-engineering-change-action";
 import { useSubmitEngineeringChangeAction } from "@/features/engineering-change/hooks/use-submit-engineering-change-action";
 import { useSyncEngineeringChangeIssuesAction } from "@/features/engineering-change/hooks/use-sync-engineering-change-issues-action";
-import { useSyncEngineeringChangeReviewersAction } from "@/features/engineering-change/hooks/use-sync-engineering-change-reviewers-action";
 import { useUpdateEngineeringChangeAction } from "@/features/engineering-change/hooks/use-update-engineering-change-action";
 import { useUpdateEngineeringChangeCommentAction } from "@/features/engineering-change/hooks/use-update-engineering-change-comment-action";
 import { mapTimelineActivityToEvent } from "@/features/change-shared/lib/timeline-event";
@@ -61,7 +58,6 @@ export function EngineeringChangeDetailScreen({
   const engineeringChangeQuery = useEngineeringChangeDetailQuery(engineeringChangeId);
   const timelineQuery = useEngineeringChangeTimelineQuery(engineeringChangeId, activeTab === "conversation");
   const updateEngineeringChangeAction = useUpdateEngineeringChangeAction(engineeringChangeId);
-  const syncReviewersAction = useSyncEngineeringChangeReviewersAction(engineeringChangeId);
   const syncIssuesAction = useSyncEngineeringChangeIssuesAction(engineeringChangeId);
   const createCommentAction = useCreateEngineeringChangeCommentAction(engineeringChangeId);
   const updateCommentAction = useUpdateEngineeringChangeCommentAction(engineeringChangeId);
@@ -78,17 +74,11 @@ export function EngineeringChangeDetailScreen({
 
   const engineeringChange = engineeringChangeQuery.data;
 
-  const [membersEnabled, setMembersEnabled] = useState(false);
-  const [membersSearch, setMembersSearch] = useState("");
   const [issuesEnabled, setIssuesEnabled] = useState(false);
   const [issuesSearch, setIssuesSearch] = useState("");
 
   const deferredIssuesSearch = useDeferredValue(issuesSearch.trim());
 
-  const memberLookup = useMemberLookupQuery(
-    { search: membersSearch.trim() || undefined },
-    membersEnabled,
-  );
   const issueLookup = useIssueLookupQuery(
     { search: deferredIssuesSearch || undefined },
     issuesEnabled,
@@ -253,21 +243,6 @@ export function EngineeringChangeDetailScreen({
       mentionFetchers={{
         user: userMentionFetcher,
         issue: issueMentionFetcher,
-      }}
-      reviewerPicker={{
-        availableMembers: (memberLookup.data ?? []).map((member: LookupMemberModel) => ({
-          id: member.userId,
-          name: member.fullName,
-          email: member.email,
-        })),
-        selectedIds: engineeringChange?.reviewers.map((reviewer) => reviewer.userId) ?? [],
-        onRequest: () => setMembersEnabled(true),
-        onSearchChange: setMembersSearch,
-        onSync: async (userIds: string[]) => {
-          await syncReviewersAction.mutateAsync(userIds);
-        },
-        isSearching: memberLookup.isFetching,
-        isUpdating: syncReviewersAction.isPending,
       }}
       linkedIssuePicker={{
         availableIssues: (issueLookup.data ?? []).map((item: LookupIssueModel) => ({

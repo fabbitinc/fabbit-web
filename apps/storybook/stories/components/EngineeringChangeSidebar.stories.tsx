@@ -37,6 +37,66 @@ const sampleEngineeringChange = {
       reviewedAt: null,
     },
   ],
+  workflow: {
+    stages: [
+      {
+        id: "review",
+        label: "기술 검토",
+        type: "REVIEW",
+        status: "active",
+        description: "도면, BOM, 제조 영향 검토",
+        assignees: [
+          {
+            id: "user-2",
+            name: "박시우",
+            type: "USER",
+            status: "APPROVED",
+            actedAt: "2026-03-07T01:20:00Z",
+            actedByName: "박시우",
+          },
+          {
+            id: "user-3",
+            name: "김하준",
+            type: "USER",
+            status: "PENDING",
+            subtitle: "기구 설계 리드",
+          },
+        ],
+      },
+      {
+        id: "approval",
+        label: "변경 승인",
+        type: "APPROVAL",
+        status: "pending",
+        description: "CCB 승인",
+        assignees: [
+          {
+            id: "team-1",
+            name: "품질팀",
+            type: "TEAM",
+            status: "PENDING",
+            subtitle: "팀 승인 필요",
+          },
+        ],
+      },
+      {
+        id: "release",
+        label: "시스템 반영",
+        type: "RELEASE",
+        status: "pending",
+        description: "PLM/BOM 반영",
+        assignees: [
+          {
+            id: "user-4",
+            name: "이도윤",
+            type: "USER",
+            status: "PENDING",
+            subtitle: "PLM 관리자",
+          },
+        ],
+      },
+    ],
+  },
   labels: [
     { id: "label-1", name: "승인 필요", color: "#f97316" },
     { id: "label-2", name: "제조 영향", color: "#2563eb" },
@@ -76,11 +136,9 @@ const meta = {
     isAttachingFiles: false,
     onAttachFiles: async () => undefined,
     onDeleteFile: async () => undefined,
-    onEditAssignees: () => undefined,
     onEditIssues: () => undefined,
     onEditLabels: () => undefined,
     onEditParts: () => undefined,
-    onEditReviewers: () => undefined,
     onNavigateToIssue: () => undefined,
   },
 } satisfies Meta<typeof EngineeringChangeSidebar>;
@@ -101,26 +159,42 @@ export const EmptyState: Story = {
       linkedIssues: [],
       parts: [],
       reviewers: [],
+      workflow: {
+        stages: [],
+      },
     },
+  },
+};
+
+export const WithoutWorkflow: Story = {
+  args: {
+    engineeringChange: {
+      ...sampleEngineeringChange,
+      workflow: undefined,
+    },
+  },
+};
+
+export const StepWorkflow: Story = {
+  args: {
+    engineeringChange: sampleEngineeringChange,
   },
 };
 
 export const Showcase: Story = {
   render: (args) => (
     <div className="grid gap-6 xl:grid-cols-2">
-      <EngineeringChangeSidebar {...args} />
       <EngineeringChangeSidebar
         {...args}
         engineeringChange={{
           ...sampleEngineeringChange,
-          engineeringChangeState: "MERGED",
-          mergedAt: "2026-03-07T06:10:00Z",
-          mergedBy: "박시우",
-          reviewers: sampleEngineeringChange.reviewers.map((reviewer) => ({
-            ...reviewer,
-            reviewStatus: "APPROVED",
-            reviewedAt: reviewer.reviewedAt ?? "2026-03-07T04:00:00Z",
-          })),
+          workflow: undefined,
+        }}
+      />
+      <EngineeringChangeSidebar
+        {...args}
+        engineeringChange={{
+          ...sampleEngineeringChange,
         }}
       />
     </div>

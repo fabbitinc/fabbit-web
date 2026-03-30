@@ -1,21 +1,21 @@
 import {
-  acceptInvitation as acceptInvitationApiV1AuthAcceptInvitationPost,
-  checkEmail as checkEmailApiV1AuthCheckEmailGet,
-  checkSlug as checkSlugApiV1AuthCheckSlugGet,
-  getSite as getSiteApiV1AuthSiteGet,
-  login as loginApiV1AuthLoginPost,
-  logout as logoutApiV1AuthLogoutPost,
-  refresh as refreshApiV1AuthRefreshPost,
-  register as registerApiV1AuthRegisterPost,
-  sendVerification as sendVerificationApiV1AuthSendVerificationPost,
-  verifyEmail as verifyEmailApiV1AuthVerifyEmailPost,
-  verifyInvitation as verifyInvitationApiV1AuthInvitationsVerifyGet,
+  authAcceptInvitation as acceptInvitationApiV1AuthAcceptInvitationPost,
+  authCheckEmail as checkEmailApiV1AuthCheckEmailGet,
+  authCheckSlug as checkSlugApiV1AuthCheckSlugGet,
+  authGetSite as getSiteApiV1AuthSiteGet,
+  authLogin as loginApiV1AuthLoginPost,
+  authLogout as logoutApiV1AuthLogoutPost,
+  authRefresh as refreshApiV1AuthRefreshPost,
+  authRegister as registerApiV1AuthRegisterPost,
+  authSendVerification as sendVerificationApiV1AuthSendVerificationPost,
+  authVerifyEmail as verifyEmailApiV1AuthVerifyEmailPost,
+  authVerifyInvitation as verifyInvitationApiV1AuthInvitationsVerifyGet,
 } from "@/api/generated/orval/auth/auth";
 import {
-  createOrganization as createOrganizationApiV1OrganizationsPost,
-  switchOrganization as switchOrgApiV1OrganizationsSwitchPost,
+  organizationCreate as createOrganizationApiV1OrganizationsPost,
+  organizationSwitch as switchOrgApiV1OrganizationsSwitchPost,
 } from "@/api/generated/orval/organizations/organizations";
-import { getMe as meApiV1UsersMeGet } from "@/api/generated/orval/users/users";
+import { userGetMe as meApiV1UsersMeGet } from "@/api/generated/orval/users/users";
 import { getSubdomain } from "@/lib/subdomain";
 import type {
   AcceptInvitationRequestDto,

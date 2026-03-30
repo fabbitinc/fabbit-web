@@ -6,9 +6,9 @@
  */
 import type {
   CreditUsageResponse,
-  GetStorageTrendParams,
   StorageTrendResponse,
-  StorageUsageResponse
+  StorageUsageResponse,
+  UsageGetStorageTrendParams
 } from '../model';
 
 import { customInstance } from '../../../orval/custom-instance.js';
@@ -21,7 +21,7 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
  * 스토리지 총 사용량/한도/초과분과 카테고리별 내역을 조회합니다
  * @summary 스토리지 총 사용량/한도/초과분과 카테고리별 내역을 조회합니다
  */
-export const getStorageUsage = (
+export const usageGetStorage = (
     
  options?: SecondParameter<typeof customInstance<StorageUsageResponse>>,) => {
       return customInstance<StorageUsageResponse>(
@@ -33,8 +33,8 @@ export const getStorageUsage = (
  * 스토리지 사용량 추이를 period(7d|30d|1y) 기준으로 조회합니다
  * @summary 스토리지 사용량 추이를 period(7d|30d|1y) 기준으로 조회합니다
  */
-export const getStorageTrend = (
-    params?: GetStorageTrendParams,
+export const usageGetStorageTrend = (
+    params?: UsageGetStorageTrendParams,
  options?: SecondParameter<typeof customInstance<StorageTrendResponse>>,) => {
       return customInstance<StorageTrendResponse>(
       {url: `/api/v1/usage/storage/trend`, method: 'GET',
@@ -46,7 +46,7 @@ export const getStorageTrend = (
  * AI 크레딧 잔여/사용량과 카테고리별 사용량을 조회합니다
  * @summary AI 크레딧 잔여/사용량과 카테고리별 사용량을 조회합니다
  */
-export const getCreditUsage = (
+export const usageGetCredit = (
     
  options?: SecondParameter<typeof customInstance<CreditUsageResponse>>,) => {
       return customInstance<CreditUsageResponse>(
@@ -54,6 +54,6 @@ export const getCreditUsage = (
     },
       options);
     }
-  export type GetStorageUsageResult = NonNullable<Awaited<ReturnType<typeof getStorageUsage>>>
-export type GetStorageTrendResult = NonNullable<Awaited<ReturnType<typeof getStorageTrend>>>
-export type GetCreditUsageResult = NonNullable<Awaited<ReturnType<typeof getCreditUsage>>>
+  export type UsageGetStorageResult = NonNullable<Awaited<ReturnType<typeof usageGetStorage>>>
+export type UsageGetStorageTrendResult = NonNullable<Awaited<ReturnType<typeof usageGetStorageTrend>>>
+export type UsageGetCreditResult = NonNullable<Awaited<ReturnType<typeof usageGetCredit>>>

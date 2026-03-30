@@ -10,4 +10,5 @@ export type NotificationItemResponseType = typeof NotificationItemResponseType[k
 
 export const NotificationItemResponseType = {
   MENTION: 'MENTION',
+  RELEASE: 'RELEASE',
 } as const;

@@ -1,33 +1,33 @@
 import {
-  cancelInvitation as cancelInvitationApiV1OrganizationsInvitationsInvitationIdDelete,
-  createInvitation as createInvitationApiV1OrganizationsInvitationsPost,
-  deleteProfileImage1 as deleteProfileImageApiV1OrganizationsProfileImageDelete,
-  listInvitations as listInvitationsApiV1OrganizationsInvitationsGet,
-  setProfileImage1 as setProfileImageApiV1OrganizationsProfileImagePut,
+  organizationInvitationCancelInvitation as cancelInvitationApiV1OrganizationsInvitationsInvitationIdDelete,
+  organizationInvitationCreateInvitation as createInvitationApiV1OrganizationsInvitationsPost,
+  organizationDeleteProfileImage as deleteProfileImageApiV1OrganizationsProfileImageDelete,
+  organizationInvitationListInvitations as listInvitationsApiV1OrganizationsInvitationsGet,
+  organizationSetProfileImage as setProfileImageApiV1OrganizationsProfileImagePut,
 } from "@/api/generated/orval/organizations/organizations";
 import {
-  createLabel as createLabelApiV1LabelsPost,
-  deleteLabel as deleteLabelApiV1LabelsLabelIdDelete,
-  listLabels as listLabelsApiV1LabelsGet,
+  labelCreate as createLabelApiV1LabelsPost,
+  labelDelete as deleteLabelApiV1LabelsLabelIdDelete,
+  labelList as listLabelsApiV1LabelsGet,
 } from "@/api/generated/orval/labels/labels";
 import {
-  changeMemberRole as changeMemberRoleApiV1MembersUserIdRolePatch,
-  listMembers as listOrgMembersApiV1MembersGet,
-  removeMember as removeMemberApiV1MembersUserIdDelete,
+  memberChangeMemberRole as changeMemberRoleApiV1MembersUserIdRolePatch,
+  memberList as listOrgMembersApiV1MembersGet,
+  memberRemove as removeMemberApiV1MembersUserIdDelete,
 } from "@/api/generated/orval/members/members";
 import {
-  listCategories as listCategoriesApiV1PartsCategoriesGet,
-  renameCategory as renameCategoryApiV1PartsCategoriesCategoryPatch,
+  partListCategories as listCategoriesApiV1PartsCategoriesGet,
+  partRenameCategory as renameCategoryApiV1PartsCategoriesCategoryPatch,
 } from "@/api/generated/orval/parts/parts";
 import {
-  addTeamMembers as addTeamMembersApiV1TeamsTeamIdMembersPost,
-  listTeamMembers as listTeamMembersApiV1TeamsTeamIdMembersGet,
-  removeTeamMembers as removeTeamMembersApiV1TeamsTeamIdMembersDelete,
+  teamMemberAdd as addTeamMembersApiV1TeamsTeamIdMembersPost,
+  teamMemberList as listTeamMembersApiV1TeamsTeamIdMembersGet,
+  teamMemberRemove as removeTeamMembersApiV1TeamsTeamIdMembersDelete,
 } from "@/api/generated/orval/team-members/team-members";
 import {
-  createTeam as createTeamApiV1TeamsPost,
-  deleteTeam as deleteTeamApiV1TeamsTeamIdDelete,
-  listTeams as listTeamsApiV1TeamsGet,
+  teamCreate as createTeamApiV1TeamsPost,
+  teamDelete as deleteTeamApiV1TeamsTeamIdDelete,
+  teamList as listTeamsApiV1TeamsGet,
 } from "@/api/generated/orval/teams/teams";
 import type {
   AddTeamMembersRequestDto,

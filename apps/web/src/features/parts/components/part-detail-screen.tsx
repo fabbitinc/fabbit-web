@@ -573,7 +573,7 @@ export function PartDetailScreen({
             revisionId={revisionId}
           />
         )}
-        bomContent={<PartBomTab partId={partId} revisionId={revisionId} />}
+        bomContent={<PartBomTab partId={partId} revisionId={revisionId} canEditDraft={canEditDraft} />}
         historyContent={(
           <PartHistoryTab
             diffLoadingRevisionId={
