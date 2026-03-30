@@ -16,9 +16,12 @@ import {
   PopoverTrigger,
   UserAvatar,
 } from "@fabbit/ui";
+import {
+  EngineeringChangeWorkflowSection,
+  type EngineeringChangeWorkflowData,
+} from "./engineering-change-workflow-section";
 import { FileIcon } from "./file-icon";
 import { LabelPickerSection } from "./label-picker-section";
-import { MemberPickerSection } from "./member-picker-section";
 import { PartPickerSection } from "./part-picker-section";
 import { IssueStatusIcon, getIssueStatusConfig } from "./work-item-status";
 
@@ -72,6 +75,7 @@ export interface EngineeringChangeSidebarEngineeringChange {
   mergedBy: string | null;
   assignees: EngineeringChangeSidebarUser[];
   reviewers: EngineeringChangeSidebarReviewer[];
+  workflow?: EngineeringChangeWorkflowData;
   labels: EngineeringChangeSidebarLabel[];
   parts: EngineeringChangeSidebarPart[];
   files: EngineeringChangeSidebarFile[];
@@ -83,24 +87,6 @@ export interface EngineeringChangeSidebarProps {
   isAttachingFiles: boolean;
   onAttachFiles: (files: File[]) => Promise<void>;
   onDeleteFile: (fileId: string) => Promise<void>;
-  assigneePicker?: {
-    availableMembers: { id: string; name: string; email: string }[];
-    selectedIds: string[];
-    onSync: (userIds: string[]) => void;
-    onRequest: () => void;
-    onSearchChange?: (search: string) => void;
-    isSearching?: boolean;
-    isUpdating?: boolean;
-  };
-  reviewerPicker?: {
-    availableMembers: { id: string; name: string; email: string }[];
-    selectedIds: string[];
-    onSync: (userIds: string[]) => void;
-    onRequest: () => void;
-    onSearchChange?: (search: string) => void;
-    isSearching?: boolean;
-    isUpdating?: boolean;
-  };
   labelPicker?: {
     availableLabels: { id: string; name: string; colorHex: string }[];
     selectedIds: string[];
@@ -128,11 +114,9 @@ export interface EngineeringChangeSidebarProps {
     isSearching?: boolean;
     isUpdating?: boolean;
   };
-  onEditAssignees?: () => void;
   onEditIssues?: () => void;
   onEditLabels?: () => void;
   onEditParts?: () => void;
-  onEditReviewers?: () => void;
   onNavigateToIssue: (issueNumber: number) => void;
 }
 
@@ -169,16 +153,12 @@ export function EngineeringChangeSidebar({
   isAttachingFiles,
   onAttachFiles,
   onDeleteFile,
-  assigneePicker,
-  reviewerPicker,
   labelPicker,
   partPicker,
   linkedIssuePicker,
-  onEditAssignees,
   onEditIssues,
   onEditLabels,
   onEditParts,
-  onEditReviewers,
   onNavigateToIssue,
 }: EngineeringChangeSidebarProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -202,93 +182,11 @@ export function EngineeringChangeSidebar({
 
   return (
     <div className="space-y-5">
-      <div>
-        {reviewerPicker ? (
-          <MemberPickerSection
-            label="검토자"
-            applyLabel="검토자 적용"
-            availableMembers={reviewerPicker.availableMembers}
-            selectedIds={reviewerPicker.selectedIds}
-            displayItems={engineeringChange.reviewers.map((reviewer) => ({
-              id: reviewer.userId,
-              name: reviewer.fullName,
-              profileImageUrl: reviewer.profileImageUrl,
-            }))}
-            onSync={reviewerPicker.onSync}
-            onRequestMembers={reviewerPicker.onRequest}
-            onSearchChange={reviewerPicker.onSearchChange}
-            isSearching={reviewerPicker.isSearching}
-            isUpdating={reviewerPicker.isUpdating}
-          />
-        ) : (
-          <div>
-            <div className="flex items-center justify-between">
-              <h3 className="text-xs font-medium text-muted-foreground">검토자</h3>
-              <SectionSettingsButton onClick={onEditReviewers} />
-            </div>
-            {engineeringChange.reviewers.length > 0 ? (
-              <div className="mt-2 space-y-2">
-                {engineeringChange.reviewers.map((reviewer) => (
-                  <div key={reviewer.userId} className="flex items-center gap-2">
-                    <UserAvatar
-                      name={reviewer.fullName}
-                      imageUrl={reviewer.profileImageUrl}
-                      className="h-6 w-6 text-[10px]"
-                    />
-                    <span className="text-sm text-foreground">{reviewer.fullName}</span>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="mt-2 text-xs text-muted-foreground/50">지정된 검토자 없음</p>
-            )}
-          </div>
-        )}
-      </div>
-
-      <div>
-        {assigneePicker ? (
-          <MemberPickerSection
-            label="담당자"
-            applyLabel="담당자 적용"
-            availableMembers={assigneePicker.availableMembers}
-            selectedIds={assigneePicker.selectedIds}
-            displayItems={engineeringChange.assignees.map((assignee) => ({
-              id: assignee.userId,
-              name: assignee.fullName,
-              profileImageUrl: assignee.profileImageUrl,
-            }))}
-            onSync={assigneePicker.onSync}
-            onRequestMembers={assigneePicker.onRequest}
-            onSearchChange={assigneePicker.onSearchChange}
-            isSearching={assigneePicker.isSearching}
-            isUpdating={assigneePicker.isUpdating}
-          />
-        ) : (
-          <div>
-            <div className="flex items-center justify-between">
-              <h3 className="text-xs font-medium text-muted-foreground">담당자</h3>
-              <SectionSettingsButton onClick={onEditAssignees} />
-            </div>
-            {engineeringChange.assignees.length > 0 ? (
-              <div className="mt-2 space-y-2">
-                {engineeringChange.assignees.map((assignee) => (
-                  <div key={assignee.userId} className="flex items-center gap-2">
-                    <UserAvatar
-                      name={assignee.fullName}
-                      imageUrl={assignee.profileImageUrl}
-                      className="h-6 w-6 text-[10px]"
-                    />
-                    <span className="text-sm text-foreground">{assignee.fullName}</span>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="mt-2 text-xs text-muted-foreground/50">지정된 담당자 없음</p>
-            )}
-          </div>
-        )}
-      </div>
+      {engineeringChange.workflow ? (
+        <div>
+          <EngineeringChangeWorkflowSection workflow={engineeringChange.workflow} />
+        </div>
+      ) : null}
 
       <div>
         {labelPicker ? (

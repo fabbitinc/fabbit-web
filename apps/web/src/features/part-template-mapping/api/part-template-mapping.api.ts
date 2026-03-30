@@ -41,7 +41,7 @@ export async function previewTemplateMapping(request: MappingPreviewRequestDto):
 
 export async function listTemplateMappings(): Promise<MappingRecordModel[]> {
   const response = await listMappingsApiV1MappingsGet();
-  return (response.items as MappingResponseDto[]).map(toMappingRecordModel);
+  return ((response.items ?? []) as MappingResponseDto[]).map(toMappingRecordModel);
 }
 
 export async function confirmTemplateMapping(request: MappingConfirmRequestDto): Promise<MappingRecordModel> {
@@ -156,7 +156,7 @@ function toMappingDefinitionModel(
   headers: string[] = [],
 ): MappingDefinitionModel {
   return {
-    propertyMappings: mapping.property_mappings.map((propertyMapping) => ({
+    propertyMappings: (mapping.property_mappings ?? []).map((propertyMapping) => ({
       sourceColumn: propertyMapping.source_column,
       targetProperty: propertyMapping.target_property,
       dataType: propertyMapping.data_type,
@@ -164,7 +164,7 @@ function toMappingDefinitionModel(
       reason: propertyMapping.reason,
       isExtended: propertyMapping.is_extended,
     })),
-    relationMappings: mapping.relation_mappings.map((relationMapping) => ({
+    relationMappings: (mapping.relation_mappings ?? []).map((relationMapping) => ({
       relType: relationMapping.rel_type,
       targetLabel: relationMapping.target_label,
       nodeColumns: relationMapping.node_columns ?? {},
@@ -182,18 +182,18 @@ function toOntologySchemaModel(response: OntologySchemaResponseDto): OntologySch
   return {
     name: response.name,
     description: response.description,
-    nodeLabels: response.node_labels.map((nodeLabel) => ({
+    nodeLabels: (response.node_labels ?? []).map((nodeLabel) => ({
       label: nodeLabel.label,
       description: nodeLabel.description,
-      properties: nodeLabel.properties.map(toOntologyPropertyModel),
+      properties: (nodeLabel.properties ?? []).map(toOntologyPropertyModel),
       mergeKeys: nodeLabel.merge_keys,
     })),
-    relationshipTypes: response.relationship_types.map((relationshipType) => ({
+    relationshipTypes: (response.relationship_types ?? []).map((relationshipType) => ({
       relType: relationshipType.rel_type,
       description: relationshipType.description,
       fromLabel: relationshipType.from_label,
       toLabel: relationshipType.to_label,
-      properties: relationshipType.properties.map(toOntologyPropertyModel),
+      properties: (relationshipType.properties ?? []).map(toOntologyPropertyModel),
     })),
   };
 }

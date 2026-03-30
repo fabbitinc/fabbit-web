@@ -38,7 +38,7 @@ export const get = (
  * 매핑을 수정하고 새로운 리비전을 생성합니다
  * @summary 매핑을 수정하고 새로운 리비전을 생성합니다
  */
-export const update = (
+export const update1 = (
     mappingId: string,
     mappingUpdateRequest: BodyType<MappingUpdateRequest>,
  options?: SecondParameter<typeof customInstance<MappingResponse>>,) => {
@@ -53,7 +53,7 @@ export const update = (
  * 매핑을 비활성화(soft delete)합니다
  * @summary 매핑을 비활성화(soft delete)합니다
  */
-export const _delete = (
+export const delete1 = (
     mappingId: string,
  options?: SecondParameter<typeof customInstance<void>>,) => {
       return customInstance<void>(
@@ -79,7 +79,7 @@ export const validate = (
  * 업로드된 파일을 nodes[] + relations[] 구조의 매핑으로 미리보기합니다
  * @summary POST /api/v1/mappings/preview
  */
-export const preview = (
+export const preview1 = (
     mappingPreviewRequest: BodyType<MappingPreviewRequest>,
  options?: SecondParameter<typeof customInstance<MappingPreviewResponse>>,) => {
       return customInstance<MappingPreviewResponse>(
@@ -107,7 +107,7 @@ export const confirm = (
  * 활성 매핑 목록을 최신순으로 조회합니다
  * @summary 활성 매핑 목록을 최신순으로 조회합니다
  */
-export const list = (
+export const list1 = (
     
  options?: SecondParameter<typeof customInstance<MappingListResponse>>,) => {
       return customInstance<MappingListResponse>(
@@ -116,9 +116,9 @@ export const list = (
       options);
     }
   export type GetResult = NonNullable<Awaited<ReturnType<typeof get>>>
-export type UpdateResult = NonNullable<Awaited<ReturnType<typeof update>>>
-export type _DeleteResult = NonNullable<Awaited<ReturnType<typeof _delete>>>
+export type Update1Result = NonNullable<Awaited<ReturnType<typeof update1>>>
+export type Delete1Result = NonNullable<Awaited<ReturnType<typeof delete1>>>
 export type ValidateResult = NonNullable<Awaited<ReturnType<typeof validate>>>
-export type PreviewResult = NonNullable<Awaited<ReturnType<typeof preview>>>
+export type Preview1Result = NonNullable<Awaited<ReturnType<typeof preview1>>>
 export type ConfirmResult = NonNullable<Awaited<ReturnType<typeof confirm>>>
-export type ListResult = NonNullable<Awaited<ReturnType<typeof list>>>
+export type List1Result = NonNullable<Awaited<ReturnType<typeof list1>>>

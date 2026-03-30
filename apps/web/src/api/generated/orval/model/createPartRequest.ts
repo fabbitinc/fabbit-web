@@ -5,6 +5,7 @@
  * OpenAPI spec version: v0
  */
 import type { CreatePartRequestExtendedProperties } from './createPartRequestExtendedProperties';
+import type { CreatePartRequestItemType } from './createPartRequestItemType';
 import type { CreatePartRequestLifecycleState } from './createPartRequestLifecycleState';
 
 /**
@@ -12,11 +13,15 @@ import type { CreatePartRequestLifecycleState } from './createPartRequestLifecyc
  */
 export interface CreatePartRequest {
   /**
-   * 품번
+   * 품번 (채번 카테고리 지정 시 생략 가능)
    * @minLength 0
    * @maxLength 100
    */
-  part_number: string;
+  part_number?: string;
+  /** 채번 카테고리 ID */
+  numbering_category_id?: string;
+  /** 부품 유형 */
+  item_type?: CreatePartRequestItemType;
   /**
    * 품명
    * @minLength 0
@@ -37,14 +42,6 @@ export interface CreatePartRequest {
   unit?: string;
   /** 설명 */
   description?: string;
-  /**
-   * 카테고리
-   * @minLength 0
-   * @maxLength 100
-   */
-  category?: string;
-  /** 팬텀 부품 여부 */
-  is_phantom?: boolean;
   /** 수명주기 상태 */
   lifecycle_state?: CreatePartRequestLifecycleState;
   /**

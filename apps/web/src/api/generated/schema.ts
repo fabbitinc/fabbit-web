@@ -68,6 +68,30 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/part-number-categories/{categoryId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * 채번 카테고리를 수정합니다
+         * @description 기존 채번 카테고리의 이름, 접두어, 구분자, 자릿수를 수정합니다
+         */
+        put: operations["update"];
+        post?: never;
+        /**
+         * 채번 카테고리를 삭제합니다
+         * @description 사용 중이지 않은 채번 카테고리를 삭제합니다
+         */
+        delete: operations["delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/organizations/profile-image": {
         parameters: {
             query?: never;
@@ -148,13 +172,13 @@ export interface paths {
          * 매핑을 수정하고 새로운 리비전을 생성합니다
          * @description 매핑을 수정하고 새로운 리비전을 생성합니다
          */
-        put: operations["update"];
+        put: operations["update_1"];
         post?: never;
         /**
          * 매핑을 비활성화(soft delete)합니다
          * @description 매핑을 비활성화(soft delete)합니다
          */
-        delete: operations["delete"];
+        delete: operations["delete_1"];
         options?: never;
         head?: never;
         patch?: never;
@@ -704,6 +728,86 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/parts/{partId}/revisions/{revisionId}/bom-items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * BOM 항목을 추가합니다
+         * @description DRAFT 상태 리비전에 BOM 항목을 추가합니다
+         */
+        post: operations["addBomItem"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/parts/{partId}/revisions/{revisionId}/bom-items/import/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * BOM 가져오기 미리보기를 실행합니다
+         * @description 업로드된 엑셀 파일의 BOM 데이터를 검증하고 행별 결과를 반환합니다. DRAFT 상태의 리비전에서만 사용 가능합니다
+         */
+        post: operations["preview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/parts/{partId}/revisions/{revisionId}/bom-items/import/commit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * BOM 가져오기를 확정합니다
+         * @description 미리보기로 검증한 엑셀 파일의 BOM 데이터를 실제로 등록합니다. APPEND 모드는 기존 항목에 추가하고, REPLACE 모드는 기존 항목을 모두 삭제 후 등록합니다
+         */
+        post: operations["commit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/parts/{partId}/revisions/{revisionId}/bom-items/batch": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * BOM 항목을 일괄 추가합니다
+         * @description DRAFT 상태 리비전에 여러 BOM 항목을 한 번에 추가합니다
+         */
+        post: operations["addBomItemsBatch"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/parts/{partId}/lifecycle": {
         parameters: {
             query?: never;
@@ -718,6 +822,30 @@ export interface paths {
          * @description 부품의 수명주기 상태를 변경합니다 (ACTIVE → EOL → OBSOLETE)
          */
         post: operations["changeLifecycleState"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/part-number-categories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 채번 카테고리 목록을 조회합니다
+         * @description 품번 생성 규칙으로 사용하는 채번 카테고리 목록과 예시 품번을 반환합니다
+         */
+        get: operations["list"];
+        put?: never;
+        /**
+         * 채번 카테고리를 생성합니다
+         * @description 새 채번 카테고리를 생성하고 시퀀스를 초기화합니다
+         */
+        post: operations["create"];
         delete?: never;
         options?: never;
         head?: never;
@@ -821,7 +949,7 @@ export interface paths {
          * POST /api/v1/mappings/preview
          * @description 업로드된 파일을 nodes[] + relations[] 구조의 매핑으로 미리보기합니다
          */
-        post: operations["preview"];
+        post: operations["preview_1"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1328,6 +1456,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/bom/compare": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 두 리비전의 BOM을 비교합니다
+         * @description 소스/대상 리비전의 BOM 항목을 LINE_NUMBER 기준으로 비교하여 변경 목록과 요약을 반환합니다
+         */
+        post: operations["compare"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/bom/compare/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * BOM 비교 결과를 Excel로 내보냅니다
+         * @description 소스/대상 리비전의 BOM 비교 결과를 Excel(.xlsx) 파일로 내보냅니다
+         */
+        post: operations["exportCompare"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/auth/verify-email": {
         parameters: {
             query?: never;
@@ -1713,7 +1881,7 @@ export interface paths {
          * 리비전을 수정합니다
          * @description DRAFT 상태의 리비전을 수정합니다
          */
-        patch: operations["update_1"];
+        patch: operations["update_2"];
         trace?: never;
     };
     "/api/v1/parts/{partId}/revisions/{revisionId}/preview": {
@@ -1730,14 +1898,38 @@ export interface paths {
          * 대표 미리보기를 해제합니다
          * @description 현재 대표 미리보기를 해제합니다
          */
-        delete: operations["delete_1"];
+        delete: operations["delete_2"];
         options?: never;
         head?: never;
         /**
          * 대표 미리보기 소스를 변경합니다
          * @description 도면 또는 미리보기 전용 파일을 대표 미리보기로 선택합니다
          */
-        patch: operations["update_2"];
+        patch: operations["update_3"];
+        trace?: never;
+    };
+    "/api/v1/parts/{partId}/revisions/{revisionId}/bom-items/{bomItemId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * BOM 항목을 삭제합니다
+         * @description DRAFT 상태 리비전의 BOM 항목을 삭제합니다
+         */
+        delete: operations["deleteBomItem"];
+        options?: never;
+        head?: never;
+        /**
+         * BOM 항목을 수정합니다
+         * @description DRAFT 상태 리비전의 BOM 항목을 수정합니다
+         */
+        patch: operations["updateBomItem"];
         trace?: never;
     };
     "/api/v1/parts/categories/{category}": {
@@ -2360,6 +2552,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/parts/{partId}/revisions/{revisionId}/bom/where-used/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Where-used 요약을 조회합니다
+         * @description 해당 리비전을 하위 부품으로 참조하는 상위 리비전의 집계 정보를 반환합니다
+         */
+        get: operations["getWhereUsedSummary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/parts/{partId}/revisions/{revisionId}/bom/tree": {
         parameters: {
             query?: never;
@@ -2392,6 +2604,26 @@ export interface paths {
          * @description BOM 트리를 Excel(.xlsx) 파일로 내보냅니다
          */
         get: operations["exportBomTree"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/parts/{partId}/revisions/{revisionId}/bom-items/import/template": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * BOM 가져오기 템플릿을 다운로드합니다
+         * @description BOM 가져오기에 사용할 엑셀 템플릿 파일을 다운로드합니다. 헤더 행만 포함된 .xlsx 파일을 반환합니다
+         */
+        get: operations["downloadTemplate"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2560,6 +2792,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/part-number-categories/{categoryId}/next-number": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 다음 품번을 미리봅니다
+         * @description 지정한 채번 카테고리 기준으로 다음에 생성될 예상 품번을 반환합니다
+         */
+        get: operations["getNextNumber"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/part-number-categories/check-number": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 품번 중복 여부를 확인합니다
+         * @description 입력한 품번이 현재 사용 가능한지 여부를 반환합니다
+         */
+        get: operations["checkNumber"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/ontology/schema": {
         parameters: {
             query?: never;
@@ -2711,7 +2983,7 @@ export interface paths {
          * 활성 매핑 목록을 최신순으로 조회합니다
          * @description 활성 매핑 목록을 최신순으로 조회합니다
          */
-        get: operations["list"];
+        get: operations["list_1"];
         put?: never;
         post?: never;
         delete?: never;
@@ -3211,6 +3483,65 @@ export interface components {
              */
             mode?: "DIRECT" | "ENGINEERING_CHANGE_REQUIRED";
         };
+        /** @description 채번 카테고리 수정 요청 */
+        UpdatePartNumberCategoryRequest: {
+            /**
+             * @description 카테고리 이름
+             * @example PCB
+             */
+            name: string;
+            /**
+             * @description 채번 접두어
+             * @example PCB
+             */
+            prefix: string;
+            /**
+             * @description 구분자
+             * @example -
+             */
+            delimiter?: string;
+            /**
+             * Format: int32
+             * @description 자릿수
+             * @example 4
+             */
+            digits?: number;
+        };
+        /** @description 채번 카테고리 응답 */
+        PartNumberCategoryResponse: {
+            /**
+             * Format: uuid
+             * @description 채번 카테고리 ID
+             * @example 019d0000-0000-7000-8000-000000000001
+             */
+            id?: string;
+            /**
+             * @description 카테고리 이름
+             * @example PCB
+             */
+            name?: string;
+            /**
+             * @description 채번 접두어
+             * @example PCB
+             */
+            prefix?: string;
+            /**
+             * @description 구분자
+             * @example -
+             */
+            delimiter?: string;
+            /**
+             * Format: int32
+             * @description 자릿수
+             * @example 4
+             */
+            digits?: number;
+            /**
+             * @description 예시 품번
+             * @example PCB-0001
+             */
+            preview_part_number?: string;
+        };
         /** @description 확장 속성 매핑 */
         ExtendedPropertyMappingDto: {
             /**
@@ -3551,14 +3882,13 @@ export interface components {
             created_at?: string;
         };
         JsonNode: {
-            number?: boolean;
+            null?: boolean;
+            float?: boolean;
+            array?: boolean;
+            empty?: boolean;
+            integral_number?: boolean;
+            floating_point_number?: boolean;
             container?: boolean;
-            pojo?: boolean;
-            int?: boolean;
-            long?: boolean;
-            /** @enum {string} */
-            node_type?: "ARRAY" | "BINARY" | "BOOLEAN" | "MISSING" | "NULL" | "NUMBER" | "OBJECT" | "POJO" | "STRING";
-            string?: boolean;
             value_node?: boolean;
             missing_node?: boolean;
             object?: boolean;
@@ -3570,12 +3900,13 @@ export interface components {
             textual?: boolean;
             boolean?: boolean;
             binary?: boolean;
-            integral_number?: boolean;
-            floating_point_number?: boolean;
-            array?: boolean;
-            empty?: boolean;
-            null?: boolean;
-            float?: boolean;
+            number?: boolean;
+            /** @enum {string} */
+            node_type?: "ARRAY" | "BINARY" | "BOOLEAN" | "MISSING" | "NULL" | "NUMBER" | "OBJECT" | "POJO" | "STRING";
+            string?: boolean;
+            long?: boolean;
+            pojo?: boolean;
+            int?: boolean;
             embedded_value?: boolean;
         };
         /** @description 연결 이슈 요약 */
@@ -4052,7 +4383,7 @@ export interface components {
              * @example CATEGORY
              * @enum {string}
              */
-            part_system_property_kind?: "PART_NUMBER" | "NAME" | "REVISION" | "MATERIAL" | "UNIT" | "DESCRIPTION" | "CATEGORY" | "PHANTOM" | "LIFECYCLE_STATE" | "LEAD_TIME_DAYS";
+            part_system_property_kind?: "PART_NUMBER" | "NAME" | "REVISION" | "MATERIAL" | "UNIT" | "DESCRIPTION" | "CATEGORY" | "ITEM_TYPE" | "LIFECYCLE_STATE" | "LEAD_TIME_DAYS";
             /**
              * @description 활성 여부를 조직 설정에서 변경할 수 있는지 여부
              * @example true
@@ -4217,10 +4548,21 @@ export interface components {
         /** @description 부품 생성 요청 */
         CreatePartRequest: {
             /**
-             * @description 품번
+             * @description 품번 (채번 카테고리 지정 시 생략 가능)
              * @example P-100
              */
-            part_number: string;
+            part_number?: string;
+            /**
+             * Format: uuid
+             * @description 채번 카테고리 ID
+             */
+            numbering_category_id?: string;
+            /**
+             * @description 부품 유형
+             * @example MANUFACTURED
+             * @enum {string}
+             */
+            item_type?: "MANUFACTURED" | "PURCHASED" | "SUBCONTRACTED" | "SERVICE" | "PHANTOM";
             /**
              * @description 품명
              * @example M3 볼트
@@ -4241,16 +4583,6 @@ export interface components {
              * @example 체결용 표준 부품
              */
             description?: string;
-            /**
-             * @description 카테고리
-             * @example FASTENER
-             */
-            category?: string;
-            /**
-             * @description 팬텀 부품 여부
-             * @example false
-             */
-            is_phantom?: boolean;
             /**
              * @description 수명주기 상태
              * @example ACTIVE
@@ -4288,6 +4620,8 @@ export interface components {
             revision_status?: "DRAFT" | "RELEASED" | "SUPERSEDED" | "CANCELED";
             part_number?: string;
             /** Format: uuid */
+            numbering_category_id?: string;
+            /** Format: uuid */
             base_revision_id?: string;
             base_revision_code?: string;
             name?: string;
@@ -4295,10 +4629,10 @@ export interface components {
             material?: string;
             unit?: string;
             description?: string;
-            category?: string;
             /** @enum {string} */
             lifecycle_state?: "ACTIVE" | "EOL" | "OBSOLETE";
-            is_phantom?: boolean;
+            /** @enum {string} */
+            item_type?: "MANUFACTURED" | "PURCHASED" | "SUBCONTRACTED" | "SERVICE" | "PHANTOM";
             /** Format: int32 */
             lead_time_days?: number;
             extended_properties?: {
@@ -4429,6 +4763,179 @@ export interface components {
              */
             reason?: string;
         };
+        /** @description BOM 항목 추가 요청 */
+        AddBomItemRequest: {
+            /**
+             * Format: uuid
+             * @description 하위 부품 리비전 ID
+             */
+            child_part_revision_id: string;
+            /**
+             * @description BOM 줄 번호
+             * @example 10
+             */
+            line_number: string;
+            /**
+             * @description 수량
+             * @example 2
+             */
+            quantity: number;
+            /**
+             * @description 확장 속성 JSON 객체. key는 property_definition.id(UUID)여야 합니다
+             * @example {}
+             */
+            extended_properties?: {
+                [key: string]: unknown;
+            };
+        };
+        /** @description 응답 DTO */
+        BomChildResponse: {
+            /** Format: uuid */
+            part_id?: string;
+            /** Format: uuid */
+            revision_id?: string;
+            part_number?: string;
+            name?: string;
+            revision_code?: string;
+            /** @enum {string} */
+            revision_status?: "DRAFT" | "RELEASED" | "SUPERSEDED" | "CANCELED";
+            line_number?: string;
+            quantity?: number;
+            extended_properties?: {
+                [key: string]: unknown;
+            };
+        };
+        /** @description 응답 DTO */
+        BomParentResponse: {
+            /** Format: uuid */
+            part_id?: string;
+            /** Format: uuid */
+            revision_id?: string;
+            part_number?: string;
+            name?: string;
+            revision_code?: string;
+            /** @enum {string} */
+            revision_status?: "DRAFT" | "RELEASED" | "SUPERSEDED" | "CANCELED";
+            line_number?: string;
+            quantity?: number;
+            extended_properties?: {
+                [key: string]: unknown;
+            };
+        };
+        /** @description 응답 DTO */
+        PartBomResponse: {
+            children?: components["schemas"]["BomChildResponse"][];
+            parents?: components["schemas"]["BomParentResponse"][];
+        };
+        /** @description BOM 가져오기 미리보기 요청 */
+        PreviewBomImportRequest: {
+            /**
+             * Format: uuid
+             * @description 업로드된 파일 ID
+             * @example 550e8400-e29b-41d4-a716-446655440000
+             */
+            file_id: string;
+        };
+        /** @description BOM 가져오기 미리보기 응답 */
+        BomImportPreviewResponse: {
+            /** @description 행별 검증 결과 목록 */
+            rows?: components["schemas"]["RowResult"][];
+            /** @description 요약 통계 */
+            summary?: components["schemas"]["SummaryResponse"];
+        };
+        /** @description 행별 검증 결과 */
+        RowResult: {
+            /**
+             * Format: int32
+             * @description 엑셀 행 번호
+             * @example 2
+             */
+            row_number?: number;
+            /**
+             * @description 줄 번호
+             * @example 10
+             */
+            line_number?: string;
+            /**
+             * @description 하위 부품 번호
+             * @example PART-001
+             */
+            child_part_number?: string;
+            /**
+             * @description 하위 리비전 코드
+             * @example A
+             */
+            child_revision_code?: string;
+            /**
+             * @description 수량
+             * @example 2.5
+             */
+            quantity?: number;
+            /**
+             * @description 검증 상태 (SUCCESS, ERROR, WARNING)
+             * @example SUCCESS
+             */
+            status?: string;
+            /**
+             * @description 오류/경고 메시지
+             * @example 부품을 찾을 수 없습니다
+             */
+            message?: string;
+        };
+        /** @description 미리보기 요약 통계 */
+        SummaryResponse: {
+            /**
+             * Format: int32
+             * @description 전체 행 수
+             * @example 10
+             */
+            total_count?: number;
+            /**
+             * Format: int32
+             * @description 성공 행 수
+             * @example 8
+             */
+            success_count?: number;
+            /**
+             * Format: int32
+             * @description 오류 행 수
+             * @example 2
+             */
+            error_count?: number;
+            /**
+             * Format: int32
+             * @description 경고 행 수
+             * @example 0
+             */
+            warning_count?: number;
+        };
+        /** @description BOM 가져오기 확정 요청 */
+        CommitBomImportRequest: {
+            /**
+             * Format: uuid
+             * @description 업로드된 파일 ID
+             * @example 550e8400-e29b-41d4-a716-446655440000
+             */
+            file_id: string;
+            /**
+             * @description 가져오기 모드 (APPEND: 기존 항목에 추가, REPLACE: 기존 항목 대체)
+             * @example APPEND
+             * @enum {string}
+             */
+            mode: "APPEND" | "REPLACE";
+        };
+        /** @description BOM 가져오기 확정 응답 */
+        BomImportCommitResponse: {
+            /** @description 생성된 BOM 항목 ID 목록 */
+            created_bom_item_ids?: string[];
+            /** @description 확정 요약 */
+            summary?: components["schemas"]["SummaryResponse"];
+        };
+        /** @description BOM 항목 일괄 추가 요청 */
+        AddBomItemsBatchRequest: {
+            /** @description BOM 항목 목록 */
+            items: components["schemas"]["AddBomItemRequest"][];
+        };
         /** @description 부품 수명주기 상태 변경 요청 */
         ChangePartLifecycleStateRequest: {
             /**
@@ -4450,6 +4957,30 @@ export interface components {
              * @enum {string}
              */
             lifecycle_state?: "ACTIVE" | "EOL" | "OBSOLETE";
+        };
+        /** @description 채번 카테고리 생성 요청 */
+        CreatePartNumberCategoryRequest: {
+            /**
+             * @description 카테고리 이름
+             * @example PCB
+             */
+            name: string;
+            /**
+             * @description 채번 접두어
+             * @example PCB
+             */
+            prefix: string;
+            /**
+             * @description 구분자
+             * @example -
+             */
+            delimiter?: string;
+            /**
+             * Format: int32
+             * @description 자릿수
+             * @example 4
+             */
+            digits?: number;
         };
         /** @description 조직 생성 요청 */
         CreateOrganizationRequest: {
@@ -5042,6 +5573,105 @@ export interface components {
              */
             issue_id?: string;
         };
+        /** @description BOM 비교 요청 */
+        BomCompareRequest: {
+            /**
+             * Format: uuid
+             * @description 소스 부품 리비전 ID
+             * @example 550e8400-e29b-41d4-a716-446655440000
+             */
+            source_revision_id: string;
+            /**
+             * Format: uuid
+             * @description 대상 부품 리비전 ID
+             * @example 550e8400-e29b-41d4-a716-446655440001
+             */
+            target_revision_id: string;
+        };
+        /** @description BOM 비교 응답 */
+        BomCompareResponse: {
+            /** @description 변경 목록 */
+            changes?: components["schemas"]["Change"][];
+            /** @description 변경 요약 */
+            summary?: components["schemas"]["Summary"];
+        };
+        /** @description BOM 비교 변경 항목 */
+        Change: {
+            /**
+             * @description BOM 줄 번호
+             * @example 10
+             */
+            line_number?: string;
+            /**
+             * @description 변경 유형
+             * @example ADDED
+             * @enum {string}
+             */
+            change_type?: "ADDED" | "REMOVED" | "CHANGED";
+            /**
+             * @description 소스 부품 번호
+             * @example P-001
+             */
+            source_part_number?: string;
+            /**
+             * @description 소스 부품명
+             * @example 볼트 M6
+             */
+            source_name?: string;
+            /**
+             * @description 소스 수량
+             * @example 4
+             */
+            source_quantity?: number;
+            /**
+             * @description 대상 부품 번호
+             * @example P-002
+             */
+            target_part_number?: string;
+            /**
+             * @description 대상 부품명
+             * @example 볼트 M8
+             */
+            target_name?: string;
+            /**
+             * @description 대상 수량
+             * @example 6
+             */
+            target_quantity?: number;
+        };
+        /** @description BOM 비교 변경 요약 */
+        Summary: {
+            /**
+             * Format: int32
+             * @description 추가된 항목 수
+             * @example 3
+             */
+            added_count?: number;
+            /**
+             * Format: int32
+             * @description 삭제된 항목 수
+             * @example 1
+             */
+            removed_count?: number;
+            /**
+             * Format: int32
+             * @description 변경된 항목 수
+             * @example 2
+             */
+            changed_count?: number;
+            /**
+             * Format: int32
+             * @description 변경 없는 항목 수
+             * @example 10
+             */
+            unchanged_count?: number;
+            /**
+             * Format: int32
+             * @description 전체 항목 수
+             * @example 16
+             */
+            total_count?: number;
+        };
         /** @description 이메일 인증코드 검증 요청 */
         VerifyEmailRequest: {
             /**
@@ -5504,8 +6134,6 @@ export interface components {
             material_set?: boolean;
             unit_set?: boolean;
             description_set?: boolean;
-            category_set?: boolean;
-            phantom_set?: boolean;
             lead_time_days_set?: boolean;
             extended_properties_set?: boolean;
             /**
@@ -5528,16 +6156,6 @@ export interface components {
              * @example 체결용 표준 부품
              */
             description?: string;
-            /**
-             * @description 카테고리
-             * @example FASTENER
-             */
-            category?: string;
-            /**
-             * @description 팬텀 부품 여부
-             * @example false
-             */
-            is_phantom?: boolean;
             /**
              * Format: int32
              * @description 리드타임(일)
@@ -5567,6 +6185,35 @@ export interface components {
              * @description 대표 미리보기 소스 ID
              */
             source_id: string;
+        };
+        /** @description BOM 항목 수정 요청 */
+        UpdateBomItemRequest: {
+            child_part_revision_id_set?: boolean;
+            line_number_set?: boolean;
+            quantity_set?: boolean;
+            extended_properties_set?: boolean;
+            /**
+             * Format: uuid
+             * @description 하위 부품 리비전 ID
+             */
+            child_part_revision_id?: string;
+            /**
+             * @description BOM 줄 번호
+             * @example 10
+             */
+            line_number?: string;
+            /**
+             * @description 수량
+             * @example 2
+             */
+            quantity?: number;
+            /**
+             * @description 확장 속성 JSON 객체. key는 property_definition.id(UUID)여야 합니다
+             * @example {}
+             */
+            extended_properties?: {
+                [key: string]: unknown;
+            };
         };
         /** @description 요청 DTO */
         RenameCategoryRequest: {
@@ -6562,44 +7209,79 @@ export interface components {
             phone?: string;
             profile_image_url?: string;
         };
-        /** @description 응답 DTO */
-        BomChildResponse: {
-            /** Format: uuid */
+        /** @description Where-used 참조 항목 */
+        Reference: {
+            /**
+             * Format: uuid
+             * @description 부품 ID
+             */
             part_id?: string;
-            /** Format: uuid */
-            revision_id?: string;
+            /**
+             * @description 부품 번호
+             * @example P-001
+             */
             part_number?: string;
-            name?: string;
-            revision_code?: string;
-            /** @enum {string} */
-            revision_status?: "DRAFT" | "RELEASED" | "SUPERSEDED" | "CANCELED";
-            line_number?: string;
-            quantity?: number;
-            extended_properties?: {
-                [key: string]: unknown;
-            };
-        };
-        /** @description 응답 DTO */
-        BomParentResponse: {
-            /** Format: uuid */
-            part_id?: string;
-            /** Format: uuid */
+            /**
+             * @description 부품명
+             * @example 어셈블리 A
+             */
+            part_name?: string;
+            /**
+             * Format: uuid
+             * @description 리비전 ID
+             */
             revision_id?: string;
-            part_number?: string;
-            name?: string;
+            /**
+             * @description 리비전 코드
+             * @example A
+             */
             revision_code?: string;
-            /** @enum {string} */
+            /**
+             * @description 리비전 상태
+             * @example RELEASED
+             * @enum {string}
+             */
             revision_status?: "DRAFT" | "RELEASED" | "SUPERSEDED" | "CANCELED";
-            line_number?: string;
-            quantity?: number;
-            extended_properties?: {
-                [key: string]: unknown;
-            };
         };
-        /** @description 응답 DTO */
-        PartBomResponse: {
-            children?: components["schemas"]["BomChildResponse"][];
-            parents?: components["schemas"]["BomParentResponse"][];
+        /** @description 리비전 상태별 집계 */
+        StatusBreakdown: {
+            /**
+             * Format: int32
+             * @description DRAFT 수
+             * @example 2
+             */
+            draft_count?: number;
+            /**
+             * Format: int32
+             * @description RELEASED 수
+             * @example 1
+             */
+            released_count?: number;
+            /**
+             * Format: int32
+             * @description SUPERSEDED 수
+             * @example 1
+             */
+            superseded_count?: number;
+            /**
+             * Format: int32
+             * @description CANCELED 수
+             * @example 1
+             */
+            canceled_count?: number;
+        };
+        /** @description Where-used 요약 응답 */
+        WhereUsedSummaryResponse: {
+            /**
+             * Format: int32
+             * @description 직접 참조 수
+             * @example 5
+             */
+            direct_reference_count?: number;
+            /** @description 상태별 집계 */
+            status_breakdown?: components["schemas"]["StatusBreakdown"];
+            /** @description 참조 목록 */
+            references?: components["schemas"]["Reference"][];
         };
         /** @description 응답 DTO */
         BomTreeNodeResponse: {
@@ -6788,6 +7470,37 @@ export interface components {
         /** @description 응답 DTO */
         CategoryLookupResponse: {
             items?: string[];
+        };
+        /** @description 채번 카테고리 목록 응답 */
+        PartNumberCategoryListResponse: {
+            /** @description 채번 카테고리 목록 */
+            items?: components["schemas"]["PartNumberCategoryResponse"][];
+        };
+        /** @description 다음 품번 미리보기 응답 */
+        PartNumberPreviewResponse: {
+            /**
+             * @description 예상 품번
+             * @example PCB-0042
+             */
+            part_number?: string;
+            /**
+             * @description 안내 문구
+             * @example 이 번호는 실제 생성 시 변경될 수 있습니다
+             */
+            note?: string;
+        };
+        /** @description 품번 사용 가능 여부 응답 */
+        PartNumberAvailabilityResponse: {
+            /**
+             * @description 조회한 품번
+             * @example PCB-0042
+             */
+            part_number?: string;
+            /**
+             * @description 사용 가능 여부
+             * @example true
+             */
+            available?: boolean;
         };
         InvitationListResponse: {
             /** @description 초대 목록 */
@@ -7786,6 +8499,126 @@ export interface operations {
             };
         };
     };
+    update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 채번 카테고리 ID */
+                categoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdatePartNumberCategoryRequest"];
+            };
+        };
+        responses: {
+            /** @description 수정 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartNumberCategoryResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 채번 카테고리 ID */
+                categoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 삭제 성공 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
     setProfileImage_1: {
         parameters: {
             query?: never;
@@ -8084,7 +8917,7 @@ export interface operations {
             };
         };
     };
-    update: {
+    update_1: {
         parameters: {
             query?: never;
             header?: never;
@@ -8147,7 +8980,7 @@ export interface operations {
             };
         };
     };
-    delete: {
+    delete_1: {
         parameters: {
             query?: never;
             header?: never;
@@ -10816,6 +11649,316 @@ export interface operations {
             };
         };
     };
+    addBomItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                partId: string;
+                revisionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AddBomItemRequest"];
+            };
+        };
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartBomResponse"];
+                };
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartBomResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스 충돌 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    preview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 부품 ID */
+                partId: string;
+                /** @description 리비전 ID */
+                revisionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PreviewBomImportRequest"];
+            };
+        };
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BomImportPreviewResponse"];
+                };
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BomImportPreviewResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    commit: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 부품 ID */
+                partId: string;
+                /** @description 리비전 ID */
+                revisionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CommitBomImportRequest"];
+            };
+        };
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BomImportCommitResponse"];
+                };
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BomImportCommitResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    addBomItemsBatch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                partId: string;
+                revisionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AddBomItemsBatchRequest"];
+            };
+        };
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartBomResponse"];
+                };
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartBomResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스 충돌 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
     changeLifecycleState: {
         parameters: {
             query?: never;
@@ -10855,6 +11998,122 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartNumberCategoryListResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreatePartNumberCategoryRequest"];
+            };
+        };
+        responses: {
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartNumberCategoryResponse"];
+                };
             };
             /** @description 잘못된 요청 */
             400: {
@@ -11190,7 +12449,7 @@ export interface operations {
             };
         };
     };
-    preview: {
+    preview_1: {
         parameters: {
             query?: never;
             header?: never;
@@ -13483,6 +14742,126 @@ export interface operations {
             };
         };
     };
+    compare: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BomCompareRequest"];
+            };
+        };
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BomCompareResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    exportCompare: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BomCompareRequest"];
+            };
+        };
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": string;
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
     verifyEmail: {
         parameters: {
             query?: never;
@@ -15047,7 +16426,7 @@ export interface operations {
             };
         };
     };
-    update_1: {
+    update_2: {
         parameters: {
             query?: never;
             header?: never;
@@ -15119,7 +16498,7 @@ export interface operations {
             };
         };
     };
-    delete_1: {
+    delete_2: {
         parameters: {
             query?: never;
             header?: never;
@@ -15190,7 +16569,7 @@ export interface operations {
             };
         };
     };
-    update_2: {
+    update_3: {
         parameters: {
             query?: never;
             header?: never;
@@ -15260,6 +16639,166 @@ export interface operations {
             };
             /** @description 리소스를 찾을 수 없음 */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    deleteBomItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                partId: string;
+                revisionId: string;
+                bomItemId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartBomResponse"];
+                };
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartBomResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스 충돌 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    updateBomItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                partId: string;
+                revisionId: string;
+                bomItemId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateBomItemRequest"];
+            };
+        };
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartBomResponse"];
+                };
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartBomResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스 충돌 */
+            409: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -17617,6 +19156,67 @@ export interface operations {
             };
         };
     };
+    getWhereUsedSummary: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 부품 ID */
+                partId: string;
+                /** @description 리비전 ID */
+                revisionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WhereUsedSummaryResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
     getBomTree: {
         parameters: {
             query?: {
@@ -17700,6 +19300,76 @@ export interface operations {
                 };
                 content: {
                     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": string;
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    downloadTemplate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 부품 ID */
+                partId: string;
+                /** @description 리비전 ID */
+                revisionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": string;
+                };
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": string;
                 };
             };
             /** @description 잘못된 요청 */
@@ -18329,6 +19999,124 @@ export interface operations {
             };
         };
     };
+    getNextNumber: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 채번 카테고리 ID */
+                categoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 조회 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartNumberPreviewResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    checkNumber: {
+        parameters: {
+            query: {
+                /** @description 확인할 품번 */
+                partNumber: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 조회 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartNumberAvailabilityResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
     getOntologySchema: {
         parameters: {
             query?: never;
@@ -18767,7 +20555,7 @@ export interface operations {
             };
         };
     };
-    list: {
+    list_1: {
         parameters: {
             query?: never;
             header?: never;

@@ -70,7 +70,7 @@ export const cancel = (
  * DRAFT 상태의 리비전을 수정합니다
  * @summary 리비전을 수정합니다
  */
-export const update1 = (
+export const update2 = (
     partId: string,
     revisionId: string,
     updatePartRevisionRequest: BodyType<UpdatePartRevisionRequest>,
@@ -85,4 +85,4 @@ export const update1 = (
   export type ReleaseResult = NonNullable<Awaited<ReturnType<typeof release>>>
 export type CreateDraftResult = NonNullable<Awaited<ReturnType<typeof createDraft>>>
 export type CancelResult = NonNullable<Awaited<ReturnType<typeof cancel>>>
-export type Update1Result = NonNullable<Awaited<ReturnType<typeof update1>>>
+export type Update2Result = NonNullable<Awaited<ReturnType<typeof update2>>>

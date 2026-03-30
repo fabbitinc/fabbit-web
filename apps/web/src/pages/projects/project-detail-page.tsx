@@ -5,6 +5,7 @@ import {
   type ProjectDetailView,
   type ProjectSettingsTab,
 } from "@/features/project-detail";
+import { useSettingsQuery } from "@/features/settings";
 
 const validViews = new Set<ProjectDetailView>(["overview", "parts", "issues", "change", "activity", "settings"]);
 const validSettingsTabs = new Set<ProjectSettingsTab>(["general", "members", "labels", "danger"]);
@@ -12,6 +13,7 @@ const validSettingsTabs = new Set<ProjectSettingsTab>(["general", "members", "la
 export function ProjectDetailPage() {
   const { projectId } = useParams<{ projectId: string }>();
   const [searchParams, setSearchParams] = useSearchParams();
+  const settingsQuery = useSettingsQuery();
 
   const updateSearchParams = useCallback(
     (updater: (current: URLSearchParams) => URLSearchParams) => {
@@ -26,21 +28,34 @@ export function ProjectDetailPage() {
 
   const viewParam = searchParams.get("view");
   const tabParam = searchParams.get("tab");
+  const showWorkItemViews = settingsQuery.data?.partWorkflowMode === "ENGINEERING_CHANGE_REQUIRED";
 
   const activeView: ProjectDetailView =
     viewParam && validViews.has(viewParam as ProjectDetailView)
       ? (viewParam as ProjectDetailView)
       : "overview";
+  if (settingsQuery.isSuccess && !showWorkItemViews && (activeView === "issues" || activeView === "change")) {
+    const nextSearchParams = new URLSearchParams(searchParams);
+    nextSearchParams.delete("view");
+    nextSearchParams.delete("tab");
+    const nextSearch = nextSearchParams.toString();
+
+    return <Navigate replace to={nextSearch ? `/projects/${projectId}?${nextSearch}` : `/projects/${projectId}`} />;
+  }
+
+  const normalizedActiveView: ProjectDetailView =
+    !showWorkItemViews && (activeView === "issues" || activeView === "change") ? "overview" : activeView;
   const settingsTab: ProjectSettingsTab =
-    activeView === "settings" && tabParam && validSettingsTabs.has(tabParam as ProjectSettingsTab)
+    normalizedActiveView === "settings" && tabParam && validSettingsTabs.has(tabParam as ProjectSettingsTab)
       ? (tabParam as ProjectSettingsTab)
       : "general";
 
   return (
     <ProjectDetailScreen
-      activeView={activeView}
+      activeView={normalizedActiveView}
       projectId={projectId}
       settingsTab={settingsTab}
+      showWorkItemViews={showWorkItemViews}
       onActiveViewChange={(view) => {
         updateSearchParams((next) => {
           if (view === "overview") {
@@ -58,7 +73,7 @@ export function ProjectDetailPage() {
       }}
       onSettingsTabChange={(tab) => {
         updateSearchParams((next) => {
-          if (activeView !== "settings") {
+          if (normalizedActiveView !== "settings") {
             next.set("view", "settings");
           }
 

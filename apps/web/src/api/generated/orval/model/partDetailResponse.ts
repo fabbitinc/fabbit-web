@@ -5,6 +5,7 @@
  * OpenAPI spec version: v0
  */
 import type { PartDetailResponseExtendedProperties } from './partDetailResponseExtendedProperties';
+import type { PartDetailResponseItemType } from './partDetailResponseItemType';
 import type { PartDetailResponseLifecycleState } from './partDetailResponseLifecycleState';
 import type { PartDetailResponseRevisionStatus } from './partDetailResponseRevisionStatus';
 import type { PartPreviewResponse } from './partPreviewResponse';
@@ -17,6 +18,7 @@ export interface PartDetailResponse {
   revision_id?: string;
   revision_status?: PartDetailResponseRevisionStatus;
   part_number?: string;
+  numbering_category_id?: string;
   base_revision_id?: string;
   base_revision_code?: string;
   name?: string;
@@ -24,9 +26,8 @@ export interface PartDetailResponse {
   material?: string;
   unit?: string;
   description?: string;
-  category?: string;
   lifecycle_state?: PartDetailResponseLifecycleState;
-  is_phantom?: boolean;
+  item_type?: PartDetailResponseItemType;
   lead_time_days?: number;
   extended_properties?: PartDetailResponseExtendedProperties;
   preview?: PartPreviewResponse;

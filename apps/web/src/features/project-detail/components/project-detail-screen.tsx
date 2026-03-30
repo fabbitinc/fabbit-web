@@ -21,6 +21,7 @@ interface ProjectDetailScreenProps {
   onSettingsTabChange: (tab: ProjectSettingsTab) => void;
   projectId: string;
   settingsTab: ProjectSettingsTab;
+  showWorkItemViews: boolean;
 }
 
 function getOverviewActivityState(action: string) {
@@ -69,6 +70,7 @@ export function ProjectDetailScreen({
   onSettingsTabChange,
   projectId,
   settingsTab,
+  showWorkItemViews,
 }: ProjectDetailScreenProps) {
   const navigate = useNavigate();
   const projectQuery = useProjectDetailQuery(projectId, Boolean(projectId));
@@ -125,7 +127,6 @@ export function ProjectDetailScreen({
       activityContent={projectQuery.data ? <ProjectActivityTab projectId={projectQuery.data.id} /> : null}
       changeContent={(
         <ProjectWorkItemsPanel
-          createLabel="새 변경관리"
           isError={projectChangesQuery.isError}
           isLoading={projectChangesQuery.isLoading}
           items={(projectChangesQuery.data?.items ?? []).map((item) => ({
@@ -148,8 +149,7 @@ export function ProjectDetailScreen({
             title: item.title,
           }))}
           kind="change"
-          onCreateClick={() => navigate("/changes/engineering-changes/new")}
-          onItemClick={(itemNumber) => navigate(`/changes/engineering-changes/${itemNumber}`)}
+          onItemClick={(itemId) => navigate(`/changes/engineering-changes/${itemId}`)}
           onRetry={() => {
             void projectChangesQuery.refetch();
           }}
@@ -157,9 +157,9 @@ export function ProjectDetailScreen({
       )}
       isError={projectQuery.isError || !projectQuery.data}
       isLoading={projectQuery.isLoading}
+      showWorkItemViews={showWorkItemViews}
       issuesContent={(
         <ProjectWorkItemsPanel
-          createLabel="새 이슈"
           isError={projectIssuesQuery.isError}
           isLoading={projectIssuesQuery.isLoading}
           items={(projectIssuesQuery.data?.items ?? []).map((item) => ({
@@ -182,8 +182,7 @@ export function ProjectDetailScreen({
             title: item.title,
           }))}
           kind="issue"
-          onCreateClick={() => navigate("/changes/issues/new")}
-          onItemClick={(itemNumber) => navigate(`/changes/issues/${itemNumber}`)}
+          onItemClick={(itemId) => navigate(`/changes/issues/${itemId}`)}
           onRetry={() => {
             void projectIssuesQuery.refetch();
           }}

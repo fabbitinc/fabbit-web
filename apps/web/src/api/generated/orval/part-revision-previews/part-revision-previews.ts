@@ -39,7 +39,7 @@ export const createPreviewFile = (
  * 현재 대표 미리보기를 해제합니다
  * @summary 대표 미리보기를 해제합니다
  */
-export const delete1 = (
+export const delete2 = (
     partId: string,
     revisionId: string,
  options?: SecondParameter<typeof customInstance<void>>,) => {
@@ -52,7 +52,7 @@ export const delete1 = (
  * 도면 또는 미리보기 전용 파일을 대표 미리보기로 선택합니다
  * @summary 대표 미리보기 소스를 변경합니다
  */
-export const update2 = (
+export const update3 = (
     partId: string,
     revisionId: string,
     changePartPreviewRequest: BodyType<ChangePartPreviewRequest>,
@@ -105,8 +105,8 @@ export const deletePreviewFile = (
       options);
     }
   export type CreatePreviewFileResult = NonNullable<Awaited<ReturnType<typeof createPreviewFile>>>
-export type Delete1Result = NonNullable<Awaited<ReturnType<typeof delete1>>>
-export type Update2Result = NonNullable<Awaited<ReturnType<typeof update2>>>
+export type Delete2Result = NonNullable<Awaited<ReturnType<typeof delete2>>>
+export type Update3Result = NonNullable<Awaited<ReturnType<typeof update3>>>
 export type GetSourcesResult = NonNullable<Awaited<ReturnType<typeof getSources>>>
 export type GetProcessingResult = NonNullable<Awaited<ReturnType<typeof getProcessing>>>
 export type DeletePreviewFileResult = NonNullable<Awaited<ReturnType<typeof deletePreviewFile>>>
