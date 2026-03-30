@@ -163,6 +163,7 @@ export type {
   PartEditorScreenDrawingSummary,
   PartEditorScreenExtendedField,
   PartEditorScreenFormValues,
+  PartEditorScreenNumberingCategory,
   PartEditorScreenOption,
   PartEditorScreenProps,
   PartEditorScreenReferenceStats,
