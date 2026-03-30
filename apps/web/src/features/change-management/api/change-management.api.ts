@@ -1,5 +1,5 @@
-import { listEngineeringChanges as listEngineeringChangesApiV1EngineeringChangesGet } from "@/api/generated/orval/engineering-changes/engineering-changes";
-import { listIssues as listIssuesApiV1IssuesGet } from "@/api/generated/orval/issues/issues";
+import { engineeringChangeList as listEngineeringChangesApiV1EngineeringChangesGet } from "@/api/generated/orval/engineering-changes/engineering-changes";
+import { issueList as listIssuesApiV1IssuesGet } from "@/api/generated/orval/issues/issues";
 import type {
   EngineeringChangeListQueryDto,
   IssueListQueryDto,

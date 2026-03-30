@@ -5,7 +5,7 @@ import {
   mappingUpdate as updateMappingApiV1MappingsMappingIdPut,
   mappingValidate as validateMappingApiV1MappingsValidatePost,
 } from "@/api/generated/orval/mappings/mappings";
-import { getOntologySchema as getOntologySchemaApiV1OntologySchemaGet } from "@/api/generated/orval/ontology/ontology";
+import { ontologyGetOntologySchema as getOntologySchemaApiV1OntologySchemaGet } from "@/api/generated/orval/ontology/ontology";
 import type {
   MappingConfirmRequestDto,
   MappingPreviewRequestDto,

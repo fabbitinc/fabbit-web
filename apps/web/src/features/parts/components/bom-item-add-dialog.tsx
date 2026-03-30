@@ -1,10 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Loader2, Search } from "lucide-react";
 import { Button, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, Input } from "@fabbit/ui";
 import { useQuery } from "@tanstack/react-query";
 import { partsQueries } from "@/features/parts/api/parts.queries";
 import { useAddBomItemAction } from "@/features/parts/hooks/use-bom-item-actions";
-import { useDebouncedValue } from "@/hooks/use-debounced-value";
 
 interface BomItemAddDialogProps {
   open: boolean;
@@ -15,13 +14,20 @@ interface BomItemAddDialogProps {
 
 export function BomItemAddDialog({ open, onOpenChange, partId, revisionId }: BomItemAddDialogProps) {
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
   const [selectedPartRevisionId, setSelectedPartRevisionId] = useState<string | null>(null);
   const [selectedPartLabel, setSelectedPartLabel] = useState("");
   const [lineNumber, setLineNumber] = useState("");
   const [quantity, setQuantity] = useState<number>(1);
 
-  const debouncedQuery = useDebouncedValue(searchQuery, 300);
   const addBomItem = useAddBomItemAction(partId, revisionId);
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setDebouncedQuery(searchQuery.trim());
+    }, 250);
+    return () => window.clearTimeout(timer);
+  }, [searchQuery]);
 
   const searchResults = useQuery({
     ...partsQueries.list({ search: debouncedQuery || undefined, limit: 20 }),
@@ -32,6 +38,7 @@ export function BomItemAddDialog({ open, onOpenChange, partId, revisionId }: Bom
 
   function handleReset() {
     setSearchQuery("");
+    setDebouncedQuery("");
     setSelectedPartRevisionId(null);
     setSelectedPartLabel("");
     setLineNumber("");

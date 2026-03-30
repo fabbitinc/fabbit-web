@@ -1,6 +1,6 @@
 import {
-  getSettings,
-  updatePartWorkflowPolicy,
+  settingsGet as getSettings,
+  settingsUpdatePartWorkflowPolicy as updatePartWorkflowPolicy,
 } from "@/api/generated/orval/settings/settings";
 import type { SettingsPartWorkflowPolicyRequest } from "@/api/generated/orval/model/settingsPartWorkflowPolicyRequest";
 import type {

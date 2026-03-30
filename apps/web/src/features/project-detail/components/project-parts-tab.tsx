@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Link2, Trash2 } from "lucide-react";
 import { PartsListScreen as PartsListScreenView } from "@fabbit/components";
 import { Button, ConfirmDialog } from "@fabbit/ui";
-import { ListInProgressPartsStatusesItem } from "@/api/generated/orval/model/listInProgressPartsStatusesItem";
+import { PartListInProgressStatusesItem as ListInProgressPartsStatusesItem } from "@/api/generated/orval/model/partListInProgressStatusesItem";
 import { ProjectAddPartsDialog } from "@/features/project-detail/components/project-add-parts-dialog";
 import { useUnlinkProjectPartsAction } from "@/features/project-detail/hooks/use-unlink-project-parts-action";
 import { useProjectDetailStore } from "@/features/project-detail/stores/project-detail-store";

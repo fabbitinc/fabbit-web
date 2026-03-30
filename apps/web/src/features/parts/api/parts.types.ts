@@ -1,7 +1,7 @@
 import type { ApiParameters, ApiRequestBody, ApiSuccessResponse } from "@/api/types";
 import type { CreatePartDraftRequest } from "@/api/generated/orval/model/createPartDraftRequest";
-import type { GetDiffParams } from "@/api/generated/orval/model/getDiffParams";
-import type { ListInProgressPartsStatusesItem } from "@/api/generated/orval/model/listInProgressPartsStatusesItem";
+import type { PartRevisionGetDiffParams as GetDiffParams } from "@/api/generated/orval/model/partRevisionGetDiffParams";
+import type { PartListInProgressStatusesItem as ListInProgressPartsStatusesItem } from "@/api/generated/orval/model/partListInProgressStatusesItem";
 
 type ResponseOf<
   Path extends keyof import("@/api/generated/schema").paths,

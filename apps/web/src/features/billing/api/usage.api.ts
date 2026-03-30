@@ -1,6 +1,6 @@
 import {
-  getCreditUsage as getCreditUsageApiV1UsageCreditsGet,
-  getStorageUsage as getStorageUsageApiV1UsageStorageGet,
+  usageGetCredit as getCreditUsageApiV1UsageCreditsGet,
+  usageGetStorage as getStorageUsageApiV1UsageStorageGet,
 } from "@/api/generated/orval/usage/usage";
 import type { CreditUsageResponseDto, StorageUsageResponseDto } from "@/features/billing/api/usage.types";
 import type { CreditUsageModel, StorageUsageModel } from "@/features/billing/types/billing-model";
