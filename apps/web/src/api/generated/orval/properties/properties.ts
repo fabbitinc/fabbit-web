@@ -6,7 +6,7 @@
  */
 import type {
   CreatePropertyDefinitionRequest,
-  ListMetaParams,
+  PropertyListMetaParams,
   PropertyMetaListResponse,
   PropertyMetaResponse,
   ReorderPropertyRequest,
@@ -24,7 +24,7 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
  * 조직 관리자 권한으로 커스텀 속성 정의를 생성합니다
  * @summary 커스텀 속성을 생성합니다
  */
-export const createPropertyDefinition = (
+export const propertyCreatePropertyDefinition = (
     createPropertyDefinitionRequest: BodyType<CreatePropertyDefinitionRequest>,
  options?: SecondParameter<typeof customInstance<PropertyMetaResponse | void>>,) => {
       return customInstance<PropertyMetaResponse | void>(
@@ -38,7 +38,7 @@ export const createPropertyDefinition = (
  * 조직 관리자 권한으로 속성의 최종 순서를 한 번에 변경합니다
  * @summary 속성 순서를 변경합니다
  */
-export const reorder = (
+export const propertyReorder = (
     reorderPropertyRequest: BodyType<ReorderPropertyRequest>,
  options?: SecondParameter<typeof customInstance<void>>,) => {
       return customInstance<void>(
@@ -52,7 +52,7 @@ export const reorder = (
  * 조직 관리자 권한으로 커스텀 속성 정의를 삭제합니다. 시스템 속성은 삭제할 수 없습니다
  * @summary 속성을 삭제합니다
  */
-export const deletePropertyDefinition = (
+export const propertyDeletePropertyDefinition = (
     ownerType: string,
     propertyKey: string,
  options?: SecondParameter<typeof customInstance<void>>,) => {
@@ -65,7 +65,7 @@ export const deletePropertyDefinition = (
  * 조직 관리자 권한으로 시스템/커스텀 속성 정의를 부분 수정합니다
  * @summary 속성을 수정합니다
  */
-export const updatePropertyDefinition = (
+export const propertyUpdatePropertyDefinition = (
     ownerType: string,
     propertyKey: string,
     updatePropertyDefinitionRequest: BodyType<UpdatePropertyDefinitionRequest>,
@@ -81,8 +81,8 @@ export const updatePropertyDefinition = (
  * 시스템 속성과 커스텀 속성을 통합한 최종 property catalog 목록을 조회합니다
  * @summary 속성 메타 목록을 조회합니다
  */
-export const listMeta = (
-    params: ListMetaParams,
+export const propertyListMeta = (
+    params: PropertyListMetaParams,
  options?: SecondParameter<typeof customInstance<PropertyMetaListResponse | void>>,) => {
       return customInstance<PropertyMetaListResponse | void>(
       {url: `/api/v1/properties/meta`, method: 'GET',
@@ -90,8 +90,8 @@ export const listMeta = (
     },
       options);
     }
-  export type CreatePropertyDefinitionResult = NonNullable<Awaited<ReturnType<typeof createPropertyDefinition>>>
-export type ReorderResult = NonNullable<Awaited<ReturnType<typeof reorder>>>
-export type DeletePropertyDefinitionResult = NonNullable<Awaited<ReturnType<typeof deletePropertyDefinition>>>
-export type UpdatePropertyDefinitionResult = NonNullable<Awaited<ReturnType<typeof updatePropertyDefinition>>>
-export type ListMetaResult = NonNullable<Awaited<ReturnType<typeof listMeta>>>
+  export type PropertyCreatePropertyDefinitionResult = NonNullable<Awaited<ReturnType<typeof propertyCreatePropertyDefinition>>>
+export type PropertyReorderResult = NonNullable<Awaited<ReturnType<typeof propertyReorder>>>
+export type PropertyDeletePropertyDefinitionResult = NonNullable<Awaited<ReturnType<typeof propertyDeletePropertyDefinition>>>
+export type PropertyUpdatePropertyDefinitionResult = NonNullable<Awaited<ReturnType<typeof propertyUpdatePropertyDefinition>>>
+export type PropertyListMetaResult = NonNullable<Awaited<ReturnType<typeof propertyListMeta>>>

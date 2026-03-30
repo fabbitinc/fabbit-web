@@ -22,7 +22,7 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
  * 업로드된 엑셀 파일의 BOM 데이터를 검증하고 행별 결과를 반환합니다. DRAFT 상태의 리비전에서만 사용 가능합니다
  * @summary BOM 가져오기 미리보기를 실행합니다
  */
-export const preview = (
+export const bomImportPreview = (
     partId: string,
     revisionId: string,
     previewBomImportRequest: BodyType<PreviewBomImportRequest>,
@@ -38,7 +38,7 @@ export const preview = (
  * 미리보기로 검증한 엑셀 파일의 BOM 데이터를 실제로 등록합니다. APPEND 모드는 기존 항목에 추가하고, REPLACE 모드는 기존 항목을 모두 삭제 후 등록합니다
  * @summary BOM 가져오기를 확정합니다
  */
-export const commit = (
+export const bomImportCommit = (
     partId: string,
     revisionId: string,
     commitBomImportRequest: BodyType<CommitBomImportRequest>,
@@ -54,7 +54,7 @@ export const commit = (
  * BOM 가져오기에 사용할 엑셀 템플릿 파일을 다운로드합니다. 헤더 행만 포함된 .xlsx 파일을 반환합니다
  * @summary BOM 가져오기 템플릿을 다운로드합니다
  */
-export const downloadTemplate = (
+export const bomImportDownloadTemplate = (
     partId: string,
     revisionId: string,
  options?: SecondParameter<typeof customInstance<string>>,) => {
@@ -63,6 +63,6 @@ export const downloadTemplate = (
     },
       options);
     }
-  export type PreviewResult = NonNullable<Awaited<ReturnType<typeof preview>>>
-export type CommitResult = NonNullable<Awaited<ReturnType<typeof commit>>>
-export type DownloadTemplateResult = NonNullable<Awaited<ReturnType<typeof downloadTemplate>>>
+  export type BomImportPreviewResult = NonNullable<Awaited<ReturnType<typeof bomImportPreview>>>
+export type BomImportCommitResult = NonNullable<Awaited<ReturnType<typeof bomImportCommit>>>
+export type BomImportDownloadTemplateResult = NonNullable<Awaited<ReturnType<typeof bomImportDownloadTemplate>>>

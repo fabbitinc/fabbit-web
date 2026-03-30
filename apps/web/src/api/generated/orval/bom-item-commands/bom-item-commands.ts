@@ -22,7 +22,7 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
  * DRAFT 상태 리비전에 BOM 항목을 추가합니다
  * @summary BOM 항목을 추가합니다
  */
-export const addBomItem = (
+export const bomItemCommandAddBomItem = (
     partId: string,
     revisionId: string,
     addBomItemRequest: BodyType<AddBomItemRequest>,
@@ -38,7 +38,7 @@ export const addBomItem = (
  * DRAFT 상태 리비전에 여러 BOM 항목을 한 번에 추가합니다
  * @summary BOM 항목을 일괄 추가합니다
  */
-export const addBomItemsBatch = (
+export const bomItemCommandAddBomItemsBatch = (
     partId: string,
     revisionId: string,
     addBomItemsBatchRequest: BodyType<AddBomItemsBatchRequest>,
@@ -54,7 +54,7 @@ export const addBomItemsBatch = (
  * DRAFT 상태 리비전의 BOM 항목을 삭제합니다
  * @summary BOM 항목을 삭제합니다
  */
-export const deleteBomItem = (
+export const bomItemCommandDeleteBomItem = (
     partId: string,
     revisionId: string,
     bomItemId: string,
@@ -68,7 +68,7 @@ export const deleteBomItem = (
  * DRAFT 상태 리비전의 BOM 항목을 수정합니다
  * @summary BOM 항목을 수정합니다
  */
-export const updateBomItem = (
+export const bomItemCommandUpdateBomItem = (
     partId: string,
     revisionId: string,
     bomItemId: string,
@@ -81,7 +81,7 @@ export const updateBomItem = (
     },
       options);
     }
-  export type AddBomItemResult = NonNullable<Awaited<ReturnType<typeof addBomItem>>>
-export type AddBomItemsBatchResult = NonNullable<Awaited<ReturnType<typeof addBomItemsBatch>>>
-export type DeleteBomItemResult = NonNullable<Awaited<ReturnType<typeof deleteBomItem>>>
-export type UpdateBomItemResult = NonNullable<Awaited<ReturnType<typeof updateBomItem>>>
+  export type BomItemCommandAddBomItemResult = NonNullable<Awaited<ReturnType<typeof bomItemCommandAddBomItem>>>
+export type BomItemCommandAddBomItemsBatchResult = NonNullable<Awaited<ReturnType<typeof bomItemCommandAddBomItemsBatch>>>
+export type BomItemCommandDeleteBomItemResult = NonNullable<Awaited<ReturnType<typeof bomItemCommandDeleteBomItem>>>
+export type BomItemCommandUpdateBomItemResult = NonNullable<Awaited<ReturnType<typeof bomItemCommandUpdateBomItem>>>

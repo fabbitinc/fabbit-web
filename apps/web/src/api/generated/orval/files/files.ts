@@ -25,7 +25,7 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
  * 단건 파일 업로드를 위한 presigned URL을 발급합니다
  * @summary 단건 파일 업로드를 위한 presigned URL을 발급합니다
  */
-export const createFile = (
+export const fileCreate = (
     createFileRequest: BodyType<CreateFileRequest>,
  options?: SecondParameter<typeof customInstance<CreateFileResponse | void>>,) => {
       return customInstance<CreateFileResponse | void>(
@@ -39,7 +39,7 @@ export const createFile = (
  * 단건 업로드 완료를 확인하고 파일 상태를 UPLOADED로 전이합니다
  * @summary 단건 업로드 완료를 확인하고 파일 상태를 UPLOADED로 전이합니다
  */
-export const completeFile = (
+export const fileComplete = (
     fileId: string,
  options?: SecondParameter<typeof customInstance<FileCompleteResponse | void>>,) => {
       return customInstance<FileCompleteResponse | void>(
@@ -51,7 +51,7 @@ export const completeFile = (
  * 최대 100건 파일 업로드를 위한 presigned URL을 일괄 발급합니다
  * @summary 최대 100건 파일 업로드를 위한 presigned URL을 일괄 발급합니다
  */
-export const batchCreateFiles = (
+export const fileBatchCreate = (
     batchCreateFileRequest: BodyType<BatchCreateFileRequest>,
  options?: SecondParameter<typeof customInstance<BatchCreateFileResponse | void>>,) => {
       return customInstance<BatchCreateFileResponse | void>(
@@ -65,7 +65,7 @@ export const batchCreateFiles = (
  * 배치 업로드 완료를 확인하고 성공/실패 목록을 반환합니다
  * @summary 배치 업로드 완료를 확인하고 성공/실패 목록을 반환합니다
  */
-export const batchCompleteFiles = (
+export const fileBatchComplete = (
     batchCompleteRequest: BodyType<BatchCompleteRequest>,
  options?: SecondParameter<typeof customInstance<BatchCompleteResponse | void>>,) => {
       return customInstance<BatchCompleteResponse | void>(
@@ -75,7 +75,7 @@ export const batchCompleteFiles = (
     },
       options);
     }
-  export type CreateFileResult = NonNullable<Awaited<ReturnType<typeof createFile>>>
-export type CompleteFileResult = NonNullable<Awaited<ReturnType<typeof completeFile>>>
-export type BatchCreateFilesResult = NonNullable<Awaited<ReturnType<typeof batchCreateFiles>>>
-export type BatchCompleteFilesResult = NonNullable<Awaited<ReturnType<typeof batchCompleteFiles>>>
+  export type FileCreateResult = NonNullable<Awaited<ReturnType<typeof fileCreate>>>
+export type FileCompleteResult = NonNullable<Awaited<ReturnType<typeof fileComplete>>>
+export type FileBatchCreateResult = NonNullable<Awaited<ReturnType<typeof fileBatchCreate>>>
+export type FileBatchCompleteResult = NonNullable<Awaited<ReturnType<typeof fileBatchComplete>>>

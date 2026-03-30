@@ -5,9 +5,9 @@
  * OpenAPI spec version: v0
  */
 import type {
-  CheckNumberParams,
   CreatePartNumberCategoryRequest,
   PartNumberAvailabilityResponse,
+  PartNumberCategoryCheckNumberParams,
   PartNumberCategoryListResponse,
   PartNumberCategoryResponse,
   PartNumberPreviewResponse,
@@ -25,7 +25,7 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
  * 기존 채번 카테고리의 이름, 접두어, 구분자, 자릿수를 수정합니다
  * @summary 채번 카테고리를 수정합니다
  */
-export const update = (
+export const partNumberCategoryUpdate = (
     categoryId: string,
     updatePartNumberCategoryRequest: BodyType<UpdatePartNumberCategoryRequest>,
  options?: SecondParameter<typeof customInstance<PartNumberCategoryResponse>>,) => {
@@ -40,7 +40,7 @@ export const update = (
  * 사용 중이지 않은 채번 카테고리를 삭제합니다
  * @summary 채번 카테고리를 삭제합니다
  */
-export const _delete = (
+export const partNumberCategoryDelete = (
     categoryId: string,
  options?: SecondParameter<typeof customInstance<void>>,) => {
       return customInstance<void>(
@@ -52,7 +52,7 @@ export const _delete = (
  * 품번 생성 규칙으로 사용하는 채번 카테고리 목록과 예시 품번을 반환합니다
  * @summary 채번 카테고리 목록을 조회합니다
  */
-export const list = (
+export const partNumberCategoryList = (
     
  options?: SecondParameter<typeof customInstance<PartNumberCategoryListResponse>>,) => {
       return customInstance<PartNumberCategoryListResponse>(
@@ -64,7 +64,7 @@ export const list = (
  * 새 채번 카테고리를 생성하고 시퀀스를 초기화합니다
  * @summary 채번 카테고리를 생성합니다
  */
-export const create = (
+export const partNumberCategoryCreate = (
     createPartNumberCategoryRequest: BodyType<CreatePartNumberCategoryRequest>,
  options?: SecondParameter<typeof customInstance<PartNumberCategoryResponse>>,) => {
       return customInstance<PartNumberCategoryResponse>(
@@ -78,7 +78,7 @@ export const create = (
  * 지정한 채번 카테고리 기준으로 다음에 생성될 예상 품번을 반환합니다
  * @summary 다음 품번을 미리봅니다
  */
-export const getNextNumber = (
+export const partNumberCategoryGetNextNumber = (
     categoryId: string,
  options?: SecondParameter<typeof customInstance<PartNumberPreviewResponse>>,) => {
       return customInstance<PartNumberPreviewResponse>(
@@ -90,8 +90,8 @@ export const getNextNumber = (
  * 입력한 품번이 현재 사용 가능한지 여부를 반환합니다
  * @summary 품번 중복 여부를 확인합니다
  */
-export const checkNumber = (
-    params: CheckNumberParams,
+export const partNumberCategoryCheckNumber = (
+    params: PartNumberCategoryCheckNumberParams,
  options?: SecondParameter<typeof customInstance<PartNumberAvailabilityResponse>>,) => {
       return customInstance<PartNumberAvailabilityResponse>(
       {url: `/api/v1/part-number-categories/check-number`, method: 'GET',
@@ -99,9 +99,9 @@ export const checkNumber = (
     },
       options);
     }
-  export type UpdateResult = NonNullable<Awaited<ReturnType<typeof update>>>
-export type _DeleteResult = NonNullable<Awaited<ReturnType<typeof _delete>>>
-export type ListResult = NonNullable<Awaited<ReturnType<typeof list>>>
-export type CreateResult = NonNullable<Awaited<ReturnType<typeof create>>>
-export type GetNextNumberResult = NonNullable<Awaited<ReturnType<typeof getNextNumber>>>
-export type CheckNumberResult = NonNullable<Awaited<ReturnType<typeof checkNumber>>>
+  export type PartNumberCategoryUpdateResult = NonNullable<Awaited<ReturnType<typeof partNumberCategoryUpdate>>>
+export type PartNumberCategoryDeleteResult = NonNullable<Awaited<ReturnType<typeof partNumberCategoryDelete>>>
+export type PartNumberCategoryListResult = NonNullable<Awaited<ReturnType<typeof partNumberCategoryList>>>
+export type PartNumberCategoryCreateResult = NonNullable<Awaited<ReturnType<typeof partNumberCategoryCreate>>>
+export type PartNumberCategoryGetNextNumberResult = NonNullable<Awaited<ReturnType<typeof partNumberCategoryGetNextNumber>>>
+export type PartNumberCategoryCheckNumberResult = NonNullable<Awaited<ReturnType<typeof partNumberCategoryCheckNumber>>>

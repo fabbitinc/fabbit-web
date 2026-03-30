@@ -21,7 +21,7 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
  * 소스/대상 리비전의 BOM 항목을 LINE_NUMBER 기준으로 비교하여 변경 목록과 요약을 반환합니다
  * @summary 두 리비전의 BOM을 비교합니다
  */
-export const compare = (
+export const bomQueryCompare = (
     bomCompareRequest: BodyType<BomCompareRequest>,
  options?: SecondParameter<typeof customInstance<BomCompareResponse>>,) => {
       return customInstance<BomCompareResponse>(
@@ -35,7 +35,7 @@ export const compare = (
  * 소스/대상 리비전의 BOM 비교 결과를 Excel(.xlsx) 파일로 내보냅니다
  * @summary BOM 비교 결과를 Excel로 내보냅니다
  */
-export const exportCompare = (
+export const bomQueryExportCompare = (
     bomCompareRequest: BodyType<BomCompareRequest>,
  options?: SecondParameter<typeof customInstance<Blob>>,) => {
       return customInstance<Blob>(
@@ -50,7 +50,7 @@ export const exportCompare = (
  * 해당 리비전을 하위 부품으로 참조하는 상위 리비전의 집계 정보를 반환합니다
  * @summary Where-used 요약을 조회합니다
  */
-export const getWhereUsedSummary = (
+export const bomQueryGetWhereUsedSummary = (
     partId: string,
     revisionId: string,
  options?: SecondParameter<typeof customInstance<WhereUsedSummaryResponse>>,) => {
@@ -59,6 +59,6 @@ export const getWhereUsedSummary = (
     },
       options);
     }
-  export type CompareResult = NonNullable<Awaited<ReturnType<typeof compare>>>
-export type ExportCompareResult = NonNullable<Awaited<ReturnType<typeof exportCompare>>>
-export type GetWhereUsedSummaryResult = NonNullable<Awaited<ReturnType<typeof getWhereUsedSummary>>>
+  export type BomQueryCompareResult = NonNullable<Awaited<ReturnType<typeof bomQueryCompare>>>
+export type BomQueryExportCompareResult = NonNullable<Awaited<ReturnType<typeof bomQueryExportCompare>>>
+export type BomQueryGetWhereUsedSummaryResult = NonNullable<Awaited<ReturnType<typeof bomQueryGetWhereUsedSummary>>>

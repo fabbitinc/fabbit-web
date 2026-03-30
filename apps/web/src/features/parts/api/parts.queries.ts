@@ -1,5 +1,11 @@
 import { mutationOptions, queryOptions } from "@tanstack/react-query";
 import {
+  addBomItemApi,
+  addBomItemsBatchApi,
+  deleteBomItemApi,
+  updateBomItemApi,
+} from "@/features/parts/api/bom.api";
+import {
   approvePartDraft,
   attachPartFiles,
   cancelPartDraft,
@@ -49,6 +55,9 @@ import type {
   UpdatePartPreviewRequestDto,
   UploadPartPreviewFileRequestDto,
 } from "@/features/parts/api/parts.types";
+import type { AddBomItemRequest } from "@/api/generated/orval/model/addBomItemRequest";
+import type { AddBomItemsBatchRequest } from "@/api/generated/orval/model/addBomItemsBatchRequest";
+import type { UpdateBomItemRequest } from "@/api/generated/orval/model/updateBomItemRequest";
 
 export const partsKeys = {
   all: ["parts"] as const,
@@ -254,5 +263,26 @@ export const partsMutations = {
     mutationOptions({
       mutationKey: ["parts", partId, "change-lifecycle"],
       mutationFn: (targetState: string) => changePartLifecycleState(partId, targetState),
+    }),
+  addBomItem: (partId: string, revisionId: string) =>
+    mutationOptions({
+      mutationKey: ["parts", partId, "revisions", revisionId, "add-bom-item"],
+      mutationFn: (request: AddBomItemRequest) => addBomItemApi(partId, revisionId, request),
+    }),
+  addBomItemsBatch: (partId: string, revisionId: string) =>
+    mutationOptions({
+      mutationKey: ["parts", partId, "revisions", revisionId, "add-bom-items-batch"],
+      mutationFn: (request: AddBomItemsBatchRequest) => addBomItemsBatchApi(partId, revisionId, request),
+    }),
+  updateBomItem: (partId: string, revisionId: string) =>
+    mutationOptions({
+      mutationKey: ["parts", partId, "revisions", revisionId, "update-bom-item"],
+      mutationFn: ({ bomItemId, request }: { bomItemId: string; request: UpdateBomItemRequest }) =>
+        updateBomItemApi(partId, revisionId, bomItemId, request),
+    }),
+  deleteBomItem: (partId: string, revisionId: string) =>
+    mutationOptions({
+      mutationKey: ["parts", partId, "revisions", revisionId, "delete-bom-item"],
+      mutationFn: (bomItemId: string) => deleteBomItemApi(partId, revisionId, bomItemId),
     }),
 };
