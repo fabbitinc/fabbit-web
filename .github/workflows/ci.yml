@@ -10,6 +10,7 @@ jobs:
   build-and-lint:
     name: Build & Lint
     runs-on: self-hosted
+    timeout-minutes: 20
 
     steps:
       - name: Checkout
