@@ -1,0 +1,51 @@
+name: Deploy Landing
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - release
+    paths:
+      - "apps/landing/**"
+      - "packages/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - "turbo.json"
+      - ".node-version"
+      - ".github/workflows/deploy-landing.yml"
+
+jobs:
+  deploy-landing:
+    name: Deploy fabbit-landing
+    runs-on: self-hosted
+    timeout-minutes: 20
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: ".node-version"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build landing
+        run: pnpm --filter @fabbit/landing build
+        env:
+          VITE_APP_BASE_URL: https://fabbitinc.com
+
+      - name: Deploy landing to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy apps/landing/dist --project-name=fabbit-landing --branch=${{ github.ref_name }} --commit-hash=${{ github.sha }}

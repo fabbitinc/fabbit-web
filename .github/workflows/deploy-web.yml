@@ -1,0 +1,53 @@
+name: Deploy Web
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - release
+    paths:
+      - "apps/web/**"
+      - "packages/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+      - "pnpm-workspace.yaml"
+      - "turbo.json"
+      - ".node-version"
+      - ".github/workflows/deploy-web.yml"
+
+jobs:
+  deploy-web:
+    name: Deploy fabbit-web
+    runs-on: self-hosted
+    timeout-minutes: 20
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version-file: ".node-version"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build web
+        run: pnpm --filter @fabbit/web build
+        env:
+          VITE_API_BASE_URL: https://api.fabbitinc.com
+          VITE_APP_DOMAIN: fabbit.app
+          VITE_TURNSTILE_SITE_KEY: 0x4AAAAAACaBL2Qxq2neEHgx
+
+      - name: Deploy web to Cloudflare Pages
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: pages deploy apps/web/dist --project-name=fabbit-web --branch=${{ github.ref_name }} --commit-hash=${{ github.sha }}
