@@ -197,7 +197,18 @@ function WideStepRail({
   const currentIndex = workflow.stages.findIndex((stage) => stage.status === "active");
 
   return (
-    <div className="rounded-lg border bg-background px-4 py-3">
+    <div
+      role="button"
+      tabIndex={0}
+      onClick={onToggle}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onToggle();
+        }
+      }}
+      className="cursor-pointer rounded-lg border bg-background px-4 py-3 transition-colors hover:bg-muted/50"
+    >
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-0">
@@ -242,14 +253,11 @@ function WideStepRail({
           </div>
         </div>
 
-        <button
-          type="button"
-          onClick={onToggle}
-          className="inline-flex shrink-0 cursor-pointer items-center gap-1.5 rounded-md border bg-card px-3 py-1.5 text-xs font-medium text-foreground transition-colors hover:bg-muted"
-        >
-          {expanded ? "접기" : "펼치기"}
-          {expanded ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
-        </button>
+        {expanded ? (
+          <ChevronUp className="h-4 w-4 shrink-0 text-muted-foreground" />
+        ) : (
+          <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
+        )}
       </div>
     </div>
   );

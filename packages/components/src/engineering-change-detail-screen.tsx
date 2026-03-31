@@ -500,22 +500,28 @@ export function EngineeringChangeDetailScreen({
                   </div>
                 </div>
               ) : (
-                <div className="min-w-0 rounded-lg border bg-card">
+                <div className="flex gap-3">
+                <div className="flex flex-col items-center">
+                  <UserAvatar
+                    name={createdByName}
+                    imageUrl={engineeringChange.createdBy?.profileImageUrl}
+                    className="h-8 w-8 shrink-0"
+                  />
+                </div>
+                <div className="min-w-0 flex-1 rounded-lg border bg-card">
                   <div className="flex items-center gap-2 border-b bg-muted/30 px-4 py-2">
-                    <span className="text-sm font-medium text-foreground">변경 제안</span>
+                    <span className="text-sm font-medium text-foreground">{createdByName}</span>
                     <Badge variant="outline" className="text-[10px]">
                       본문
                     </Badge>
-                    <div className="ml-auto flex items-center gap-2 text-xs text-muted-foreground">
-                      <span className="truncate">작성 {createdByName}</span>
-                      <span>·</span>
-                      <span>{timeAgo(engineeringChange.createdAt)}</span>
-                    </div>
+                    <span className="text-xs text-muted-foreground">
+                      {timeAgo(engineeringChange.createdAt)}
+                    </span>
                     {engineeringChange.isModified ? (
                       <span className="text-xs text-muted-foreground">· 수정됨</span>
                     ) : null}
                     {isEditable ? (
-                      <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0" onClick={startEditing}>
+                      <Button variant="ghost" size="icon" className="ml-auto h-6 w-6 shrink-0" onClick={startEditing}>
                         <Pencil className="h-3 w-3" />
                       </Button>
                     ) : null}
@@ -534,6 +540,7 @@ export function EngineeringChangeDetailScreen({
                       <p className="text-sm text-muted-foreground">아직 입력된 본문이 없습니다.</p>
                     )}
                   </div>
+                </div>
                 </div>
               )}
 
