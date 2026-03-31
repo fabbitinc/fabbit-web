@@ -14,7 +14,6 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-  UserAvatar,
 } from "@fabbit/ui";
 import {
   EngineeringChangeWorkflowSection,

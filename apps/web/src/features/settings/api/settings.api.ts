@@ -27,7 +27,7 @@ function serializePartWorkflowMode(
   mode: PartWorkflowMode,
 ): SettingsPartWorkflowPolicyRequest["mode"] {
   return mode === "ENGINEERING_CHANGE_REQUIRED"
-    ? "ENGINEERING_CHANGE_REQUIRED"
+    ? "CHANGE_REQUEST_REQUIRED"
     : "DIRECT";
 }
 

@@ -130,15 +130,14 @@ export async function fetchEngineeringChangeTimeline(
   const response = await getEngineeringChangeTimelineApi(engineeringChangeId);
   const timeline = response as EngineeringChangeTimelineResponseDto;
   const items = timeline.items ?? [];
-  const users = timeline.users ?? {};
 
   return items.map((item) => {
     if (isEngineeringChangeTimelineCommentItem(item)) {
-      return toEngineeringChangeTimelineCommentModel(item, users);
+      return toEngineeringChangeTimelineCommentModel(item);
     }
 
     if (isEngineeringChangeTimelineActivityItem(item)) {
-      return toEngineeringChangeTimelineActivityModel(item, users);
+      return toEngineeringChangeTimelineActivityModel(item);
     }
 
     throw new Error(`알 수 없는 타임라인 아이템 타입입니다: ${String(item.type)}`);
@@ -178,7 +177,7 @@ export async function addEngineeringChangeFiles(
   request: AddEngineeringChangeFilesRequestDto,
 ): Promise<EngineeringChangeFileModel[]> {
   const response = await addEngineeringChangeFilesApi(engineeringChangeId, request);
-  return response.map(toEngineeringChangeFileModel);
+  return (response ?? []).map(toEngineeringChangeFileModel);
 }
 
 export async function deleteEngineeringChangeFile(engineeringChangeId: string, fileId: string) {
@@ -187,7 +186,17 @@ export async function deleteEngineeringChangeFile(engineeringChangeId: string, f
 
 function toEngineeringChangeDetailModel(change: EngineeringChangeDetailResponseDto): EngineeringChangeDetailModel {
   const reviewSteps = (change.steps ?? []).filter((step) => step.step_type === "REVIEW");
-  const partRevisions = (change.part_revisions ?? []).map(toEngineeringChangePartRevisionModel);
+  const affectedItems = (change.affected_items ?? []).map(toEngineeringChangeAffectedItemModel);
+  const partRevisions = affectedItems
+    .filter((item) => item.partId && item.partNumber)
+    .map((item) => ({
+      revisionId: item.targetId,
+      partId: item.partId ?? "",
+      partNumber: item.partNumber ?? "",
+      baseRevisionCode: item.revisionCode,
+      name: item.name,
+      status: item.status,
+    }));
 
   return {
     id: change.id ?? "",
@@ -208,12 +217,12 @@ function toEngineeringChangeDetailModel(change: EngineeringChangeDetailResponseD
     reviewerTeams: [],
     parts: partRevisions.map(toEngineeringChangePartModel),
     partRevisions,
-    affectedItems: (change.affected_items ?? []).map(toEngineeringChangeAffectedItemModel),
+    affectedItems,
     files: (change.files ?? []).map(toEngineeringChangeFileModel),
     commentsCount: change.comments_count ?? 0,
     linkedIssues: (change.linked_issues ?? []).map(toEngineeringChangeLinkedIssueModel),
-    mergedAt: change.merged_at ?? null,
-    mergedBy: change.merged_by ?? null,
+    mergedAt: change.released_at ?? null,
+    mergedBy: change.released_by?.full_name ?? null,
   };
 }
 
@@ -266,24 +275,6 @@ function toEngineeringChangeReviewerModel(step: {
     ...toEngineeringChangeUserModel(step.assignee_user ?? {}),
     reviewStatus: step.status ?? "PENDING",
     reviewedAt: step.acted_at ?? null,
-  };
-}
-
-function toEngineeringChangePartRevisionModel(part: {
-  revision_id?: string;
-  part_id?: string;
-  part_number?: string;
-  base_revision_code?: string;
-  name?: string;
-  status?: string;
-}): EngineeringChangePartRevisionModel {
-  return {
-    revisionId: part.revision_id ?? "",
-    partId: part.part_id ?? "",
-    partNumber: part.part_number ?? "",
-    baseRevisionCode: part.base_revision_code ?? null,
-    name: part.name ?? null,
-    status: part.status ?? null,
   };
 }
 
@@ -360,8 +351,8 @@ function toEngineeringChangeCommentModel(
     targetId: comment.target_id ?? null,
     body: isObjectLike(comment.body) ? comment.body : null,
     bodyText: getPlainTextFromRichText(comment.body),
-    authorId: comment.created_by ?? null,
-    author: null,
+    authorId: comment.created_by?.user_id ?? null,
+    author: comment.created_by ? toEngineeringChangeUserModel(comment.created_by) : null,
     createdAt: comment.created_at ?? "",
     updatedAt: comment.updated_at ?? "",
     isModified: comment.is_modified ?? false,
@@ -370,7 +361,6 @@ function toEngineeringChangeCommentModel(
 
 function toEngineeringChangeTimelineCommentModel(
   item: NonNullable<EngineeringChangeTimelineResponseDto["items"]>[number] & { type: "comment" },
-  users: NonNullable<EngineeringChangeTimelineResponseDto["users"]>,
 ): EngineeringChangeTimelineCommentModel {
   return {
     type: "comment",
@@ -378,8 +368,8 @@ function toEngineeringChangeTimelineCommentModel(
     targetId: null,
     body: isObjectLike(item.body) ? item.body : null,
     bodyText: getPlainTextFromRichText(item.body),
-    authorId: item.author_id ?? null,
-    author: item.author_id ? toEngineeringChangeTimelineUserModel(users[item.author_id]) : null,
+    authorId: item.author?.user_id ?? null,
+    author: item.author ? toEngineeringChangeUserModel(item.author) : null,
     createdAt: item.created_at ?? "",
     updatedAt: item.updated_at ?? "",
     isModified: item.is_modified ?? false,
@@ -388,28 +378,17 @@ function toEngineeringChangeTimelineCommentModel(
 
 function toEngineeringChangeTimelineActivityModel(
   item: NonNullable<EngineeringChangeTimelineResponseDto["items"]>[number] & { type: "activity" },
-  users: NonNullable<EngineeringChangeTimelineResponseDto["users"]>,
 ): EngineeringChangeTimelineActivityModel {
   return {
     type: "activity",
     id: item.id ?? "",
     action: item.action ?? "",
     scope: item.scope ?? null,
-    actorId: item.actor_id ?? null,
-    actor: item.actor_id ? toEngineeringChangeTimelineUserModel(users[item.actor_id]) : null,
+    actorId: item.actor?.user_id ?? null,
+    actor: item.actor ? toEngineeringChangeUserModel(item.actor) : null,
     detail: isObjectLike(item.detail) ? item.detail : null,
     createdAt: item.created_at ?? "",
   };
-}
-
-function toEngineeringChangeTimelineUserModel(
-  user: NonNullable<EngineeringChangeTimelineResponseDto["users"]>[string] | undefined,
-): EngineeringChangeUserModel | null {
-  if (!user) {
-    return null;
-  }
-
-  return toEngineeringChangeUserModel(user);
 }
 
 function isEngineeringChangeTimelineCommentItem(

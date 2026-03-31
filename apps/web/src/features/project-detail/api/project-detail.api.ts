@@ -85,9 +85,10 @@ export async function fetchProjectActivities(
 ): Promise<ProjectActivitiesResultModel> {
   const response = await getProjectActivitiesApiV1ProjectsProjectIdActivitiesGet(projectId, query);
   const activities = response as ProjectActivitiesResponseDto;
+  const users = activities.users ?? {};
 
   return {
-    items: activities.items.map((item) => toProjectActivityItemModel(item, activities.users)),
+    items: (activities.items ?? []).map((item) => toProjectActivityItemModel(item, users)),
     nextCursor: activities.next_cursor ?? null,
   };
 }
@@ -264,12 +265,12 @@ function toProjectChangeListItemModel(
     createdByName: item.created_by?.full_name ?? "삭제된 사용자",
     createdByProfileImageUrl: item.created_by?.profile_image_url ?? null,
     labels: [],
-    assignees: item.reviewers.map(toProjectWorkItemUserModel),
+    assignees: [],
   };
 }
 
 function toProjectActivityActorModel(
-  actor: ProjectActivitiesResponseDto["users"][string] | undefined,
+  actor: NonNullable<ProjectActivitiesResponseDto["users"]>[string] | undefined,
 ): ProjectActivityActorModel | null {
   if (!actor) {
     return null;
@@ -284,15 +285,17 @@ function toProjectActivityActorModel(
 }
 
 function toProjectActivityItemModel(
-  item: ProjectActivitiesResponseDto["items"][number],
-  users: ProjectActivitiesResponseDto["users"],
+  item: NonNullable<ProjectActivitiesResponseDto["items"]>[number],
+  users: NonNullable<ProjectActivitiesResponseDto["users"]>,
 ): ProjectActivityItemModel {
+  const actorId = item.actor_id ?? "";
+
   return {
-    id: item.id,
-    action: item.action,
+    id: item.id ?? "",
+    action: item.action ?? "",
     scope: item.scope ?? null,
-    actorId: item.actor_id,
-    actor: toProjectActivityActorModel(users[item.actor_id]),
-    createdAt: item.created_at,
+    actorId,
+    actor: actorId ? toProjectActivityActorModel(users[actorId]) : null,
+    createdAt: item.created_at ?? "",
   };
 }
