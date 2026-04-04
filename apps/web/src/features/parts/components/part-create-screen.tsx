@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   PartEditorScreen,
   type PartEditorScreenExtendedField,
@@ -14,6 +14,12 @@ import type { CreatePartRequestDto } from "@/features/parts/api/parts.types";
 import type { PartDetailModel } from "@/features/parts/types/parts-model";
 import { usePropertyMetaQuery } from "@/features/properties/hooks/use-property-meta-query";
 import { toast } from "sonner";
+import { useNumberingCategoriesQuery } from "@/features/part-number-categories/hooks/use-numbering-categories-query";
+import { useNextNumberQuery } from "@/features/part-number-categories/hooks/use-next-number-query";
+import { useCheckNumberQuery } from "@/features/part-number-categories/hooks/use-check-number-query";
+import { useCreateNumberingCategoryAction } from "@/features/part-number-categories/hooks/use-create-numbering-category-action";
+import { NumberingCategoryFormModal } from "@/features/part-number-categories/components/numbering-category-form-modal";
+import { useAuthStore } from "@/features/auth";
 
 type PartLifecycleState = NonNullable<CreatePartRequestDto["lifecycle_state"]>;
 
@@ -78,6 +84,40 @@ export function PartCreateScreen({ onBack, onCreated }: PartCreateScreenProps) {
     onSuccess: onCreated,
   });
 
+  // 채번 카테고리 관련 상태
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | undefined>();
+  const [numberingMode, setNumberingMode] = useState<"manual" | "auto">("manual");
+  const [partNumberForCheck, setPartNumberForCheck] = useState("");
+  const [inlineModalOpen, setInlineModalOpen] = useState(false);
+
+  // 채번 카테고리 쿼리 훅
+  const categoriesQuery = useNumberingCategoriesQuery();
+  const nextNumberQuery = useNextNumberQuery(
+    numberingMode === "auto" ? selectedCategoryId : undefined,
+  );
+  const checkNumberQuery = useCheckNumberQuery(partNumberForCheck);
+
+  // 인라인 카테고리 생성
+  const inlineCreateAction = useCreateNumberingCategoryAction({
+    onSuccess: (category) => {
+      setSelectedCategoryId(category.id);
+      setInlineModalOpen(false);
+    },
+  });
+
+  // 관리자 여부 확인
+  const currentMembership = useAuthStore((s) => s.currentMembership);
+  const isAdmin = currentMembership?.role === "ADMIN" || currentMembership?.role === "OWNER";
+
+  // 품번 중복 확인 결과 -> availability 상태
+  const partNumberAvailability = (() => {
+    if (!partNumberForCheck.trim()) return null;
+    if (checkNumberQuery.isFetching) return "checking" as const;
+    if (checkNumberQuery.data?.available === true) return "available" as const;
+    if (checkNumberQuery.data?.available === false) return "taken" as const;
+    return null;
+  })();
+
   const categoryOptions = toOptions(filterOptionsQuery.data?.categories ?? []);
   const lifecycleOptions = filterOptionsQuery.data?.lifecycleStates?.length
     ? toOptions(filterOptionsQuery.data.lifecycleStates)
@@ -97,22 +137,60 @@ export function PartCreateScreen({ onBack, onCreated }: PartCreateScreenProps) {
     });
   }, [propertyMetaQuery.data]);
 
+  const handlePartNumberBlur = useCallback((value: string) => {
+    const trimmed = value.trim();
+    if (trimmed) {
+      setPartNumberForCheck(trimmed);
+    }
+  }, []);
+
+  const handleNumberingCategoryChange = useCallback((categoryId: string) => {
+    setSelectedCategoryId(categoryId);
+  }, []);
+
+  const handleNumberingModeChange = useCallback((mode: "manual" | "auto") => {
+    setNumberingMode(mode);
+  }, []);
+
+  // 채번 카테고리 목록을 PartEditorScreen에 전달할 형태로 변환
+  const numberingCategories = (categoriesQuery.data ?? []).map((c) => ({
+    id: c.id,
+    name: c.name,
+    prefix: c.prefix,
+    delimiter: c.delimiter,
+    digits: c.digits,
+    previewPartNumber: c.previewPartNumber,
+  }));
+
   return (
-    <PartEditorScreen
-      backLabel="부품 목록"
-      categoryOptions={categoryOptions}
-      extendedFields={extendedFields}
-      formValues={formValues}
-      isSubmitting={createPartAction.isPending}
-      lifecycleOptions={lifecycleOptions}
-      mode="create"
-      systemFields={systemFields}
-      unitOptions={DEFAULT_UNIT_OPTIONS}
-      onBack={onBack}
-      onChange={setFormValues}
-      onExtendedFieldsChange={setExtendedFields}
-      onSubmit={() =>
-        {
+    <>
+      <PartEditorScreen
+        backLabel="부품 목록"
+        categoryOptions={categoryOptions}
+        extendedFields={extendedFields}
+        formValues={formValues}
+        isSubmitting={createPartAction.isPending}
+        lifecycleOptions={lifecycleOptions}
+        mode="create"
+        systemFields={systemFields}
+        unitOptions={DEFAULT_UNIT_OPTIONS}
+        // 채번 카테고리 props
+        numberingCategories={numberingCategories}
+        numberingCategoriesLoading={categoriesQuery.isLoading}
+        selectedNumberingCategoryId={selectedCategoryId}
+        nextPartNumber={nextNumberQuery.data?.partNumber ?? null}
+        nextPartNumberLoading={nextNumberQuery.isFetching}
+        nextPartNumberNote={nextNumberQuery.data?.note ?? null}
+        partNumberAvailability={partNumberAvailability}
+        isAdmin={isAdmin}
+        onNumberingCategoryChange={handleNumberingCategoryChange}
+        onPartNumberBlur={handlePartNumberBlur}
+        onNumberingModeChange={handleNumberingModeChange}
+        onInlineCreateCategory={() => setInlineModalOpen(true)}
+        onBack={onBack}
+        onChange={setFormValues}
+        onExtendedFieldsChange={setExtendedFields}
+        onSubmit={() => {
           try {
             createPartAction.mutate({
               category: formValues.category ?? "",
@@ -123,14 +201,25 @@ export function PartCreateScreen({ onBack, onCreated }: PartCreateScreenProps) {
               lifecycleState: toCreatePartLifecycleState(formValues.lifecycleState),
               material: formValues.material,
               name: formValues.name,
-              partNumber: formValues.partNumber,
+              // 자동 채번 모드에서는 numberingCategoryId를 전달하고 partNumber는 생략
+              ...(numberingMode === "auto" && selectedCategoryId
+                ? { numberingCategoryId: selectedCategoryId }
+                : { partNumber: formValues.partNumber }),
               unit: formValues.unit ?? "",
             });
           } catch (error) {
             toast.error(error instanceof Error ? error.message : "확장 속성 값을 확인해 주세요.");
           }
-        }
-      }
-    />
+        }}
+      />
+
+      {/* 인라인 채번 카테고리 생성 모달 */}
+      <NumberingCategoryFormModal
+        open={inlineModalOpen}
+        isPending={inlineCreateAction.isPending}
+        onClose={() => setInlineModalOpen(false)}
+        onSubmit={(values) => inlineCreateAction.mutate(values)}
+      />
+    </>
   );
 }

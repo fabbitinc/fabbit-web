@@ -1,22 +1,22 @@
 import {
-  addProjectMembers as addProjectMembersApiV1ProjectsProjectIdMembersPost,
-  listProjectMembers as listProjectMembersApiV1ProjectsProjectIdMembersGet,
-  lookupMembers as lookupMembersApiV1ProjectsProjectIdMembersLookupGet,
-  removeProjectMembers as removeProjectMembersApiV1ProjectsProjectIdMembersDelete,
+  projectMemberAdd as addProjectMembersApiV1ProjectsProjectIdMembersPost,
+  projectMemberList as listProjectMembersApiV1ProjectsProjectIdMembersGet,
+  projectMemberLookupMembers as lookupMembersApiV1ProjectsProjectIdMembersLookupGet,
+  projectMemberRemove as removeProjectMembersApiV1ProjectsProjectIdMembersDelete,
 } from "@/api/generated/orval/project-members/project-members";
 import {
-  getProjectParts as getProjectPartsApiV1ProjectsProjectIdPartsGet,
-  linkParts as linkPartsToProjectApiV1ProjectsProjectIdPartsPost,
-  lookupParts as lookupPartsApiV1ProjectsProjectIdPartsLookupGet,
-  unlinkParts as unlinkPartsFromProjectApiV1ProjectsProjectIdPartsDelete,
+  projectPartGet as getProjectPartsApiV1ProjectsProjectIdPartsGet,
+  projectPartLinkParts as linkPartsToProjectApiV1ProjectsProjectIdPartsPost,
+  projectPartLookupParts as lookupPartsApiV1ProjectsProjectIdPartsLookupGet,
+  projectPartUnlinkParts as unlinkPartsFromProjectApiV1ProjectsProjectIdPartsDelete,
 } from "@/api/generated/orval/project-parts/project-parts";
 import {
-  archiveProject as archiveProjectApiV1ProjectsProjectIdArchivePost,
-  deleteProject as deleteProjectApiV1ProjectsProjectIdDelete,
-  getProject as getProjectApiV1ProjectsProjectIdGet,
-  getProjectActivities as getProjectActivitiesApiV1ProjectsProjectIdActivitiesGet,
-  unarchiveProject as unarchiveProjectApiV1ProjectsProjectIdUnarchivePost,
-  updateProject as updateProjectApiV1ProjectsProjectIdPatch,
+  projectArchive as archiveProjectApiV1ProjectsProjectIdArchivePost,
+  projectDelete as deleteProjectApiV1ProjectsProjectIdDelete,
+  projectGet as getProjectApiV1ProjectsProjectIdGet,
+  projectGetProjectActivities as getProjectActivitiesApiV1ProjectsProjectIdActivitiesGet,
+  projectUnarchive as unarchiveProjectApiV1ProjectsProjectIdUnarchivePost,
+  projectUpdate as updateProjectApiV1ProjectsProjectIdPatch,
 } from "@/api/generated/orval/projects/projects";
 import { apiClient } from "@/api/client";
 import type {
@@ -85,9 +85,10 @@ export async function fetchProjectActivities(
 ): Promise<ProjectActivitiesResultModel> {
   const response = await getProjectActivitiesApiV1ProjectsProjectIdActivitiesGet(projectId, query);
   const activities = response as ProjectActivitiesResponseDto;
+  const users = activities.users ?? {};
 
   return {
-    items: activities.items.map((item) => toProjectActivityItemModel(item, activities.users)),
+    items: (activities.items ?? []).map((item) => toProjectActivityItemModel(item, users)),
     nextCursor: activities.next_cursor ?? null,
   };
 }
@@ -264,12 +265,12 @@ function toProjectChangeListItemModel(
     createdByName: item.created_by?.full_name ?? "삭제된 사용자",
     createdByProfileImageUrl: item.created_by?.profile_image_url ?? null,
     labels: [],
-    assignees: item.reviewers.map(toProjectWorkItemUserModel),
+    assignees: [],
   };
 }
 
 function toProjectActivityActorModel(
-  actor: ProjectActivitiesResponseDto["users"][string] | undefined,
+  actor: NonNullable<ProjectActivitiesResponseDto["users"]>[string] | undefined,
 ): ProjectActivityActorModel | null {
   if (!actor) {
     return null;
@@ -284,15 +285,17 @@ function toProjectActivityActorModel(
 }
 
 function toProjectActivityItemModel(
-  item: ProjectActivitiesResponseDto["items"][number],
-  users: ProjectActivitiesResponseDto["users"],
+  item: NonNullable<ProjectActivitiesResponseDto["items"]>[number],
+  users: NonNullable<ProjectActivitiesResponseDto["users"]>,
 ): ProjectActivityItemModel {
+  const actorId = item.actor_id ?? "";
+
   return {
-    id: item.id,
-    action: item.action,
+    id: item.id ?? "",
+    action: item.action ?? "",
     scope: item.scope ?? null,
-    actorId: item.actor_id,
-    actor: toProjectActivityActorModel(users[item.actor_id]),
-    createdAt: item.created_at,
+    actorId,
+    actor: actorId ? toProjectActivityActorModel(users[actorId]) : null,
+    createdAt: item.created_at ?? "",
   };
 }

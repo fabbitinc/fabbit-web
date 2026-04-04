@@ -18,7 +18,7 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
  * 애플리케이션 기본 상태를 확인합니다
  * @summary 애플리케이션 기본 상태를 확인합니다
  */
-export const health = (
+export const healthGet = (
     
  options?: SecondParameter<typeof customInstance<HealthResponse>>,) => {
       return customInstance<HealthResponse>(
@@ -26,4 +26,4 @@ export const health = (
     },
       options);
     }
-  export type HealthResult = NonNullable<Awaited<ReturnType<typeof health>>>
+  export type HealthGetResult = NonNullable<Awaited<ReturnType<typeof healthGet>>>

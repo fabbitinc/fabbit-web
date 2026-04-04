@@ -67,6 +67,31 @@ export interface EngineeringChangePartRevisionModel {
   status: string | null;
 }
 
+export interface EngineeringChangeWorkflowStageModel {
+  id: string;
+  label: string;
+  type: "REVIEW" | "APPROVAL" | "RELEASE";
+  status: "completed" | "active" | "pending";
+  description: string;
+  assignees: EngineeringChangeWorkflowAssigneeModel[];
+}
+
+export interface EngineeringChangeWorkflowAssigneeModel {
+  id: string;
+  assigneeId: string;
+  name: string;
+  type: "USER" | "TEAM";
+  status: "PENDING" | "APPROVED" | "REJECTED";
+  profileImageUrl: string | null;
+  actedAt: string | null;
+  actedByName: string | null;
+  subtitle: string | null;
+}
+
+export interface EngineeringChangeWorkflowModel {
+  stages: EngineeringChangeWorkflowStageModel[];
+}
+
 export interface EngineeringChangeDetailModel {
   id: string;
   number: number;
@@ -92,6 +117,7 @@ export interface EngineeringChangeDetailModel {
   linkedIssues: EngineeringChangeLinkedIssueModel[];
   mergedAt: string | null;
   mergedBy: string | null;
+  workflow: EngineeringChangeWorkflowModel | null;
 }
 
 export interface EngineeringChangeTimelineCommentModel {

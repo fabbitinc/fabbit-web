@@ -76,11 +76,9 @@ const meta = {
     isAttachingFiles: false,
     onAttachFiles: async () => undefined,
     onDeleteFile: async () => undefined,
-    onEditAssignees: () => undefined,
     onEditIssues: () => undefined,
     onEditLabels: () => undefined,
     onEditParts: () => undefined,
-    onEditReviewers: () => undefined,
     onNavigateToIssue: () => undefined,
   },
 } satisfies Meta<typeof EngineeringChangeSidebar>;
@@ -108,19 +106,16 @@ export const EmptyState: Story = {
 export const Showcase: Story = {
   render: (args) => (
     <div className="grid gap-6 xl:grid-cols-2">
-      <EngineeringChangeSidebar {...args} />
+      <EngineeringChangeSidebar
+        {...args}
+        engineeringChange={sampleEngineeringChange}
+      />
       <EngineeringChangeSidebar
         {...args}
         engineeringChange={{
           ...sampleEngineeringChange,
-          engineeringChangeState: "MERGED",
-          mergedAt: "2026-03-07T06:10:00Z",
-          mergedBy: "박시우",
-          reviewers: sampleEngineeringChange.reviewers.map((reviewer) => ({
-            ...reviewer,
-            reviewStatus: "APPROVED",
-            reviewedAt: reviewer.reviewedAt ?? "2026-03-07T04:00:00Z",
-          })),
+          files: [],
+          linkedIssues: [],
         }}
       />
     </div>

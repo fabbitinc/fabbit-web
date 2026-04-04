@@ -1,12 +1,14 @@
-import { ExternalLink, Loader2, Package } from "lucide-react";
+import { ExternalLink, Loader2, Package, Pencil, Plus, Trash2 } from "lucide-react";
 import { Button } from "@fabbit/ui";
 
 export type PartBomTabDirection = "forward" | "reverse";
 
 export interface PartBomTabItem {
   id: string;
+  bomItemId: string | null;
   partNumber: string;
   name: string | null;
+  lineNumber: string | null;
   quantity: number;
 }
 
@@ -15,8 +17,13 @@ export interface PartBomTabProps {
   parentItems: PartBomTabItem[];
   isLoading?: boolean;
   showLoadingIndicator?: boolean;
+  canEdit?: boolean;
   onExploreDirectionChange?: (direction: PartBomTabDirection) => void;
   onPartClick?: (partId: string) => void;
+  onAddItem?: () => void;
+  onBatchAddItems?: () => void;
+  onEditItem?: (item: PartBomTabItem) => void;
+  onDeleteItem?: (item: PartBomTabItem) => void;
 }
 
 interface PartBomSectionProps {
@@ -27,8 +34,13 @@ interface PartBomSectionProps {
   isLoading: boolean;
   showLoadingIndicator: boolean;
   title: string;
+  canEdit?: boolean;
   onActionClick?: () => void;
   onPartClick?: (partId: string) => void;
+  onAddItem?: () => void;
+  onBatchAddItems?: () => void;
+  onEditItem?: (item: PartBomTabItem) => void;
+  onDeleteItem?: (item: PartBomTabItem) => void;
 }
 
 function PartBomSection({
@@ -39,8 +51,13 @@ function PartBomSection({
   isLoading,
   showLoadingIndicator,
   title,
+  canEdit,
   onActionClick,
   onPartClick,
+  onAddItem,
+  onBatchAddItems,
+  onEditItem,
+  onDeleteItem,
 }: PartBomSectionProps) {
   return (
     <section aria-busy={isLoading} className="app-panel rounded-lg p-4">
@@ -49,18 +66,32 @@ function PartBomSection({
           <p className="text-lg font-semibold text-foreground">{title}</p>
           <p className="mt-1 text-sm text-muted-foreground">{description}</p>
         </div>
-        {showLoadingIndicator ? (
-          <div className="inline-flex items-center gap-2 text-sm text-muted-foreground">
-            <Loader2 className="size-4 animate-spin" />
-            불러오는 중
-          </div>
-        ) : null}
-        {items.length > 0 && onActionClick ? (
-          <Button type="button" variant="outline" onClick={onActionClick}>
-            <ExternalLink className="size-4" />
-            {actionLabel}
-          </Button>
-        ) : null}
+        <div className="flex items-center gap-2">
+          {showLoadingIndicator ? (
+            <div className="inline-flex items-center gap-2 text-sm text-muted-foreground">
+              <Loader2 className="size-4 animate-spin" />
+              불러오는 중
+            </div>
+          ) : null}
+          {canEdit && onAddItem ? (
+            <Button type="button" variant="outline" size="sm" onClick={onAddItem}>
+              <Plus className="size-4" />
+              항목 추가
+            </Button>
+          ) : null}
+          {canEdit && onBatchAddItems ? (
+            <Button type="button" variant="outline" size="sm" onClick={onBatchAddItems}>
+              <Plus className="size-4" />
+              일괄 추가
+            </Button>
+          ) : null}
+          {items.length > 0 && onActionClick ? (
+            <Button type="button" variant="outline" size="sm" onClick={onActionClick}>
+              <ExternalLink className="size-4" />
+              {actionLabel}
+            </Button>
+          ) : null}
+        </div>
       </div>
 
       <div className="mt-4 space-y-2">
@@ -70,11 +101,18 @@ function PartBomSection({
           </p>
         ) : null}
         {items.map((item) => (
-          <button
+          <div
             key={item.id}
-            type="button"
+            role="button"
+            tabIndex={0}
             className="flex w-full cursor-pointer items-center justify-between rounded-md border border-border/70 bg-card px-4 py-3 text-left"
             onClick={() => onPartClick?.(item.id)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onPartClick?.(item.id);
+              }
+            }}
           >
             <div className="flex items-center gap-3">
               <div className="rounded-full bg-muted/70 p-2">
@@ -85,8 +123,38 @@ function PartBomSection({
                 <p className="text-sm text-muted-foreground">{item.name ?? "이름 없음"}</p>
               </div>
             </div>
-            <span className="text-sm font-medium text-foreground">x{item.quantity}</span>
-          </button>
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-foreground">x{item.quantity}</span>
+              {canEdit && item.bomItemId && onEditItem ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="size-8"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEditItem(item);
+                  }}
+                >
+                  <Pencil className="size-3.5" />
+                </Button>
+              ) : null}
+              {canEdit && item.bomItemId && onDeleteItem ? (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="size-8 text-destructive hover:text-destructive"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDeleteItem(item);
+                  }}
+                >
+                  <Trash2 className="size-3.5" />
+                </Button>
+              ) : null}
+            </div>
+          </div>
         ))}
       </div>
     </section>
@@ -98,8 +166,13 @@ export function PartBomTab({
   parentItems,
   isLoading = false,
   showLoadingIndicator = false,
+  canEdit = false,
   onExploreDirectionChange,
   onPartClick,
+  onAddItem,
+  onBatchAddItems,
+  onEditItem,
+  onDeleteItem,
 }: PartBomTabProps) {
   return (
     <div className="space-y-8">
@@ -111,8 +184,13 @@ export function PartBomTab({
         showLoadingIndicator={showLoadingIndicator}
         items={childrenItems}
         title="하위 부품"
+        canEdit={canEdit}
         onActionClick={onExploreDirectionChange ? () => onExploreDirectionChange("forward") : undefined}
         onPartClick={onPartClick}
+        onAddItem={onAddItem}
+        onBatchAddItems={onBatchAddItems}
+        onEditItem={onEditItem}
+        onDeleteItem={onDeleteItem}
       />
 
       <PartBomSection

@@ -1,11 +1,11 @@
 import {
-  confirm as confirmMappingApiV1MappingsConfirmPost,
-  list as listMappingsApiV1MappingsGet,
-  preview as previewMappingApiV1MappingsPreviewPost,
-  update as updateMappingApiV1MappingsMappingIdPut,
-  validate as validateMappingApiV1MappingsValidatePost,
+  mappingConfirm as confirmMappingApiV1MappingsConfirmPost,
+  mappingList as listMappingsApiV1MappingsGet,
+  mappingPreview as previewMappingApiV1MappingsPreviewPost,
+  mappingUpdate as updateMappingApiV1MappingsMappingIdPut,
+  mappingValidate as validateMappingApiV1MappingsValidatePost,
 } from "@/api/generated/orval/mappings/mappings";
-import { getOntologySchema as getOntologySchemaApiV1OntologySchemaGet } from "@/api/generated/orval/ontology/ontology";
+import { ontologyGetOntologySchema as getOntologySchemaApiV1OntologySchemaGet } from "@/api/generated/orval/ontology/ontology";
 import type {
   MappingConfirmRequestDto,
   MappingPreviewRequestDto,
@@ -41,7 +41,7 @@ export async function previewTemplateMapping(request: MappingPreviewRequestDto):
 
 export async function listTemplateMappings(): Promise<MappingRecordModel[]> {
   const response = await listMappingsApiV1MappingsGet();
-  return (response.items as MappingResponseDto[]).map(toMappingRecordModel);
+  return ((response.items ?? []) as MappingResponseDto[]).map(toMappingRecordModel);
 }
 
 export async function confirmTemplateMapping(request: MappingConfirmRequestDto): Promise<MappingRecordModel> {
@@ -93,20 +93,34 @@ function collectSourceColumnsFromMappingRequest(
 ): string[] {
   const sourceColumns = new Set<string>();
 
-  for (const propertyMapping of mapping.property_mappings ?? []) {
-    if (propertyMapping.source_column) {
-      sourceColumns.add(propertyMapping.source_column);
-    }
-  }
-
-  for (const relationMapping of mapping.relation_mappings ?? []) {
-    for (const sourceColumn of Object.values(relationMapping.node_columns ?? {})) {
+  for (const nodeMapping of mapping.nodes ?? []) {
+    for (const sourceColumn of Object.values(nodeMapping.property_columns ?? {})) {
       if (sourceColumn) {
         sourceColumns.add(sourceColumn);
       }
     }
 
-    for (const sourceColumn of Object.values(relationMapping.rel_columns ?? {})) {
+    for (const extendedProperty of nodeMapping.extended_properties ?? []) {
+      if (extendedProperty.source_column) {
+        sourceColumns.add(extendedProperty.source_column);
+      }
+    }
+  }
+
+  for (const relationMapping of mapping.relations ?? []) {
+    for (const sourceColumn of Object.values(relationMapping.property_columns ?? {})) {
+      if (sourceColumn) {
+        sourceColumns.add(sourceColumn);
+      }
+    }
+
+    for (const extendedProperty of relationMapping.extended_properties ?? []) {
+      if (extendedProperty.source_column) {
+        sourceColumns.add(extendedProperty.source_column);
+      }
+    }
+
+    for (const sourceColumn of Object.keys(relationMapping.property_columns ?? {})) {
       if (sourceColumn) {
         sourceColumns.add(sourceColumn);
       }
@@ -136,18 +150,18 @@ function toMappingPreviewModel(response: MappingPreviewResponseDto): MappingPrev
 
 function toMappingRecordModel(response: MappingResponseDto): MappingRecordModel {
   return {
-    id: response.id,
-    fileId: response.file_id,
-    name: response.name,
+    id: response.id ?? "",
+    fileId: response.file_id ?? "",
+    name: response.name ?? "",
     sheetName: response.sheet_name ?? null,
-    originalHeaders: response.original_headers,
-    mappedHeaders: response.mapped_headers,
-    mapping: toMappingDefinitionModel(response.mapping, response.original_headers),
-    scope: response.scope,
-    isActive: response.is_active,
-    usageCount: response.usage_count,
-    version: response.version,
-    createdAt: response.created_at,
+    originalHeaders: response.original_headers ?? [],
+    mappedHeaders: response.mapped_headers ?? [],
+    mapping: toMappingDefinitionModel(response.mapping, response.original_headers ?? []),
+    scope: "organization",
+    isActive: response.active ?? false,
+    usageCount: response.usage_count ?? 0,
+    version: response.version ?? 1,
+    createdAt: response.created_at ?? "",
   };
 }
 
@@ -155,26 +169,44 @@ function toMappingDefinitionModel(
   mapping: MappingPreviewResponseDto["mapping"] | MappingResponseDto["mapping"] | MappingValidateResponseDto["normalized_mapping"],
   headers: string[] = [],
 ): MappingDefinitionModel {
-  return {
-    propertyMappings: mapping.property_mappings.map((propertyMapping) => ({
-      sourceColumn: propertyMapping.source_column,
-      targetProperty: propertyMapping.target_property,
-      dataType: propertyMapping.data_type,
-      confidence: propertyMapping.confidence,
-      reason: propertyMapping.reason,
-      isExtended: propertyMapping.is_extended,
-    })),
-    relationMappings: mapping.relation_mappings.map((relationMapping) => ({
+  const safeMapping = mapping ?? {};
+  const relationMappings = (safeMapping.relations ?? []).map((relationMapping) => {
+    return {
       relType: relationMapping.rel_type,
-      targetLabel: relationMapping.target_label,
-      nodeColumns: relationMapping.node_columns ?? {},
+      targetLabel: relationMapping.to_node_id ?? "",
+      nodeColumns: {},
       relColumns: headers.length
-        ? normalizeRelationColumns(relationMapping.rel_columns, headers)
-        : (relationMapping.rel_columns ?? {}),
-      relColumnTypes: relationMapping.rel_column_types ?? {},
-      confidence: relationMapping.confidence,
-      reason: relationMapping.reason,
-    })),
+        ? normalizeRelationColumns(relationMapping.property_columns ?? {}, headers)
+        : (relationMapping.property_columns ?? {}),
+      relColumnTypes: relationMapping.property_column_types ?? {},
+      confidence: relationMapping.confidence ?? 0,
+      reason: relationMapping.reason ?? "",
+    };
+  });
+
+  return {
+    propertyMappings: (safeMapping.nodes ?? []).flatMap((nodeMapping) => {
+      const directProperties = Object.entries(nodeMapping.property_columns ?? {}).map(([targetProperty, sourceColumn]) => ({
+        sourceColumn,
+        targetProperty,
+        dataType: "string" as const,
+        confidence: nodeMapping.confidence ?? 0,
+        reason: nodeMapping.reason ?? "",
+        isExtended: false,
+      }));
+
+      const extendedProperties = (nodeMapping.extended_properties ?? []).map((propertyMapping) => ({
+        sourceColumn: propertyMapping.source_column ?? "",
+        targetProperty: propertyMapping.generated_key ?? "",
+        dataType: propertyMapping.data_type ?? "string",
+        confidence: nodeMapping.confidence ?? 0,
+        reason: nodeMapping.reason ?? "",
+        isExtended: true,
+      }));
+
+      return [...directProperties, ...extendedProperties];
+    }),
+    relationMappings,
   };
 }
 
@@ -182,18 +214,18 @@ function toOntologySchemaModel(response: OntologySchemaResponseDto): OntologySch
   return {
     name: response.name,
     description: response.description,
-    nodeLabels: response.node_labels.map((nodeLabel) => ({
+    nodeLabels: (response.node_labels ?? []).map((nodeLabel) => ({
       label: nodeLabel.label,
       description: nodeLabel.description,
-      properties: nodeLabel.properties.map(toOntologyPropertyModel),
+      properties: (nodeLabel.properties ?? []).map(toOntologyPropertyModel),
       mergeKeys: nodeLabel.merge_keys,
     })),
-    relationshipTypes: response.relationship_types.map((relationshipType) => ({
+    relationshipTypes: (response.relationship_types ?? []).map((relationshipType) => ({
       relType: relationshipType.rel_type,
       description: relationshipType.description,
       fromLabel: relationshipType.from_label,
       toLabel: relationshipType.to_label,
-      properties: relationshipType.properties.map(toOntologyPropertyModel),
+      properties: (relationshipType.properties ?? []).map(toOntologyPropertyModel),
     })),
   };
 }

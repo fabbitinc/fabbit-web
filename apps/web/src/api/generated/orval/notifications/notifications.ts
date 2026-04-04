@@ -5,7 +5,7 @@
  * OpenAPI spec version: v0
  */
 import type {
-  ListNotificationsParams,
+  NotificationListParams,
   NotificationListResponse,
   StreamingResponseBody,
   UnreadCountResponse
@@ -21,7 +21,7 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
  * 알림 1건을 읽음 처리합니다
  * @summary 알림 1건을 읽음 처리합니다
  */
-export const readNotification = (
+export const notificationRead = (
     notificationId: string,
  options?: SecondParameter<typeof customInstance<void>>,) => {
       return customInstance<void>(
@@ -33,7 +33,7 @@ export const readNotification = (
  * 현재 사용자의 미읽음 알림을 모두 읽음 처리합니다
  * @summary 현재 사용자의 미읽음 알림을 모두 읽음 처리합니다
  */
-export const readAllNotifications = (
+export const notificationReadAll = (
     
  options?: SecondParameter<typeof customInstance<void>>,) => {
       return customInstance<void>(
@@ -45,8 +45,8 @@ export const readAllNotifications = (
  * cursor 기반 페이지네이션으로 알림 목록을 조회합니다
  * @summary cursor 기반 페이지네이션으로 알림 목록을 조회합니다
  */
-export const listNotifications = (
-    params?: ListNotificationsParams,
+export const notificationList = (
+    params?: NotificationListParams,
  options?: SecondParameter<typeof customInstance<NotificationListResponse | void>>,) => {
       return customInstance<NotificationListResponse | void>(
       {url: `/api/v1/notifications`, method: 'GET',
@@ -58,7 +58,7 @@ export const listNotifications = (
  * 현재 사용자의 미읽음 알림 개수를 조회합니다
  * @summary 현재 사용자의 미읽음 알림 개수를 조회합니다
  */
-export const getUnreadCount = (
+export const notificationGetUnreadCount = (
     
  options?: SecondParameter<typeof customInstance<UnreadCountResponse | void>>,) => {
       return customInstance<UnreadCountResponse | void>(
@@ -70,7 +70,7 @@ export const getUnreadCount = (
  * SSE 스트림으로 새 알림 이벤트를 실시간 수신합니다
  * @summary SSE 스트림으로 새 알림 이벤트를 실시간 수신합니다
  */
-export const stream = (
+export const notificationStream = (
     
  options?: SecondParameter<typeof customInstance<StreamingResponseBody | void>>,) => {
       return customInstance<StreamingResponseBody | void>(
@@ -78,8 +78,8 @@ export const stream = (
     },
       options);
     }
-  export type ReadNotificationResult = NonNullable<Awaited<ReturnType<typeof readNotification>>>
-export type ReadAllNotificationsResult = NonNullable<Awaited<ReturnType<typeof readAllNotifications>>>
-export type ListNotificationsResult = NonNullable<Awaited<ReturnType<typeof listNotifications>>>
-export type GetUnreadCountResult = NonNullable<Awaited<ReturnType<typeof getUnreadCount>>>
-export type StreamResult = NonNullable<Awaited<ReturnType<typeof stream>>>
+  export type NotificationReadResult = NonNullable<Awaited<ReturnType<typeof notificationRead>>>
+export type NotificationReadAllResult = NonNullable<Awaited<ReturnType<typeof notificationReadAll>>>
+export type NotificationListResult = NonNullable<Awaited<ReturnType<typeof notificationList>>>
+export type NotificationGetUnreadCountResult = NonNullable<Awaited<ReturnType<typeof notificationGetUnreadCount>>>
+export type NotificationStreamResult = NonNullable<Awaited<ReturnType<typeof notificationStream>>>

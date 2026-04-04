@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { marked } from "marked";
 import DOMPurify from "dompurify";
+import type { Config as DomPurifyConfig } from "dompurify";
 
 interface MarkdownTextProps {
   children: string;
@@ -14,7 +15,7 @@ marked.setOptions({
 });
 
 // DOMPurify 허용 태그
-const PURIFY_CONFIG: DOMPurify.Config = {
+const PURIFY_CONFIG: DomPurifyConfig = {
   ALLOWED_TAGS: [
     "p", "br", "strong", "b", "em", "i", "del", "s",
     "ul", "ol", "li",

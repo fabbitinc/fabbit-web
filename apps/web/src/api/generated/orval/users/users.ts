@@ -24,7 +24,7 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
  * 업로드 완료된 파일(file_id)을 사용자 프로필 이미지로 설정합니다
  * @summary 업로드 완료된 파일(file_id)을 사용자 프로필 이미지로 설정합니다
  */
-export const setProfileImage = (
+export const userSetProfileImage = (
     setProfileImageRequest: BodyType<SetProfileImageRequest>,
  options?: SecondParameter<typeof customInstance<ProfileImageResponse>>,) => {
       return customInstance<ProfileImageResponse>(
@@ -38,7 +38,7 @@ export const setProfileImage = (
  * 사용자 프로필 이미지를 제거하고 연결된 파일을 소프트 삭제합니다
  * @summary 사용자 프로필 이미지를 제거하고 연결된 파일을 소프트 삭제합니다
  */
-export const deleteProfileImage = (
+export const userDeleteProfileImage = (
     
  options?: SecondParameter<typeof customInstance<void>>,) => {
       return customInstance<void>(
@@ -50,7 +50,7 @@ export const deleteProfileImage = (
  * 현재 비밀번호를 검증한 후 새 비밀번호로 변경합니다
  * @summary 현재 비밀번호를 검증한 후 새 비밀번호로 변경합니다
  */
-export const changePassword = (
+export const userChangePassword = (
     changePasswordRequest: BodyType<ChangePasswordRequest>,
  options?: SecondParameter<typeof customInstance<void>>,) => {
       return customInstance<void>(
@@ -64,7 +64,7 @@ export const changePassword = (
  * 현재 인증된 사용자의 프로필과 소속 조직 목록을 조회합니다
  * @summary 현재 인증된 사용자의 프로필과 소속 조직 목록을 조회합니다
  */
-export const getMe = (
+export const userGetMe = (
     
  options?: SecondParameter<typeof customInstance<MeResponse>>,) => {
       return customInstance<MeResponse>(
@@ -76,7 +76,7 @@ export const getMe = (
  * 내 프로필을 부분 수정합니다
  * @summary 내 프로필을 부분 수정합니다
  */
-export const updateProfile = (
+export const userUpdateProfile = (
     updateProfileRequest: BodyType<UpdateProfileRequest>,
  options?: SecondParameter<typeof customInstance<UpdateProfileResponse>>,) => {
       return customInstance<UpdateProfileResponse>(
@@ -86,8 +86,8 @@ export const updateProfile = (
     },
       options);
     }
-  export type SetProfileImageResult = NonNullable<Awaited<ReturnType<typeof setProfileImage>>>
-export type DeleteProfileImageResult = NonNullable<Awaited<ReturnType<typeof deleteProfileImage>>>
-export type ChangePasswordResult = NonNullable<Awaited<ReturnType<typeof changePassword>>>
-export type GetMeResult = NonNullable<Awaited<ReturnType<typeof getMe>>>
-export type UpdateProfileResult = NonNullable<Awaited<ReturnType<typeof updateProfile>>>
+  export type UserSetProfileImageResult = NonNullable<Awaited<ReturnType<typeof userSetProfileImage>>>
+export type UserDeleteProfileImageResult = NonNullable<Awaited<ReturnType<typeof userDeleteProfileImage>>>
+export type UserChangePasswordResult = NonNullable<Awaited<ReturnType<typeof userChangePassword>>>
+export type UserGetMeResult = NonNullable<Awaited<ReturnType<typeof userGetMe>>>
+export type UserUpdateProfileResult = NonNullable<Awaited<ReturnType<typeof userUpdateProfile>>>

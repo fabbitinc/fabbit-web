@@ -14,8 +14,6 @@ export interface UpdatePartRevisionRequest {
   material_set?: boolean;
   unit_set?: boolean;
   description_set?: boolean;
-  category_set?: boolean;
-  phantom_set?: boolean;
   lead_time_days_set?: boolean;
   extended_properties_set?: boolean;
   /**
@@ -38,14 +36,6 @@ export interface UpdatePartRevisionRequest {
   unit?: string;
   /** 설명 */
   description?: string;
-  /**
-   * 카테고리
-   * @minLength 0
-   * @maxLength 100
-   */
-  category?: string;
-  /** 팬텀 부품 여부 */
-  is_phantom?: boolean;
   /**
    * 리드타임(일)
    * @minimum 0

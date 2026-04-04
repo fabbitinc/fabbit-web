@@ -8,10 +8,10 @@ import type {
   ActivityListResponse,
   CreateProjectRequest,
   EngineeringChangeListResponse,
-  GetProjectActivitiesParams,
   IssueListResponse,
-  ListProjectsParams,
   ProjectDetailResponse,
+  ProjectGetProjectActivitiesParams,
+  ProjectListParams,
   ProjectListResponse,
   UpdateProjectRequest
 } from '../model';
@@ -27,8 +27,8 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
  * 프로젝트 목록을 검색/페이징 조회합니다
  * @summary 프로젝트 목록을 검색/페이징 조회합니다
  */
-export const listProjects = (
-    params?: ListProjectsParams,
+export const projectList = (
+    params?: ProjectListParams,
  options?: SecondParameter<typeof customInstance<ProjectListResponse>>,) => {
       return customInstance<ProjectListResponse>(
       {url: `/api/v1/projects`, method: 'GET',
@@ -40,7 +40,7 @@ export const listProjects = (
  * 프로젝트를 생성하고 상세 정보를 반환합니다
  * @summary 프로젝트를 생성하고 상세 정보를 반환합니다
  */
-export const createProject = (
+export const projectCreate = (
     createProjectRequest: BodyType<CreateProjectRequest>,
  options?: SecondParameter<typeof customInstance<ProjectDetailResponse>>,) => {
       return customInstance<ProjectDetailResponse>(
@@ -54,7 +54,7 @@ export const createProject = (
  * 프로젝트 보관을 해제합니다
  * @summary 프로젝트 보관을 해제합니다
  */
-export const unarchiveProject = (
+export const projectUnarchive = (
     projectId: string,
  options?: SecondParameter<typeof customInstance<void>>,) => {
       return customInstance<void>(
@@ -66,7 +66,7 @@ export const unarchiveProject = (
  * 프로젝트를 보관 상태로 전환합니다
  * @summary 프로젝트를 보관 상태로 전환합니다
  */
-export const archiveProject = (
+export const projectArchive = (
     projectId: string,
  options?: SecondParameter<typeof customInstance<void>>,) => {
       return customInstance<void>(
@@ -78,7 +78,7 @@ export const archiveProject = (
  * 프로젝트 상세를 조회합니다
  * @summary 프로젝트 상세를 조회합니다
  */
-export const getProject = (
+export const projectGet = (
     projectId: string,
  options?: SecondParameter<typeof customInstance<ProjectDetailResponse>>,) => {
       return customInstance<ProjectDetailResponse>(
@@ -90,7 +90,7 @@ export const getProject = (
  * 프로젝트를 소프트 삭제합니다
  * @summary 프로젝트를 소프트 삭제합니다
  */
-export const deleteProject = (
+export const projectDelete = (
     projectId: string,
  options?: SecondParameter<typeof customInstance<void>>,) => {
       return customInstance<void>(
@@ -102,7 +102,7 @@ export const deleteProject = (
  * 프로젝트 이름/설명을 수정합니다
  * @summary 프로젝트 이름/설명을 수정합니다
  */
-export const updateProject = (
+export const projectUpdate = (
     projectId: string,
     updateProjectRequest: BodyType<UpdateProjectRequest>,
  options?: SecondParameter<typeof customInstance<ProjectDetailResponse>>,) => {
@@ -117,7 +117,7 @@ export const updateProject = (
  * 프로젝트에 연결된 부품을 기준으로 연관 이슈 목록을 조회합니다
  * @summary 프로젝트에 연결된 이슈 목록을 조회합니다
  */
-export const listProjectIssues = (
+export const projectIssueList = (
     projectId: string,
  options?: SecondParameter<typeof customInstance<IssueListResponse>>,) => {
       return customInstance<IssueListResponse>(
@@ -129,9 +129,9 @@ export const listProjectIssues = (
  * 프로젝트 활동 피드를 cursor 기반으로 조회합니다
  * @summary 프로젝트 활동 피드를 cursor 기반으로 조회합니다
  */
-export const getProjectActivities = (
+export const projectGetProjectActivities = (
     projectId: string,
-    params?: GetProjectActivitiesParams,
+    params?: ProjectGetProjectActivitiesParams,
  options?: SecondParameter<typeof customInstance<ActivityListResponse>>,) => {
       return customInstance<ActivityListResponse>(
       {url: `/api/v1/projects/${projectId}/histories`, method: 'GET',
@@ -143,7 +143,7 @@ export const getProjectActivities = (
  * 프로젝트에 연결된 부품과 이슈를 기준으로 연관 변경관리 목록을 조회합니다
  * @summary 프로젝트에 연결된 변경관리 목록을 조회합니다
  */
-export const listProjectChanges = (
+export const projectChangeList = (
     projectId: string,
  options?: SecondParameter<typeof customInstance<EngineeringChangeListResponse>>,) => {
       return customInstance<EngineeringChangeListResponse>(
@@ -151,13 +151,13 @@ export const listProjectChanges = (
     },
       options);
     }
-  export type ListProjectsResult = NonNullable<Awaited<ReturnType<typeof listProjects>>>
-export type CreateProjectResult = NonNullable<Awaited<ReturnType<typeof createProject>>>
-export type UnarchiveProjectResult = NonNullable<Awaited<ReturnType<typeof unarchiveProject>>>
-export type ArchiveProjectResult = NonNullable<Awaited<ReturnType<typeof archiveProject>>>
-export type GetProjectResult = NonNullable<Awaited<ReturnType<typeof getProject>>>
-export type DeleteProjectResult = NonNullable<Awaited<ReturnType<typeof deleteProject>>>
-export type UpdateProjectResult = NonNullable<Awaited<ReturnType<typeof updateProject>>>
-export type ListProjectIssuesResult = NonNullable<Awaited<ReturnType<typeof listProjectIssues>>>
-export type GetProjectActivitiesResult = NonNullable<Awaited<ReturnType<typeof getProjectActivities>>>
-export type ListProjectChangesResult = NonNullable<Awaited<ReturnType<typeof listProjectChanges>>>
+  export type ProjectListResult = NonNullable<Awaited<ReturnType<typeof projectList>>>
+export type ProjectCreateResult = NonNullable<Awaited<ReturnType<typeof projectCreate>>>
+export type ProjectUnarchiveResult = NonNullable<Awaited<ReturnType<typeof projectUnarchive>>>
+export type ProjectArchiveResult = NonNullable<Awaited<ReturnType<typeof projectArchive>>>
+export type ProjectGetResult = NonNullable<Awaited<ReturnType<typeof projectGet>>>
+export type ProjectDeleteResult = NonNullable<Awaited<ReturnType<typeof projectDelete>>>
+export type ProjectUpdateResult = NonNullable<Awaited<ReturnType<typeof projectUpdate>>>
+export type ProjectIssueListResult = NonNullable<Awaited<ReturnType<typeof projectIssueList>>>
+export type ProjectGetProjectActivitiesResult = NonNullable<Awaited<ReturnType<typeof projectGetProjectActivities>>>
+export type ProjectChangeListResult = NonNullable<Awaited<ReturnType<typeof projectChangeList>>>
