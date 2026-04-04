@@ -15,10 +15,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@fabbit/ui";
-import {
-  EngineeringChangeWorkflowSection,
-  type EngineeringChangeWorkflowData,
-} from "./engineering-change-workflow-section";
 import { FileIcon } from "./file-icon";
 import { LabelPickerSection } from "./label-picker-section";
 import { PartPickerSection } from "./part-picker-section";
@@ -74,7 +70,6 @@ export interface EngineeringChangeSidebarEngineeringChange {
   mergedBy: string | null;
   assignees: EngineeringChangeSidebarUser[];
   reviewers: EngineeringChangeSidebarReviewer[];
-  workflow?: EngineeringChangeWorkflowData;
   labels: EngineeringChangeSidebarLabel[];
   parts: EngineeringChangeSidebarPart[];
   files: EngineeringChangeSidebarFile[];
@@ -181,12 +176,6 @@ export function EngineeringChangeSidebar({
 
   return (
     <div className="space-y-5">
-      {engineeringChange.workflow ? (
-        <div>
-          <EngineeringChangeWorkflowSection workflow={engineeringChange.workflow} />
-        </div>
-      ) : null}
-
       <div>
         {labelPicker ? (
           <LabelPickerSection

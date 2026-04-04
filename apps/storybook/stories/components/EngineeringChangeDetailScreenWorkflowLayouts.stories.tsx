@@ -1,11 +1,9 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { ChevronDown, ChevronUp, Check } from "lucide-react";
-import { useState, type ReactNode } from "react";
-import { EngineeringChangeDetailScreen, type EngineeringChangeWorkflowData } from "@fabbit/components";
-import { UserAvatar } from "@fabbit/ui";
-
-type WorkflowStage = EngineeringChangeWorkflowData["stages"][number];
-type WorkflowAssignee = WorkflowStage["assignees"][number];
+import { useState } from "react";
+import {
+  EngineeringChangeDetailScreen,
+  type EngineeringChangeWorkflowData,
+} from "@fabbit/components";
 
 const workflow: EngineeringChangeWorkflowData = {
   stages: [
@@ -129,266 +127,14 @@ const engineeringChangeBase = {
   ],
 };
 
-function formatActionTime(actedAt?: string | null) {
-  if (!actedAt) {
-    return "대기";
-  }
-
-  return new Date(actedAt).toLocaleString("ko-KR", {
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  });
-}
-
-function getStageStateLabel(stage: WorkflowStage) {
-  if (stage.status === "completed") {
-    return "완료";
-  }
-
-  if (stage.status === "active") {
-    return "진행중";
-  }
-
-  return "대기";
-}
-
-function getAssigneeStateLabel(assignee: WorkflowAssignee) {
-  if (assignee.status === "APPROVED") {
-    return "완료";
-  }
-
-  if (assignee.status === "REJECTED") {
-    return "반려";
-  }
-
-  return "대기";
-}
-
-function getStageCardClassName(stage: WorkflowStage, compact = false) {
-  const base = compact ? "rounded-lg border bg-card" : "rounded-xl border bg-card";
-
-  if (stage.status === "active") {
-    return `${base} border-foreground/25 bg-muted/20`;
-  }
-
-  return base;
-}
-
-function getStageWaitingSummary(stage: WorkflowStage) {
-  const pendingAssignees = stage.assignees.filter((assignee) => assignee.status === "PENDING");
-
-  if (pendingAssignees.length === 0) {
-    return "처리 완료";
-  }
-
-  return `${pendingAssignees.map((assignee) => assignee.name).join(", ")} 대기`;
-}
-
-function WideStepRail({
-  expanded,
-  onToggle,
-}: {
-  expanded: boolean;
-  onToggle: () => void;
-}) {
-  const currentIndex = workflow.stages.findIndex((stage) => stage.status === "active");
-
-  return (
-    <div
-      role="button"
-      tabIndex={0}
-      onClick={onToggle}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          onToggle();
-        }
-      }}
-      className="cursor-pointer rounded-lg border bg-background px-4 py-3 transition-colors hover:bg-muted/50"
-    >
-      <div className="flex items-center justify-between gap-3">
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-0">
-            {workflow.stages.map((stage, index) => {
-              const isCompleted = currentIndex >= 0 ? index < currentIndex : stage.status === "completed";
-              const isCurrent = currentIndex >= 0 ? index === currentIndex : stage.status === "active";
-
-              return (
-                <div key={stage.id} className="flex min-w-0 flex-1 items-center">
-                  <div className="flex min-w-0 flex-1 items-center gap-3">
-                    <div
-                      className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 text-xs font-semibold ${
-                        isCompleted
-                          ? "border-primary bg-primary text-primary-foreground"
-                          : isCurrent
-                            ? "border-primary bg-background text-primary"
-                            : "border-muted-foreground/30 bg-background text-muted-foreground"
-                      }`}
-                    >
-                      {isCompleted ? <Check className="h-4 w-4" /> : index + 1}
-                    </div>
-                    <div className="min-w-0">
-                      <p
-                        className={`truncate text-sm font-medium ${
-                          isCurrent || isCompleted ? "text-foreground" : "text-muted-foreground"
-                        }`}
-                      >
-                        {stage.label}
-                      </p>
-                      <p className="truncate text-[11px] text-muted-foreground">{stage.description}</p>
-                    </div>
-                  </div>
-
-                  {index < workflow.stages.length - 1 ? (
-                    <div className="mx-4 h-px flex-1 bg-muted-foreground/30">
-                      <div className={`h-full ${isCompleted ? "bg-primary" : "bg-transparent"}`} />
-                    </div>
-                  ) : null}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-
-        {expanded ? (
-          <ChevronUp className="h-4 w-4 shrink-0 text-muted-foreground" />
-        ) : (
-          <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
-        )}
-      </div>
-    </div>
-  );
-}
-
-function AssigneeRow({
-  assignee,
-  compact = false,
-}: {
-  assignee: WorkflowAssignee;
-  compact?: boolean;
-}) {
-  return (
-    <div className={`flex items-center gap-3 ${compact ? "py-2" : "py-2.5"}`}>
-      <UserAvatar name={assignee.name} className={compact ? "h-6 w-6 text-[10px]" : "h-7 w-7 text-[10px]"} />
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2">
-          <span className="truncate text-xs font-medium text-foreground">{assignee.name}</span>
-          <span className="text-[11px] text-muted-foreground">{getAssigneeStateLabel(assignee)}</span>
-        </div>
-        <p className="truncate text-[11px] text-muted-foreground">{assignee.subtitle ?? "역할 미지정"}</p>
-      </div>
-      <div className="shrink-0 text-right">
-        <p className="text-[11px] font-medium text-foreground">{formatActionTime(assignee.actedAt)}</p>
-        <p className="text-[10px] text-muted-foreground">{assignee.actedAt ? "처리시간" : "담당 대기"}</p>
-      </div>
-    </div>
-  );
-}
-
-function StageSummaryFooter({ stage }: { stage: WorkflowStage }) {
-  return (
-    <div className="flex items-center justify-between gap-3">
-      <span className="text-[11px] text-muted-foreground">step 상태</span>
-      <span className="text-[11px] font-medium text-foreground">{getStageWaitingSummary(stage)}</span>
-    </div>
-  );
-}
-
-function StageCard({
-  stage,
-  compact = false,
-  footer,
-}: {
-  stage: WorkflowStage;
-  compact?: boolean;
-  footer?: ReactNode;
-}) {
-  return (
-    <div className={getStageCardClassName(stage, compact)}>
-      <div className={compact ? "px-4 py-3" : "px-4 py-4"}>
-        <div className="flex items-center justify-between gap-3">
-          <div>
-            <p className="text-sm font-semibold text-foreground">{stage.label}</p>
-            <p className="mt-1 text-[11px] text-muted-foreground">{stage.description}</p>
-          </div>
-          <div className="rounded-md border bg-background px-2.5 py-1 text-[11px] font-medium text-muted-foreground">
-            {getStageStateLabel(stage)}
-          </div>
-        </div>
-      </div>
-      <div className="border-t px-4 py-2">
-        {stage.assignees.map((assignee, index) => (
-          <div key={assignee.id} className={index > 0 ? "border-t" : ""}>
-            <AssigneeRow assignee={assignee} compact={compact} />
-          </div>
-        ))}
-      </div>
-      {footer ? <div className="border-t px-4 py-2.5">{footer}</div> : null}
-    </div>
-  );
-}
-
-function HeaderSummaryBody() {
-  return (
-    <div className="grid gap-3 xl:grid-cols-3">
-      {workflow.stages.map((stage) => (
-        <StageCard key={stage.id} stage={stage} footer={<StageSummaryFooter stage={stage} />} />
-      ))}
-    </div>
-  );
-}
-
-function ShiftBoardBody() {
-  return (
-    <div className="grid gap-3">
-      {workflow.stages.map((stage) => (
-        <div key={stage.id} className={getStageCardClassName(stage)}>
-          <div className="grid gap-0 xl:grid-cols-[180px_1fr]">
-            <div className="border-b px-4 py-4 xl:border-b-0 xl:border-r">
-              <p className="text-sm font-semibold text-foreground">{stage.label}</p>
-              <p className="mt-1 text-[11px] text-muted-foreground">{getStageStateLabel(stage)}</p>
-            </div>
-            <div className="px-4 py-2">
-              {stage.assignees.map((assignee, index) => (
-                <div key={assignee.id} className={index > 0 ? "border-t" : ""}>
-                  <AssigneeRow assignee={assignee} />
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-type LayoutVariant = "header-summary" | "shift-board";
-
-function WorkflowHeader({ variant }: { variant: LayoutVariant }) {
-  const [expanded, setExpanded] = useState(true);
-
-  return (
-    <div className="space-y-3">
-      <WideStepRail expanded={expanded} onToggle={() => setExpanded((previous) => !previous)} />
-      {expanded ? (variant === "shift-board" ? <ShiftBoardBody /> : <HeaderSummaryBody />) : null}
-    </div>
-  );
-}
-
-function EngineeringChangeDetailScreenWorkflowStory({ variant }: { variant: LayoutVariant }) {
+function EngineeringChangeDetailScreenWorkflowStory() {
   const [activeTab, setActiveTab] = useState("conversation");
 
   return (
     <EngineeringChangeDetailScreen
-      engineeringChange={{
-        ...engineeringChangeBase,
-        workflow: undefined,
-      }}
+      engineeringChange={engineeringChangeBase}
       activeTab={activeTab}
-      headerAccessory={<WorkflowHeader variant={variant} />}
+      workflowData={workflow}
       tabs={[
         { id: "conversation", label: "대화" },
         { id: "changes", label: "변경 내용" },
@@ -488,14 +234,6 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-export const HeaderSummary: Story = {
-  args: {
-    variant: "header-summary",
-  },
-};
-
 export const ShiftBoard: Story = {
-  args: {
-    variant: "shift-board",
-  },
+  render: () => <EngineeringChangeDetailScreenWorkflowStory />,
 };

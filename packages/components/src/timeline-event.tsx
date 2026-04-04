@@ -7,8 +7,10 @@ import {
   MessageSquare,
   Package,
   Paperclip,
+  RotateCcw,
   Tag,
   Unlink,
+  UserCheck,
   UserPlus,
   XCircle,
 } from "lucide-react";
@@ -40,6 +42,8 @@ export type TimelineEventType =
   | "cr_issue_linked"
   | "cr_issue_unlinked"
   | "cr_changed"
+  | "cr_step_changed"
+  | "cr_part_revision_changed"
   | "issue_mentioned";
 
 export interface TimelineEventAuthor {
@@ -70,6 +74,9 @@ export interface TimelineEventData {
   isComment?: boolean;
   addedLabels?: { name: string; color: string }[];
   removedLabels?: { name: string; color: string }[];
+  stepAction?: string;
+  stepAssigneeName?: string;
+  stepType?: string;
 }
 
 export interface TimelineEventItemProps {
@@ -227,15 +234,19 @@ export function TimelineEventItem({ event, onNavigate }: TimelineEventItemProps)
 
     let message: string;
 
-    if (from === "CLOSED" && to === "SUBMITTED") {
-      message = " 님이 변경관리를 다시 제출했습니다";
-    } else if (to === "DRAFT") {
-      message = " 님이 변경관리를 초안 상태로 변경했습니다";
-    } else if (to === "SUBMITTED") {
+    if (to === "DRAFT") {
+      message = from === "CANCELED" || from === "CLOSED"
+        ? " 님이 변경관리를 다시 열었습니다"
+        : " 님이 변경관리를 초안 상태로 되돌렸습니다";
+    } else if (to === "REVIEW_PENDING" || to === "SUBMITTED") {
       message = " 님이 변경관리를 제출했습니다";
-    } else if (to === "MERGED") {
+    } else if (to === "APPROVAL_PENDING") {
+      message = " 님이 검토를 완료하고 승인 단계로 이동했습니다";
+    } else if (to === "RELEASE_PENDING") {
+      message = " 님이 승인을 완료하고 반영 단계로 이동했습니다";
+    } else if (to === "RELEASED" || to === "MERGED") {
       message = " 님이 변경관리를 반영했습니다";
-    } else if (to === "CLOSED") {
+    } else if (to === "CANCELED" || to === "CLOSED") {
       message = " 님이 변경관리를 닫았습니다";
     } else {
       message = " 님이 변경관리 상태를 변경했습니다";
@@ -245,6 +256,78 @@ export function TimelineEventItem({ event, onNavigate }: TimelineEventItemProps)
       <EventRow icon={<EngineeringChangeStatusIcon state={targetState} className="h-4 w-4" />} timestamp={ts}>
         <ActivityAuthor author={author} />
         {message}
+      </EventRow>
+    );
+  }
+
+  // EC 단계 담당자 변경
+  if (type === "cr_step_changed") {
+    const stepAction = event.stepAction?.toUpperCase();
+    const stepType = event.stepType?.toUpperCase();
+    const assigneeName = event.stepAssigneeName;
+
+    const STEP_TYPE_LABEL: Record<string, string> = {
+      REVIEW: "검토",
+      APPROVAL: "승인",
+      RELEASE: "반영",
+    };
+    const stageLabel = STEP_TYPE_LABEL[stepType ?? ""] ?? "워크플로우";
+
+    let message: string;
+    let icon: ReactNode;
+
+    if (stepAction === "APPROVED") {
+      message = assigneeName
+        ? ` 님이 ${stageLabel} 단계를 승인했습니다 (${assigneeName})`
+        : ` 님이 ${stageLabel} 단계를 승인했습니다`;
+      icon = <UserCheck className="h-3.5 w-3.5 text-emerald-600" />;
+    } else if (stepAction === "REJECTED") {
+      message = assigneeName
+        ? ` 님이 ${stageLabel} 단계를 반려했습니다 (${assigneeName})`
+        : ` 님이 ${stageLabel} 단계를 반려했습니다`;
+      icon = <XCircle className="h-3.5 w-3.5 text-destructive" />;
+    } else {
+      message = ` 님이 ${stageLabel} 담당자를 변경했습니다`;
+      icon = <UserPlus className="h-3.5 w-3.5 text-muted-foreground" />;
+    }
+
+    return (
+      <EventRow icon={icon} timestamp={ts}>
+        <ActivityAuthor author={author} />
+        {message}
+      </EventRow>
+    );
+  }
+
+  // EC 부품 리비전 변경
+  if (type === "cr_part_revision_changed") {
+    const addedRefs = event.addedPartNumbers;
+    const removedRefs = event.removedPartNumbers;
+
+    if (addedRefs && addedRefs.length > 0) {
+      return (
+        <EventRow icon={<Package className="h-3.5 w-3.5 text-muted-foreground" />} timestamp={ts}>
+          <ActivityAuthor author={author} />
+          {" 님이 영향 부품을 추가했습니다: "}
+          <TruncatedNames items={addedRefs} />
+        </EventRow>
+      );
+    }
+
+    if (removedRefs && removedRefs.length > 0) {
+      return (
+        <EventRow icon={<Package className="h-3.5 w-3.5 text-muted-foreground" />} timestamp={ts}>
+          <ActivityAuthor author={author} />
+          {" 님이 영향 부품을 제거했습니다: "}
+          <TruncatedNames items={removedRefs} />
+        </EventRow>
+      );
+    }
+
+    return (
+      <EventRow icon={<Package className="h-3.5 w-3.5 text-muted-foreground" />} timestamp={ts}>
+        <ActivityAuthor author={author} />
+        {" 님이 영향 부품을 변경했습니다"}
       </EventRow>
     );
   }

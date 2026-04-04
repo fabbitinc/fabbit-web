@@ -2,7 +2,11 @@ import { useEffect, useState, type ReactNode } from "react";
 import {
   AlertCircle,
   ArrowLeft,
+  Check,
   CheckCircle2,
+  ChevronDown,
+  ChevronUp,
+  Clock,
   FileCheck,
   Loader2,
   MessageSquare,
@@ -22,12 +26,18 @@ import {
   UserAvatar,
 } from "@fabbit/ui";
 import { EngineeringChangeDiffTab } from "./engineering-change-diff-tab";
+import { MemberPickerSection } from "./member-picker-section";
 import {
   EngineeringChangeSidebar,
   type EngineeringChangeSidebarEngineeringChange,
   type EngineeringChangeSidebarProps,
 } from "./engineering-change-sidebar";
 import { TimelineEventItem, type TimelineEventData } from "./timeline-event";
+import type {
+  EngineeringChangeWorkflowData,
+  EngineeringChangeWorkflowStage,
+  EngineeringChangeWorkflowAssignee,
+} from "./engineering-change-workflow-section";
 import { EngineeringChangeStatusBadge } from "./work-item-status";
 
 export interface EngineeringChangeDetailTabItem {
@@ -86,6 +96,15 @@ export interface EngineeringChangeDetailScreenProps {
   dialog?: unknown | null;
   headerAccessory?: ReactNode;
   isAttachingFiles?: boolean;
+  workflowData?: EngineeringChangeWorkflowData;
+  workflowStagePicker?: {
+    availableMembers: { id: string; name: string; email: string }[];
+    onRequest: () => void;
+    onSearchChange: (search: string) => void;
+    onSync: (stageType: string, userIds: string[]) => void;
+    isSearching?: boolean;
+    isUpdating?: boolean;
+  };
   isCreatingComment?: boolean;
   isError?: boolean;
   isLoading?: boolean;
@@ -281,6 +300,476 @@ function ChangeTimelineCommentItem({
   );
 }
 
+function WorkflowSummaryBar({ stages, ecState }: { stages: EngineeringChangeWorkflowStage[]; ecState: string }) {
+  const activeStage = stages.find((s) => s.status === "active");
+  const allCompleted = stages.every((s) => s.status === "completed");
+  const isDraft = ecState === "DRAFT";
+
+  let summaryLabel: string;
+  let summaryDetail: string;
+
+  if (isDraft) {
+    summaryLabel = "초안";
+    summaryDetail = "제출 후 워크플로우가 시작됩니다";
+  } else if (allCompleted) {
+    summaryLabel = "완료";
+    summaryDetail = "모든 단계가 완료되었습니다";
+  } else if (activeStage) {
+    const pendingAssignees = activeStage.assignees.filter((a) => a.status === "PENDING");
+    summaryLabel = activeStage.label;
+    summaryDetail = pendingAssignees.length > 0
+      ? `${pendingAssignees.map((a) => a.name).join(", ")} 대기`
+      : "모든 담당자 완료";
+  } else {
+    summaryLabel = "대기";
+    summaryDetail = "워크플로우 진행 대기";
+  }
+
+  const currentIndex = stages.findIndex((s) => s.status === "active");
+
+  return (
+    <div className="flex items-center justify-between border-y bg-muted/20 px-0 py-2.5">
+      <div className="flex items-center gap-2">
+        <span className="text-sm font-medium text-foreground">{summaryLabel}</span>
+        <span className="text-xs text-muted-foreground">— {summaryDetail}</span>
+      </div>
+      <div className="flex items-center gap-0">
+        {stages.map((stage, index) => {
+          const done = currentIndex >= 0 ? index < currentIndex : stage.status === "completed";
+          const active = currentIndex >= 0 ? index === currentIndex : stage.status === "active";
+
+          return (
+            <div key={stage.id} className="flex items-center">
+              <div className="flex items-center gap-1.5">
+                <div
+                  className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-[1.5px] text-[9px] font-bold ${
+                    done
+                      ? "border-primary bg-primary text-primary-foreground"
+                      : active
+                        ? "border-primary text-primary"
+                        : "border-muted-foreground/30 text-muted-foreground"
+                  }`}
+                >
+                  {done ? <Check className="h-2.5 w-2.5" /> : index + 1}
+                </div>
+                <span className={`text-xs ${active || done ? "font-medium text-foreground" : "text-muted-foreground"}`}>
+                  {stage.label}
+                </span>
+              </div>
+              {index < stages.length - 1 ? (
+                <div className="mx-2 h-px w-4 bg-muted-foreground/30">
+                  <div className={`h-full ${done ? "bg-primary" : ""}`} />
+                </div>
+              ) : null}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function WorkflowStepRailAccordion({
+  stages,
+  stagePicker,
+}: {
+  stages: EngineeringChangeWorkflowStage[];
+  stagePicker?: {
+    availableMembers: { id: string; name: string; email: string }[];
+    onRequest: () => void;
+    onSearchChange: (search: string) => void;
+    onSync: (stageType: string, userIds: string[]) => void;
+    isSearching?: boolean;
+    isUpdating?: boolean;
+  };
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const currentIndex = stages.findIndex((s) => s.status === "active");
+
+  const STAGE_LABEL: Record<string, string> = {
+    REVIEW: "검토자",
+    APPROVAL: "승인자",
+    RELEASE: "배포자",
+  };
+
+  return (
+    <div className="space-y-3">
+      {/* 스텝 레일 (클릭하면 아코디언 토글) */}
+      <div
+        role="button"
+        tabIndex={0}
+        onClick={() => setExpanded((p) => !p)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            setExpanded((p) => !p);
+          }
+        }}
+        className="cursor-pointer rounded-lg border bg-background px-4 py-3 transition-colors hover:bg-muted/50"
+      >
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-0">
+              {stages.map((stage, index) => {
+                const isCompleted = currentIndex >= 0 ? index < currentIndex : stage.status === "completed";
+                const isCurrent = currentIndex >= 0 ? index === currentIndex : stage.status === "active";
+
+                return (
+                  <div key={stage.id} className="flex min-w-0 flex-1 items-center">
+                    <div className="flex min-w-0 flex-1 items-center gap-3">
+                      <div
+                        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 text-xs font-semibold ${
+                          isCompleted
+                            ? "border-primary bg-primary text-primary-foreground"
+                            : isCurrent
+                              ? "border-primary bg-background text-primary"
+                              : "border-muted-foreground/30 bg-background text-muted-foreground"
+                        }`}
+                      >
+                        {isCompleted ? <Check className="h-4 w-4" /> : index + 1}
+                      </div>
+                      <div className="min-w-0">
+                        <p
+                          className={`truncate text-sm font-medium ${
+                            isCurrent || isCompleted ? "text-foreground" : "text-muted-foreground"
+                          }`}
+                        >
+                          {stage.label}
+                        </p>
+                        {stage.description ? (
+                          <p className="truncate text-[11px] text-muted-foreground">{stage.description}</p>
+                        ) : null}
+                      </div>
+                    </div>
+
+                    {index < stages.length - 1 ? (
+                      <div className="mx-4 h-px flex-1 bg-muted-foreground/30">
+                        <div className={`h-full ${isCompleted ? "bg-primary" : "bg-transparent"}`} />
+                      </div>
+                    ) : null}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {expanded ? (
+            <ChevronUp className="h-4 w-4 shrink-0 text-muted-foreground" />
+          ) : (
+            <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
+          )}
+        </div>
+      </div>
+
+      {/* 아코디언 펼침: 단계별 담당자 할당 */}
+      {expanded ? (
+        <div className="grid gap-3">
+          {stages.map((stage) => {
+            const label = STAGE_LABEL[stage.type] ?? "담당자";
+            return (
+              <div key={stage.id} className="rounded-xl border bg-card">
+                <div className="grid gap-0 xl:grid-cols-[180px_1fr]">
+                  <div className="border-b px-4 py-4 xl:border-b-0 xl:border-r">
+                    <p className="text-sm font-semibold text-foreground">{stage.label}</p>
+                    {stage.description ? (
+                      <p className="mt-1 text-[11px] text-muted-foreground">{stage.description}</p>
+                    ) : null}
+                  </div>
+                  <div className="px-4 py-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-medium text-muted-foreground">{label}</span>
+                      {stagePicker ? (
+                        <MemberPickerSection
+                          label=""
+                          applyLabel={`${label} 적용`}
+                          availableMembers={stagePicker.availableMembers}
+                          selectedIds={stage.assignees.map((a) => a.id)}
+                          displayItems={[]}
+                          onSync={(userIds) => stagePicker.onSync(stage.type, userIds)}
+                          onRequestMembers={stagePicker.onRequest}
+                          onSearchChange={stagePicker.onSearchChange}
+                          isSearching={stagePicker.isSearching}
+                          isUpdating={stagePicker.isUpdating}
+                        />
+                      ) : null}
+                    </div>
+                    {stage.assignees.length > 0 ? (
+                      stage.assignees.map((assignee) => (
+                        <div key={assignee.id} className="flex items-center gap-2 py-2">
+                          <UserAvatar name={assignee.name} imageUrl={assignee.profileImageUrl} className="h-6 w-6 text-[10px]" />
+                          <span className="text-sm font-medium text-foreground">{assignee.name}</span>
+                          {assignee.subtitle ? (
+                            <span className="text-xs text-muted-foreground">{assignee.subtitle}</span>
+                          ) : null}
+                        </div>
+                      ))
+                    ) : (
+                      <p className="py-2 text-xs text-muted-foreground">{label}가 아직 지정되지 않았습니다.</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function GateCardAssigneeRow({ assignee }: { assignee: EngineeringChangeWorkflowAssignee }) {
+  return (
+    <div className="flex items-center gap-2 py-2">
+      <UserAvatar name={assignee.name} imageUrl={assignee.profileImageUrl} className="h-6 w-6 text-[10px]" />
+      <span className="text-sm font-medium text-foreground">{assignee.name}</span>
+      {assignee.subtitle ? (
+        <span className="text-xs text-muted-foreground">{assignee.subtitle}</span>
+      ) : null}
+      {assignee.status === "APPROVED" ? (
+        <Badge variant="outline" className="ml-auto border-green-200 bg-green-50 text-green-600 text-[10px]">
+          승인
+        </Badge>
+      ) : assignee.status === "REJECTED" ? (
+        <Badge variant="outline" className="ml-auto border-red-200 bg-red-50 text-red-600 text-[10px]">
+          반려
+        </Badge>
+      ) : (
+        <Badge variant="outline" className="ml-auto text-[10px]">대기</Badge>
+      )}
+    </div>
+  );
+}
+
+function WorkflowGateCard({
+  stage,
+  advanceLabel,
+  canAdvance,
+  canSubmit,
+  isMerging,
+  isSubmitting,
+  onAdvance,
+  onSubmit,
+  picker,
+}: {
+  stage: EngineeringChangeWorkflowStage;
+  advanceLabel: string;
+  canAdvance: boolean;
+  canSubmit: boolean;
+  isMerging: boolean;
+  isSubmitting: boolean;
+  onAdvance: () => void;
+  onSubmit: () => void;
+  picker?: {
+    availableMembers: { id: string; name: string; email: string }[];
+    selectedIds: string[];
+    onRequest: () => void;
+    onSearchChange: (search: string) => void;
+    onSync: (userIds: string[]) => void;
+    isSearching?: boolean;
+    isUpdating?: boolean;
+  };
+}) {
+  const [expanded, setExpanded] = useState(true);
+  const approvedCount = stage.assignees.filter((a) => a.status === "APPROVED").length;
+  const totalCount = stage.assignees.length;
+  const pendingCount = stage.assignees.filter((a) => a.status === "PENDING").length;
+
+  const STAGE_PICKER_LABEL: Record<string, string> = {
+    REVIEW: "검토자",
+    APPROVAL: "승인자",
+    RELEASE: "배포자",
+  };
+  const pickerLabel = STAGE_PICKER_LABEL[stage.type] ?? "담당자";
+
+  return (
+    <div className="overflow-hidden rounded-lg border-2 border-amber-300/50">
+      <button
+        type="button"
+        className="flex w-full cursor-pointer items-center justify-between bg-amber-50/50 px-4 py-3 text-left transition-colors hover:bg-amber-50/80"
+        onClick={() => setExpanded((p) => !p)}
+      >
+        <div className="flex items-center gap-3">
+          <div className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-amber-400 bg-amber-100">
+            <Clock className="h-4 w-4 text-amber-600" />
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-foreground">
+              {stage.label} — {approvedCount}/{totalCount} 승인 완료
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {pendingCount > 0 ? `${pendingCount}명의 처리가 남아있습니다.` : "모든 담당자가 처리했습니다."}
+            </p>
+          </div>
+        </div>
+        {expanded ? (
+          <ChevronUp className="h-4 w-4 shrink-0 text-muted-foreground" />
+        ) : (
+          <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
+        )}
+      </button>
+      {expanded ? (
+        <div className="border-t border-amber-200/50">
+          <div className="px-4 py-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-medium text-muted-foreground">{pickerLabel}</span>
+              {picker ? (
+                <MemberPickerSection
+                  label=""
+                  applyLabel={`${pickerLabel} 적용`}
+                  availableMembers={picker.availableMembers}
+                  selectedIds={picker.selectedIds}
+                  displayItems={[]}
+                  onSync={picker.onSync}
+                  onRequestMembers={picker.onRequest}
+                  onSearchChange={picker.onSearchChange}
+                  isSearching={picker.isSearching}
+                  isUpdating={picker.isUpdating}
+                />
+              ) : null}
+            </div>
+            {stage.assignees.length > 0 ? (
+              stage.assignees.map((assignee) => (
+                <GateCardAssigneeRow key={assignee.id} assignee={assignee} />
+              ))
+            ) : (
+              <p className="py-2 text-xs text-muted-foreground">{pickerLabel}가 아직 지정되지 않았습니다.</p>
+            )}
+          </div>
+          <div className="flex items-center justify-end gap-2 border-t bg-muted/20 px-4 py-3">
+            {canSubmit ? (
+              <Button
+                size="sm"
+                disabled={isSubmitting}
+                onClick={(e) => { e.stopPropagation(); onSubmit(); }}
+              >
+                {isSubmitting ? (
+                  <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <FileCheck className="mr-1.5 h-3.5 w-3.5" />
+                )}
+                제출
+              </Button>
+            ) : null}
+            {canAdvance ? (
+              <Button
+                size="sm"
+                className="bg-green-600 text-white hover:bg-green-700"
+                disabled={isMerging}
+                onClick={(e) => { e.stopPropagation(); onAdvance(); }}
+              >
+                {isMerging ? (
+                  <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" />
+                )}
+                {advanceLabel}
+              </Button>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function WorkflowSetupCard({
+  stages,
+  canSubmit,
+  isSubmitting,
+  onSubmit,
+  stagePicker,
+}: {
+  stages: EngineeringChangeWorkflowStage[];
+  canSubmit: boolean;
+  isSubmitting: boolean;
+  onSubmit: () => void;
+  stagePicker?: {
+    availableMembers: { id: string; name: string; email: string }[];
+    onRequest: () => void;
+    onSearchChange: (search: string) => void;
+    onSync: (stageType: string, userIds: string[]) => void;
+    isSearching?: boolean;
+    isUpdating?: boolean;
+  };
+}) {
+  const STAGE_LABEL: Record<string, string> = {
+    REVIEW: "검토자",
+    APPROVAL: "승인자",
+    RELEASE: "배포자",
+  };
+
+  return (
+    <div className="overflow-hidden rounded-lg border bg-card">
+      <div className="border-b bg-muted/30 px-4 py-3">
+        <p className="text-sm font-semibold text-foreground">워크플로우 설정</p>
+        <p className="mt-0.5 text-xs text-muted-foreground">각 단계의 담당자를 배정한 후 제출하세요.</p>
+      </div>
+      <div className="divide-y">
+        {stages.map((stage) => {
+          const label = STAGE_LABEL[stage.type] ?? "담당자";
+          return (
+            <div key={stage.id} className="px-4 py-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium text-foreground">{stage.label}</span>
+                  {stage.description ? (
+                    <span className="text-xs text-muted-foreground">{stage.description}</span>
+                  ) : null}
+                </div>
+                {stagePicker ? (
+                  <MemberPickerSection
+                    label=""
+                    applyLabel={`${label} 적용`}
+                    availableMembers={stagePicker.availableMembers}
+                    selectedIds={stage.assignees.map((a) => a.id)}
+                    displayItems={[]}
+                    onSync={(userIds) => stagePicker.onSync(stage.type, userIds)}
+                    onRequestMembers={stagePicker.onRequest}
+                    onSearchChange={stagePicker.onSearchChange}
+                    isSearching={stagePicker.isSearching}
+                    isUpdating={stagePicker.isUpdating}
+                  />
+                ) : null}
+              </div>
+              {stage.assignees.length > 0 ? (
+                <div className="mt-1">
+                  {stage.assignees.map((assignee) => (
+                    <div key={assignee.id} className="flex items-center gap-2 py-1.5">
+                      <UserAvatar name={assignee.name} imageUrl={assignee.profileImageUrl} className="h-5 w-5 text-[9px]" />
+                      <span className="text-sm text-foreground">{assignee.name}</span>
+                      {assignee.subtitle ? (
+                        <span className="text-xs text-muted-foreground">{assignee.subtitle}</span>
+                      ) : null}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="mt-1 text-xs text-muted-foreground">{label}가 아직 지정되지 않았습니다.</p>
+              )}
+            </div>
+          );
+        })}
+      </div>
+      {canSubmit ? (
+        <div className="flex justify-end border-t bg-muted/20 px-4 py-3">
+          <Button
+            size="sm"
+            disabled={isSubmitting}
+            onClick={onSubmit}
+          >
+            {isSubmitting ? (
+              <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+            ) : (
+              <FileCheck className="mr-1.5 h-3.5 w-3.5" />
+            )}
+            제출
+          </Button>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 export function EngineeringChangeDetailScreen({
   activeTab,
   conversationAccessory,
@@ -290,6 +779,8 @@ export function EngineeringChangeDetailScreen({
   currentUser,
   headerAccessory,
   isAttachingFiles = false,
+  workflowData,
+  workflowStagePicker,
   isCreatingComment = false,
   isError = false,
   isLoading = false,
@@ -383,17 +874,17 @@ export function EngineeringChangeDetailScreen({
     return null;
   }
 
-  const canSubmit = engineeringChange.engineeringChangeState === "DRAFT";
-  const canMerge =
-    engineeringChange.engineeringChangeState === "OPEN" || engineeringChange.engineeringChangeState === "SUBMITTED";
-  const canClose =
-    engineeringChange.engineeringChangeState === "DRAFT" ||
-    engineeringChange.engineeringChangeState === "OPEN" ||
-    engineeringChange.engineeringChangeState === "SUBMITTED";
-  const canReopen = engineeringChange.engineeringChangeState === "CLOSED";
-  const isEditable =
-    engineeringChange.engineeringChangeState !== "MERGED" &&
-    engineeringChange.engineeringChangeState !== "CLOSED";
+  const ecState = engineeringChange.engineeringChangeState;
+  const canSubmit = ecState === "DRAFT";
+  const canApproveReview = ecState === "REVIEW_PENDING";
+  const canApprove = ecState === "APPROVAL_PENDING";
+  const canRelease = ecState === "RELEASE_PENDING";
+  const canAdvance = canApproveReview || canApprove || canRelease;
+  const canClose = ecState !== "RELEASED" && ecState !== "CANCELED";
+  const canReopen = ecState === "CANCELED";
+  const isEditable = ecState !== "RELEASED" && ecState !== "CANCELED";
+
+  const advanceLabel = canApprove ? "승인" : canRelease ? "반영" : "검토 승인";
   const createdByName = engineeringChange.createdBy?.fullName ?? "알 수 없음";
   const startEditing = () => {
     setTitleDraft(engineeringChange.title);
@@ -442,8 +933,23 @@ export function EngineeringChangeDetailScreen({
             댓글 {commentCount}개
           </span>
         </div>
-        {headerAccessory ? <div className="mt-4">{headerAccessory}</div> : null}
+        {headerAccessory && !workflowData ? <div className="mt-4">{headerAccessory}</div> : null}
       </div>
+
+      {workflowData && canSubmit ? (
+        <div className="mt-4">
+          <WorkflowStepRailAccordion
+            stages={workflowData.stages}
+            stagePicker={workflowStagePicker}
+          />
+        </div>
+      ) : null}
+
+      {workflowData && !canSubmit ? (
+        <div className="mt-4">
+          <WorkflowSummaryBar stages={workflowData.stages} ecState={ecState} />
+        </div>
+      ) : null}
 
       <div className="mt-5 flex gap-1 border-b">
         {tabs.map((tab) => (
@@ -566,6 +1072,38 @@ export function EngineeringChangeDetailScreen({
 
               <div className="border-t" />
 
+              {/* 게이트 카드 — 활성 단계가 있을 때만 (제출 이후) */}
+              {workflowData ? (() => {
+                const activeStage = workflowData.stages.find((s) => s.status === "active");
+
+                if (activeStage && !canSubmit) {
+                  return (
+                    <WorkflowGateCard
+                      stage={activeStage}
+                      advanceLabel={advanceLabel}
+                      canAdvance={canAdvance}
+                      canSubmit={false}
+                      isMerging={isMergingEngineeringChange}
+                      isSubmitting={isSubmittingEngineeringChange}
+                      onAdvance={() => { void onMergeEngineeringChange(); }}
+                      onSubmit={() => {}}
+                      picker={workflowStagePicker ? {
+                        availableMembers: workflowStagePicker.availableMembers,
+                        selectedIds: activeStage.assignees.map((a) => a.id),
+                        onRequest: workflowStagePicker.onRequest,
+                        onSearchChange: workflowStagePicker.onSearchChange,
+                        onSync: (userIds) => workflowStagePicker.onSync(activeStage.type, userIds),
+                        isSearching: workflowStagePicker.isSearching,
+                        isUpdating: workflowStagePicker.isUpdating,
+                      } : undefined}
+                    />
+                  );
+                }
+
+                return null;
+              })() : null}
+
+              {/* 댓글 입력 */}
               <div className="flex gap-3">
                 <Avatar className="h-8 w-8 shrink-0">
                   <AvatarFallback className="text-xs">나</AvatarFallback>
@@ -593,9 +1131,7 @@ export function EngineeringChangeDetailScreen({
                         <Button
                           size="sm"
                           disabled={isSubmittingEngineeringChange}
-                          onClick={() => {
-                            void onSubmitEngineeringChange();
-                          }}
+                          onClick={() => { void onSubmitEngineeringChange(); }}
                         >
                           {isSubmittingEngineeringChange ? (
                             <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
@@ -605,21 +1141,19 @@ export function EngineeringChangeDetailScreen({
                           제출
                         </Button>
                       ) : null}
-                      {canMerge ? (
+                      {!workflowData?.stages.some((s) => s.status === "active") && canAdvance ? (
                         <Button
                           size="sm"
                           className="bg-green-600 text-white hover:bg-green-700"
                           disabled={isMergingEngineeringChange}
-                          onClick={() => {
-                            void onMergeEngineeringChange();
-                          }}
+                          onClick={() => { void onMergeEngineeringChange(); }}
                         >
                           {isMergingEngineeringChange ? (
                             <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
                           ) : (
                             <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" />
                           )}
-                          변경 반영
+                          {advanceLabel}
                         </Button>
                       ) : null}
                       {canReopen ? (
@@ -627,9 +1161,7 @@ export function EngineeringChangeDetailScreen({
                           size="sm"
                           variant="outline"
                           disabled={isReopeningEngineeringChange}
-                          onClick={() => {
-                            void onReopenEngineeringChange();
-                          }}
+                          onClick={() => { void onReopenEngineeringChange(); }}
                         >
                           {isReopeningEngineeringChange ? (
                             <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />

@@ -48,4 +48,5 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy apps/landing/dist --project-name=fabbit-landing --branch=${{ github.ref_name }} --commit-hash=${{ github.sha }}
+          workingDirectory: apps/landing
+          command: pages deploy dist --project-name=fabbit-landing --branch=${{ github.ref_name }} --commit-hash=${{ github.sha }}

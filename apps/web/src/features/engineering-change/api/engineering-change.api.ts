@@ -46,6 +46,9 @@ import type {
   EngineeringChangeTimelineCommentModel,
   EngineeringChangeTimelineItemModel,
   EngineeringChangeUserModel,
+  EngineeringChangeWorkflowAssigneeModel,
+  EngineeringChangeWorkflowModel,
+  EngineeringChangeWorkflowStageModel,
 } from "@/features/engineering-change/types/engineering-change-model";
 import { getPlainTextFromRichText } from "@/lib/rich-text";
 
@@ -223,6 +226,7 @@ function toEngineeringChangeDetailModel(change: EngineeringChangeDetailResponseD
     linkedIssues: (change.linked_issues ?? []).map(toEngineeringChangeLinkedIssueModel),
     mergedAt: change.released_at ?? null,
     mergedBy: change.released_by?.full_name ?? null,
+    workflow: deriveWorkflowModel(change.steps ?? [], change.state ?? "DRAFT"),
   };
 }
 
@@ -405,4 +409,79 @@ function isEngineeringChangeTimelineActivityItem(
 
 function isObjectLike(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
+}
+
+// --- 워크플로우 도출 ---
+
+type StepResponse = NonNullable<EngineeringChangeDetailResponseDto["steps"]>[number];
+
+const STAGE_CONFIG: {
+  type: EngineeringChangeWorkflowStageModel["type"];
+  label: string;
+  description: string;
+}[] = [
+  { type: "REVIEW", label: "검토", description: "설계, 생산기술, 품질 검토" },
+  { type: "APPROVAL", label: "승인", description: "CCB 결재" },
+  { type: "RELEASE", label: "반영", description: "BOM/도면 릴리즈" },
+];
+
+const STAGE_STATUS_MAP: Record<string, Record<string, EngineeringChangeWorkflowStageModel["status"]>> = {
+  DRAFT: { REVIEW: "pending", APPROVAL: "pending", RELEASE: "pending" },
+  REVIEW_PENDING: { REVIEW: "active", APPROVAL: "pending", RELEASE: "pending" },
+  APPROVAL_PENDING: { REVIEW: "completed", APPROVAL: "active", RELEASE: "pending" },
+  RELEASE_PENDING: { REVIEW: "completed", APPROVAL: "completed", RELEASE: "active" },
+  RELEASED: { REVIEW: "completed", APPROVAL: "completed", RELEASE: "completed" },
+  CANCELED: { REVIEW: "pending", APPROVAL: "pending", RELEASE: "pending" },
+};
+
+function deriveWorkflowModel(
+  steps: StepResponse[],
+  ecState: string,
+): EngineeringChangeWorkflowModel {
+  const grouped = new Map<string, StepResponse[]>();
+
+  for (const step of steps) {
+    const key = step.step_type ?? "REVIEW";
+    const group = grouped.get(key) ?? [];
+    group.push(step);
+    grouped.set(key, group);
+  }
+
+  const stateMap = STAGE_STATUS_MAP[ecState] ?? STAGE_STATUS_MAP.DRAFT;
+
+  const stages: EngineeringChangeWorkflowStageModel[] = STAGE_CONFIG.map((config) => {
+    const stageSteps = grouped.get(config.type) ?? [];
+    stageSteps.sort((a, b) => (a.sequence ?? 0) - (b.sequence ?? 0));
+
+    return {
+      id: config.type.toLowerCase(),
+      label: config.label,
+      type: config.type,
+      status: stateMap[config.type] ?? "pending",
+      description: config.description,
+      assignees: stageSteps.map(toWorkflowAssigneeModel),
+    };
+  });
+
+  return { stages };
+}
+
+function toWorkflowAssigneeModel(step: StepResponse): EngineeringChangeWorkflowAssigneeModel {
+  const isTeam = step.assignee_type === "TEAM";
+
+  return {
+    id: step.step_id ?? "",
+    assigneeId: isTeam
+      ? (step.assignee_team?.id ?? "")
+      : (step.assignee_user?.user_id ?? ""),
+    name: isTeam
+      ? (step.assignee_team?.name ?? "알 수 없는 팀")
+      : (step.assignee_user?.full_name ?? "알 수 없는 사용자"),
+    type: (step.assignee_type as "USER" | "TEAM") ?? "USER",
+    status: (step.status as "PENDING" | "APPROVED" | "REJECTED") ?? "PENDING",
+    profileImageUrl: step.assignee_user?.profile_image_url ?? null,
+    actedAt: step.acted_at ?? null,
+    actedByName: step.acted_by?.full_name ?? null,
+    subtitle: null,
+  };
 }
