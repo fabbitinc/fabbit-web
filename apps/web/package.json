@@ -50,7 +50,7 @@
     "es-hangul": "^2.3.8",
     "exceljs": "^4.4.0",
     "hash-wasm": "^4.12.0",
-    "i18next": "^25.8.6",
+    "i18next": "^26.0.3",
     "input-otp": "^1.4.2",
     "lucide-react": "^0.563.0",
     "marked": "^17.0.5",
