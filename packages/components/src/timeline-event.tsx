@@ -7,7 +7,6 @@ import {
   MessageSquare,
   Package,
   Paperclip,
-  RotateCcw,
   Tag,
   Unlink,
   UserCheck,
