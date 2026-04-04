@@ -7,9 +7,9 @@
 import type {
   CreateLabelRequest,
   LabelListResponse,
+  LabelLookupParams,
   LabelLookupResponse,
   LabelResponse,
-  LookupLabelsParams,
   UpdateLabelRequest
 } from '../model';
 
@@ -24,7 +24,7 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
  * 테넌트에 등록된 전체 라벨 목록을 이름순으로 조회합니다
  * @summary 테넌트에 등록된 전체 라벨 목록을 이름순으로 조회합니다
  */
-export const listLabels = (
+export const labelList = (
     
  options?: SecondParameter<typeof customInstance<LabelListResponse | void>>,) => {
       return customInstance<LabelListResponse | void>(
@@ -36,7 +36,7 @@ export const listLabels = (
  * 라벨을 생성합니다. 동일한 라벨 이름은 허용되지 않습니다
  * @summary 라벨을 생성합니다. 동일한 라벨 이름은 허용되지 않습니다
  */
-export const createLabel = (
+export const labelCreate = (
     createLabelRequest: BodyType<CreateLabelRequest>,
  options?: SecondParameter<typeof customInstance<LabelResponse | void>>,) => {
       return customInstance<LabelResponse | void>(
@@ -50,7 +50,7 @@ export const createLabel = (
  * 라벨을 삭제합니다
  * @summary 라벨을 삭제합니다
  */
-export const deleteLabel = (
+export const labelDelete = (
     labelId: string,
  options?: SecondParameter<typeof customInstance<void>>,) => {
       return customInstance<void>(
@@ -62,7 +62,7 @@ export const deleteLabel = (
  * 라벨의 일부 필드를 수정합니다. description을 null로 보내면 설명이 제거됩니다
  * @summary 라벨의 일부 필드를 수정합니다. description을 null로 보내면 설명이 제거됩니다
  */
-export const updateLabel = (
+export const labelUpdate = (
     labelId: string,
     updateLabelRequest: BodyType<UpdateLabelRequest>,
  options?: SecondParameter<typeof customInstance<LabelResponse | void>>,) => {
@@ -77,8 +77,8 @@ export const updateLabel = (
  * 라벨 picker/autocomplete 용 경량 목록(id, name, color)을 조회합니다
  * @summary 라벨 picker/autocomplete 용 경량 목록(id, name, color)을 조회합니다
  */
-export const lookupLabels = (
-    params?: LookupLabelsParams,
+export const labelLookup = (
+    params?: LabelLookupParams,
  options?: SecondParameter<typeof customInstance<LabelLookupResponse | void>>,) => {
       return customInstance<LabelLookupResponse | void>(
       {url: `/api/v1/labels/lookup`, method: 'GET',
@@ -86,8 +86,8 @@ export const lookupLabels = (
     },
       options);
     }
-  export type ListLabelsResult = NonNullable<Awaited<ReturnType<typeof listLabels>>>
-export type CreateLabelResult = NonNullable<Awaited<ReturnType<typeof createLabel>>>
-export type DeleteLabelResult = NonNullable<Awaited<ReturnType<typeof deleteLabel>>>
-export type UpdateLabelResult = NonNullable<Awaited<ReturnType<typeof updateLabel>>>
-export type LookupLabelsResult = NonNullable<Awaited<ReturnType<typeof lookupLabels>>>
+  export type LabelListResult = NonNullable<Awaited<ReturnType<typeof labelList>>>
+export type LabelCreateResult = NonNullable<Awaited<ReturnType<typeof labelCreate>>>
+export type LabelDeleteResult = NonNullable<Awaited<ReturnType<typeof labelDelete>>>
+export type LabelUpdateResult = NonNullable<Awaited<ReturnType<typeof labelUpdate>>>
+export type LabelLookupResult = NonNullable<Awaited<ReturnType<typeof labelLookup>>>

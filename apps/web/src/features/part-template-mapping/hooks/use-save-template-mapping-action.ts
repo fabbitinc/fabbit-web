@@ -22,9 +22,9 @@ interface SaveTemplateMappingActionInput {
 }
 
 type MappingPropertyRequestDto =
-  NonNullable<MappingValidateRequestDto["mapping"]["property_mappings"]>[number];
+  NonNullable<MappingValidateRequestDto["mapping"]["nodes"]>[number];
 type MappingRelationRequestDto =
-  NonNullable<MappingValidateRequestDto["mapping"]["relation_mappings"]>[number];
+  NonNullable<MappingValidateRequestDto["mapping"]["relations"]>[number];
 type MappingPayloadDto = Pick<MappingConfirmRequestDto, "file_id" | "mapping">;
 
 export function useSaveTemplateMappingAction() {
@@ -79,8 +79,8 @@ function toMappingPayload(fileId: string, mapping: MappingDefinitionModel): Mapp
   return {
     file_id: fileId,
     mapping: {
-      property_mappings: mapping.propertyMappings.map(toMappingPropertyRequest),
-      relation_mappings: mapping.relationMappings.map(toMappingRelationRequest),
+      nodes: mapping.propertyMappings.map(toMappingPropertyRequest),
+      relations: mapping.relationMappings.map(toMappingRelationRequest),
     },
   };
 }
@@ -89,12 +89,20 @@ function toMappingPropertyRequest(
   mapping: MappingDefinitionModel["propertyMappings"][number],
 ): MappingPropertyRequestDto {
   return {
-    source_column: mapping.sourceColumn,
-    target_property: mapping.targetProperty,
-    data_type: mapping.dataType as MappingPropertyRequestDto["data_type"],
+    node_id: mapping.targetProperty,
+    label: mapping.targetProperty,
+    property_columns: mapping.isExtended ? {} : { [mapping.targetProperty]: mapping.sourceColumn },
+    extended_properties: mapping.isExtended
+      ? [
+          {
+            source_column: mapping.sourceColumn,
+            generated_key: mapping.targetProperty,
+            data_type: mapping.dataType as NonNullable<MappingPropertyRequestDto["extended_properties"]>[number]["data_type"],
+          },
+        ]
+      : [],
     confidence: mapping.confidence,
     reason: mapping.reason,
-    is_extended: mapping.isExtended,
   };
 }
 
@@ -102,16 +110,17 @@ function toMappingRelationRequest(
   mapping: MappingDefinitionModel["relationMappings"][number],
 ): MappingRelationRequestDto {
   return {
+    from_node_id: "source",
     rel_type: mapping.relType as MappingRelationRequestDto["rel_type"],
-    target_label: mapping.targetLabel,
-    node_columns: mapping.nodeColumns,
-    rel_columns: toRelationColumnsRequest(mapping.relColumns),
-    rel_column_types: Object.fromEntries(
+    to_node_id: mapping.targetLabel,
+    property_columns: toRelationColumnsRequest(mapping.relColumns),
+    property_column_types: Object.fromEntries(
       Object.entries(mapping.relColumnTypes).map(([key, value]) => [
         key,
-        value as NonNullable<MappingRelationRequestDto["rel_column_types"]>[string],
+        value as NonNullable<MappingRelationRequestDto["property_column_types"]>[string],
       ]),
     ),
+    extended_properties: [],
     confidence: mapping.confidence,
     reason: mapping.reason,
   };

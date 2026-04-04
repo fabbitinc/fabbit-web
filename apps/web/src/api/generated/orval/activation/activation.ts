@@ -22,7 +22,7 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
  * 자연어 질문을 실행해 탐색 결과와 요약 답변을 반환합니다
  * @summary 자연어 질문을 실행해 탐색 결과와 요약 답변을 반환합니다
  */
-export const queryGraph = (
+export const activationQueryGraph = (
     queryRequest: BodyType<QueryRequest>,
  options?: SecondParameter<typeof customInstance<QueryResponse>>,) => {
       return customInstance<QueryResponse>(
@@ -36,7 +36,7 @@ export const queryGraph = (
  * 그래프/관계 데이터 상태를 점검하여 이슈를 반환합니다
  * @summary 그래프/관계 데이터 상태를 점검하여 이슈를 반환합니다
  */
-export const healthCheck = (
+export const activationHealthCheck = (
     
  options?: SecondParameter<typeof customInstance<HealthCheckResponse>>,) => {
       return customInstance<HealthCheckResponse>(
@@ -48,7 +48,7 @@ export const healthCheck = (
  * 초기 탐색용 추천 질문 목록을 조회합니다
  * @summary 초기 탐색용 추천 질문 목록을 조회합니다
  */
-export const getStarters = (
+export const activationGetStarters = (
     
  options?: SecondParameter<typeof customInstance<StartersResponse>>,) => {
       return customInstance<StartersResponse>(
@@ -56,6 +56,6 @@ export const getStarters = (
     },
       options);
     }
-  export type QueryGraphResult = NonNullable<Awaited<ReturnType<typeof queryGraph>>>
-export type HealthCheckResult = NonNullable<Awaited<ReturnType<typeof healthCheck>>>
-export type GetStartersResult = NonNullable<Awaited<ReturnType<typeof getStarters>>>
+  export type ActivationQueryGraphResult = NonNullable<Awaited<ReturnType<typeof activationQueryGraph>>>
+export type ActivationHealthCheckResult = NonNullable<Awaited<ReturnType<typeof activationHealthCheck>>>
+export type ActivationGetStartersResult = NonNullable<Awaited<ReturnType<typeof activationGetStarters>>>

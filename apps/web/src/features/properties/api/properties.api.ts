@@ -1,9 +1,9 @@
 import {
-  createPropertyDefinition as createPropertyDefinitionApi,
-  deletePropertyDefinition as deletePropertyDefinitionApi,
-  listMeta as listMetaApi,
-  reorder as reorderApi,
-  updatePropertyDefinition as updatePropertyDefinitionApi,
+  propertyCreatePropertyDefinition as createPropertyDefinitionApi,
+  propertyDeletePropertyDefinition as deletePropertyDefinitionApi,
+  propertyListMeta as listMetaApi,
+  propertyReorder as reorderApi,
+  propertyUpdatePropertyDefinition as updatePropertyDefinitionApi,
 } from "@/api/generated/orval/properties/properties";
 import type {
   CreatePropertyDefinitionRequestDto,

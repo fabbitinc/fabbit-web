@@ -5,10 +5,10 @@
  * OpenAPI spec version: v0
  */
 import type {
-  GetProjectPartsParams,
   LinkPartsRequest,
   LinkPartsResponse,
-  LookupPartsParams,
+  ProjectPartGetParams,
+  ProjectPartLookupPartsParams,
   ProjectPartLookupResponse,
   ProjectPartsResponse
 } from '../model';
@@ -24,9 +24,9 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
  * 프로젝트에 연결된 부품 목록을 조회합니다
  * @summary 프로젝트에 연결된 부품 목록을 조회합니다
  */
-export const getProjectParts = (
+export const projectPartGet = (
     projectId: string,
-    params?: GetProjectPartsParams,
+    params?: ProjectPartGetParams,
  options?: SecondParameter<typeof customInstance<ProjectPartsResponse>>,) => {
       return customInstance<ProjectPartsResponse>(
       {url: `/api/v1/projects/${projectId}/parts`, method: 'GET',
@@ -38,7 +38,7 @@ export const getProjectParts = (
  * 프로젝트에 부품을 배치 연결합니다
  * @summary 프로젝트에 부품을 배치 연결합니다
  */
-export const linkParts = (
+export const projectPartLinkParts = (
     projectId: string,
     linkPartsRequest: BodyType<LinkPartsRequest>,
  options?: SecondParameter<typeof customInstance<LinkPartsResponse>>,) => {
@@ -53,7 +53,7 @@ export const linkParts = (
  * 프로젝트에서 부품을 배치 해제합니다
  * @summary 프로젝트에서 부품을 배치 해제합니다
  */
-export const unlinkParts = (
+export const projectPartUnlinkParts = (
     projectId: string,
     linkPartsRequest: BodyType<LinkPartsRequest>,
  options?: SecondParameter<typeof customInstance<void>>,) => {
@@ -68,9 +68,9 @@ export const unlinkParts = (
  * 부품 picker용 lookup 목록을 조회합니다
  * @summary 부품 picker용 lookup 목록을 조회합니다
  */
-export const lookupParts = (
+export const projectPartLookupParts = (
     projectId: string,
-    params?: LookupPartsParams,
+    params?: ProjectPartLookupPartsParams,
  options?: SecondParameter<typeof customInstance<ProjectPartLookupResponse>>,) => {
       return customInstance<ProjectPartLookupResponse>(
       {url: `/api/v1/projects/${projectId}/parts/lookup`, method: 'GET',
@@ -78,7 +78,7 @@ export const lookupParts = (
     },
       options);
     }
-  export type GetProjectPartsResult = NonNullable<Awaited<ReturnType<typeof getProjectParts>>>
-export type LinkPartsResult = NonNullable<Awaited<ReturnType<typeof linkParts>>>
-export type UnlinkPartsResult = NonNullable<Awaited<ReturnType<typeof unlinkParts>>>
-export type LookupPartsResult = NonNullable<Awaited<ReturnType<typeof lookupParts>>>
+  export type ProjectPartGetResult = NonNullable<Awaited<ReturnType<typeof projectPartGet>>>
+export type ProjectPartLinkPartsResult = NonNullable<Awaited<ReturnType<typeof projectPartLinkParts>>>
+export type ProjectPartUnlinkPartsResult = NonNullable<Awaited<ReturnType<typeof projectPartUnlinkParts>>>
+export type ProjectPartLookupPartsResult = NonNullable<Awaited<ReturnType<typeof projectPartLookupParts>>>
