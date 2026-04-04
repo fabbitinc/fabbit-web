@@ -11,6 +11,7 @@ import { useAuthStore } from "@/features/auth";
 import type {
   LookupIssueModel,
 } from "@/features/change-shared/types/change-shared-model";
+import { useMemberLookupQuery } from "@/features/change-shared/hooks/use-member-lookup-query";
 import { useTiptapMentionFetchers } from "@/features/change-shared/hooks/use-tiptap-mention-fetchers";
 import { useIssueLookupQuery } from "@/features/change-shared/hooks/use-issue-lookup-query";
 import { useAddEngineeringChangeFilesAction } from "@/features/engineering-change/hooks/use-add-engineering-change-files-action";
@@ -26,6 +27,7 @@ import { useSubmitEngineeringChangeAction } from "@/features/engineering-change/
 import { useSyncEngineeringChangeIssuesAction } from "@/features/engineering-change/hooks/use-sync-engineering-change-issues-action";
 import { useUpdateEngineeringChangeAction } from "@/features/engineering-change/hooks/use-update-engineering-change-action";
 import { useUpdateEngineeringChangeCommentAction } from "@/features/engineering-change/hooks/use-update-engineering-change-comment-action";
+import { useSyncEngineeringChangeStepsAction } from "@/features/engineering-change/hooks/use-sync-engineering-change-steps-action";
 import { mapTimelineActivityToEvent } from "@/features/change-shared/lib/timeline-event";
 import type {
   EngineeringChangeDetailTab,
@@ -72,16 +74,27 @@ export function EngineeringChangeDetailScreen({
   const closeEngineeringChangeAction = useCloseEngineeringChangeAction(engineeringChangeId);
   const reopenEngineeringChangeAction = useReopenEngineeringChangeAction(engineeringChangeId);
 
+  const syncStepsAction = useSyncEngineeringChangeStepsAction(engineeringChangeId);
+
   const engineeringChange = engineeringChangeQuery.data;
 
   const [issuesEnabled, setIssuesEnabled] = useState(false);
   const [issuesSearch, setIssuesSearch] = useState("");
+  const [stepsEnabled, setStepsEnabled] = useState(false);
+  const [stepsSearch, setStepsSearch] = useState("");
 
   const deferredIssuesSearch = useDeferredValue(issuesSearch.trim());
+
+  const deferredStepsSearch = useDeferredValue(stepsSearch.trim());
 
   const issueLookup = useIssueLookupQuery(
     { search: deferredIssuesSearch || undefined },
     issuesEnabled,
+  );
+
+  const memberLookup = useMemberLookupQuery(
+    { search: deferredStepsSearch || undefined },
+    stepsEnabled,
   );
 
   const sortedTimeline = useMemo(() => {
@@ -173,7 +186,7 @@ export function EngineeringChangeDetailScreen({
     ? {
         title: engineeringChange.title,
         number: engineeringChange.number,
-        engineeringChangeState: engineeringChange.engineeringChangeState,
+        engineeringChangeState: engineeringChange.state,
         commentsCount: commentCount,
         createdAt: engineeringChange.createdAt,
         updatedAt: engineeringChange.updatedAt,
@@ -225,6 +238,44 @@ export function EngineeringChangeDetailScreen({
       engineeringChange={engineeringChangeViewModel}
       activeTab={activeTab}
       commentCount={commentCount}
+      workflowData={engineeringChange?.workflow ? {
+        stages: engineeringChange.workflow.stages.map((stage) => ({
+          id: stage.id,
+          label: stage.label,
+          type: stage.type,
+          status: stage.status,
+          description: stage.description,
+          assignees: stage.assignees.map((assignee) => ({
+            id: assignee.id,
+            name: assignee.name,
+            type: assignee.type,
+            status: assignee.status,
+            profileImageUrl: assignee.profileImageUrl,
+            actedAt: assignee.actedAt,
+            actedByName: assignee.actedByName,
+            subtitle: assignee.subtitle,
+          })),
+        })),
+      } : undefined}
+      workflowStagePicker={engineeringChange?.workflow ? {
+        availableMembers: (memberLookup.data ?? []).map((member) => ({
+          id: member.userId,
+          name: member.fullName,
+          email: member.email,
+        })),
+        onRequest: () => setStepsEnabled(true),
+        onSearchChange: setStepsSearch,
+        onSync: (stageType, userIds) => {
+          if (!engineeringChange.workflow) return;
+          syncStepsAction.mutate({
+            stageType: stageType as "REVIEW" | "APPROVAL" | "RELEASE",
+            userIds,
+            currentWorkflow: engineeringChange.workflow,
+          });
+        },
+        isSearching: memberLookup.isFetching,
+        isUpdating: syncStepsAction.isPending,
+      } : undefined}
       currentUser={{
         id: currentUser?.id ?? null,
         name: currentUser?.name ?? null,

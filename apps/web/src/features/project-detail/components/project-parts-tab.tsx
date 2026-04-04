@@ -16,6 +16,7 @@ import type {
   PartsListQueryState,
   PartListSortKey,
 } from "@/features/parts/types/parts-model";
+import type { PartDetailResponseLifecycleState } from "@/api/generated/orval/model/partDetailResponseLifecycleState";
 import { useSettingsQuery } from "@/features/settings";
 import type { PartsListScreenPrimaryTab, PartsListScreenWorkbenchFilter } from "@fabbit/components";
 
@@ -250,7 +251,7 @@ export function ProjectPartsTab({ isReadonly, projectId }: ProjectPartsTabProps)
         onLifecycleStateChange={(lifecycleState) =>
           setQueryState((previous) => ({
             ...previous,
-            lifecycleState,
+            lifecycleState: lifecycleState as PartDetailResponseLifecycleState | null,
             cursor: null,
             cursorDirection: null,
           }))
