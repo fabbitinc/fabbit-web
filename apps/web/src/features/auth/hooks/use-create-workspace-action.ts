@@ -13,16 +13,15 @@ interface CreateWorkspaceActionResult {
   redirectUrl: string;
 }
 
-function toApiPlanType(planTier: PlanTier): "STARTER" | "TEAM" | "ORGANIZATION" | "ENTERPRISE" {
+function toApiPlanType(planTier: PlanTier): "STARTER" | "TEAM" {
   switch (planTier) {
     case "starter":
       return "STARTER";
     case "team":
       return "TEAM";
     case "organization":
-      return "ORGANIZATION";
     case "enterprise":
-      return "ENTERPRISE";
+      throw new Error("현재 가입 플로우에서는 Starter와 Team 플랜만 선택할 수 있습니다.");
   }
 }
 

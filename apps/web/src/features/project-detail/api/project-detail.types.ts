@@ -29,9 +29,9 @@ export interface ProjectChangeListResponseDto {
 }
 
 export type ProjectActivitiesQueryDto = NonNullable<
-  ApiParameters<"/api/v1/projects/{projectId}/activities", "get">["query"]
+  ApiParameters<"/api/v1/projects/{projectId}/histories", "get">["query"]
 >;
-export type ProjectActivitiesResponseDto = ResponseOf<"/api/v1/projects/{projectId}/activities", "get">;
+export type ProjectActivitiesResponseDto = ResponseOf<"/api/v1/projects/{projectId}/histories", "get">;
 
 export type ProjectMemberLookupQueryDto = NonNullable<
   ApiParameters<"/api/v1/projects/{projectId}/members/lookup", "get">["query"]

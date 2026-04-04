@@ -59,6 +59,11 @@ export type {
   ChangeCreateScreenSubmitInput,
 } from "./change-create-screen";
 export { EngineeringChangeSidebar } from "./engineering-change-sidebar";
+export { EngineeringChangeWorkflowHeader } from "./engineering-change-workflow-header";
+export type {
+  EngineeringChangeWorkflowHeaderProps,
+  EngineeringChangeWorkflowHeaderStagePicker,
+} from "./engineering-change-workflow-header";
 export { EngineeringChangeWorkflowSection } from "./engineering-change-workflow-section";
 export type {
   AIUsagePanelData,

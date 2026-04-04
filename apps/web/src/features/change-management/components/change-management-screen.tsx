@@ -8,6 +8,7 @@ import { useEngineeringChangeListQuery } from "@/features/change-management/hook
 import { useIssueListQuery } from "@/features/change-management/hooks/use-issue-list-query";
 import { settingsQueries } from "@/features/settings";
 import type { ChangeManagementQueryState, ChangeManagementState, ChangeManagementView } from "@/features/change-management/types/change-management-model";
+import type { EngineeringChangeListQueryDto } from "@/features/change-management/api/change-management.types";
 
 interface ChangeManagementScreenProps {
   queryState: ChangeManagementQueryState;
@@ -45,7 +46,7 @@ export function ChangeManagementScreen({
   const requestsQuery = useEngineeringChangeListQuery(
     {
       search: queryState.query || undefined,
-      state: queryState.state.toUpperCase(),
+      state: queryState.state.toUpperCase() as EngineeringChangeListQueryDto["state"],
       offset: (queryState.page - 1) * queryState.pageSize,
       limit: queryState.pageSize,
     },
