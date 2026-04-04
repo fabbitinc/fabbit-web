@@ -58,7 +58,7 @@ export interface CreditUsageModel {
   planCreditsUsed: number;
   planCreditsLimit: number;
   planCreditsRemaining: number;
-  bonusCreditsUsed: number;
-  bonusCreditsRemaining: number;
+  bonusCreditsUsed?: number | null;
+  bonusCreditsRemaining?: number | null;
   categories: CreditCategoryItemModel[];
 }

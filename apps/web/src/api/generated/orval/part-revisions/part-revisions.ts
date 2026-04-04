@@ -6,13 +6,13 @@
  */
 import type {
   BomTreeResponse,
-  ExportBomTreeParams,
-  GetBomTreeParams,
-  GetDiffParams,
   PartBomResponse,
   PartDetailResponse,
   PartProjectsResponse,
   PartRevisionDiffResponse,
+  PartRevisionExportBomTreeParams,
+  PartRevisionGetBomTreeParams,
+  PartRevisionGetDiffParams,
   PartRevisionHistoryResponse,
   PartSuppliersResponse
 } from '../model';
@@ -27,7 +27,7 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
  * 부품 리비전 상세와 관계 카운트를 조회합니다
  * @summary PartRevision 상세를 조회합니다
  */
-export const get1 = (
+export const partRevisionGet = (
     partId: string,
     revisionId: string,
  options?: SecondParameter<typeof customInstance<PartDetailResponse>>,) => {
@@ -40,7 +40,7 @@ export const get1 = (
  * 리비전에 연결된 공급사 목록을 조회합니다
  * @summary 연결된 공급사 목록을 조회합니다
  */
-export const getSuppliers = (
+export const partRevisionGetSuppliers = (
     partId: string,
     revisionId: string,
  options?: SecondParameter<typeof customInstance<PartSuppliersResponse>>,) => {
@@ -53,7 +53,7 @@ export const getSuppliers = (
  * 리비전이 속한 프로젝트 목록을 조회합니다
  * @summary 연결된 프로젝트 목록을 조회합니다
  */
-export const getProjects = (
+export const partRevisionGetProjects = (
     partId: string,
     revisionId: string,
  options?: SecondParameter<typeof customInstance<PartProjectsResponse>>,) => {
@@ -66,10 +66,10 @@ export const getProjects = (
  * 이전 리비전 또는 지정한 기준 리비전 ID 대비 상세 diff를 조회합니다
  * @summary 기준 리비전 대비 상세 diff를 조회합니다
  */
-export const getDiff = (
+export const partRevisionGetDiff = (
     partId: string,
     revisionId: string,
-    params?: GetDiffParams,
+    params?: PartRevisionGetDiffParams,
  options?: SecondParameter<typeof customInstance<PartRevisionDiffResponse>>,) => {
       return customInstance<PartRevisionDiffResponse>(
       {url: `/api/v1/parts/${partId}/revisions/${revisionId}/diff`, method: 'GET',
@@ -81,7 +81,7 @@ export const getDiff = (
  * 리비전 기준 직접 자식/직접 부모 BOM 관계를 조회합니다
  * @summary 직접 자식/부모 BOM을 조회합니다
  */
-export const getBom = (
+export const partRevisionGetBom = (
     partId: string,
     revisionId: string,
  options?: SecondParameter<typeof customInstance<PartBomResponse>>,) => {
@@ -94,10 +94,10 @@ export const getBom = (
  * 정전개 또는 역전개 BOM 트리를 조회합니다
  * @summary BOM 트리를 조회합니다
  */
-export const getBomTree = (
+export const partRevisionGetBomTree = (
     partId: string,
     revisionId: string,
-    params?: GetBomTreeParams,
+    params?: PartRevisionGetBomTreeParams,
  options?: SecondParameter<typeof customInstance<BomTreeResponse>>,) => {
       return customInstance<BomTreeResponse>(
       {url: `/api/v1/parts/${partId}/revisions/${revisionId}/bom/tree`, method: 'GET',
@@ -109,10 +109,10 @@ export const getBomTree = (
  * BOM 트리를 Excel(.xlsx) 파일로 내보냅니다
  * @summary BOM 트리를 Excel로 내보냅니다
  */
-export const exportBomTree = (
+export const partRevisionExportBomTree = (
     partId: string,
     revisionId: string,
-    params?: ExportBomTreeParams,
+    params?: PartRevisionExportBomTreeParams,
  options?: SecondParameter<typeof customInstance<Blob>>,) => {
       return customInstance<Blob>(
       {url: `/api/v1/parts/${partId}/revisions/${revisionId}/bom/tree/export`, method: 'GET',
@@ -125,7 +125,7 @@ export const exportBomTree = (
  * 공식 리비전 카드와 초안 시도 이력을 함께 조회합니다
  * @summary Part 변경 이력을 조회합니다
  */
-export const getHistory = (
+export const partRevisionGetHistory = (
     partId: string,
  options?: SecondParameter<typeof customInstance<PartRevisionHistoryResponse>>,) => {
       return customInstance<PartRevisionHistoryResponse>(
@@ -133,11 +133,11 @@ export const getHistory = (
     },
       options);
     }
-  export type Get1Result = NonNullable<Awaited<ReturnType<typeof get1>>>
-export type GetSuppliersResult = NonNullable<Awaited<ReturnType<typeof getSuppliers>>>
-export type GetProjectsResult = NonNullable<Awaited<ReturnType<typeof getProjects>>>
-export type GetDiffResult = NonNullable<Awaited<ReturnType<typeof getDiff>>>
-export type GetBomResult = NonNullable<Awaited<ReturnType<typeof getBom>>>
-export type GetBomTreeResult = NonNullable<Awaited<ReturnType<typeof getBomTree>>>
-export type ExportBomTreeResult = NonNullable<Awaited<ReturnType<typeof exportBomTree>>>
-export type GetHistoryResult = NonNullable<Awaited<ReturnType<typeof getHistory>>>
+  export type PartRevisionGetResult = NonNullable<Awaited<ReturnType<typeof partRevisionGet>>>
+export type PartRevisionGetSuppliersResult = NonNullable<Awaited<ReturnType<typeof partRevisionGetSuppliers>>>
+export type PartRevisionGetProjectsResult = NonNullable<Awaited<ReturnType<typeof partRevisionGetProjects>>>
+export type PartRevisionGetDiffResult = NonNullable<Awaited<ReturnType<typeof partRevisionGetDiff>>>
+export type PartRevisionGetBomResult = NonNullable<Awaited<ReturnType<typeof partRevisionGetBom>>>
+export type PartRevisionGetBomTreeResult = NonNullable<Awaited<ReturnType<typeof partRevisionGetBomTree>>>
+export type PartRevisionExportBomTreeResult = NonNullable<Awaited<ReturnType<typeof partRevisionExportBomTree>>>
+export type PartRevisionGetHistoryResult = NonNullable<Awaited<ReturnType<typeof partRevisionGetHistory>>>

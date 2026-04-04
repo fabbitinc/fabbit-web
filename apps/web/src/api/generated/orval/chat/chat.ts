@@ -7,6 +7,7 @@
 import type {
   ChatMessageListResponse,
   ChatRunEventListResponse,
+  ChatStreamRunParams,
   ChatThreadDetailResponse,
   ChatThreadListResponse,
   ConfirmChatActionResponse,
@@ -14,7 +15,6 @@ import type {
   CreateChatThreadResponse,
   SendChatMessageRequest,
   SendChatMessageResponse,
-  StreamRunParams,
   StreamingResponseBody
 } from '../model';
 
@@ -29,7 +29,7 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
  * 현재 사용자의 챗 스레드 목록을 조회합니다
  * @summary 챗 스레드 목록을 조회합니다
  */
-export const listThreads = (
+export const chatListThreads = (
     
  options?: SecondParameter<typeof customInstance<ChatThreadListResponse | void>>,) => {
       return customInstance<ChatThreadListResponse | void>(
@@ -41,7 +41,7 @@ export const listThreads = (
  * 새로운 챗 스레드를 생성합니다
  * @summary 챗 스레드를 생성합니다
  */
-export const createThread = (
+export const chatCreateThread = (
     createChatThreadRequest: BodyType<CreateChatThreadRequest>,
  options?: SecondParameter<typeof customInstance<CreateChatThreadResponse | void>>,) => {
       return customInstance<CreateChatThreadResponse | void>(
@@ -55,7 +55,7 @@ export const createThread = (
  * 스레드에 속한 메시지 목록을 조회합니다
  * @summary 챗 메시지 목록을 조회합니다
  */
-export const listMessages = (
+export const chatListMessages = (
     threadId: string,
  options?: SecondParameter<typeof customInstance<ChatMessageListResponse | void>>,) => {
       return customInstance<ChatMessageListResponse | void>(
@@ -67,7 +67,7 @@ export const listMessages = (
  * 사용자 메시지를 저장하고 비동기 챗 실행을 시작합니다
  * @summary 챗 메시지를 전송합니다
  */
-export const sendMessage = (
+export const chatSendMessage = (
     threadId: string,
     sendChatMessageRequest: BodyType<SendChatMessageRequest>,
  options?: SecondParameter<typeof customInstance<SendChatMessageResponse | void>>,) => {
@@ -82,7 +82,7 @@ export const sendMessage = (
  * 사용자 확인이 필요한 액션 요청을 취소합니다
  * @summary 챗 액션 요청을 거절합니다
  */
-export const rejectAction = (
+export const chatRejectAction = (
     actionRequestId: string,
  options?: SecondParameter<typeof customInstance<void>>,) => {
       return customInstance<void>(
@@ -94,7 +94,7 @@ export const rejectAction = (
  * 사용자 확인이 필요한 액션 요청을 실제로 실행합니다
  * @summary 챗 액션 요청을 확인합니다
  */
-export const confirmAction = (
+export const chatConfirmAction = (
     actionRequestId: string,
  options?: SecondParameter<typeof customInstance<ConfirmChatActionResponse | void>>,) => {
       return customInstance<ConfirmChatActionResponse | void>(
@@ -106,7 +106,7 @@ export const confirmAction = (
  * 챗 스레드 메타데이터를 조회합니다
  * @summary 챗 스레드 상세를 조회합니다
  */
-export const getThread = (
+export const chatGetThread = (
     threadId: string,
  options?: SecondParameter<typeof customInstance<ChatThreadDetailResponse | void>>,) => {
       return customInstance<ChatThreadDetailResponse | void>(
@@ -118,9 +118,9 @@ export const getThread = (
  * 실행 이벤트와 응답을 SSE 스트림으로 수신합니다
  * @summary 챗 실행 스트림을 구독합니다
  */
-export const streamRun = (
+export const chatStreamRun = (
     runId: string,
-    params?: StreamRunParams,
+    params?: ChatStreamRunParams,
  options?: SecondParameter<typeof customInstance<StreamingResponseBody | void>>,) => {
       return customInstance<StreamingResponseBody | void>(
       {url: `/api/v1/chat/runs/${runId}/stream`, method: 'GET',
@@ -132,7 +132,7 @@ export const streamRun = (
  * 실행에 속한 단계 이벤트 목록을 조회합니다
  * @summary 챗 실행 이벤트 목록을 조회합니다
  */
-export const listRunEvents = (
+export const chatListRunEvents = (
     runId: string,
  options?: SecondParameter<typeof customInstance<ChatRunEventListResponse | void>>,) => {
       return customInstance<ChatRunEventListResponse | void>(
@@ -140,12 +140,12 @@ export const listRunEvents = (
     },
       options);
     }
-  export type ListThreadsResult = NonNullable<Awaited<ReturnType<typeof listThreads>>>
-export type CreateThreadResult = NonNullable<Awaited<ReturnType<typeof createThread>>>
-export type ListMessagesResult = NonNullable<Awaited<ReturnType<typeof listMessages>>>
-export type SendMessageResult = NonNullable<Awaited<ReturnType<typeof sendMessage>>>
-export type RejectActionResult = NonNullable<Awaited<ReturnType<typeof rejectAction>>>
-export type ConfirmActionResult = NonNullable<Awaited<ReturnType<typeof confirmAction>>>
-export type GetThreadResult = NonNullable<Awaited<ReturnType<typeof getThread>>>
-export type StreamRunResult = NonNullable<Awaited<ReturnType<typeof streamRun>>>
-export type ListRunEventsResult = NonNullable<Awaited<ReturnType<typeof listRunEvents>>>
+  export type ChatListThreadsResult = NonNullable<Awaited<ReturnType<typeof chatListThreads>>>
+export type ChatCreateThreadResult = NonNullable<Awaited<ReturnType<typeof chatCreateThread>>>
+export type ChatListMessagesResult = NonNullable<Awaited<ReturnType<typeof chatListMessages>>>
+export type ChatSendMessageResult = NonNullable<Awaited<ReturnType<typeof chatSendMessage>>>
+export type ChatRejectActionResult = NonNullable<Awaited<ReturnType<typeof chatRejectAction>>>
+export type ChatConfirmActionResult = NonNullable<Awaited<ReturnType<typeof chatConfirmAction>>>
+export type ChatGetThreadResult = NonNullable<Awaited<ReturnType<typeof chatGetThread>>>
+export type ChatStreamRunResult = NonNullable<Awaited<ReturnType<typeof chatStreamRun>>>
+export type ChatListRunEventsResult = NonNullable<Awaited<ReturnType<typeof chatListRunEvents>>>

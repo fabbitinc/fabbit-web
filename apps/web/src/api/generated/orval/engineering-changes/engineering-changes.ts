@@ -8,13 +8,14 @@ import type {
   AttachFilesRequest,
   CommentResponse,
   CreateCommentRequest,
+  CreateEcFromIssueRequest,
   CreateEngineeringChangeRequest,
+  EngineeringChangeListParams,
   EngineeringChangeListResponse,
+  EngineeringChangeLookupParams,
   EngineeringChangeLookupResponse,
   EngineeringChangeResponse,
   FileItemResponse,
-  ListEngineeringChangesParams,
-  LookupEngineeringChangesParams,
   SyncAffectedItemsRequest,
   SyncDiffResponse,
   SyncEngineeringChangeStepsRequest,
@@ -35,7 +36,7 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
  * 변경관리 단계 목록을 동기화합니다
  * @summary 변경관리 단계 목록을 동기화합니다
  */
-export const replaceSteps = (
+export const engineeringChangeReplaceSteps = (
     engineeringChangeId: string,
     syncEngineeringChangeStepsRequest: BodyType<SyncEngineeringChangeStepsRequest>,
  options?: SecondParameter<typeof customInstance<EngineeringChangeResponse | void>>,) => {
@@ -50,7 +51,7 @@ export const replaceSteps = (
  * 변경관리에 연결된 이슈 목록을 동기화합니다
  * @summary 변경관리에 연결된 이슈 목록을 동기화합니다
  */
-export const syncIssues = (
+export const engineeringChangeSyncIssues = (
     engineeringChangeId: string,
     syncIssuesRequest: BodyType<SyncIssuesRequest>,
  options?: SecondParameter<typeof customInstance<SyncDiffResponse | void>>,) => {
@@ -65,7 +66,7 @@ export const syncIssues = (
  * 변경관리 영향 항목 목록을 동기화합니다
  * @summary 변경관리 영향 항목 목록을 동기화합니다
  */
-export const syncAffectedItems = (
+export const engineeringChangeSyncAffectedItems = (
     engineeringChangeId: string,
     syncAffectedItemsRequest: BodyType<SyncAffectedItemsRequest>,
  options?: SecondParameter<typeof customInstance<EngineeringChangeResponse | void>>,) => {
@@ -80,8 +81,8 @@ export const syncAffectedItems = (
  * 변경관리 목록을 조회합니다
  * @summary 변경관리 목록을 조회합니다
  */
-export const listEngineeringChanges = (
-    params?: ListEngineeringChangesParams,
+export const engineeringChangeList = (
+    params?: EngineeringChangeListParams,
  options?: SecondParameter<typeof customInstance<EngineeringChangeListResponse | void>>,) => {
       return customInstance<EngineeringChangeListResponse | void>(
       {url: `/api/v1/engineering-changes`, method: 'GET',
@@ -93,7 +94,7 @@ export const listEngineeringChanges = (
  * 변경관리를 생성하고 연관 정보(이슈/부품 리비전/단계/파일)를 일괄 연결합니다
  * @summary 변경관리를 생성하고 연관 정보(이슈/부품 리비전/단계/파일)를 일괄 연결합니다
  */
-export const createEngineeringChange = (
+export const engineeringChangeCreate = (
     createEngineeringChangeRequest: BodyType<CreateEngineeringChangeRequest>,
  options?: SecondParameter<typeof customInstance<EngineeringChangeResponse | void>>,) => {
       return customInstance<EngineeringChangeResponse | void>(
@@ -107,7 +108,7 @@ export const createEngineeringChange = (
  * 변경관리를 검토 대기로 전환합니다 (DRAFT -> REVIEW_PENDING)
  * @summary 변경관리를 검토 대기로 전환합니다 (DRAFT -> REVIEW_PENDING)
  */
-export const submit = (
+export const engineeringChangeSubmit = (
     engineeringChangeId: string,
  options?: SecondParameter<typeof customInstance<EngineeringChangeResponse | void>>,) => {
       return customInstance<EngineeringChangeResponse | void>(
@@ -119,7 +120,7 @@ export const submit = (
  * 현재 검토 단계 담당자가 자신의 검토 단계를 승인합니다
  * @summary 현재 검토 단계 담당자가 자신의 검토 단계를 승인합니다
  */
-export const approveReview = (
+export const engineeringChangeApproveReview = (
     engineeringChangeId: string,
  options?: SecondParameter<typeof customInstance<EngineeringChangeResponse | void>>,) => {
       return customInstance<EngineeringChangeResponse | void>(
@@ -131,7 +132,7 @@ export const approveReview = (
  * 현재 반영 단계 담당자가 변경관리를 반영 완료합니다 (RELEASE_PENDING -> RELEASED)
  * @summary 현재 반영 단계 담당자가 변경관리를 반영 완료합니다 (RELEASE_PENDING -> RELEASED)
  */
-export const release1 = (
+export const engineeringChangeRelease = (
     engineeringChangeId: string,
  options?: SecondParameter<typeof customInstance<EngineeringChangeResponse | void>>,) => {
       return customInstance<EngineeringChangeResponse | void>(
@@ -143,7 +144,7 @@ export const release1 = (
  * 변경관리를 작성 단계로 되돌립니다 (*_PENDING -> DRAFT)
  * @summary 변경관리를 작성 단계로 되돌립니다 (*_PENDING -> DRAFT)
  */
-export const reject = (
+export const engineeringChangeReject = (
     engineeringChangeId: string,
  options?: SecondParameter<typeof customInstance<EngineeringChangeResponse | void>>,) => {
       return customInstance<EngineeringChangeResponse | void>(
@@ -155,7 +156,7 @@ export const reject = (
  * 첨부파일을 배치 연결합니다
  * @summary 첨부파일을 배치 연결합니다
  */
-export const addFiles1 = (
+export const engineeringChangeAddFiles = (
     engineeringChangeId: string,
     attachFilesRequest: BodyType<AttachFilesRequest>,
  options?: SecondParameter<typeof customInstance<FileItemResponse[] | void>>,) => {
@@ -170,7 +171,7 @@ export const addFiles1 = (
  * 댓글을 생성합니다
  * @summary 댓글을 생성합니다
  */
-export const createComment1 = (
+export const engineeringChangeCreateComment = (
     engineeringChangeId: string,
     createCommentRequest: BodyType<CreateCommentRequest>,
  options?: SecondParameter<typeof customInstance<CommentResponse | void>>,) => {
@@ -185,7 +186,7 @@ export const createComment1 = (
  * 변경관리를 폐기하고 미반영 리비전을 취소합니다
  * @summary 변경관리를 폐기하고 미반영 리비전을 취소합니다
  */
-export const cancel1 = (
+export const engineeringChangeCancel = (
     engineeringChangeId: string,
  options?: SecondParameter<typeof customInstance<EngineeringChangeResponse | void>>,) => {
       return customInstance<EngineeringChangeResponse | void>(
@@ -197,7 +198,7 @@ export const cancel1 = (
  * 현재 승인 단계 담당자가 변경관리를 승인해 반영 대기로 전환합니다 (APPROVAL_PENDING -> RELEASE_PENDING)
  * @summary 현재 승인 단계 담당자가 변경관리를 승인해 반영 대기로 전환합니다 (APPROVAL_PENDING -> RELEASE_PENDING)
  */
-export const approve = (
+export const engineeringChangeApprove = (
     engineeringChangeId: string,
  options?: SecondParameter<typeof customInstance<EngineeringChangeResponse | void>>,) => {
       return customInstance<EngineeringChangeResponse | void>(
@@ -206,10 +207,25 @@ export const approve = (
       options);
     }
   /**
+ * 이슈에 연결된 부품의 DRAFT 리비전을 영향 항목으로 자동 등록하고, 영향 분석 요약을 본문에 포함하여 설계변경을 생성합니다
+ * @summary 이슈로부터 설계변경을 생성합니다
+ */
+export const engineeringChangeCreateEcFromIssue = (
+    issueId: string,
+    createEcFromIssueRequest: BodyType<CreateEcFromIssueRequest>,
+ options?: SecondParameter<typeof customInstance<EngineeringChangeResponse | void>>,) => {
+      return customInstance<EngineeringChangeResponse | void>(
+      {url: `/api/v1/engineering-changes/from-issue/${issueId}`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: createEcFromIssueRequest
+    },
+      options);
+    }
+  /**
  * 변경관리 ID로 상세 정보를 조회합니다
  * @summary 변경관리 상세 정보를 조회합니다
  */
-export const getEngineeringChange = (
+export const engineeringChangeGet = (
     engineeringChangeId: string,
  options?: SecondParameter<typeof customInstance<EngineeringChangeResponse | void>>,) => {
       return customInstance<EngineeringChangeResponse | void>(
@@ -221,7 +237,7 @@ export const getEngineeringChange = (
  * 변경관리 제목/본문을 수정합니다
  * @summary 변경관리 제목/본문을 수정합니다
  */
-export const updateEngineeringChange = (
+export const engineeringChangeUpdate = (
     engineeringChangeId: string,
     updateEngineeringChangeRequest: BodyType<UpdateEngineeringChangeRequest>,
  options?: SecondParameter<typeof customInstance<EngineeringChangeResponse | void>>,) => {
@@ -236,7 +252,7 @@ export const updateEngineeringChange = (
  * 댓글을 삭제합니다
  * @summary 댓글을 삭제합니다
  */
-export const deleteComment1 = (
+export const engineeringChangeDeleteComment = (
     engineeringChangeId: string,
     commentId: string,
  options?: SecondParameter<typeof customInstance<void>>,) => {
@@ -249,7 +265,7 @@ export const deleteComment1 = (
  * 댓글을 수정합니다
  * @summary 댓글을 수정합니다
  */
-export const updateComment1 = (
+export const engineeringChangeUpdateComment = (
     engineeringChangeId: string,
     commentId: string,
     updateCommentRequest: BodyType<UpdateCommentRequest>,
@@ -265,7 +281,7 @@ export const updateComment1 = (
  * 댓글과 활동 이력을 시간순으로 병합 조회합니다
  * @summary 댓글과 활동 이력을 시간순으로 병합 조회합니다
  */
-export const getTimeline1 = (
+export const engineeringChangeGetTimeline = (
     engineeringChangeId: string,
  options?: SecondParameter<typeof customInstance<TimelineResponse | void>>,) => {
       return customInstance<TimelineResponse | void>(
@@ -277,8 +293,8 @@ export const getTimeline1 = (
  * 변경관리 연결 picker UI용 경량 목록을 조회합니다
  * @summary 변경관리 연결 picker UI용 경량 목록을 조회합니다
  */
-export const lookupEngineeringChanges = (
-    params?: LookupEngineeringChangesParams,
+export const engineeringChangeLookup = (
+    params?: EngineeringChangeLookupParams,
  options?: SecondParameter<typeof customInstance<EngineeringChangeLookupResponse | void>>,) => {
       return customInstance<EngineeringChangeLookupResponse | void>(
       {url: `/api/v1/engineering-changes/lookup`, method: 'GET',
@@ -290,7 +306,7 @@ export const lookupEngineeringChanges = (
  * 첨부파일 1건을 삭제(soft delete)합니다
  * @summary 첨부파일 1건을 삭제(soft delete)합니다
  */
-export const deleteFile2 = (
+export const engineeringChangeDeleteFile = (
     engineeringChangeId: string,
     fileId: string,
  options?: SecondParameter<typeof customInstance<void>>,) => {
@@ -299,23 +315,24 @@ export const deleteFile2 = (
     },
       options);
     }
-  export type ReplaceStepsResult = NonNullable<Awaited<ReturnType<typeof replaceSteps>>>
-export type SyncIssuesResult = NonNullable<Awaited<ReturnType<typeof syncIssues>>>
-export type SyncAffectedItemsResult = NonNullable<Awaited<ReturnType<typeof syncAffectedItems>>>
-export type ListEngineeringChangesResult = NonNullable<Awaited<ReturnType<typeof listEngineeringChanges>>>
-export type CreateEngineeringChangeResult = NonNullable<Awaited<ReturnType<typeof createEngineeringChange>>>
-export type SubmitResult = NonNullable<Awaited<ReturnType<typeof submit>>>
-export type ApproveReviewResult = NonNullable<Awaited<ReturnType<typeof approveReview>>>
-export type Release1Result = NonNullable<Awaited<ReturnType<typeof release1>>>
-export type RejectResult = NonNullable<Awaited<ReturnType<typeof reject>>>
-export type AddFiles1Result = NonNullable<Awaited<ReturnType<typeof addFiles1>>>
-export type CreateComment1Result = NonNullable<Awaited<ReturnType<typeof createComment1>>>
-export type Cancel1Result = NonNullable<Awaited<ReturnType<typeof cancel1>>>
-export type ApproveResult = NonNullable<Awaited<ReturnType<typeof approve>>>
-export type GetEngineeringChangeResult = NonNullable<Awaited<ReturnType<typeof getEngineeringChange>>>
-export type UpdateEngineeringChangeResult = NonNullable<Awaited<ReturnType<typeof updateEngineeringChange>>>
-export type DeleteComment1Result = NonNullable<Awaited<ReturnType<typeof deleteComment1>>>
-export type UpdateComment1Result = NonNullable<Awaited<ReturnType<typeof updateComment1>>>
-export type GetTimeline1Result = NonNullable<Awaited<ReturnType<typeof getTimeline1>>>
-export type LookupEngineeringChangesResult = NonNullable<Awaited<ReturnType<typeof lookupEngineeringChanges>>>
-export type DeleteFile2Result = NonNullable<Awaited<ReturnType<typeof deleteFile2>>>
+  export type EngineeringChangeReplaceStepsResult = NonNullable<Awaited<ReturnType<typeof engineeringChangeReplaceSteps>>>
+export type EngineeringChangeSyncIssuesResult = NonNullable<Awaited<ReturnType<typeof engineeringChangeSyncIssues>>>
+export type EngineeringChangeSyncAffectedItemsResult = NonNullable<Awaited<ReturnType<typeof engineeringChangeSyncAffectedItems>>>
+export type EngineeringChangeListResult = NonNullable<Awaited<ReturnType<typeof engineeringChangeList>>>
+export type EngineeringChangeCreateResult = NonNullable<Awaited<ReturnType<typeof engineeringChangeCreate>>>
+export type EngineeringChangeSubmitResult = NonNullable<Awaited<ReturnType<typeof engineeringChangeSubmit>>>
+export type EngineeringChangeApproveReviewResult = NonNullable<Awaited<ReturnType<typeof engineeringChangeApproveReview>>>
+export type EngineeringChangeReleaseResult = NonNullable<Awaited<ReturnType<typeof engineeringChangeRelease>>>
+export type EngineeringChangeRejectResult = NonNullable<Awaited<ReturnType<typeof engineeringChangeReject>>>
+export type EngineeringChangeAddFilesResult = NonNullable<Awaited<ReturnType<typeof engineeringChangeAddFiles>>>
+export type EngineeringChangeCreateCommentResult = NonNullable<Awaited<ReturnType<typeof engineeringChangeCreateComment>>>
+export type EngineeringChangeCancelResult = NonNullable<Awaited<ReturnType<typeof engineeringChangeCancel>>>
+export type EngineeringChangeApproveResult = NonNullable<Awaited<ReturnType<typeof engineeringChangeApprove>>>
+export type EngineeringChangeCreateEcFromIssueResult = NonNullable<Awaited<ReturnType<typeof engineeringChangeCreateEcFromIssue>>>
+export type EngineeringChangeGetResult = NonNullable<Awaited<ReturnType<typeof engineeringChangeGet>>>
+export type EngineeringChangeUpdateResult = NonNullable<Awaited<ReturnType<typeof engineeringChangeUpdate>>>
+export type EngineeringChangeDeleteCommentResult = NonNullable<Awaited<ReturnType<typeof engineeringChangeDeleteComment>>>
+export type EngineeringChangeUpdateCommentResult = NonNullable<Awaited<ReturnType<typeof engineeringChangeUpdateComment>>>
+export type EngineeringChangeGetTimelineResult = NonNullable<Awaited<ReturnType<typeof engineeringChangeGetTimeline>>>
+export type EngineeringChangeLookupResult = NonNullable<Awaited<ReturnType<typeof engineeringChangeLookup>>>
+export type EngineeringChangeDeleteFileResult = NonNullable<Awaited<ReturnType<typeof engineeringChangeDeleteFile>>>

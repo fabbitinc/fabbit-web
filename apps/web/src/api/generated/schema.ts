@@ -16,13 +16,13 @@ export interface paths {
          * 업로드 완료된 파일(file_id)을 사용자 프로필 이미지로 설정합니다
          * @description 업로드 완료된 파일(file_id)을 사용자 프로필 이미지로 설정합니다
          */
-        put: operations["setProfileImage"];
+        put: operations["userSetProfileImage"];
         post?: never;
         /**
          * 사용자 프로필 이미지를 제거하고 연결된 파일을 소프트 삭제합니다
          * @description 사용자 프로필 이미지를 제거하고 연결된 파일을 소프트 삭제합니다
          */
-        delete: operations["deleteProfileImage"];
+        delete: operations["userDeleteProfileImage"];
         options?: never;
         head?: never;
         patch?: never;
@@ -40,7 +40,7 @@ export interface paths {
          * 현재 비밀번호를 검증한 후 새 비밀번호로 변경합니다
          * @description 현재 비밀번호를 검증한 후 새 비밀번호로 변경합니다
          */
-        put: operations["changePassword"];
+        put: operations["userChangePassword"];
         post?: never;
         delete?: never;
         options?: never;
@@ -60,9 +60,33 @@ export interface paths {
          * 부품 워크플로 정책을 변경합니다
          * @description 부품 워크플로 정책을 변경합니다
          */
-        put: operations["updatePartWorkflowPolicy"];
+        put: operations["settingsUpdatePartWorkflowPolicy"];
         post?: never;
         delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/part-number-categories/{categoryId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * 채번 카테고리를 수정합니다
+         * @description 기존 채번 카테고리의 이름, 접두어, 구분자, 자릿수를 수정합니다
+         */
+        put: operations["partNumberCategoryUpdate"];
+        post?: never;
+        /**
+         * 채번 카테고리를 삭제합니다
+         * @description 사용 중이지 않은 채번 카테고리를 삭제합니다
+         */
+        delete: operations["partNumberCategoryDelete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -80,13 +104,13 @@ export interface paths {
          * 업로드 완료된 파일(file_id)을 조직 프로필 이미지로 설정합니다. ADMIN 이상 권한이 필요합니다
          * @description 업로드 완료된 파일(file_id)을 조직 프로필 이미지로 설정합니다. ADMIN 이상 권한이 필요합니다
          */
-        put: operations["setProfileImage_1"];
+        put: operations["organizationSetProfileImage"];
         post?: never;
         /**
          * 조직 프로필 이미지를 제거하고 연결된 파일을 소프트 삭제합니다. ADMIN 이상 권한이 필요합니다
          * @description 조직 프로필 이미지를 제거하고 연결된 파일을 소프트 삭제합니다. ADMIN 이상 권한이 필요합니다
          */
-        delete: operations["deleteProfileImage_1"];
+        delete: operations["organizationDeleteProfileImage"];
         options?: never;
         head?: never;
         patch?: never;
@@ -104,7 +128,7 @@ export interface paths {
          * 알림 1건을 읽음 처리합니다
          * @description 알림 1건을 읽음 처리합니다
          */
-        put: operations["readNotification"];
+        put: operations["notificationRead"];
         post?: never;
         delete?: never;
         options?: never;
@@ -124,7 +148,7 @@ export interface paths {
          * 현재 사용자의 미읽음 알림을 모두 읽음 처리합니다
          * @description 현재 사용자의 미읽음 알림을 모두 읽음 처리합니다
          */
-        put: operations["readAllNotifications"];
+        put: operations["notificationReadAll"];
         post?: never;
         delete?: never;
         options?: never;
@@ -143,18 +167,18 @@ export interface paths {
          * 매핑 ID로 최신 리비전을 조회합니다
          * @description 매핑 ID로 최신 리비전을 조회합니다
          */
-        get: operations["get"];
+        get: operations["mappingGet"];
         /**
          * 매핑을 수정하고 새로운 리비전을 생성합니다
          * @description 매핑을 수정하고 새로운 리비전을 생성합니다
          */
-        put: operations["update"];
+        put: operations["mappingUpdate"];
         post?: never;
         /**
          * 매핑을 비활성화(soft delete)합니다
          * @description 매핑을 비활성화(soft delete)합니다
          */
-        delete: operations["delete"];
+        delete: operations["mappingDelete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -172,7 +196,7 @@ export interface paths {
          * 부품 목록을 동기화합니다
          * @description 부품 목록을 동기화합니다
          */
-        put: operations["syncParts"];
+        put: operations["issueSyncParts"];
         post?: never;
         delete?: never;
         options?: never;
@@ -192,7 +216,7 @@ export interface paths {
          * 라벨 목록을 동기화합니다
          * @description 라벨 목록을 동기화합니다
          */
-        put: operations["syncLabels"];
+        put: operations["issueSyncLabels"];
         post?: never;
         delete?: never;
         options?: never;
@@ -212,7 +236,7 @@ export interface paths {
          * 이슈에 연결된 변경관리 목록을 동기화합니다
          * @description 이슈에 연결된 변경관리 목록을 동기화합니다
          */
-        put: operations["syncLinkedEngineeringChanges"];
+        put: operations["issueSyncLinkedEngineeringChanges"];
         post?: never;
         delete?: never;
         options?: never;
@@ -232,7 +256,7 @@ export interface paths {
          * 개인 담당자 목록을 동기화합니다
          * @description 개인 담당자 목록을 동기화합니다
          */
-        put: operations["syncAssignees"];
+        put: operations["issueSyncAssignees"];
         post?: never;
         delete?: never;
         options?: never;
@@ -252,7 +276,7 @@ export interface paths {
          * 팀 담당자 목록을 동기화합니다
          * @description 팀 담당자 목록을 동기화합니다
          */
-        put: operations["syncTeamAssignees"];
+        put: operations["issueSyncTeamAssignees"];
         post?: never;
         delete?: never;
         options?: never;
@@ -272,7 +296,7 @@ export interface paths {
          * 변경관리 단계 목록을 동기화합니다
          * @description 변경관리 단계 목록을 동기화합니다
          */
-        put: operations["replaceSteps"];
+        put: operations["engineeringChangeReplaceSteps"];
         post?: never;
         delete?: never;
         options?: never;
@@ -292,7 +316,7 @@ export interface paths {
          * 변경관리에 연결된 이슈 목록을 동기화합니다
          * @description 변경관리에 연결된 이슈 목록을 동기화합니다
          */
-        put: operations["syncIssues"];
+        put: operations["engineeringChangeSyncIssues"];
         post?: never;
         delete?: never;
         options?: never;
@@ -312,7 +336,7 @@ export interface paths {
          * 변경관리 영향 항목 목록을 동기화합니다
          * @description 변경관리 영향 항목 목록을 동기화합니다
          */
-        put: operations["syncAffectedItems"];
+        put: operations["engineeringChangeSyncAffectedItems"];
         post?: never;
         delete?: never;
         options?: never;
@@ -331,13 +355,13 @@ export interface paths {
          * 팀 목록을 조회합니다
          * @description 팀 목록을 조회합니다
          */
-        get: operations["listTeams"];
+        get: operations["teamList"];
         put?: never;
         /**
          * 팀을 생성합니다. 생성 직후 팀 상세를 반환합니다
          * @description 팀을 생성합니다. 생성 직후 팀 상세를 반환합니다
          */
-        post: operations["createTeam"];
+        post: operations["teamCreate"];
         delete?: never;
         options?: never;
         head?: never;
@@ -355,18 +379,18 @@ export interface paths {
          * 팀 멤버 목록을 조회합니다
          * @description 팀 멤버 목록을 조회합니다
          */
-        get: operations["listTeamMembers"];
+        get: operations["teamMemberList"];
         put?: never;
         /**
          * 팀에 멤버를 배치 추가합니다. 이미 추가된 멤버는 제외됩니다
          * @description 팀에 멤버를 배치 추가합니다. 이미 추가된 멤버는 제외됩니다
          */
-        post: operations["addTeamMembers"];
+        post: operations["teamMemberAdd"];
         /**
          * 팀에서 멤버를 배치 제거합니다
          * @description 팀에서 멤버를 배치 제거합니다
          */
-        delete: operations["removeTeamMembers"];
+        delete: operations["teamMemberRemove"];
         options?: never;
         head?: never;
         patch?: never;
@@ -383,13 +407,13 @@ export interface paths {
          * 전체 합성 작업 이력을 최신순으로 조회합니다
          * @description 전체 합성 작업 이력을 최신순으로 조회합니다
          */
-        get: operations["listSynthesisJobs"];
+        get: operations["synthesisListSynthesisJobs"];
         put?: never;
         /**
          * 매핑 기반 합성 배치를 시작하고 batch/job 정보를 반환합니다
          * @description 매핑 기반 합성 배치를 시작하고 batch/job 정보를 반환합니다
          */
-        post: operations["startSynthesis"];
+        post: operations["synthesisStart"];
         delete?: never;
         options?: never;
         head?: never;
@@ -409,7 +433,7 @@ export interface paths {
          * Starter 플랜 즉시 업그레이드
          * @description 현재 Starter 워크스페이스를 Team 또는 Organization으로 즉시 전환하고, 기존 멤버 전원의 좌석 타입을 한 번에 확정합니다
          */
-        post: operations["upgradeStarter"];
+        post: operations["subscriptionUpgradeStarter"];
         delete?: never;
         options?: never;
         head?: never;
@@ -429,7 +453,7 @@ export interface paths {
          * 커스텀 속성을 생성합니다
          * @description 조직 관리자 권한으로 커스텀 속성 정의를 생성합니다
          */
-        post: operations["createPropertyDefinition"];
+        post: operations["propertyCreatePropertyDefinition"];
         delete?: never;
         options?: never;
         head?: never;
@@ -447,13 +471,13 @@ export interface paths {
          * 프로젝트 목록을 검색/페이징 조회합니다
          * @description 프로젝트 목록을 검색/페이징 조회합니다
          */
-        get: operations["listProjects"];
+        get: operations["projectList"];
         put?: never;
         /**
          * 프로젝트를 생성하고 상세 정보를 반환합니다
          * @description 프로젝트를 생성하고 상세 정보를 반환합니다
          */
-        post: operations["createProject"];
+        post: operations["projectCreate"];
         delete?: never;
         options?: never;
         head?: never;
@@ -473,7 +497,7 @@ export interface paths {
          * 프로젝트 보관을 해제합니다
          * @description 프로젝트 보관을 해제합니다
          */
-        post: operations["unarchiveProject"];
+        post: operations["projectUnarchive"];
         delete?: never;
         options?: never;
         head?: never;
@@ -491,18 +515,18 @@ export interface paths {
          * 프로젝트에 연결된 부품 목록을 조회합니다
          * @description 프로젝트에 연결된 부품 목록을 조회합니다
          */
-        get: operations["getProjectParts"];
+        get: operations["projectPartGet"];
         put?: never;
         /**
          * 프로젝트에 부품을 배치 연결합니다
          * @description 프로젝트에 부품을 배치 연결합니다
          */
-        post: operations["linkParts"];
+        post: operations["projectPartLinkParts"];
         /**
          * 프로젝트에서 부품을 배치 해제합니다
          * @description 프로젝트에서 부품을 배치 해제합니다
          */
-        delete: operations["unlinkParts"];
+        delete: operations["projectPartUnlinkParts"];
         options?: never;
         head?: never;
         patch?: never;
@@ -519,18 +543,18 @@ export interface paths {
          * 프로젝트 멤버 목록을 조회합니다
          * @description 프로젝트 멤버 목록을 조회합니다
          */
-        get: operations["listProjectMembers"];
+        get: operations["projectMemberList"];
         put?: never;
         /**
          * 프로젝트에 멤버를 배치 추가합니다
          * @description 프로젝트에 멤버를 배치 추가합니다
          */
-        post: operations["addProjectMembers"];
+        post: operations["projectMemberAdd"];
         /**
          * 프로젝트에서 멤버를 배치 제거합니다
          * @description 프로젝트에서 멤버를 배치 제거합니다
          */
-        delete: operations["removeProjectMembers"];
+        delete: operations["projectMemberRemove"];
         options?: never;
         head?: never;
         patch?: never;
@@ -549,7 +573,7 @@ export interface paths {
          * 프로젝트를 보관 상태로 전환합니다
          * @description 프로젝트를 보관 상태로 전환합니다
          */
-        post: operations["archiveProject"];
+        post: operations["projectArchive"];
         delete?: never;
         options?: never;
         head?: never;
@@ -567,13 +591,13 @@ export interface paths {
          * Part 목록을 조회합니다
          * @description 검색/필터 조건과 함께 Part 목록을 조회합니다
          */
-        get: operations["listParts"];
+        get: operations["partList"];
         put?: never;
         /**
          * 부품을 생성하고 초안 상세를 반환합니다
          * @description 부품을 생성하고 생성된 초기 초안 상세를 반환합니다
          */
-        post: operations["createPart"];
+        post: operations["partCreate"];
         delete?: never;
         options?: never;
         head?: never;
@@ -593,7 +617,7 @@ export interface paths {
          * 리비전을 직접 반영합니다
          * @description DRAFT 상태 리비전을 직접 반영해 공식 리비전으로 전환합니다
          */
-        post: operations["release"];
+        post: operations["partRevisionCommandRelease"];
         delete?: never;
         options?: never;
         head?: never;
@@ -613,7 +637,7 @@ export interface paths {
          * 미리보기 전용 파일을 업로드합니다
          * @description 업로드 완료 파일을 미리보기 전용 파일로 등록하고 현재 미리보기로 설정합니다
          */
-        post: operations["createPreviewFile"];
+        post: operations["partRevisionPreviewCreatePreviewFile"];
         delete?: never;
         options?: never;
         head?: never;
@@ -631,13 +655,13 @@ export interface paths {
          * 연결된 파일 목록을 조회합니다
          * @description 리비전에 연결된 파일과 도면 목록을 조회합니다
          */
-        get: operations["getFiles"];
+        get: operations["partRevisionAssetGetFiles"];
         put?: never;
         /**
          * 파일을 첨부합니다
          * @description 업로드 완료 파일들을 리비전에 배치 연결합니다
          */
-        post: operations["attachFiles"];
+        post: operations["partRevisionAssetAttachFiles"];
         delete?: never;
         options?: never;
         head?: never;
@@ -657,7 +681,7 @@ export interface paths {
          * 도면을 등록합니다
          * @description 업로드 완료 파일을 Drawing으로 등록하고 리비전에 연결합니다
          */
-        post: operations["createDrawing"];
+        post: operations["partRevisionAssetCreateDrawing"];
         delete?: never;
         options?: never;
         head?: never;
@@ -677,7 +701,7 @@ export interface paths {
          * 기준 리비전에서 새 DRAFT 리비전을 생성합니다
          * @description 기준 리비전에서 새 DRAFT 리비전을 생성합니다
          */
-        post: operations["createDraft"];
+        post: operations["partRevisionCommandCreateDraft"];
         delete?: never;
         options?: never;
         head?: never;
@@ -697,7 +721,87 @@ export interface paths {
          * 리비전을 폐기합니다
          * @description DRAFT 상태 리비전을 폐기합니다
          */
-        post: operations["cancel"];
+        post: operations["partRevisionCommandCancel"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/parts/{partId}/revisions/{revisionId}/bom-items": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * BOM 항목을 추가합니다
+         * @description DRAFT 상태 리비전에 BOM 항목을 추가합니다
+         */
+        post: operations["bomItemCommandAddBomItem"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/parts/{partId}/revisions/{revisionId}/bom-items/import/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * BOM 가져오기 미리보기를 실행합니다
+         * @description 업로드된 엑셀 파일의 BOM 데이터를 검증하고 행별 결과를 반환합니다. DRAFT 상태의 리비전에서만 사용 가능합니다
+         */
+        post: operations["bomImportPreview"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/parts/{partId}/revisions/{revisionId}/bom-items/import/commit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * BOM 가져오기를 확정합니다
+         * @description 미리보기로 검증한 엑셀 파일의 BOM 데이터를 실제로 등록합니다. APPEND 모드는 기존 항목에 추가하고, REPLACE 모드는 기존 항목을 모두 삭제 후 등록합니다
+         */
+        post: operations["bomImportCommit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/parts/{partId}/revisions/{revisionId}/bom-items/batch": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * BOM 항목을 일괄 추가합니다
+         * @description DRAFT 상태 리비전에 여러 BOM 항목을 한 번에 추가합니다
+         */
+        post: operations["bomItemCommandAddBomItemsBatch"];
         delete?: never;
         options?: never;
         head?: never;
@@ -717,7 +821,31 @@ export interface paths {
          * 부품의 수명주기 상태를 변경합니다
          * @description 부품의 수명주기 상태를 변경합니다 (ACTIVE → EOL → OBSOLETE)
          */
-        post: operations["changeLifecycleState"];
+        post: operations["partChangeLifecycleState"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/part-number-categories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 채번 카테고리 목록을 조회합니다
+         * @description 품번 생성 규칙으로 사용하는 채번 카테고리 목록과 예시 품번을 반환합니다
+         */
+        get: operations["partNumberCategoryList"];
+        put?: never;
+        /**
+         * 채번 카테고리를 생성합니다
+         * @description 새 채번 카테고리를 생성하고 시퀀스를 초기화합니다
+         */
+        post: operations["partNumberCategoryCreate"];
         delete?: never;
         options?: never;
         head?: never;
@@ -737,7 +865,7 @@ export interface paths {
          * 스코프 토큰으로 워크스페이스를 생성하고 access/refresh 토큰을 발급합니다
          * @description scope=create_org 토큰으로 워크스페이스를 생성하고 시작 플랜을 선택합니다. 현재 가입으로 시작할 수 있는 플랜은 Starter와 Team이며, 유료 플랜이면 ownerSeatType을 함께 지정해야 합니다
          */
-        post: operations["createOrganization"];
+        post: operations["organizationCreate"];
         delete?: never;
         options?: never;
         head?: never;
@@ -757,7 +885,7 @@ export interface paths {
          * 대상 워크스페이스 멤버십을 확인한 뒤 새 access/refresh 토큰을 발급합니다
          * @description 대상 워크스페이스 멤버십을 확인한 뒤 새 access/refresh 토큰을 발급합니다
          */
-        post: operations["switchOrganization"];
+        post: operations["organizationSwitch"];
         delete?: never;
         options?: never;
         head?: never;
@@ -775,13 +903,13 @@ export interface paths {
          * 관리자(ADMIN 이상)가 조직의 초대 목록(PENDING/ACCEPTED/CANCELLED)을 최신순으로 조회합니다
          * @description 관리자(ADMIN 이상)가 조직의 초대 목록(PENDING/ACCEPTED/CANCELLED)을 최신순으로 조회합니다
          */
-        get: operations["listInvitations"];
+        get: operations["organizationInvitationListInvitations"];
         put?: never;
         /**
          * 관리자(ADMIN 이상)가 이메일로 조직 초대를 발송합니다
          * @description 관리자(ADMIN 이상)가 이메일로 조직 초대를 발송합니다
          */
-        post: operations["createInvitation"];
+        post: operations["organizationInvitationCreateInvitation"];
         delete?: never;
         options?: never;
         head?: never;
@@ -801,7 +929,7 @@ export interface paths {
          * 매핑을 정규화하고 파일 샘플 데이터 기준으로 오류/경고를 검증합니다
          * @description 매핑을 정규화하고 파일 샘플 데이터 기준으로 오류/경고를 검증합니다
          */
-        post: operations["validate"];
+        post: operations["mappingValidate"];
         delete?: never;
         options?: never;
         head?: never;
@@ -821,7 +949,7 @@ export interface paths {
          * POST /api/v1/mappings/preview
          * @description 업로드된 파일을 nodes[] + relations[] 구조의 매핑으로 미리보기합니다
          */
-        post: operations["preview"];
+        post: operations["mappingPreview"];
         delete?: never;
         options?: never;
         head?: never;
@@ -841,7 +969,7 @@ export interface paths {
          * 검토된 매핑을 확정하여 새 매핑 레코드(버전 1)를 생성합니다
          * @description 검토된 매핑을 확정하여 새 매핑 레코드(버전 1)를 생성합니다
          */
-        post: operations["confirm"];
+        post: operations["mappingConfirm"];
         delete?: never;
         options?: never;
         head?: never;
@@ -859,13 +987,13 @@ export interface paths {
          * 테넌트에 등록된 전체 라벨 목록을 이름순으로 조회합니다
          * @description 테넌트에 등록된 전체 라벨 목록을 이름순으로 조회합니다
          */
-        get: operations["listLabels"];
+        get: operations["labelList"];
         put?: never;
         /**
          * 라벨을 생성합니다. 동일한 라벨 이름은 허용되지 않습니다
          * @description 라벨을 생성합니다. 동일한 라벨 이름은 허용되지 않습니다
          */
-        post: operations["createLabel"];
+        post: operations["labelCreate"];
         delete?: never;
         options?: never;
         head?: never;
@@ -883,13 +1011,13 @@ export interface paths {
          * 이슈 목록을 조회합니다
          * @description 이슈 목록을 조회합니다
          */
-        get: operations["listIssues"];
+        get: operations["issueList"];
         put?: never;
         /**
          * 이슈를 생성하고 연관 정보(부품/담당자/라벨/파일)를 일괄 연결합니다
          * @description 이슈를 생성하고 연관 정보(부품/담당자/라벨/파일)를 일괄 연결합니다
          */
-        post: operations["createIssue"];
+        post: operations["issueCreate"];
         delete?: never;
         options?: never;
         head?: never;
@@ -909,7 +1037,7 @@ export interface paths {
          * 이슈를 다시 엽니다 (CLOSED -> OPEN)
          * @description 이슈를 다시 엽니다 (CLOSED -> OPEN)
          */
-        post: operations["reopenIssue"];
+        post: operations["issueReopen"];
         delete?: never;
         options?: never;
         head?: never;
@@ -929,7 +1057,7 @@ export interface paths {
          * 첨부파일을 배치 연결합니다
          * @description 첨부파일을 배치 연결합니다
          */
-        post: operations["addFiles"];
+        post: operations["issueAddFiles"];
         delete?: never;
         options?: never;
         head?: never;
@@ -949,7 +1077,7 @@ export interface paths {
          * 댓글을 생성합니다
          * @description 댓글을 생성합니다
          */
-        post: operations["createComment"];
+        post: operations["issueCreateComment"];
         delete?: never;
         options?: never;
         head?: never;
@@ -969,7 +1097,7 @@ export interface paths {
          * 이슈를 닫습니다 (OPEN -> CLOSED)
          * @description 이슈를 닫습니다 (OPEN -> CLOSED)
          */
-        post: operations["closeIssue"];
+        post: operations["issueClose"];
         delete?: never;
         options?: never;
         head?: never;
@@ -989,7 +1117,7 @@ export interface paths {
          * 단건 파일 업로드를 위한 presigned URL을 발급합니다
          * @description 단건 파일 업로드를 위한 presigned URL을 발급합니다
          */
-        post: operations["createFile"];
+        post: operations["fileCreate"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1009,7 +1137,7 @@ export interface paths {
          * 단건 업로드 완료를 확인하고 파일 상태를 UPLOADED로 전이합니다
          * @description 단건 업로드 완료를 확인하고 파일 상태를 UPLOADED로 전이합니다
          */
-        post: operations["completeFile"];
+        post: operations["fileComplete"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1029,7 +1157,7 @@ export interface paths {
          * 최대 100건 파일 업로드를 위한 presigned URL을 일괄 발급합니다
          * @description 최대 100건 파일 업로드를 위한 presigned URL을 일괄 발급합니다
          */
-        post: operations["batchCreateFiles"];
+        post: operations["fileBatchCreate"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1049,7 +1177,7 @@ export interface paths {
          * 배치 업로드 완료를 확인하고 성공/실패 목록을 반환합니다
          * @description 배치 업로드 완료를 확인하고 성공/실패 목록을 반환합니다
          */
-        post: operations["batchCompleteFiles"];
+        post: operations["fileBatchComplete"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1067,13 +1195,13 @@ export interface paths {
          * 변경관리 목록을 조회합니다
          * @description 변경관리 목록을 조회합니다
          */
-        get: operations["listEngineeringChanges"];
+        get: operations["engineeringChangeList"];
         put?: never;
         /**
          * 변경관리를 생성하고 연관 정보(이슈/부품 리비전/단계/파일)를 일괄 연결합니다
          * @description 변경관리를 생성하고 연관 정보(이슈/부품 리비전/단계/파일)를 일괄 연결합니다
          */
-        post: operations["createEngineeringChange"];
+        post: operations["engineeringChangeCreate"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1093,7 +1221,7 @@ export interface paths {
          * 변경관리를 검토 대기로 전환합니다 (DRAFT -> REVIEW_PENDING)
          * @description 변경관리를 검토 대기로 전환합니다 (DRAFT -> REVIEW_PENDING)
          */
-        post: operations["submit"];
+        post: operations["engineeringChangeSubmit"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1113,7 +1241,7 @@ export interface paths {
          * 현재 검토 단계 담당자가 자신의 검토 단계를 승인합니다
          * @description 현재 검토 단계 담당자가 자신의 검토 단계를 승인합니다
          */
-        post: operations["approveReview"];
+        post: operations["engineeringChangeApproveReview"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1133,7 +1261,7 @@ export interface paths {
          * 현재 반영 단계 담당자가 변경관리를 반영 완료합니다 (RELEASE_PENDING -> RELEASED)
          * @description 현재 반영 단계 담당자가 변경관리를 반영 완료합니다 (RELEASE_PENDING -> RELEASED)
          */
-        post: operations["release_1"];
+        post: operations["engineeringChangeRelease"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1153,7 +1281,7 @@ export interface paths {
          * 변경관리를 작성 단계로 되돌립니다 (*_PENDING -> DRAFT)
          * @description 변경관리를 작성 단계로 되돌립니다 (*_PENDING -> DRAFT)
          */
-        post: operations["reject"];
+        post: operations["engineeringChangeReject"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1173,7 +1301,7 @@ export interface paths {
          * 첨부파일을 배치 연결합니다
          * @description 첨부파일을 배치 연결합니다
          */
-        post: operations["addFiles_1"];
+        post: operations["engineeringChangeAddFiles"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1193,7 +1321,7 @@ export interface paths {
          * 댓글을 생성합니다
          * @description 댓글을 생성합니다
          */
-        post: operations["createComment_1"];
+        post: operations["engineeringChangeCreateComment"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1213,7 +1341,7 @@ export interface paths {
          * 변경관리를 폐기하고 미반영 리비전을 취소합니다
          * @description 변경관리를 폐기하고 미반영 리비전을 취소합니다
          */
-        post: operations["cancel_1"];
+        post: operations["engineeringChangeCancel"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1233,7 +1361,27 @@ export interface paths {
          * 현재 승인 단계 담당자가 변경관리를 승인해 반영 대기로 전환합니다 (APPROVAL_PENDING -> RELEASE_PENDING)
          * @description 현재 승인 단계 담당자가 변경관리를 승인해 반영 대기로 전환합니다 (APPROVAL_PENDING -> RELEASE_PENDING)
          */
-        post: operations["approve"];
+        post: operations["engineeringChangeApprove"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/engineering-changes/from-issue/{issueId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 이슈로부터 설계변경을 생성합니다
+         * @description 이슈에 연결된 부품의 DRAFT 리비전을 영향 항목으로 자동 등록하고, 영향 분석 요약을 본문에 포함하여 설계변경을 생성합니다
+         */
+        post: operations["engineeringChangeCreateEcFromIssue"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1251,13 +1399,13 @@ export interface paths {
          * 챗 스레드 목록을 조회합니다
          * @description 현재 사용자의 챗 스레드 목록을 조회합니다
          */
-        get: operations["listThreads"];
+        get: operations["chatListThreads"];
         put?: never;
         /**
          * 챗 스레드를 생성합니다
          * @description 새로운 챗 스레드를 생성합니다
          */
-        post: operations["createThread"];
+        post: operations["chatCreateThread"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1275,13 +1423,13 @@ export interface paths {
          * 챗 메시지 목록을 조회합니다
          * @description 스레드에 속한 메시지 목록을 조회합니다
          */
-        get: operations["listMessages"];
+        get: operations["chatListMessages"];
         put?: never;
         /**
          * 챗 메시지를 전송합니다
          * @description 사용자 메시지를 저장하고 비동기 챗 실행을 시작합니다
          */
-        post: operations["sendMessage"];
+        post: operations["chatSendMessage"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1301,7 +1449,7 @@ export interface paths {
          * 챗 액션 요청을 거절합니다
          * @description 사용자 확인이 필요한 액션 요청을 취소합니다
          */
-        post: operations["rejectAction"];
+        post: operations["chatRejectAction"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1321,7 +1469,47 @@ export interface paths {
          * 챗 액션 요청을 확인합니다
          * @description 사용자 확인이 필요한 액션 요청을 실제로 실행합니다
          */
-        post: operations["confirmAction"];
+        post: operations["chatConfirmAction"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/bom/compare": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 두 리비전의 BOM을 비교합니다
+         * @description 소스/대상 리비전의 BOM 항목을 LINE_NUMBER 기준으로 비교하여 변경 목록과 요약을 반환합니다
+         */
+        post: operations["bomQueryCompare"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/bom/compare/export": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * BOM 비교 결과를 Excel로 내보냅니다
+         * @description 소스/대상 리비전의 BOM 비교 결과를 Excel(.xlsx) 파일로 내보냅니다
+         */
+        post: operations["bomQueryExportCompare"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1341,7 +1529,7 @@ export interface paths {
          * 이메일 인증 코드 검증
          * @description 이메일 인증 코드 검증
          */
-        post: operations["verifyEmail"];
+        post: operations["authVerifyEmail"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1361,7 +1549,7 @@ export interface paths {
          * 이메일 인증 코드 발송
          * @description 이메일 인증 코드 발송
          */
-        post: operations["sendVerification"];
+        post: operations["authSendVerification"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1381,7 +1569,7 @@ export interface paths {
          * 회원가입
          * @description 이메일 인증이 끝난 사용자가 워크스페이스를 생성하고 시작 플랜을 선택합니다. 현재 가입으로 시작할 수 있는 플랜은 Starter와 Team이며, 유료 플랜이면 ownerSeatType을 함께 지정해야 합니다
          */
-        post: operations["register"];
+        post: operations["authRegister"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1401,7 +1589,7 @@ export interface paths {
          * 리프레시 토큰으로 액세스 토큰 재발급
          * @description 리프레시 토큰으로 액세스 토큰 재발급
          */
-        post: operations["refresh"];
+        post: operations["authRefresh"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1421,7 +1609,7 @@ export interface paths {
          * 리프레시 토큰 폐기
          * @description 리프레시 토큰 폐기
          */
-        post: operations["logout"];
+        post: operations["authLogout"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1441,7 +1629,7 @@ export interface paths {
          * 로그인
          * @description 로그인
          */
-        post: operations["login"];
+        post: operations["authLogin"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1461,7 +1649,7 @@ export interface paths {
          * 조직 초대 수락
          * @description 조직 초대 수락
          */
-        post: operations["acceptInvitation"];
+        post: operations["authAcceptInvitation"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1481,7 +1669,7 @@ export interface paths {
          * 자연어 질문을 실행해 탐색 결과와 요약 답변을 반환합니다
          * @description 자연어 질문을 실행해 탐색 결과와 요약 답변을 반환합니다
          */
-        post: operations["queryGraph"];
+        post: operations["activationQueryGraph"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1501,7 +1689,7 @@ export interface paths {
          * 그래프/관계 데이터 상태를 점검하여 이슈를 반환합니다
          * @description 그래프/관계 데이터 상태를 점검하여 이슈를 반환합니다
          */
-        post: operations["healthCheck"];
+        post: operations["activationHealthCheck"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1519,7 +1707,7 @@ export interface paths {
          * 현재 인증된 사용자의 프로필과 소속 조직 목록을 조회합니다
          * @description 현재 인증된 사용자의 프로필과 소속 조직 목록을 조회합니다
          */
-        get: operations["getMe"];
+        get: operations["userGetMe"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1529,7 +1717,7 @@ export interface paths {
          * 내 프로필을 부분 수정합니다
          * @description 내 프로필을 부분 수정합니다
          */
-        patch: operations["updateProfile"];
+        patch: operations["userUpdateProfile"];
         trace?: never;
     };
     "/api/v1/teams/{teamId}": {
@@ -1543,21 +1731,21 @@ export interface paths {
          * 팀 상세를 조회합니다
          * @description 팀 상세를 조회합니다
          */
-        get: operations["getTeam"];
+        get: operations["teamGet"];
         put?: never;
         post?: never;
         /**
          * 팀을 삭제합니다. 팀 멤버 관계도 함께 제거됩니다
          * @description 팀을 삭제합니다. 팀 멤버 관계도 함께 제거됩니다
          */
-        delete: operations["deleteTeam"];
+        delete: operations["teamDelete"];
         options?: never;
         head?: never;
         /**
          * 팀 이름/설명을 부분 수정하고 최신 팀 상세를 반환합니다
          * @description 팀 이름/설명을 부분 수정하고 최신 팀 상세를 반환합니다
          */
-        patch: operations["updateTeam"];
+        patch: operations["teamUpdate"];
         trace?: never;
     };
     "/api/v1/subscription/seat-quotas": {
@@ -1577,7 +1765,7 @@ export interface paths {
          * 현재 구독 좌석 수량 변경
          * @description 관리자 권한으로 유료 플랜 워크스페이스에서 구매한 좌석 수량을 변경합니다
          */
-        patch: operations["updateSeatQuotas"];
+        patch: operations["subscriptionUpdateSeatQuotas"];
         trace?: never;
     };
     "/api/v1/subscription/plan": {
@@ -1597,7 +1785,7 @@ export interface paths {
          * 현재 구독 플랜 변경 예약
          * @description 관리자 권한으로 이미 유료 플랜인 워크스페이스의 다음 갱신 시점 플랜 변경을 예약합니다. Starter에서 유료 플랜으로의 즉시 전환은 starter-upgrade API를 사용합니다
          */
-        patch: operations["updatePlan"];
+        patch: operations["subscriptionUpdatePlan"];
         trace?: never;
     };
     "/api/v1/subscription/ai-limit": {
@@ -1617,7 +1805,7 @@ export interface paths {
          * 현재 구독 AI 한도 정책 변경
          * @description 관리자 권한으로 유료 플랜의 월간 AI 한도와 하드 리밋 여부를 변경합니다
          */
-        patch: operations["updateAiLimit"];
+        patch: operations["subscriptionUpdateAiLimit"];
         trace?: never;
     };
     "/api/v1/properties/order": {
@@ -1637,7 +1825,7 @@ export interface paths {
          * 속성 순서를 변경합니다
          * @description 조직 관리자 권한으로 속성의 최종 순서를 한 번에 변경합니다
          */
-        patch: operations["reorder"];
+        patch: operations["propertyReorder"];
         trace?: never;
     };
     "/api/v1/properties/definitions/{ownerType}/{propertyKey}": {
@@ -1654,14 +1842,14 @@ export interface paths {
          * 속성을 삭제합니다
          * @description 조직 관리자 권한으로 커스텀 속성 정의를 삭제합니다. 시스템 속성은 삭제할 수 없습니다
          */
-        delete: operations["deletePropertyDefinition"];
+        delete: operations["propertyDeletePropertyDefinition"];
         options?: never;
         head?: never;
         /**
          * 속성을 수정합니다
          * @description 조직 관리자 권한으로 시스템/커스텀 속성 정의를 부분 수정합니다
          */
-        patch: operations["updatePropertyDefinition"];
+        patch: operations["propertyUpdatePropertyDefinition"];
         trace?: never;
     };
     "/api/v1/projects/{projectId}": {
@@ -1675,21 +1863,21 @@ export interface paths {
          * 프로젝트 상세를 조회합니다
          * @description 프로젝트 상세를 조회합니다
          */
-        get: operations["getProject"];
+        get: operations["projectGet"];
         put?: never;
         post?: never;
         /**
          * 프로젝트를 소프트 삭제합니다
          * @description 프로젝트를 소프트 삭제합니다
          */
-        delete: operations["deleteProject"];
+        delete: operations["projectDelete"];
         options?: never;
         head?: never;
         /**
          * 프로젝트 이름/설명을 수정합니다
          * @description 프로젝트 이름/설명을 수정합니다
          */
-        patch: operations["updateProject"];
+        patch: operations["projectUpdate"];
         trace?: never;
     };
     "/api/v1/parts/{partId}/revisions/{revisionId}": {
@@ -1703,7 +1891,7 @@ export interface paths {
          * PartRevision 상세를 조회합니다
          * @description 부품 리비전 상세와 관계 카운트를 조회합니다
          */
-        get: operations["get_1"];
+        get: operations["partRevisionGet"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1713,7 +1901,7 @@ export interface paths {
          * 리비전을 수정합니다
          * @description DRAFT 상태의 리비전을 수정합니다
          */
-        patch: operations["update_1"];
+        patch: operations["partRevisionCommandUpdate"];
         trace?: never;
     };
     "/api/v1/parts/{partId}/revisions/{revisionId}/preview": {
@@ -1730,14 +1918,38 @@ export interface paths {
          * 대표 미리보기를 해제합니다
          * @description 현재 대표 미리보기를 해제합니다
          */
-        delete: operations["delete_1"];
+        delete: operations["partRevisionPreviewDelete"];
         options?: never;
         head?: never;
         /**
          * 대표 미리보기 소스를 변경합니다
          * @description 도면 또는 미리보기 전용 파일을 대표 미리보기로 선택합니다
          */
-        patch: operations["update_2"];
+        patch: operations["partRevisionPreviewUpdate"];
+        trace?: never;
+    };
+    "/api/v1/parts/{partId}/revisions/{revisionId}/bom-items/{bomItemId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * BOM 항목을 삭제합니다
+         * @description DRAFT 상태 리비전의 BOM 항목을 삭제합니다
+         */
+        delete: operations["bomItemCommandDeleteBomItem"];
+        options?: never;
+        head?: never;
+        /**
+         * BOM 항목을 수정합니다
+         * @description DRAFT 상태 리비전의 BOM 항목을 수정합니다
+         */
+        patch: operations["bomItemCommandUpdateBomItem"];
         trace?: never;
     };
     "/api/v1/parts/categories/{category}": {
@@ -1757,7 +1969,7 @@ export interface paths {
          * 카테고리 이름을 일괄 변경합니다
          * @description 카테고리 이름을 일괄 변경하고 변경 건수를 반환합니다
          */
-        patch: operations["renameCategory"];
+        patch: operations["partRenameCategory"];
         trace?: never;
     };
     "/api/v1/members/{userId}/seat": {
@@ -1777,7 +1989,7 @@ export interface paths {
          * 멤버 좌석 변경
          * @description 관리자(ADMIN 이상) 권한으로 멤버 좌석 타입을 변경합니다
          */
-        patch: operations["changeMemberSeat"];
+        patch: operations["memberChangeMemberSeat"];
         trace?: never;
     };
     "/api/v1/members/{userId}/role": {
@@ -1797,7 +2009,7 @@ export interface paths {
          * 소유자(OWNER) 권한으로 멤버 역할을 변경합니다
          * @description 소유자(OWNER) 권한으로 멤버 역할을 변경합니다
          */
-        patch: operations["changeMemberRole"];
+        patch: operations["memberChangeMemberRole"];
         trace?: never;
     };
     "/api/v1/labels/{labelId}": {
@@ -1814,14 +2026,14 @@ export interface paths {
          * 라벨을 삭제합니다
          * @description 라벨을 삭제합니다
          */
-        delete: operations["deleteLabel"];
+        delete: operations["labelDelete"];
         options?: never;
         head?: never;
         /**
          * 라벨의 일부 필드를 수정합니다. description을 null로 보내면 설명이 제거됩니다
          * @description 라벨의 일부 필드를 수정합니다. description을 null로 보내면 설명이 제거됩니다
          */
-        patch: operations["updateLabel"];
+        patch: operations["labelUpdate"];
         trace?: never;
     };
     "/api/v1/issues/{issueId}": {
@@ -1835,7 +2047,7 @@ export interface paths {
          * 이슈 상세 정보를 조회합니다
          * @description 이슈 ID로 상세 정보를 조회합니다
          */
-        get: operations["getIssue"];
+        get: operations["issueGet"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1845,7 +2057,7 @@ export interface paths {
          * 이슈 제목/본문을 수정합니다
          * @description 이슈 제목/본문을 수정합니다
          */
-        patch: operations["updateIssue"];
+        patch: operations["issueUpdate"];
         trace?: never;
     };
     "/api/v1/issues/{issueId}/comments/{commentId}": {
@@ -1862,14 +2074,14 @@ export interface paths {
          * 댓글을 삭제합니다
          * @description 댓글을 삭제합니다
          */
-        delete: operations["deleteComment"];
+        delete: operations["issueDeleteComment"];
         options?: never;
         head?: never;
         /**
          * 댓글을 수정합니다
          * @description 댓글을 수정합니다
          */
-        patch: operations["updateComment"];
+        patch: operations["issueUpdateComment"];
         trace?: never;
     };
     "/api/v1/engineering-changes/{engineeringChangeId}": {
@@ -1883,7 +2095,7 @@ export interface paths {
          * 변경관리 상세 정보를 조회합니다
          * @description 변경관리 ID로 상세 정보를 조회합니다
          */
-        get: operations["getEngineeringChange"];
+        get: operations["engineeringChangeGet"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1893,7 +2105,7 @@ export interface paths {
          * 변경관리 제목/본문을 수정합니다
          * @description 변경관리 제목/본문을 수정합니다
          */
-        patch: operations["updateEngineeringChange"];
+        patch: operations["engineeringChangeUpdate"];
         trace?: never;
     };
     "/api/v1/engineering-changes/{engineeringChangeId}/comments/{commentId}": {
@@ -1910,14 +2122,14 @@ export interface paths {
          * 댓글을 삭제합니다
          * @description 댓글을 삭제합니다
          */
-        delete: operations["deleteComment_1"];
+        delete: operations["engineeringChangeDeleteComment"];
         options?: never;
         head?: never;
         /**
          * 댓글을 수정합니다
          * @description 댓글을 수정합니다
          */
-        patch: operations["updateComment_1"];
+        patch: operations["engineeringChangeUpdateComment"];
         trace?: never;
     };
     "/health": {
@@ -1931,7 +2143,7 @@ export interface paths {
          * 애플리케이션 기본 상태를 확인합니다
          * @description 애플리케이션 기본 상태를 확인합니다
          */
-        get: operations["health"];
+        get: operations["healthGet"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1951,7 +2163,7 @@ export interface paths {
          * 스토리지 총 사용량/한도/초과분과 카테고리별 내역을 조회합니다
          * @description 스토리지 총 사용량/한도/초과분과 카테고리별 내역을 조회합니다
          */
-        get: operations["getStorageUsage"];
+        get: operations["usageGetStorage"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1971,7 +2183,7 @@ export interface paths {
          * 스토리지 사용량 추이를 period(7d|30d|1y) 기준으로 조회합니다
          * @description 스토리지 사용량 추이를 period(7d|30d|1y) 기준으로 조회합니다
          */
-        get: operations["getStorageTrend"];
+        get: operations["usageGetStorageTrend"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1991,7 +2203,7 @@ export interface paths {
          * AI 크레딧 잔여/사용량과 카테고리별 사용량을 조회합니다
          * @description AI 크레딧 잔여/사용량과 카테고리별 사용량을 조회합니다
          */
-        get: operations["getCreditUsage"];
+        get: operations["usageGetCredit"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2011,7 +2223,7 @@ export interface paths {
          * 팀 picker/autocomplete용 경량 목록을 조회합니다
          * @description 팀 picker/autocomplete용 경량 목록을 조회합니다
          */
-        get: operations["lookupTeams"];
+        get: operations["teamLookup"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2031,7 +2243,7 @@ export interface paths {
          * 개별 합성 작업 상태를 조회합니다
          * @description 개별 합성 작업 상태를 조회합니다
          */
-        get: operations["getSynthesisJob"];
+        get: operations["synthesisGetSynthesisJob"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2051,7 +2263,7 @@ export interface paths {
          * 합성 배치 진행 상태를 조회합니다
          * @description 합성 배치 진행 상태를 조회합니다
          */
-        get: operations["getSynthesisBatch"];
+        get: operations["synthesisGetSynthesisBatch"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2071,7 +2283,7 @@ export interface paths {
          * company_name 또는 code로 공급사를 검색해 페이징 목록을 조회합니다
          * @description company_name 또는 code로 공급사를 검색해 페이징 목록을 조회합니다
          */
-        get: operations["listSuppliers"];
+        get: operations["supplierList"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2091,7 +2303,7 @@ export interface paths {
          * 현재 구독 요약 조회
          * @description 현재 로그인한 워크스페이스의 플랜/좌석/스토리지/AI 정책 요약을 조회합니다
          */
-        get: operations["get_2"];
+        get: operations["subscriptionGet"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2111,7 +2323,7 @@ export interface paths {
          * 초기 렌더에 필요한 설정 값을 조회합니다
          * @description 초기 렌더에 필요한 설정 값을 조회합니다
          */
-        get: operations["getSettings"];
+        get: operations["settingsGet"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2131,7 +2343,7 @@ export interface paths {
          * 속성 메타 목록을 조회합니다
          * @description 시스템 속성과 커스텀 속성을 통합한 최종 property catalog 목록을 조회합니다
          */
-        get: operations["listMeta"];
+        get: operations["propertyListMeta"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2151,7 +2363,7 @@ export interface paths {
          * 부품 picker용 lookup 목록을 조회합니다
          * @description 부품 picker용 lookup 목록을 조회합니다
          */
-        get: operations["lookupParts"];
+        get: operations["projectPartLookupParts"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2171,7 +2383,7 @@ export interface paths {
          * 프로젝트 멤버 picker용 lookup 목록을 조회합니다
          * @description 프로젝트 멤버 picker용 lookup 목록을 조회합니다
          */
-        get: operations["lookupMembers"];
+        get: operations["projectMemberLookupMembers"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2191,7 +2403,7 @@ export interface paths {
          * 프로젝트에 연결된 이슈 목록을 조회합니다
          * @description 프로젝트에 연결된 부품을 기준으로 연관 이슈 목록을 조회합니다
          */
-        get: operations["listProjectIssues"];
+        get: operations["projectIssueList"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2211,7 +2423,7 @@ export interface paths {
          * 프로젝트 활동 피드를 cursor 기반으로 조회합니다
          * @description 프로젝트 활동 피드를 cursor 기반으로 조회합니다
          */
-        get: operations["getProjectActivities"];
+        get: operations["projectGetProjectActivities"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2231,7 +2443,7 @@ export interface paths {
          * 프로젝트에 연결된 변경관리 목록을 조회합니다
          * @description 프로젝트에 연결된 부품과 이슈를 기준으로 연관 변경관리 목록을 조회합니다
          */
-        get: operations["listProjectChanges"];
+        get: operations["projectChangeList"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2251,7 +2463,7 @@ export interface paths {
          * 연결된 공급사 목록을 조회합니다
          * @description 리비전에 연결된 공급사 목록을 조회합니다
          */
-        get: operations["getSuppliers"];
+        get: operations["partRevisionGetSuppliers"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2271,7 +2483,7 @@ export interface paths {
          * 연결된 프로젝트 목록을 조회합니다
          * @description 리비전이 속한 프로젝트 목록을 조회합니다
          */
-        get: operations["getProjects"];
+        get: operations["partRevisionGetProjects"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2291,7 +2503,7 @@ export interface paths {
          * 미리보기 후보 목록을 조회합니다
          * @description 대표 미리보기 선택 모달에 필요한 선택 가능 소스 목록을 조회합니다
          */
-        get: operations["getSources"];
+        get: operations["partRevisionPreviewGetSources"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2311,7 +2523,7 @@ export interface paths {
          * 미리보기 처리 상태를 조회합니다
          * @description 대표 미리보기 비동기 처리 상태와 산출물 준비 여부를 조회합니다
          */
-        get: operations["getProcessing"];
+        get: operations["partRevisionPreviewGetProcessing"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2331,7 +2543,7 @@ export interface paths {
          * 기준 리비전 대비 상세 diff를 조회합니다
          * @description 이전 리비전 또는 지정한 기준 리비전 ID 대비 상세 diff를 조회합니다
          */
-        get: operations["getDiff"];
+        get: operations["partRevisionGetDiff"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2351,7 +2563,27 @@ export interface paths {
          * 직접 자식/부모 BOM을 조회합니다
          * @description 리비전 기준 직접 자식/직접 부모 BOM 관계를 조회합니다
          */
-        get: operations["getBom"];
+        get: operations["partRevisionGetBom"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/parts/{partId}/revisions/{revisionId}/bom/where-used/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Where-used 요약을 조회합니다
+         * @description 해당 리비전을 하위 부품으로 참조하는 상위 리비전의 집계 정보를 반환합니다
+         */
+        get: operations["bomQueryGetWhereUsedSummary"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2371,7 +2603,7 @@ export interface paths {
          * BOM 트리를 조회합니다
          * @description 정전개 또는 역전개 BOM 트리를 조회합니다
          */
-        get: operations["getBomTree"];
+        get: operations["partRevisionGetBomTree"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2391,7 +2623,47 @@ export interface paths {
          * BOM 트리를 Excel로 내보냅니다
          * @description BOM 트리를 Excel(.xlsx) 파일로 내보냅니다
          */
-        get: operations["exportBomTree"];
+        get: operations["partRevisionExportBomTree"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/parts/{partId}/revisions/{revisionId}/bom-items/import/template": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * BOM 가져오기 템플릿을 다운로드합니다
+         * @description BOM 가져오기에 사용할 엑셀 템플릿 파일을 다운로드합니다. 헤더 행만 포함된 .xlsx 파일을 반환합니다
+         */
+        get: operations["bomImportDownloadTemplate"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/parts/{partId}/impact-analysis": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 부품 영향 분석
+         * @description 특정 부품 변경 시 영향받는 상위 BOM, 프로젝트, 추천 리뷰어를 분석합니다
+         */
+        get: operations["partGetImpactAnalysis"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2411,7 +2683,27 @@ export interface paths {
          * Part 변경 이력을 조회합니다
          * @description 공식 리비전 카드와 초안 시도 이력을 함께 조회합니다
          */
-        get: operations["getHistory"];
+        get: operations["partRevisionGetHistory"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/parts/{partId}/change-history": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 부품 변경 이력을 조회합니다
+         * @description 특정 부품과 연결된 이슈, 설계변경 릴리즈, 리비전 이력을 시간순으로 조회합니다
+         */
+        get: operations["partGetChangeHistory"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2431,7 +2723,7 @@ export interface paths {
          * 변경관리 연결 가능한 리비전 목록을 조회합니다
          * @description 현재 사용자가 만든 변경관리 연결 가능한 DRAFT 리비전 목록을 조회합니다
          */
-        get: operations["lookupRevisions"];
+        get: operations["partLookupRevisions"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2451,7 +2743,7 @@ export interface paths {
          * 품번/품명으로 경량 Part 목록을 조회합니다
          * @description 품번/품명으로 경량 Part 목록을 조회합니다
          */
-        get: operations["lookupParts_1"];
+        get: operations["partLookup"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2471,7 +2763,7 @@ export interface paths {
          * 진행중 부품 작업함 목록을 조회합니다
          * @description 검색/필터 조건과 함께 진행중 부품 작업함 목록을 조회합니다
          */
-        get: operations["listInProgressParts"];
+        get: operations["partListInProgress"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2491,7 +2783,7 @@ export interface paths {
          * Part 목록 필터 옵션을 조회합니다
          * @description Part 목록 필터 옵션(카테고리/수명주기 상태)을 조회합니다
          */
-        get: operations["getFilterOptions"];
+        get: operations["partGetFilterOptions"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2511,7 +2803,7 @@ export interface paths {
          * 필터링된 Part 목록을 Excel 파일로 내보냅니다
          * @description 필터링된 Part 목록을 Excel(.xlsx) 파일로 내보냅니다
          */
-        get: operations["exportParts"];
+        get: operations["partExport"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2531,7 +2823,7 @@ export interface paths {
          * 카테고리별 부품 개수를 조회합니다
          * @description 카테고리별 부품 개수를 조회합니다
          */
-        get: operations["listCategories"];
+        get: operations["partListCategories"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2551,7 +2843,47 @@ export interface paths {
          * 카테고리 문자열 목록을 경량 조회합니다
          * @description 카테고리 문자열 목록을 경량 조회합니다
          */
-        get: operations["lookupCategories"];
+        get: operations["partLookupCategories"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/part-number-categories/{categoryId}/next-number": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 다음 품번을 미리봅니다
+         * @description 지정한 채번 카테고리 기준으로 다음에 생성될 예상 품번을 반환합니다
+         */
+        get: operations["partNumberCategoryGetNextNumber"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/part-number-categories/check-number": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 품번 중복 여부를 확인합니다
+         * @description 입력한 품번이 현재 사용 가능한지 여부를 반환합니다
+         */
+        get: operations["partNumberCategoryCheckNumber"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2571,7 +2903,7 @@ export interface paths {
          * 온톨로지 스키마(노드/관계 정의)를 조회합니다
          * @description 온톨로지 스키마(노드/관계 정의)를 조회합니다
          */
-        get: operations["getOntologySchema"];
+        get: operations["ontologyGetOntologySchema"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2591,7 +2923,7 @@ export interface paths {
          * 라벨(Part, Drawing, Supplier, Project)별 merge key 자동완성 목록을 조회합니다
          * @description 라벨(Part, Drawing, Supplier, Project)별 merge key 자동완성 목록을 조회합니다
          */
-        get: operations["searchNodes"];
+        get: operations["ontologySearchNodes"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2611,7 +2943,7 @@ export interface paths {
          * cursor 기반 페이지네이션으로 알림 목록을 조회합니다
          * @description cursor 기반 페이지네이션으로 알림 목록을 조회합니다
          */
-        get: operations["listNotifications"];
+        get: operations["notificationList"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2631,7 +2963,7 @@ export interface paths {
          * 현재 사용자의 미읽음 알림 개수를 조회합니다
          * @description 현재 사용자의 미읽음 알림 개수를 조회합니다
          */
-        get: operations["getUnreadCount"];
+        get: operations["notificationGetUnreadCount"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2651,7 +2983,7 @@ export interface paths {
          * SSE 스트림으로 새 알림 이벤트를 실시간 수신합니다
          * @description SSE 스트림으로 새 알림 이벤트를 실시간 수신합니다
          */
-        get: operations["stream"];
+        get: operations["notificationStream"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2671,7 +3003,7 @@ export interface paths {
          * 현재 조직의 전체 멤버 목록을 조회합니다
          * @description 현재 조직의 전체 멤버 목록을 조회합니다
          */
-        get: operations["listMembers"];
+        get: operations["memberList"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2691,7 +3023,7 @@ export interface paths {
          * 조직 멤버 lookup 목록을 조회합니다 (autocomplete/picker 용도)
          * @description 조직 멤버 lookup 목록을 조회합니다 (autocomplete/picker 용도)
          */
-        get: operations["lookupMembers_1"];
+        get: operations["memberLookup"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2711,7 +3043,7 @@ export interface paths {
          * 활성 매핑 목록을 최신순으로 조회합니다
          * @description 활성 매핑 목록을 최신순으로 조회합니다
          */
-        get: operations["list"];
+        get: operations["mappingList"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2731,7 +3063,7 @@ export interface paths {
          * 라벨 picker/autocomplete 용 경량 목록(id, name, color)을 조회합니다
          * @description 라벨 picker/autocomplete 용 경량 목록(id, name, color)을 조회합니다
          */
-        get: operations["lookupLabels"];
+        get: operations["labelLookup"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2751,7 +3083,27 @@ export interface paths {
          * 댓글과 활동 이력을 시간순으로 병합 조회합니다
          * @description 댓글과 활동 이력을 시간순으로 병합 조회합니다
          */
-        get: operations["getTimeline"];
+        get: operations["issueGetTimeline"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/issues/{issueId}/ec-prefill": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 이슈 기반 EC 사전 입력 데이터를 조회합니다
+         * @description 이슈에 연결된 부품 정보를 기반으로 EC 생성 시 사전 입력할 제목, 영향 항목 후보, 추천 검토자, 영향 분석 요약을 반환합니다
+         */
+        get: operations["issueGetEcPrefill"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2771,7 +3123,7 @@ export interface paths {
          * 이슈 연결 picker UI용 경량 목록을 조회합니다
          * @description 이슈 연결 picker UI용 경량 목록을 조회합니다
          */
-        get: operations["lookupIssues"];
+        get: operations["issueLookup"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2791,7 +3143,7 @@ export interface paths {
          * 댓글과 활동 이력을 시간순으로 병합 조회합니다
          * @description 댓글과 활동 이력을 시간순으로 병합 조회합니다
          */
-        get: operations["getTimeline_1"];
+        get: operations["engineeringChangeGetTimeline"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2811,7 +3163,7 @@ export interface paths {
          * 변경관리 연결 picker UI용 경량 목록을 조회합니다
          * @description 변경관리 연결 picker UI용 경량 목록을 조회합니다
          */
-        get: operations["lookupEngineeringChanges"];
+        get: operations["engineeringChangeLookup"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2831,7 +3183,7 @@ export interface paths {
          * Part 총 수, 금주 추가 수, BOM 링크 수, 최근 합성 작업 상태를 조회합니다
          * @description Part 총 수, 금주 추가 수, BOM 링크 수, 최근 합성 작업 상태를 조회합니다
          */
-        get: operations["getStats"];
+        get: operations["dashboardGetStats"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2851,7 +3203,7 @@ export interface paths {
          * 챗 스레드 상세를 조회합니다
          * @description 챗 스레드 메타데이터를 조회합니다
          */
-        get: operations["getThread"];
+        get: operations["chatGetThread"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2871,7 +3223,7 @@ export interface paths {
          * 챗 실행 스트림을 구독합니다
          * @description 실행 이벤트와 응답을 SSE 스트림으로 수신합니다
          */
-        get: operations["streamRun"];
+        get: operations["chatStreamRun"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2891,7 +3243,47 @@ export interface paths {
          * 챗 실행 이벤트 목록을 조회합니다
          * @description 실행에 속한 단계 이벤트 목록을 조회합니다
          */
-        get: operations["listRunEvents"];
+        get: operations["chatListRunEvents"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/change-statistics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 변경 통계를 조회합니다
+         * @description 조직 전체의 엔지니어링 변경 통계를 조회합니다. 전체 릴리즈 건수, 이번 달 릴리즈 건수, 평균 승인 소요일, 변경 빈도 상위 파트를 포함합니다.
+         */
+        get: operations["changeStatisticsGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/change-feed": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 변경 피드를 조회합니다
+         * @description 릴리즈된 엔지니어링 변경 목록을 최신 순으로 조회합니다. partId를 지정하면 해당 파트에 영향을 준 변경만 반환합니다.
+         */
+        get: operations["changeFeedList"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2911,7 +3303,7 @@ export interface paths {
          * Origin 기반 워크스페이스 정보 조회
          * @description Origin 기반 워크스페이스 정보 조회
          */
-        get: operations["getSite"];
+        get: operations["authGetSite"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2931,7 +3323,7 @@ export interface paths {
          * 플랜 목록 조회
          * @description 워크스페이스 시작 플랜 목록과 좌석 단가, 멤버 정책, 스토리지 기본 정책, AI 과금 모드, 현재 가입 가능 여부를 조회합니다
          */
-        get: operations["getPlans"];
+        get: operations["authGetPlans"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2951,7 +3343,7 @@ export interface paths {
          * 초대 토큰 검증
          * @description 초대 토큰 검증
          */
-        get: operations["verifyInvitation"];
+        get: operations["authVerifyInvitation"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2971,7 +3363,7 @@ export interface paths {
          * 워크스페이스 slug 중복/형식 검사
          * @description 워크스페이스 slug 중복/형식 검사
          */
-        get: operations["checkSlug"];
+        get: operations["authCheckSlug"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2991,7 +3383,7 @@ export interface paths {
          * 이메일 중복 확인
          * @description 이메일 중복 확인
          */
-        get: operations["checkEmail"];
+        get: operations["authCheckEmail"];
         put?: never;
         post?: never;
         delete?: never;
@@ -3011,7 +3403,7 @@ export interface paths {
          * 초기 탐색용 추천 질문 목록을 조회합니다
          * @description 초기 탐색용 추천 질문 목록을 조회합니다
          */
-        get: operations["getStarters"];
+        get: operations["activationGetStarters"];
         put?: never;
         post?: never;
         delete?: never;
@@ -3034,7 +3426,7 @@ export interface paths {
          * 미리보기 전용 파일을 삭제합니다
          * @description 대표 미리보기 전용 파일 1건을 삭제합니다
          */
-        delete: operations["deletePreviewFile"];
+        delete: operations["partRevisionPreviewDeletePreviewFile"];
         options?: never;
         head?: never;
         patch?: never;
@@ -3054,7 +3446,7 @@ export interface paths {
          * 첨부 파일을 제거합니다
          * @description 리비전에 연결된 첨부 파일 1건을 제거합니다
          */
-        delete: operations["deleteFile"];
+        delete: operations["partRevisionAssetDeleteFile"];
         options?: never;
         head?: never;
         patch?: never;
@@ -3074,7 +3466,7 @@ export interface paths {
          * 도면을 삭제합니다
          * @description 리비전에 연결된 도면 1건을 삭제합니다
          */
-        delete: operations["deleteDrawing"];
+        delete: operations["partRevisionAssetDeleteDrawing"];
         options?: never;
         head?: never;
         patch?: never;
@@ -3094,7 +3486,7 @@ export interface paths {
          * 관리자(ADMIN 이상)가 PENDING 상태 초대를 취소합니다
          * @description 관리자(ADMIN 이상)가 PENDING 상태 초대를 취소합니다
          */
-        delete: operations["cancelInvitation"];
+        delete: operations["organizationInvitationCancelInvitation"];
         options?: never;
         head?: never;
         patch?: never;
@@ -3114,7 +3506,7 @@ export interface paths {
          * 관리자(ADMIN 이상) 권한으로 조직 멤버를 제거합니다
          * @description 관리자(ADMIN 이상) 권한으로 조직 멤버를 제거합니다
          */
-        delete: operations["removeMember"];
+        delete: operations["memberRemove"];
         options?: never;
         head?: never;
         patch?: never;
@@ -3134,7 +3526,7 @@ export interface paths {
          * 첨부파일 1건을 삭제(soft delete)합니다
          * @description 첨부파일 1건을 삭제(soft delete)합니다
          */
-        delete: operations["deleteFile_1"];
+        delete: operations["issueDeleteFile"];
         options?: never;
         head?: never;
         patch?: never;
@@ -3154,7 +3546,7 @@ export interface paths {
          * 첨부파일 1건을 삭제(soft delete)합니다
          * @description 첨부파일 1건을 삭제(soft delete)합니다
          */
-        delete: operations["deleteFile_2"];
+        delete: operations["engineeringChangeDeleteFile"];
         options?: never;
         head?: never;
         patch?: never;
@@ -3210,6 +3602,65 @@ export interface components {
              * @enum {string}
              */
             mode?: "DIRECT" | "ENGINEERING_CHANGE_REQUIRED";
+        };
+        /** @description 채번 카테고리 수정 요청 */
+        UpdatePartNumberCategoryRequest: {
+            /**
+             * @description 카테고리 이름
+             * @example PCB
+             */
+            name: string;
+            /**
+             * @description 채번 접두어
+             * @example PCB
+             */
+            prefix: string;
+            /**
+             * @description 구분자
+             * @example -
+             */
+            delimiter?: string;
+            /**
+             * Format: int32
+             * @description 자릿수
+             * @example 4
+             */
+            digits?: number;
+        };
+        /** @description 채번 카테고리 응답 */
+        PartNumberCategoryResponse: {
+            /**
+             * Format: uuid
+             * @description 채번 카테고리 ID
+             * @example 019d0000-0000-7000-8000-000000000001
+             */
+            id?: string;
+            /**
+             * @description 카테고리 이름
+             * @example PCB
+             */
+            name?: string;
+            /**
+             * @description 채번 접두어
+             * @example PCB
+             */
+            prefix?: string;
+            /**
+             * @description 구분자
+             * @example -
+             */
+            delimiter?: string;
+            /**
+             * Format: int32
+             * @description 자릿수
+             * @example 4
+             */
+            digits?: number;
+            /**
+             * @description 예시 품번
+             * @example PCB-0001
+             */
+            preview_part_number?: string;
         };
         /** @description 확장 속성 매핑 */
         ExtendedPropertyMappingDto: {
@@ -3551,11 +4002,11 @@ export interface components {
             created_at?: string;
         };
         JsonNode: {
-            number?: boolean;
+            null?: boolean;
+            float?: boolean;
+            array?: boolean;
+            empty?: boolean;
             container?: boolean;
-            pojo?: boolean;
-            int?: boolean;
-            long?: boolean;
             /** @enum {string} */
             node_type?: "ARRAY" | "BINARY" | "BOOLEAN" | "MISSING" | "NULL" | "NUMBER" | "OBJECT" | "POJO" | "STRING";
             string?: boolean;
@@ -3570,12 +4021,12 @@ export interface components {
             textual?: boolean;
             boolean?: boolean;
             binary?: boolean;
+            number?: boolean;
+            pojo?: boolean;
+            int?: boolean;
+            long?: boolean;
             integral_number?: boolean;
             floating_point_number?: boolean;
-            array?: boolean;
-            empty?: boolean;
-            null?: boolean;
-            float?: boolean;
             embedded_value?: boolean;
         };
         /** @description 연결 이슈 요약 */
@@ -4052,7 +4503,7 @@ export interface components {
              * @example CATEGORY
              * @enum {string}
              */
-            part_system_property_kind?: "PART_NUMBER" | "NAME" | "REVISION" | "MATERIAL" | "UNIT" | "DESCRIPTION" | "CATEGORY" | "PHANTOM" | "LIFECYCLE_STATE" | "LEAD_TIME_DAYS";
+            part_system_property_kind?: "PART_NUMBER" | "NAME" | "REVISION" | "MATERIAL" | "UNIT" | "DESCRIPTION" | "CATEGORY" | "ITEM_TYPE" | "LIFECYCLE_STATE" | "LEAD_TIME_DAYS";
             /**
              * @description 활성 여부를 조직 설정에서 변경할 수 있는지 여부
              * @example true
@@ -4217,10 +4668,21 @@ export interface components {
         /** @description 부품 생성 요청 */
         CreatePartRequest: {
             /**
-             * @description 품번
+             * @description 품번 (채번 카테고리 지정 시 생략 가능)
              * @example P-100
              */
-            part_number: string;
+            part_number?: string;
+            /**
+             * Format: uuid
+             * @description 채번 카테고리 ID
+             */
+            numbering_category_id?: string;
+            /**
+             * @description 부품 유형
+             * @example MANUFACTURED
+             * @enum {string}
+             */
+            item_type?: "MANUFACTURED" | "PURCHASED" | "SUBCONTRACTED" | "SERVICE" | "PHANTOM";
             /**
              * @description 품명
              * @example M3 볼트
@@ -4241,16 +4703,6 @@ export interface components {
              * @example 체결용 표준 부품
              */
             description?: string;
-            /**
-             * @description 카테고리
-             * @example FASTENER
-             */
-            category?: string;
-            /**
-             * @description 팬텀 부품 여부
-             * @example false
-             */
-            is_phantom?: boolean;
             /**
              * @description 수명주기 상태
              * @example ACTIVE
@@ -4288,6 +4740,8 @@ export interface components {
             revision_status?: "DRAFT" | "RELEASED" | "SUPERSEDED" | "CANCELED";
             part_number?: string;
             /** Format: uuid */
+            numbering_category_id?: string;
+            /** Format: uuid */
             base_revision_id?: string;
             base_revision_code?: string;
             name?: string;
@@ -4295,10 +4749,10 @@ export interface components {
             material?: string;
             unit?: string;
             description?: string;
-            category?: string;
             /** @enum {string} */
             lifecycle_state?: "ACTIVE" | "EOL" | "OBSOLETE";
-            is_phantom?: boolean;
+            /** @enum {string} */
+            item_type?: "MANUFACTURED" | "PURCHASED" | "SUBCONTRACTED" | "SERVICE" | "PHANTOM";
             /** Format: int32 */
             lead_time_days?: number;
             extended_properties?: {
@@ -4429,6 +4883,183 @@ export interface components {
              */
             reason?: string;
         };
+        /** @description BOM 항목 추가 요청 */
+        AddBomItemRequest: {
+            /**
+             * Format: uuid
+             * @description 하위 부품 리비전 ID
+             */
+            child_part_revision_id: string;
+            /**
+             * @description BOM 줄 번호
+             * @example 10
+             */
+            line_number: string;
+            /**
+             * @description 수량
+             * @example 2
+             */
+            quantity: number;
+            /**
+             * @description 확장 속성 JSON 객체. key는 property_definition.id(UUID)여야 합니다
+             * @example {}
+             */
+            extended_properties?: {
+                [key: string]: unknown;
+            };
+        };
+        /** @description 응답 DTO */
+        BomChildResponse: {
+            /** Format: uuid */
+            bom_item_id?: string;
+            /** Format: uuid */
+            part_id?: string;
+            /** Format: uuid */
+            revision_id?: string;
+            part_number?: string;
+            name?: string;
+            revision_code?: string;
+            /** @enum {string} */
+            revision_status?: "DRAFT" | "RELEASED" | "SUPERSEDED" | "CANCELED";
+            line_number?: string;
+            quantity?: number;
+            extended_properties?: {
+                [key: string]: unknown;
+            };
+        };
+        /** @description 응답 DTO */
+        BomParentResponse: {
+            /** Format: uuid */
+            bom_item_id?: string;
+            /** Format: uuid */
+            part_id?: string;
+            /** Format: uuid */
+            revision_id?: string;
+            part_number?: string;
+            name?: string;
+            revision_code?: string;
+            /** @enum {string} */
+            revision_status?: "DRAFT" | "RELEASED" | "SUPERSEDED" | "CANCELED";
+            line_number?: string;
+            quantity?: number;
+            extended_properties?: {
+                [key: string]: unknown;
+            };
+        };
+        /** @description 응답 DTO */
+        PartBomResponse: {
+            children?: components["schemas"]["BomChildResponse"][];
+            parents?: components["schemas"]["BomParentResponse"][];
+        };
+        /** @description BOM 가져오기 미리보기 요청 */
+        PreviewBomImportRequest: {
+            /**
+             * Format: uuid
+             * @description 업로드된 파일 ID
+             * @example 550e8400-e29b-41d4-a716-446655440000
+             */
+            file_id: string;
+        };
+        /** @description BOM 가져오기 미리보기 응답 */
+        BomImportPreviewResponse: {
+            /** @description 행별 검증 결과 목록 */
+            rows?: components["schemas"]["RowResult"][];
+            /** @description 요약 통계 */
+            summary?: components["schemas"]["SummaryResponse"];
+        };
+        /** @description 행별 검증 결과 */
+        RowResult: {
+            /**
+             * Format: int32
+             * @description 엑셀 행 번호
+             * @example 2
+             */
+            row_number?: number;
+            /**
+             * @description 줄 번호
+             * @example 10
+             */
+            line_number?: string;
+            /**
+             * @description 하위 부품 번호
+             * @example PART-001
+             */
+            child_part_number?: string;
+            /**
+             * @description 하위 리비전 코드
+             * @example A
+             */
+            child_revision_code?: string;
+            /**
+             * @description 수량
+             * @example 2.5
+             */
+            quantity?: number;
+            /**
+             * @description 검증 상태 (SUCCESS, ERROR, WARNING)
+             * @example SUCCESS
+             */
+            status?: string;
+            /**
+             * @description 오류/경고 메시지
+             * @example 부품을 찾을 수 없습니다
+             */
+            message?: string;
+        };
+        /** @description 미리보기 요약 통계 */
+        SummaryResponse: {
+            /**
+             * Format: int32
+             * @description 전체 행 수
+             * @example 10
+             */
+            total_count?: number;
+            /**
+             * Format: int32
+             * @description 성공 행 수
+             * @example 8
+             */
+            success_count?: number;
+            /**
+             * Format: int32
+             * @description 오류 행 수
+             * @example 2
+             */
+            error_count?: number;
+            /**
+             * Format: int32
+             * @description 경고 행 수
+             * @example 0
+             */
+            warning_count?: number;
+        };
+        /** @description BOM 가져오기 확정 요청 */
+        CommitBomImportRequest: {
+            /**
+             * Format: uuid
+             * @description 업로드된 파일 ID
+             * @example 550e8400-e29b-41d4-a716-446655440000
+             */
+            file_id: string;
+            /**
+             * @description 가져오기 모드 (APPEND: 기존 항목에 추가, REPLACE: 기존 항목 대체)
+             * @example APPEND
+             * @enum {string}
+             */
+            mode: "APPEND" | "REPLACE";
+        };
+        /** @description BOM 가져오기 확정 응답 */
+        BomImportCommitResponse: {
+            /** @description 생성된 BOM 항목 ID 목록 */
+            created_bom_item_ids?: string[];
+            /** @description 확정 요약 */
+            summary?: components["schemas"]["SummaryResponse"];
+        };
+        /** @description BOM 항목 일괄 추가 요청 */
+        AddBomItemsBatchRequest: {
+            /** @description BOM 항목 목록 */
+            items: components["schemas"]["AddBomItemRequest"][];
+        };
         /** @description 부품 수명주기 상태 변경 요청 */
         ChangePartLifecycleStateRequest: {
             /**
@@ -4450,6 +5081,30 @@ export interface components {
              * @enum {string}
              */
             lifecycle_state?: "ACTIVE" | "EOL" | "OBSOLETE";
+        };
+        /** @description 채번 카테고리 생성 요청 */
+        CreatePartNumberCategoryRequest: {
+            /**
+             * @description 카테고리 이름
+             * @example PCB
+             */
+            name: string;
+            /**
+             * @description 채번 접두어
+             * @example PCB
+             */
+            prefix: string;
+            /**
+             * @description 구분자
+             * @example -
+             */
+            delimiter?: string;
+            /**
+             * Format: int32
+             * @description 자릿수
+             * @example 4
+             */
+            digits?: number;
         };
         /** @description 조직 생성 요청 */
         CreateOrganizationRequest: {
@@ -4967,6 +5622,17 @@ export interface components {
             /** @description 변경관리 단계 목록 */
             steps?: components["schemas"]["EngineeringChangeStepRequest"][];
         };
+        /** @description 이슈로부터 설계변경 생성 요청 */
+        CreateEcFromIssueRequest: {
+            /** @description 변경관리 제목 (미입력 시 이슈 제목 사용) */
+            title?: string;
+            /** @description 변경관리 본문(TipTap JSON, 미입력 시 영향 분석 요약 자동 생성) */
+            body?: components["schemas"]["JsonNode"];
+            /** @description 검토자 사용자 ID 목록 */
+            reviewer_ids?: string[];
+            /** @description 승인자 사용자 ID 목록 */
+            approver_ids?: string[];
+        };
         /** @description 챗 스레드 생성 요청 */
         CreateChatThreadRequest: {
             /**
@@ -5041,6 +5707,105 @@ export interface components {
              * @description 생성된 이슈 ID
              */
             issue_id?: string;
+        };
+        /** @description BOM 비교 요청 */
+        BomCompareRequest: {
+            /**
+             * Format: uuid
+             * @description 소스 부품 리비전 ID
+             * @example 550e8400-e29b-41d4-a716-446655440000
+             */
+            source_revision_id: string;
+            /**
+             * Format: uuid
+             * @description 대상 부품 리비전 ID
+             * @example 550e8400-e29b-41d4-a716-446655440001
+             */
+            target_revision_id: string;
+        };
+        /** @description BOM 비교 응답 */
+        BomCompareResponse: {
+            /** @description 변경 목록 */
+            changes?: components["schemas"]["Change"][];
+            /** @description 변경 요약 */
+            summary?: components["schemas"]["Summary"];
+        };
+        /** @description BOM 비교 변경 항목 */
+        Change: {
+            /**
+             * @description BOM 줄 번호
+             * @example 10
+             */
+            line_number?: string;
+            /**
+             * @description 변경 유형
+             * @example ADDED
+             * @enum {string}
+             */
+            change_type?: "ADDED" | "REMOVED" | "CHANGED";
+            /**
+             * @description 소스 부품 번호
+             * @example P-001
+             */
+            source_part_number?: string;
+            /**
+             * @description 소스 부품명
+             * @example 볼트 M6
+             */
+            source_name?: string;
+            /**
+             * @description 소스 수량
+             * @example 4
+             */
+            source_quantity?: number;
+            /**
+             * @description 대상 부품 번호
+             * @example P-002
+             */
+            target_part_number?: string;
+            /**
+             * @description 대상 부품명
+             * @example 볼트 M8
+             */
+            target_name?: string;
+            /**
+             * @description 대상 수량
+             * @example 6
+             */
+            target_quantity?: number;
+        };
+        /** @description BOM 비교 변경 요약 */
+        Summary: {
+            /**
+             * Format: int32
+             * @description 추가된 항목 수
+             * @example 3
+             */
+            added_count?: number;
+            /**
+             * Format: int32
+             * @description 삭제된 항목 수
+             * @example 1
+             */
+            removed_count?: number;
+            /**
+             * Format: int32
+             * @description 변경된 항목 수
+             * @example 2
+             */
+            changed_count?: number;
+            /**
+             * Format: int32
+             * @description 변경 없는 항목 수
+             * @example 10
+             */
+            unchanged_count?: number;
+            /**
+             * Format: int32
+             * @description 전체 항목 수
+             * @example 16
+             */
+            total_count?: number;
         };
         /** @description 이메일 인증코드 검증 요청 */
         VerifyEmailRequest: {
@@ -5504,8 +6269,6 @@ export interface components {
             material_set?: boolean;
             unit_set?: boolean;
             description_set?: boolean;
-            category_set?: boolean;
-            phantom_set?: boolean;
             lead_time_days_set?: boolean;
             extended_properties_set?: boolean;
             /**
@@ -5528,16 +6291,6 @@ export interface components {
              * @example 체결용 표준 부품
              */
             description?: string;
-            /**
-             * @description 카테고리
-             * @example FASTENER
-             */
-            category?: string;
-            /**
-             * @description 팬텀 부품 여부
-             * @example false
-             */
-            is_phantom?: boolean;
             /**
              * Format: int32
              * @description 리드타임(일)
@@ -5567,6 +6320,35 @@ export interface components {
              * @description 대표 미리보기 소스 ID
              */
             source_id: string;
+        };
+        /** @description BOM 항목 수정 요청 */
+        UpdateBomItemRequest: {
+            child_part_revision_id_set?: boolean;
+            line_number_set?: boolean;
+            quantity_set?: boolean;
+            extended_properties_set?: boolean;
+            /**
+             * Format: uuid
+             * @description 하위 부품 리비전 ID
+             */
+            child_part_revision_id?: string;
+            /**
+             * @description BOM 줄 번호
+             * @example 10
+             */
+            line_number?: string;
+            /**
+             * @description 수량
+             * @example 2
+             */
+            quantity?: number;
+            /**
+             * @description 확장 속성 JSON 객체. key는 property_definition.id(UUID)여야 합니다
+             * @example {}
+             */
+            extended_properties?: {
+                [key: string]: unknown;
+            };
         };
         /** @description 요청 DTO */
         RenameCategoryRequest: {
@@ -6562,44 +7344,79 @@ export interface components {
             phone?: string;
             profile_image_url?: string;
         };
-        /** @description 응답 DTO */
-        BomChildResponse: {
-            /** Format: uuid */
+        /** @description Where-used 참조 항목 */
+        Reference: {
+            /**
+             * Format: uuid
+             * @description 부품 ID
+             */
             part_id?: string;
-            /** Format: uuid */
-            revision_id?: string;
+            /**
+             * @description 부품 번호
+             * @example P-001
+             */
             part_number?: string;
-            name?: string;
-            revision_code?: string;
-            /** @enum {string} */
-            revision_status?: "DRAFT" | "RELEASED" | "SUPERSEDED" | "CANCELED";
-            line_number?: string;
-            quantity?: number;
-            extended_properties?: {
-                [key: string]: unknown;
-            };
-        };
-        /** @description 응답 DTO */
-        BomParentResponse: {
-            /** Format: uuid */
-            part_id?: string;
-            /** Format: uuid */
+            /**
+             * @description 부품명
+             * @example 어셈블리 A
+             */
+            part_name?: string;
+            /**
+             * Format: uuid
+             * @description 리비전 ID
+             */
             revision_id?: string;
-            part_number?: string;
-            name?: string;
+            /**
+             * @description 리비전 코드
+             * @example A
+             */
             revision_code?: string;
-            /** @enum {string} */
+            /**
+             * @description 리비전 상태
+             * @example RELEASED
+             * @enum {string}
+             */
             revision_status?: "DRAFT" | "RELEASED" | "SUPERSEDED" | "CANCELED";
-            line_number?: string;
-            quantity?: number;
-            extended_properties?: {
-                [key: string]: unknown;
-            };
         };
-        /** @description 응답 DTO */
-        PartBomResponse: {
-            children?: components["schemas"]["BomChildResponse"][];
-            parents?: components["schemas"]["BomParentResponse"][];
+        /** @description 리비전 상태별 집계 */
+        StatusBreakdown: {
+            /**
+             * Format: int32
+             * @description DRAFT 수
+             * @example 2
+             */
+            draft_count?: number;
+            /**
+             * Format: int32
+             * @description RELEASED 수
+             * @example 1
+             */
+            released_count?: number;
+            /**
+             * Format: int32
+             * @description SUPERSEDED 수
+             * @example 1
+             */
+            superseded_count?: number;
+            /**
+             * Format: int32
+             * @description CANCELED 수
+             * @example 1
+             */
+            canceled_count?: number;
+        };
+        /** @description Where-used 요약 응답 */
+        WhereUsedSummaryResponse: {
+            /**
+             * Format: int32
+             * @description 직접 참조 수
+             * @example 5
+             */
+            direct_reference_count?: number;
+            /** @description 상태별 집계 */
+            status_breakdown?: components["schemas"]["StatusBreakdown"];
+            /** @description 참조 목록 */
+            references?: components["schemas"]["Reference"][];
         };
         /** @description 응답 DTO */
         BomTreeNodeResponse: {
@@ -6627,6 +7444,59 @@ export interface components {
             direction?: "FORWARD" | "REVERSE";
             /** Format: int32 */
             total_count?: number;
+        };
+        /** @description 영향받는 BOM 항목 */
+        AffectedBomItemResponse: {
+            /**
+             * Format: uuid
+             * @description 상위 부품 ID
+             * @example 550e8400-e29b-41d4-a716-446655440000
+             */
+            parent_part_id?: string;
+            /**
+             * @description 상위 부품 품번
+             * @example PRT-001
+             */
+            parent_part_number?: string;
+            /**
+             * @description 상위 부품 품명
+             * @example 프레임 어셈블리
+             */
+            parent_part_name?: string;
+            /**
+             * @description 상위 부품 리비전 코드
+             * @example A
+             */
+            parent_revision_code?: string;
+            /**
+             * Format: int32
+             * @description BOM 트리 레벨 (1이 직접 상위)
+             * @example 1
+             */
+            level?: number;
+        };
+        /** @description 영향받는 프로젝트 */
+        AffectedProjectResponse: {
+            /**
+             * Format: uuid
+             * @description 프로젝트 ID
+             * @example 550e8400-e29b-41d4-a716-446655440000
+             */
+            project_id?: string;
+            /**
+             * @description 프로젝트 이름
+             * @example 자동차 프레임 프로젝트
+             */
+            project_name?: string;
+        };
+        /** @description 부품 영향 분석 응답 DTO */
+        PartImpactAnalysisResponse: {
+            /** @description 영향받는 BOM 항목 목록 */
+            bom_items?: components["schemas"]["AffectedBomItemResponse"][];
+            /** @description 영향받는 프로젝트 목록 */
+            projects?: components["schemas"]["AffectedProjectResponse"][];
+            /** @description 영향 분석 요약 */
+            summary?: components["schemas"]["SummaryResponse"];
         };
         /** @description 공식 리비전에서 파생된 초안 이력 응답 */
         PartRevisionHistoryDraftResponse: {
@@ -6661,6 +7531,45 @@ export interface components {
         /** @description 리비전 이력 목록 응답 */
         PartRevisionHistoryResponse: {
             items?: components["schemas"]["PartRevisionHistoryItemResponse"][];
+        };
+        /** @description 부품 변경 이력 항목 */
+        PartChangeHistoryItemResponse: {
+            /**
+             * Format: date-time
+             * @description 시각
+             */
+            timestamp?: string;
+            /**
+             * @description 유형
+             * @example EC_RELEASED
+             */
+            type?: string;
+            /**
+             * Format: uuid
+             * @description 참조 ID
+             */
+            reference_id?: string;
+            /**
+             * Format: int32
+             * @description 참조 번호
+             * @example 12
+             */
+            reference_number?: number;
+            /**
+             * @description 제목
+             * @example 부품 재질 변경
+             */
+            title?: string;
+            /**
+             * @description 행위자 이름
+             * @example 홍길동
+             */
+            actor_name?: string;
+        };
+        /** @description 부품 변경 이력 응답 */
+        PartChangeHistoryResponse: {
+            /** @description 변경 이력 항목 목록 */
+            items?: components["schemas"]["PartChangeHistoryItemResponse"][];
         };
         /** @description 부품 리비전 lookup 항목 */
         PartRevisionLookupItemResponse: {
@@ -6789,6 +7698,37 @@ export interface components {
         CategoryLookupResponse: {
             items?: string[];
         };
+        /** @description 채번 카테고리 목록 응답 */
+        PartNumberCategoryListResponse: {
+            /** @description 채번 카테고리 목록 */
+            items?: components["schemas"]["PartNumberCategoryResponse"][];
+        };
+        /** @description 다음 품번 미리보기 응답 */
+        PartNumberPreviewResponse: {
+            /**
+             * @description 예상 품번
+             * @example PCB-0042
+             */
+            part_number?: string;
+            /**
+             * @description 안내 문구
+             * @example 이 번호는 실제 생성 시 변경될 수 있습니다
+             */
+            note?: string;
+        };
+        /** @description 품번 사용 가능 여부 응답 */
+        PartNumberAvailabilityResponse: {
+            /**
+             * @description 조회한 품번
+             * @example PCB-0042
+             */
+            part_number?: string;
+            /**
+             * @description 사용 가능 여부
+             * @example true
+             */
+            available?: boolean;
+        };
         InvitationListResponse: {
             /** @description 초대 목록 */
             invitations?: components["schemas"]["InvitationResponse"][];
@@ -6907,7 +7847,7 @@ export interface components {
             /** Format: uuid */
             id?: string;
             /** @enum {string} */
-            type?: "MENTION";
+            type?: "MENTION" | "RELEASE";
             /** Format: uuid */
             actor_id?: string;
             payload?: components["schemas"]["MentionPayloadResponse"];
@@ -7077,6 +8017,61 @@ export interface components {
             old_value?: components["schemas"]["JsonNode"];
             /** @description 이후 값 */
             new_value?: components["schemas"]["JsonNode"];
+        };
+        /** @description 영향 항목 후보 */
+        AffectedItemSuggestionResponse: {
+            /**
+             * Format: uuid
+             * @description 부품 ID
+             */
+            part_id?: string;
+            /**
+             * @description 품번
+             * @example PRT-001
+             */
+            part_number?: string;
+            /**
+             * Format: uuid
+             * @description 리비전 ID
+             */
+            revision_id?: string;
+            /**
+             * @description 리비전 코드
+             * @example A
+             */
+            revision_code?: string;
+        };
+        /** @description 이슈 기반 EC 사전 입력 응답 */
+        EcPrefillResponse: {
+            /** @description 추천 제목 (이슈 제목) */
+            suggested_title?: string;
+            /** @description 영향 항목 후보 목록 */
+            affected_items?: components["schemas"]["AffectedItemSuggestionResponse"][];
+            /** @description 추천 검토자 사용자 ID 목록 */
+            suggested_reviewer_ids?: string[];
+            /** @description 영향 분석 요약 */
+            impact_summary?: components["schemas"]["ImpactSummaryResponse"];
+        };
+        /** @description 영향 분석 요약 */
+        ImpactSummaryResponse: {
+            /**
+             * Format: int32
+             * @description 영향받는 BOM 수
+             * @example 5
+             */
+            affected_bom_count?: number;
+            /**
+             * Format: int32
+             * @description 영향받는 프로젝트 수
+             * @example 2
+             */
+            affected_project_count?: number;
+            /**
+             * Format: int32
+             * @description 수정 필요 DRAFT 리비전 수
+             * @example 3
+             */
+            draft_revision_count?: number;
         };
         /** @description 이슈 lookup 항목 */
         IssueLookupItemResponse: {
@@ -7337,6 +8332,107 @@ export interface components {
              */
             created_at?: string;
         };
+        /** @description 변경 통계 응답 */
+        ChangeStatisticsResponse: {
+            /**
+             * Format: int32
+             * @description 전체 릴리즈된 EC 수
+             * @example 150
+             */
+            total_released_count?: number;
+            /**
+             * Format: int32
+             * @description 이번 달 릴리즈된 EC 수
+             * @example 12
+             */
+            monthly_released_count?: number;
+            /**
+             * Format: double
+             * @description 평균 승인 소요일 (DRAFT → RELEASED), 데이터 없으면 null
+             * @example 3.5
+             */
+            average_approval_days_or_null?: number;
+            /** @description 변경 빈도 상위 5개 파트 */
+            top_changed_parts?: components["schemas"]["TopChangedPartResponse"][];
+        };
+        /** @description 변경 빈도 상위 파트 */
+        TopChangedPartResponse: {
+            /**
+             * Format: uuid
+             * @description 파트 식별자
+             */
+            part_id?: string;
+            /**
+             * @description 파트 번호
+             * @example PN-001
+             */
+            part_number?: string;
+            /**
+             * @description 파트 이름
+             * @example 브래킷 A
+             */
+            part_name?: string;
+            /**
+             * Format: int32
+             * @description 변경 횟수
+             * @example 8
+             */
+            change_count?: number;
+        };
+        /** @description 변경 피드 항목 */
+        ChangeFeedItemResponse: {
+            /**
+             * Format: uuid
+             * @description EC 식별자
+             * @example 550e8400-e29b-41d4-a716-446655440000
+             */
+            ec_id?: string;
+            /**
+             * Format: int32
+             * @description EC 번호
+             * @example 1
+             */
+            ec_number?: number;
+            /**
+             * @description EC 제목
+             * @example 부품 재질 변경
+             */
+            title?: string;
+            /** @description 영향받는 파트 번호 목록 */
+            affected_part_numbers?: string[];
+            /**
+             * Format: int32
+             * @description 영향받는 파트 수
+             * @example 3
+             */
+            affected_part_count?: number;
+            /**
+             * Format: date-time
+             * @description 릴리즈 일시
+             */
+            released_at?: string;
+            /**
+             * Format: uuid
+             * @description 릴리즈한 사용자 식별자
+             */
+            released_by_id?: string;
+            /**
+             * @description 릴리즈한 사용자 이름
+             * @example 홍길동
+             */
+            released_by_name?: string;
+            /**
+             * Format: int32
+             * @description 원본 이슈 번호 (nullable)
+             * @example 42
+             */
+            source_issue_number?: number;
+        };
+        /** @description 변경 피드 응답 */
+        ChangeFeedResponse: {
+            /** @description 변경 피드 항목 목록 */
+            items?: components["schemas"]["ChangeFeedItemResponse"][];
+        };
         SiteResponse: {
             /**
              * @description 워크스페이스 slug
@@ -7563,7 +8659,7 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
-    setProfileImage: {
+    userSetProfileImage: {
         parameters: {
             query?: never;
             header?: never;
@@ -7623,7 +8719,7 @@ export interface operations {
             };
         };
     };
-    deleteProfileImage: {
+    userDeleteProfileImage: {
         parameters: {
             query?: never;
             header?: never;
@@ -7668,7 +8764,7 @@ export interface operations {
             };
         };
     };
-    changePassword: {
+    userChangePassword: {
         parameters: {
             query?: never;
             header?: never;
@@ -7726,7 +8822,7 @@ export interface operations {
             };
         };
     };
-    updatePartWorkflowPolicy: {
+    settingsUpdatePartWorkflowPolicy: {
         parameters: {
             query?: never;
             header?: never;
@@ -7786,7 +8882,127 @@ export interface operations {
             };
         };
     };
-    setProfileImage_1: {
+    partNumberCategoryUpdate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 채번 카테고리 ID */
+                categoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdatePartNumberCategoryRequest"];
+            };
+        };
+        responses: {
+            /** @description 수정 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartNumberCategoryResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    partNumberCategoryDelete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 채번 카테고리 ID */
+                categoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 삭제 성공 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    organizationSetProfileImage: {
         parameters: {
             query?: never;
             header?: never;
@@ -7846,7 +9062,7 @@ export interface operations {
             };
         };
     };
-    deleteProfileImage_1: {
+    organizationDeleteProfileImage: {
         parameters: {
             query?: never;
             header?: never;
@@ -7900,7 +9116,7 @@ export interface operations {
             };
         };
     };
-    readNotification: {
+    notificationRead: {
         parameters: {
             query?: never;
             header?: never;
@@ -7964,7 +9180,7 @@ export interface operations {
             };
         };
     };
-    readAllNotifications: {
+    notificationReadAll: {
         parameters: {
             query?: never;
             header?: never;
@@ -8025,7 +9241,7 @@ export interface operations {
             };
         };
     };
-    get: {
+    mappingGet: {
         parameters: {
             query?: never;
             header?: never;
@@ -8084,7 +9300,7 @@ export interface operations {
             };
         };
     };
-    update: {
+    mappingUpdate: {
         parameters: {
             query?: never;
             header?: never;
@@ -8147,7 +9363,7 @@ export interface operations {
             };
         };
     };
-    delete: {
+    mappingDelete: {
         parameters: {
             query?: never;
             header?: never;
@@ -8204,7 +9420,7 @@ export interface operations {
             };
         };
     };
-    syncParts: {
+    issueSyncParts: {
         parameters: {
             query?: never;
             header?: never;
@@ -8282,7 +9498,7 @@ export interface operations {
             };
         };
     };
-    syncLabels: {
+    issueSyncLabels: {
         parameters: {
             query?: never;
             header?: never;
@@ -8360,7 +9576,7 @@ export interface operations {
             };
         };
     };
-    syncLinkedEngineeringChanges: {
+    issueSyncLinkedEngineeringChanges: {
         parameters: {
             query?: never;
             header?: never;
@@ -8438,7 +9654,7 @@ export interface operations {
             };
         };
     };
-    syncAssignees: {
+    issueSyncAssignees: {
         parameters: {
             query?: never;
             header?: never;
@@ -8516,7 +9732,7 @@ export interface operations {
             };
         };
     };
-    syncTeamAssignees: {
+    issueSyncTeamAssignees: {
         parameters: {
             query?: never;
             header?: never;
@@ -8594,7 +9810,7 @@ export interface operations {
             };
         };
     };
-    replaceSteps: {
+    engineeringChangeReplaceSteps: {
         parameters: {
             query?: never;
             header?: never;
@@ -8672,7 +9888,7 @@ export interface operations {
             };
         };
     };
-    syncIssues: {
+    engineeringChangeSyncIssues: {
         parameters: {
             query?: never;
             header?: never;
@@ -8750,7 +9966,7 @@ export interface operations {
             };
         };
     };
-    syncAffectedItems: {
+    engineeringChangeSyncAffectedItems: {
         parameters: {
             query?: never;
             header?: never;
@@ -8828,7 +10044,7 @@ export interface operations {
             };
         };
     };
-    listTeams: {
+    teamList: {
         parameters: {
             query?: never;
             header?: never;
@@ -8900,7 +10116,7 @@ export interface operations {
             };
         };
     };
-    createTeam: {
+    teamCreate: {
         parameters: {
             query?: never;
             header?: never;
@@ -8976,7 +10192,7 @@ export interface operations {
             };
         };
     };
-    listTeamMembers: {
+    teamMemberList: {
         parameters: {
             query?: never;
             header?: never;
@@ -9051,7 +10267,7 @@ export interface operations {
             };
         };
     };
-    addTeamMembers: {
+    teamMemberAdd: {
         parameters: {
             query?: never;
             header?: never;
@@ -9130,7 +10346,7 @@ export interface operations {
             };
         };
     };
-    removeTeamMembers: {
+    teamMemberRemove: {
         parameters: {
             query?: never;
             header?: never;
@@ -9205,7 +10421,7 @@ export interface operations {
             };
         };
     };
-    listSynthesisJobs: {
+    synthesisListSynthesisJobs: {
         parameters: {
             query?: never;
             header?: never;
@@ -9261,7 +10477,7 @@ export interface operations {
             };
         };
     };
-    startSynthesis: {
+    synthesisStart: {
         parameters: {
             query?: never;
             header?: never;
@@ -9321,7 +10537,7 @@ export interface operations {
             };
         };
     };
-    upgradeStarter: {
+    subscriptionUpgradeStarter: {
         parameters: {
             query?: never;
             header?: never;
@@ -9381,7 +10597,7 @@ export interface operations {
             };
         };
     };
-    createPropertyDefinition: {
+    propertyCreatePropertyDefinition: {
         parameters: {
             query?: never;
             header?: never;
@@ -9475,7 +10691,7 @@ export interface operations {
             };
         };
     };
-    listProjects: {
+    projectList: {
         parameters: {
             query?: {
                 /**
@@ -9547,7 +10763,7 @@ export interface operations {
             };
         };
     };
-    createProject: {
+    projectCreate: {
         parameters: {
             query?: never;
             header?: never;
@@ -9607,7 +10823,7 @@ export interface operations {
             };
         };
     };
-    unarchiveProject: {
+    projectUnarchive: {
         parameters: {
             query?: never;
             header?: never;
@@ -9664,7 +10880,7 @@ export interface operations {
             };
         };
     };
-    getProjectParts: {
+    projectPartGet: {
         parameters: {
             query?: {
                 /**
@@ -9739,7 +10955,7 @@ export interface operations {
             };
         };
     };
-    linkParts: {
+    projectPartLinkParts: {
         parameters: {
             query?: never;
             header?: never;
@@ -9802,7 +11018,7 @@ export interface operations {
             };
         };
     };
-    unlinkParts: {
+    projectPartUnlinkParts: {
         parameters: {
             query?: never;
             header?: never;
@@ -9863,7 +11079,7 @@ export interface operations {
             };
         };
     };
-    listProjectMembers: {
+    projectMemberList: {
         parameters: {
             query?: never;
             header?: never;
@@ -9922,7 +11138,7 @@ export interface operations {
             };
         };
     };
-    addProjectMembers: {
+    projectMemberAdd: {
         parameters: {
             query?: never;
             header?: never;
@@ -9985,7 +11201,7 @@ export interface operations {
             };
         };
     };
-    removeProjectMembers: {
+    projectMemberRemove: {
         parameters: {
             query?: never;
             header?: never;
@@ -10046,7 +11262,7 @@ export interface operations {
             };
         };
     };
-    archiveProject: {
+    projectArchive: {
         parameters: {
             query?: never;
             header?: never;
@@ -10103,7 +11319,7 @@ export interface operations {
             };
         };
     };
-    listParts: {
+    partList: {
         parameters: {
             query?: {
                 search?: string;
@@ -10185,7 +11401,7 @@ export interface operations {
             };
         };
     };
-    createPart: {
+    partCreate: {
         parameters: {
             query?: never;
             header?: never;
@@ -10279,7 +11495,7 @@ export interface operations {
             };
         };
     };
-    release: {
+    partRevisionCommandRelease: {
         parameters: {
             query?: never;
             header?: never;
@@ -10351,7 +11567,7 @@ export interface operations {
             };
         };
     };
-    createPreviewFile: {
+    partRevisionPreviewCreatePreviewFile: {
         parameters: {
             query?: never;
             header?: never;
@@ -10430,7 +11646,7 @@ export interface operations {
             };
         };
     };
-    getFiles: {
+    partRevisionAssetGetFiles: {
         parameters: {
             query?: never;
             header?: never;
@@ -10505,7 +11721,7 @@ export interface operations {
             };
         };
     };
-    attachFiles: {
+    partRevisionAssetAttachFiles: {
         parameters: {
             query?: never;
             header?: never;
@@ -10584,7 +11800,7 @@ export interface operations {
             };
         };
     };
-    createDrawing: {
+    partRevisionAssetCreateDrawing: {
         parameters: {
             query?: never;
             header?: never;
@@ -10663,7 +11879,7 @@ export interface operations {
             };
         };
     };
-    createDraft: {
+    partRevisionCommandCreateDraft: {
         parameters: {
             query?: never;
             header?: never;
@@ -10744,7 +11960,7 @@ export interface operations {
             };
         };
     };
-    cancel: {
+    partRevisionCommandCancel: {
         parameters: {
             query?: never;
             header?: never;
@@ -10816,7 +12032,317 @@ export interface operations {
             };
         };
     };
-    changeLifecycleState: {
+    bomItemCommandAddBomItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                partId: string;
+                revisionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AddBomItemRequest"];
+            };
+        };
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartBomResponse"];
+                };
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartBomResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스 충돌 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    bomImportPreview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 부품 ID */
+                partId: string;
+                /** @description 리비전 ID */
+                revisionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["PreviewBomImportRequest"];
+            };
+        };
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BomImportPreviewResponse"];
+                };
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BomImportPreviewResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    bomImportCommit: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 부품 ID */
+                partId: string;
+                /** @description 리비전 ID */
+                revisionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CommitBomImportRequest"];
+            };
+        };
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BomImportCommitResponse"];
+                };
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BomImportCommitResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    bomItemCommandAddBomItemsBatch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                partId: string;
+                revisionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AddBomItemsBatchRequest"];
+            };
+        };
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartBomResponse"];
+                };
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartBomResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스 충돌 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    partChangeLifecycleState: {
         parameters: {
             query?: never;
             header?: never;
@@ -10894,7 +12420,123 @@ export interface operations {
             };
         };
     };
-    createOrganization: {
+    partNumberCategoryList: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartNumberCategoryListResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    partNumberCategoryCreate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreatePartNumberCategoryRequest"];
+            };
+        };
+        responses: {
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartNumberCategoryResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    organizationCreate: {
         parameters: {
             query?: never;
             header?: never;
@@ -10954,7 +12596,7 @@ export interface operations {
             };
         };
     };
-    switchOrganization: {
+    organizationSwitch: {
         parameters: {
             query?: never;
             header?: never;
@@ -11014,7 +12656,7 @@ export interface operations {
             };
         };
     };
-    listInvitations: {
+    organizationInvitationListInvitations: {
         parameters: {
             query?: never;
             header?: never;
@@ -11070,7 +12712,7 @@ export interface operations {
             };
         };
     };
-    createInvitation: {
+    organizationInvitationCreateInvitation: {
         parameters: {
             query?: never;
             header?: never;
@@ -11130,7 +12772,7 @@ export interface operations {
             };
         };
     };
-    validate: {
+    mappingValidate: {
         parameters: {
             query?: never;
             header?: never;
@@ -11190,7 +12832,7 @@ export interface operations {
             };
         };
     };
-    preview: {
+    mappingPreview: {
         parameters: {
             query?: never;
             header?: never;
@@ -11250,7 +12892,7 @@ export interface operations {
             };
         };
     };
-    confirm: {
+    mappingConfirm: {
         parameters: {
             query?: never;
             header?: never;
@@ -11310,7 +12952,7 @@ export interface operations {
             };
         };
     };
-    listLabels: {
+    labelList: {
         parameters: {
             query?: never;
             header?: never;
@@ -11382,7 +13024,7 @@ export interface operations {
             };
         };
     };
-    createLabel: {
+    labelCreate: {
         parameters: {
             query?: never;
             header?: never;
@@ -11458,7 +13100,7 @@ export interface operations {
             };
         };
     };
-    listIssues: {
+    issueList: {
         parameters: {
             query?: {
                 search?: string;
@@ -11539,7 +13181,7 @@ export interface operations {
             };
         };
     };
-    createIssue: {
+    issueCreate: {
         parameters: {
             query?: never;
             header?: never;
@@ -11615,7 +13257,7 @@ export interface operations {
             };
         };
     };
-    reopenIssue: {
+    issueReopen: {
         parameters: {
             query?: never;
             header?: never;
@@ -11689,7 +13331,7 @@ export interface operations {
             };
         };
     };
-    addFiles: {
+    issueAddFiles: {
         parameters: {
             query?: never;
             header?: never;
@@ -11767,7 +13409,7 @@ export interface operations {
             };
         };
     };
-    createComment: {
+    issueCreateComment: {
         parameters: {
             query?: never;
             header?: never;
@@ -11845,7 +13487,7 @@ export interface operations {
             };
         };
     };
-    closeIssue: {
+    issueClose: {
         parameters: {
             query?: never;
             header?: never;
@@ -11919,7 +13561,7 @@ export interface operations {
             };
         };
     };
-    createFile: {
+    fileCreate: {
         parameters: {
             query?: never;
             header?: never;
@@ -11995,7 +13637,7 @@ export interface operations {
             };
         };
     };
-    completeFile: {
+    fileComplete: {
         parameters: {
             query?: never;
             header?: never;
@@ -12070,7 +13712,7 @@ export interface operations {
             };
         };
     };
-    batchCreateFiles: {
+    fileBatchCreate: {
         parameters: {
             query?: never;
             header?: never;
@@ -12146,7 +13788,7 @@ export interface operations {
             };
         };
     };
-    batchCompleteFiles: {
+    fileBatchComplete: {
         parameters: {
             query?: never;
             header?: never;
@@ -12222,7 +13864,7 @@ export interface operations {
             };
         };
     };
-    listEngineeringChanges: {
+    engineeringChangeList: {
         parameters: {
             query?: {
                 /**
@@ -12307,7 +13949,7 @@ export interface operations {
             };
         };
     };
-    createEngineeringChange: {
+    engineeringChangeCreate: {
         parameters: {
             query?: never;
             header?: never;
@@ -12383,7 +14025,7 @@ export interface operations {
             };
         };
     };
-    submit: {
+    engineeringChangeSubmit: {
         parameters: {
             query?: never;
             header?: never;
@@ -12457,7 +14099,7 @@ export interface operations {
             };
         };
     };
-    approveReview: {
+    engineeringChangeApproveReview: {
         parameters: {
             query?: never;
             header?: never;
@@ -12531,7 +14173,7 @@ export interface operations {
             };
         };
     };
-    release_1: {
+    engineeringChangeRelease: {
         parameters: {
             query?: never;
             header?: never;
@@ -12605,7 +14247,7 @@ export interface operations {
             };
         };
     };
-    reject: {
+    engineeringChangeReject: {
         parameters: {
             query?: never;
             header?: never;
@@ -12679,7 +14321,7 @@ export interface operations {
             };
         };
     };
-    addFiles_1: {
+    engineeringChangeAddFiles: {
         parameters: {
             query?: never;
             header?: never;
@@ -12757,7 +14399,7 @@ export interface operations {
             };
         };
     };
-    createComment_1: {
+    engineeringChangeCreateComment: {
         parameters: {
             query?: never;
             header?: never;
@@ -12835,7 +14477,7 @@ export interface operations {
             };
         };
     };
-    cancel_1: {
+    engineeringChangeCancel: {
         parameters: {
             query?: never;
             header?: never;
@@ -12909,7 +14551,7 @@ export interface operations {
             };
         };
     };
-    approve: {
+    engineeringChangeApprove: {
         parameters: {
             query?: never;
             header?: never;
@@ -12983,7 +14625,86 @@ export interface operations {
             };
         };
     };
-    listThreads: {
+    engineeringChangeCreateEcFromIssue: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 원본 이슈 ID */
+                issueId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateEcFromIssueRequest"];
+            };
+        };
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EngineeringChangeResponse"];
+                };
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EngineeringChangeResponse"];
+                };
+            };
+            /** @description 삭제 성공 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    chatListThreads: {
         parameters: {
             query?: never;
             header?: never;
@@ -13064,7 +14785,7 @@ export interface operations {
             };
         };
     };
-    createThread: {
+    chatCreateThread: {
         parameters: {
             query?: never;
             header?: never;
@@ -13149,7 +14870,7 @@ export interface operations {
             };
         };
     };
-    listMessages: {
+    chatListMessages: {
         parameters: {
             query?: never;
             header?: never;
@@ -13233,7 +14954,7 @@ export interface operations {
             };
         };
     };
-    sendMessage: {
+    chatSendMessage: {
         parameters: {
             query?: never;
             header?: never;
@@ -13321,7 +15042,7 @@ export interface operations {
             };
         };
     };
-    rejectAction: {
+    chatRejectAction: {
         parameters: {
             query?: never;
             header?: never;
@@ -13399,7 +15120,7 @@ export interface operations {
             };
         };
     };
-    confirmAction: {
+    chatConfirmAction: {
         parameters: {
             query?: never;
             header?: never;
@@ -13483,7 +15204,127 @@ export interface operations {
             };
         };
     };
-    verifyEmail: {
+    bomQueryCompare: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BomCompareRequest"];
+            };
+        };
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["BomCompareResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    bomQueryExportCompare: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["BomCompareRequest"];
+            };
+        };
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": string;
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    authVerifyEmail: {
         parameters: {
             query?: never;
             header?: never;
@@ -13543,7 +15384,7 @@ export interface operations {
             };
         };
     };
-    sendVerification: {
+    authSendVerification: {
         parameters: {
             query?: never;
             header?: never;
@@ -13621,7 +15462,7 @@ export interface operations {
             };
         };
     };
-    register: {
+    authRegister: {
         parameters: {
             query?: never;
             header?: never;
@@ -13690,7 +15531,7 @@ export interface operations {
             };
         };
     };
-    refresh: {
+    authRefresh: {
         parameters: {
             query?: never;
             header?: never;
@@ -13750,7 +15591,7 @@ export interface operations {
             };
         };
     };
-    logout: {
+    authLogout: {
         parameters: {
             query?: never;
             header?: never;
@@ -13808,7 +15649,7 @@ export interface operations {
             };
         };
     };
-    login: {
+    authLogin: {
         parameters: {
             query?: never;
             header?: {
@@ -13874,7 +15715,7 @@ export interface operations {
             };
         };
     };
-    acceptInvitation: {
+    authAcceptInvitation: {
         parameters: {
             query?: never;
             header?: never;
@@ -13934,7 +15775,7 @@ export interface operations {
             };
         };
     };
-    queryGraph: {
+    activationQueryGraph: {
         parameters: {
             query?: never;
             header?: never;
@@ -13994,7 +15835,7 @@ export interface operations {
             };
         };
     };
-    healthCheck: {
+    activationHealthCheck: {
         parameters: {
             query?: never;
             header?: never;
@@ -14050,7 +15891,7 @@ export interface operations {
             };
         };
     };
-    getMe: {
+    userGetMe: {
         parameters: {
             query?: never;
             header?: never;
@@ -14097,7 +15938,7 @@ export interface operations {
             };
         };
     };
-    updateProfile: {
+    userUpdateProfile: {
         parameters: {
             query?: never;
             header?: never;
@@ -14157,7 +15998,7 @@ export interface operations {
             };
         };
     };
-    getTeam: {
+    teamGet: {
         parameters: {
             query?: never;
             header?: never;
@@ -14232,7 +16073,7 @@ export interface operations {
             };
         };
     };
-    deleteTeam: {
+    teamDelete: {
         parameters: {
             query?: never;
             header?: never;
@@ -14303,7 +16144,7 @@ export interface operations {
             };
         };
     };
-    updateTeam: {
+    teamUpdate: {
         parameters: {
             query?: never;
             header?: never;
@@ -14382,7 +16223,7 @@ export interface operations {
             };
         };
     };
-    updateSeatQuotas: {
+    subscriptionUpdateSeatQuotas: {
         parameters: {
             query?: never;
             header?: never;
@@ -14442,7 +16283,7 @@ export interface operations {
             };
         };
     };
-    updatePlan: {
+    subscriptionUpdatePlan: {
         parameters: {
             query?: never;
             header?: never;
@@ -14502,7 +16343,7 @@ export interface operations {
             };
         };
     };
-    updateAiLimit: {
+    subscriptionUpdateAiLimit: {
         parameters: {
             query?: never;
             header?: never;
@@ -14562,7 +16403,7 @@ export interface operations {
             };
         };
     };
-    reorder: {
+    propertyReorder: {
         parameters: {
             query?: never;
             header?: never;
@@ -14634,7 +16475,7 @@ export interface operations {
             };
         };
     };
-    deletePropertyDefinition: {
+    propertyDeletePropertyDefinition: {
         parameters: {
             query?: never;
             header?: never;
@@ -14722,7 +16563,7 @@ export interface operations {
             };
         };
     };
-    updatePropertyDefinition: {
+    propertyUpdatePropertyDefinition: {
         parameters: {
             query?: never;
             header?: never;
@@ -14809,7 +16650,7 @@ export interface operations {
             };
         };
     };
-    getProject: {
+    projectGet: {
         parameters: {
             query?: never;
             header?: never;
@@ -14868,7 +16709,7 @@ export interface operations {
             };
         };
     };
-    deleteProject: {
+    projectDelete: {
         parameters: {
             query?: never;
             header?: never;
@@ -14925,7 +16766,7 @@ export interface operations {
             };
         };
     };
-    updateProject: {
+    projectUpdate: {
         parameters: {
             query?: never;
             header?: never;
@@ -14988,7 +16829,7 @@ export interface operations {
             };
         };
     };
-    get_1: {
+    partRevisionGet: {
         parameters: {
             query?: never;
             header?: never;
@@ -15047,7 +16888,7 @@ export interface operations {
             };
         };
     };
-    update_1: {
+    partRevisionCommandUpdate: {
         parameters: {
             query?: never;
             header?: never;
@@ -15119,7 +16960,7 @@ export interface operations {
             };
         };
     };
-    delete_1: {
+    partRevisionPreviewDelete: {
         parameters: {
             query?: never;
             header?: never;
@@ -15190,7 +17031,7 @@ export interface operations {
             };
         };
     };
-    update_2: {
+    partRevisionPreviewUpdate: {
         parameters: {
             query?: never;
             header?: never;
@@ -15269,7 +17110,167 @@ export interface operations {
             };
         };
     };
-    renameCategory: {
+    bomItemCommandDeleteBomItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                partId: string;
+                revisionId: string;
+                bomItemId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartBomResponse"];
+                };
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartBomResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스 충돌 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    bomItemCommandUpdateBomItem: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                partId: string;
+                revisionId: string;
+                bomItemId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateBomItemRequest"];
+            };
+        };
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartBomResponse"];
+                };
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartBomResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스 충돌 */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    partRenameCategory: {
         parameters: {
             query?: never;
             header?: never;
@@ -15347,7 +17348,7 @@ export interface operations {
             };
         };
     };
-    changeMemberSeat: {
+    memberChangeMemberSeat: {
         parameters: {
             query?: never;
             header?: never;
@@ -15408,7 +17409,7 @@ export interface operations {
             };
         };
     };
-    changeMemberRole: {
+    memberChangeMemberRole: {
         parameters: {
             query?: never;
             header?: never;
@@ -15469,7 +17470,7 @@ export interface operations {
             };
         };
     };
-    deleteLabel: {
+    labelDelete: {
         parameters: {
             query?: never;
             header?: never;
@@ -15540,7 +17541,7 @@ export interface operations {
             };
         };
     };
-    updateLabel: {
+    labelUpdate: {
         parameters: {
             query?: never;
             header?: never;
@@ -15619,7 +17620,7 @@ export interface operations {
             };
         };
     };
-    getIssue: {
+    issueGet: {
         parameters: {
             query?: never;
             header?: never;
@@ -15694,7 +17695,7 @@ export interface operations {
             };
         };
     };
-    updateIssue: {
+    issueUpdate: {
         parameters: {
             query?: never;
             header?: never;
@@ -15773,7 +17774,7 @@ export interface operations {
             };
         };
     };
-    deleteComment: {
+    issueDeleteComment: {
         parameters: {
             query?: never;
             header?: never;
@@ -15844,7 +17845,7 @@ export interface operations {
             };
         };
     };
-    updateComment: {
+    issueUpdateComment: {
         parameters: {
             query?: never;
             header?: never;
@@ -15923,7 +17924,7 @@ export interface operations {
             };
         };
     };
-    getEngineeringChange: {
+    engineeringChangeGet: {
         parameters: {
             query?: never;
             header?: never;
@@ -15998,7 +17999,7 @@ export interface operations {
             };
         };
     };
-    updateEngineeringChange: {
+    engineeringChangeUpdate: {
         parameters: {
             query?: never;
             header?: never;
@@ -16077,7 +18078,7 @@ export interface operations {
             };
         };
     };
-    deleteComment_1: {
+    engineeringChangeDeleteComment: {
         parameters: {
             query?: never;
             header?: never;
@@ -16148,7 +18149,7 @@ export interface operations {
             };
         };
     };
-    updateComment_1: {
+    engineeringChangeUpdateComment: {
         parameters: {
             query?: never;
             header?: never;
@@ -16227,7 +18228,7 @@ export interface operations {
             };
         };
     };
-    health: {
+    healthGet: {
         parameters: {
             query?: never;
             header?: never;
@@ -16247,7 +18248,7 @@ export interface operations {
             };
         };
     };
-    getStorageUsage: {
+    usageGetStorage: {
         parameters: {
             query?: never;
             header?: never;
@@ -16303,7 +18304,7 @@ export interface operations {
             };
         };
     };
-    getStorageTrend: {
+    usageGetStorageTrend: {
         parameters: {
             query?: {
                 /**
@@ -16365,7 +18366,7 @@ export interface operations {
             };
         };
     };
-    getCreditUsage: {
+    usageGetCredit: {
         parameters: {
             query?: never;
             header?: never;
@@ -16421,7 +18422,7 @@ export interface operations {
             };
         };
     };
-    lookupTeams: {
+    teamLookup: {
         parameters: {
             query?: {
                 /**
@@ -16504,7 +18505,7 @@ export interface operations {
             };
         };
     };
-    getSynthesisJob: {
+    synthesisGetSynthesisJob: {
         parameters: {
             query?: never;
             header?: never;
@@ -16563,7 +18564,7 @@ export interface operations {
             };
         };
     };
-    getSynthesisBatch: {
+    synthesisGetSynthesisBatch: {
         parameters: {
             query?: never;
             header?: never;
@@ -16622,7 +18623,7 @@ export interface operations {
             };
         };
     };
-    listSuppliers: {
+    supplierList: {
         parameters: {
             query?: {
                 /**
@@ -16694,7 +18695,7 @@ export interface operations {
             };
         };
     };
-    get_2: {
+    subscriptionGet: {
         parameters: {
             query?: never;
             header?: never;
@@ -16750,7 +18751,7 @@ export interface operations {
             };
         };
     };
-    getSettings: {
+    settingsGet: {
         parameters: {
             query?: never;
             header?: never;
@@ -16806,7 +18807,7 @@ export interface operations {
             };
         };
     };
-    listMeta: {
+    propertyListMeta: {
         parameters: {
             query: {
                 /**
@@ -16889,7 +18890,7 @@ export interface operations {
             };
         };
     };
-    lookupParts: {
+    projectPartLookupParts: {
         parameters: {
             query?: {
                 /**
@@ -16964,7 +18965,7 @@ export interface operations {
             };
         };
     };
-    lookupMembers: {
+    projectMemberLookupMembers: {
         parameters: {
             query?: {
                 /**
@@ -17034,7 +19035,7 @@ export interface operations {
             };
         };
     };
-    listProjectIssues: {
+    projectIssueList: {
         parameters: {
             query?: never;
             header?: never;
@@ -17093,7 +19094,7 @@ export interface operations {
             };
         };
     };
-    getProjectActivities: {
+    projectGetProjectActivities: {
         parameters: {
             query?: {
                 /**
@@ -17170,7 +19171,7 @@ export interface operations {
             };
         };
     };
-    listProjectChanges: {
+    projectChangeList: {
         parameters: {
             query?: never;
             header?: never;
@@ -17229,7 +19230,7 @@ export interface operations {
             };
         };
     };
-    getSuppliers: {
+    partRevisionGetSuppliers: {
         parameters: {
             query?: never;
             header?: never;
@@ -17288,7 +19289,7 @@ export interface operations {
             };
         };
     };
-    getProjects: {
+    partRevisionGetProjects: {
         parameters: {
             query?: never;
             header?: never;
@@ -17347,7 +19348,7 @@ export interface operations {
             };
         };
     };
-    getSources: {
+    partRevisionPreviewGetSources: {
         parameters: {
             query?: never;
             header?: never;
@@ -17422,7 +19423,7 @@ export interface operations {
             };
         };
     };
-    getProcessing: {
+    partRevisionPreviewGetProcessing: {
         parameters: {
             query?: never;
             header?: never;
@@ -17497,7 +19498,7 @@ export interface operations {
             };
         };
     };
-    getDiff: {
+    partRevisionGetDiff: {
         parameters: {
             query?: {
                 base_revision_id?: string;
@@ -17558,7 +19559,7 @@ export interface operations {
             };
         };
     };
-    getBom: {
+    partRevisionGetBom: {
         parameters: {
             query?: never;
             header?: never;
@@ -17617,7 +19618,68 @@ export interface operations {
             };
         };
     };
-    getBomTree: {
+    bomQueryGetWhereUsedSummary: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 부품 ID */
+                partId: string;
+                /** @description 리비전 ID */
+                revisionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WhereUsedSummaryResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    partRevisionGetBomTree: {
         parameters: {
             query?: {
                 direction?: string;
@@ -17678,7 +19740,7 @@ export interface operations {
             };
         };
     };
-    exportBomTree: {
+    partRevisionExportBomTree: {
         parameters: {
             query?: {
                 direction?: string;
@@ -17740,7 +19802,151 @@ export interface operations {
             };
         };
     };
-    getHistory: {
+    bomImportDownloadTemplate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 부품 ID */
+                partId: string;
+                /** @description 리비전 ID */
+                revisionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": string;
+                };
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": string;
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    partGetImpactAnalysis: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                partId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartImpactAnalysisResponse"];
+                };
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartImpactAnalysisResponse"];
+                };
+            };
+            /** @description 삭제 성공 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    partRevisionGetHistory: {
         parameters: {
             query?: never;
             header?: never;
@@ -17798,7 +20004,84 @@ export interface operations {
             };
         };
     };
-    lookupRevisions: {
+    partGetChangeHistory: {
+        parameters: {
+            query?: {
+                offset?: number;
+                limit?: number;
+            };
+            header?: never;
+            path: {
+                partId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartChangeHistoryResponse"];
+                };
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartChangeHistoryResponse"];
+                };
+            };
+            /** @description 삭제 성공 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    partLookupRevisions: {
         parameters: {
             query?: {
                 search?: string;
@@ -17873,7 +20156,7 @@ export interface operations {
             };
         };
     };
-    lookupParts_1: {
+    partLookup: {
         parameters: {
             query?: {
                 search?: string;
@@ -17948,7 +20231,7 @@ export interface operations {
             };
         };
     };
-    listInProgressParts: {
+    partListInProgress: {
         parameters: {
             query?: {
                 search?: string;
@@ -18032,7 +20315,7 @@ export interface operations {
             };
         };
     };
-    getFilterOptions: {
+    partGetFilterOptions: {
         parameters: {
             query?: never;
             header?: never;
@@ -18104,7 +20387,7 @@ export interface operations {
             };
         };
     };
-    exportParts: {
+    partExport: {
         parameters: {
             query?: {
                 search?: string;
@@ -18185,7 +20468,7 @@ export interface operations {
             };
         };
     };
-    listCategories: {
+    partListCategories: {
         parameters: {
             query?: never;
             header?: never;
@@ -18257,7 +20540,7 @@ export interface operations {
             };
         };
     };
-    lookupCategories: {
+    partLookupCategories: {
         parameters: {
             query?: never;
             header?: never;
@@ -18329,7 +20612,125 @@ export interface operations {
             };
         };
     };
-    getOntologySchema: {
+    partNumberCategoryGetNextNumber: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 채번 카테고리 ID */
+                categoryId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 조회 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartNumberPreviewResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    partNumberCategoryCheckNumber: {
+        parameters: {
+            query: {
+                /** @description 확인할 품번 */
+                partNumber: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 조회 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartNumberAvailabilityResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    ontologyGetOntologySchema: {
         parameters: {
             query?: never;
             header?: never;
@@ -18385,7 +20786,7 @@ export interface operations {
             };
         };
     };
-    searchNodes: {
+    ontologySearchNodes: {
         parameters: {
             query: {
                 /**
@@ -18457,7 +20858,7 @@ export interface operations {
             };
         };
     };
-    listNotifications: {
+    notificationList: {
         parameters: {
             query?: {
                 /** @description 다음 페이지 조회용 커서 */
@@ -18533,7 +20934,7 @@ export interface operations {
             };
         };
     };
-    getUnreadCount: {
+    notificationGetUnreadCount: {
         parameters: {
             query?: never;
             header?: never;
@@ -18596,7 +20997,7 @@ export interface operations {
             };
         };
     };
-    stream: {
+    notificationStream: {
         parameters: {
             query?: never;
             header?: never;
@@ -18659,7 +21060,7 @@ export interface operations {
             };
         };
     };
-    listMembers: {
+    memberList: {
         parameters: {
             query?: never;
             header?: never;
@@ -18706,7 +21107,7 @@ export interface operations {
             };
         };
     };
-    lookupMembers_1: {
+    memberLookup: {
         parameters: {
             query?: {
                 /** @description 이름 검색 (ILIKE) */
@@ -18767,7 +21168,7 @@ export interface operations {
             };
         };
     };
-    list: {
+    mappingList: {
         parameters: {
             query?: never;
             header?: never;
@@ -18823,7 +21224,7 @@ export interface operations {
             };
         };
     };
-    lookupLabels: {
+    labelLookup: {
         parameters: {
             query?: {
                 /**
@@ -18906,7 +21307,7 @@ export interface operations {
             };
         };
     };
-    getTimeline: {
+    issueGetTimeline: {
         parameters: {
             query?: never;
             header?: never;
@@ -18980,7 +21381,82 @@ export interface operations {
             };
         };
     };
-    lookupIssues: {
+    issueGetEcPrefill: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 이슈 ID */
+                issueId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EcPrefillResponse"];
+                };
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EcPrefillResponse"];
+                };
+            };
+            /** @description 삭제 성공 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    issueLookup: {
         parameters: {
             query?: {
                 /**
@@ -19063,7 +21539,7 @@ export interface operations {
             };
         };
     };
-    getTimeline_1: {
+    engineeringChangeGetTimeline: {
         parameters: {
             query?: never;
             header?: never;
@@ -19137,7 +21613,7 @@ export interface operations {
             };
         };
     };
-    lookupEngineeringChanges: {
+    engineeringChangeLookup: {
         parameters: {
             query?: {
                 search?: string;
@@ -19212,7 +21688,7 @@ export interface operations {
             };
         };
     };
-    getStats: {
+    dashboardGetStats: {
         parameters: {
             query?: never;
             header?: never;
@@ -19268,7 +21744,7 @@ export interface operations {
             };
         };
     };
-    getThread: {
+    chatGetThread: {
         parameters: {
             query?: never;
             header?: never;
@@ -19352,7 +21828,7 @@ export interface operations {
             };
         };
     };
-    streamRun: {
+    chatStreamRun: {
         parameters: {
             query?: {
                 /** @description 이 sequence 이후 이벤트만 재생합니다 */
@@ -19442,7 +21918,7 @@ export interface operations {
             };
         };
     };
-    listRunEvents: {
+    chatListRunEvents: {
         parameters: {
             query?: never;
             header?: never;
@@ -19526,7 +22002,132 @@ export interface operations {
             };
         };
     };
-    getSite: {
+    changeStatisticsGet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChangeStatisticsResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    changeFeedList: {
+        parameters: {
+            query?: {
+                /** @description 특정 파트에 대한 변경만 조회할 경우 파트 식별자 */
+                partId?: string;
+                /**
+                 * @description 건너뛸 항목 수
+                 * @example 0
+                 */
+                offset?: number;
+                /**
+                 * @description 조회할 항목 수
+                 * @example 20
+                 */
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChangeFeedResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    authGetSite: {
         parameters: {
             query?: never;
             header?: {
@@ -19588,7 +22189,7 @@ export interface operations {
             };
         };
     };
-    getPlans: {
+    authGetPlans: {
         parameters: {
             query?: never;
             header?: never;
@@ -19644,7 +22245,7 @@ export interface operations {
             };
         };
     };
-    verifyInvitation: {
+    authVerifyInvitation: {
         parameters: {
             query: {
                 /**
@@ -19706,7 +22307,7 @@ export interface operations {
             };
         };
     };
-    checkSlug: {
+    authCheckSlug: {
         parameters: {
             query: {
                 /**
@@ -19768,7 +22369,7 @@ export interface operations {
             };
         };
     };
-    checkEmail: {
+    authCheckEmail: {
         parameters: {
             query: {
                 /**
@@ -19830,7 +22431,7 @@ export interface operations {
             };
         };
     };
-    getStarters: {
+    activationGetStarters: {
         parameters: {
             query?: never;
             header?: never;
@@ -19886,7 +22487,7 @@ export interface operations {
             };
         };
     };
-    deletePreviewFile: {
+    partRevisionPreviewDeletePreviewFile: {
         parameters: {
             query?: never;
             header?: never;
@@ -19958,7 +22559,7 @@ export interface operations {
             };
         };
     };
-    deleteFile: {
+    partRevisionAssetDeleteFile: {
         parameters: {
             query?: never;
             header?: never;
@@ -20030,7 +22631,7 @@ export interface operations {
             };
         };
     };
-    deleteDrawing: {
+    partRevisionAssetDeleteDrawing: {
         parameters: {
             query?: never;
             header?: never;
@@ -20102,7 +22703,7 @@ export interface operations {
             };
         };
     };
-    cancelInvitation: {
+    organizationInvitationCancelInvitation: {
         parameters: {
             query?: never;
             header?: never;
@@ -20159,7 +22760,7 @@ export interface operations {
             };
         };
     };
-    removeMember: {
+    memberRemove: {
         parameters: {
             query?: never;
             header?: never;
@@ -20207,7 +22808,7 @@ export interface operations {
             };
         };
     };
-    deleteFile_1: {
+    issueDeleteFile: {
         parameters: {
             query?: never;
             header?: never;
@@ -20278,7 +22879,7 @@ export interface operations {
             };
         };
     };
-    deleteFile_2: {
+    engineeringChangeDeleteFile: {
         parameters: {
             query?: never;
             header?: never;

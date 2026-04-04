@@ -3,14 +3,14 @@
 // - chat-model.ts: 변환 대상 타입 변경 시 함께 수정
 
 import {
-  listThreads as listThreadsApi,
-  createThread as createThreadApi,
-  getThread as getThreadApi,
-  listMessages as listMessagesApi,
-  sendMessage as sendMessageApi,
-  confirmAction as confirmActionApi,
-  rejectAction as rejectActionApi,
-  listRunEvents as listRunEventsApi,
+  chatListThreads as listThreadsApi,
+  chatCreateThread as createThreadApi,
+  chatGetThread as getThreadApi,
+  chatListMessages as listMessagesApi,
+  chatSendMessage as sendMessageApi,
+  chatConfirmAction as confirmActionApi,
+  chatRejectAction as rejectActionApi,
+  chatListRunEvents as listRunEventsApi,
 } from "@/api/generated/orval/chat/chat";
 import type {
   ChatThreadItemResponse,

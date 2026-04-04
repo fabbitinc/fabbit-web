@@ -6,9 +6,9 @@
  */
 import type {
   CreateTeamRequest,
-  LookupTeamsParams,
   TeamDetailResponse,
   TeamListResponse,
+  TeamLookupParams,
   TeamLookupResponse,
   UpdateTeamRequest
 } from '../model';
@@ -24,7 +24,7 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
  * 팀 목록을 조회합니다
  * @summary 팀 목록을 조회합니다
  */
-export const listTeams = (
+export const teamList = (
     
  options?: SecondParameter<typeof customInstance<TeamListResponse | void>>,) => {
       return customInstance<TeamListResponse | void>(
@@ -36,7 +36,7 @@ export const listTeams = (
  * 팀을 생성합니다. 생성 직후 팀 상세를 반환합니다
  * @summary 팀을 생성합니다. 생성 직후 팀 상세를 반환합니다
  */
-export const createTeam = (
+export const teamCreate = (
     createTeamRequest: BodyType<CreateTeamRequest>,
  options?: SecondParameter<typeof customInstance<TeamDetailResponse | void>>,) => {
       return customInstance<TeamDetailResponse | void>(
@@ -50,7 +50,7 @@ export const createTeam = (
  * 팀 상세를 조회합니다
  * @summary 팀 상세를 조회합니다
  */
-export const getTeam = (
+export const teamGet = (
     teamId: string,
  options?: SecondParameter<typeof customInstance<TeamDetailResponse | void>>,) => {
       return customInstance<TeamDetailResponse | void>(
@@ -62,7 +62,7 @@ export const getTeam = (
  * 팀을 삭제합니다. 팀 멤버 관계도 함께 제거됩니다
  * @summary 팀을 삭제합니다. 팀 멤버 관계도 함께 제거됩니다
  */
-export const deleteTeam = (
+export const teamDelete = (
     teamId: string,
  options?: SecondParameter<typeof customInstance<void>>,) => {
       return customInstance<void>(
@@ -74,7 +74,7 @@ export const deleteTeam = (
  * 팀 이름/설명을 부분 수정하고 최신 팀 상세를 반환합니다
  * @summary 팀 이름/설명을 부분 수정하고 최신 팀 상세를 반환합니다
  */
-export const updateTeam = (
+export const teamUpdate = (
     teamId: string,
     updateTeamRequest: BodyType<UpdateTeamRequest>,
  options?: SecondParameter<typeof customInstance<TeamDetailResponse | void>>,) => {
@@ -89,8 +89,8 @@ export const updateTeam = (
  * 팀 picker/autocomplete용 경량 목록을 조회합니다
  * @summary 팀 picker/autocomplete용 경량 목록을 조회합니다
  */
-export const lookupTeams = (
-    params?: LookupTeamsParams,
+export const teamLookup = (
+    params?: TeamLookupParams,
  options?: SecondParameter<typeof customInstance<TeamLookupResponse | void>>,) => {
       return customInstance<TeamLookupResponse | void>(
       {url: `/api/v1/teams/lookup`, method: 'GET',
@@ -98,9 +98,9 @@ export const lookupTeams = (
     },
       options);
     }
-  export type ListTeamsResult = NonNullable<Awaited<ReturnType<typeof listTeams>>>
-export type CreateTeamResult = NonNullable<Awaited<ReturnType<typeof createTeam>>>
-export type GetTeamResult = NonNullable<Awaited<ReturnType<typeof getTeam>>>
-export type DeleteTeamResult = NonNullable<Awaited<ReturnType<typeof deleteTeam>>>
-export type UpdateTeamResult = NonNullable<Awaited<ReturnType<typeof updateTeam>>>
-export type LookupTeamsResult = NonNullable<Awaited<ReturnType<typeof lookupTeams>>>
+  export type TeamListResult = NonNullable<Awaited<ReturnType<typeof teamList>>>
+export type TeamCreateResult = NonNullable<Awaited<ReturnType<typeof teamCreate>>>
+export type TeamGetResult = NonNullable<Awaited<ReturnType<typeof teamGet>>>
+export type TeamDeleteResult = NonNullable<Awaited<ReturnType<typeof teamDelete>>>
+export type TeamUpdateResult = NonNullable<Awaited<ReturnType<typeof teamUpdate>>>
+export type TeamLookupResult = NonNullable<Awaited<ReturnType<typeof teamLookup>>>

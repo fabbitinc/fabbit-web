@@ -1,6 +1,6 @@
 import {
-  getSettings,
-  updatePartWorkflowPolicy,
+  settingsGet as getSettings,
+  settingsUpdatePartWorkflowPolicy as updatePartWorkflowPolicy,
 } from "@/api/generated/orval/settings/settings";
 import type { SettingsPartWorkflowPolicyRequest } from "@/api/generated/orval/model/settingsPartWorkflowPolicyRequest";
 import type {
@@ -27,7 +27,7 @@ function serializePartWorkflowMode(
   mode: PartWorkflowMode,
 ): SettingsPartWorkflowPolicyRequest["mode"] {
   return mode === "ENGINEERING_CHANGE_REQUIRED"
-    ? "ENGINEERING_CHANGE_REQUIRED"
+    ? "CHANGE_REQUEST_REQUIRED"
     : "DIRECT";
 }
 

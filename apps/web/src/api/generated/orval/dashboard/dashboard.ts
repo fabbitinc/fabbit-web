@@ -18,7 +18,7 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
  * Part 총 수, 금주 추가 수, BOM 링크 수, 최근 합성 작업 상태를 조회합니다
  * @summary Part 총 수, 금주 추가 수, BOM 링크 수, 최근 합성 작업 상태를 조회합니다
  */
-export const getStats = (
+export const dashboardGetStats = (
     
  options?: SecondParameter<typeof customInstance<DashboardStatsResponse>>,) => {
       return customInstance<DashboardStatsResponse>(
@@ -26,4 +26,4 @@ export const getStats = (
     },
       options);
     }
-  export type GetStatsResult = NonNullable<Awaited<ReturnType<typeof getStats>>>
+  export type DashboardGetStatsResult = NonNullable<Awaited<ReturnType<typeof dashboardGetStats>>>

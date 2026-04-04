@@ -71,6 +71,7 @@ export function useChatRuntime() {
     isRunning: isStreaming,
     onNew,
     onCancel,
+    convertMessage: (message) => message,
   });
 
   return { runtime };

@@ -9,7 +9,7 @@ import {
   MessageSquare,
   Plus,
 } from "lucide-react";
-import { Badge, Button, LabelBadge, UserAvatar } from "@fabbit/ui";
+import { Button, LabelBadge, UserAvatar } from "@fabbit/ui";
 
 export type ProjectWorkItemsPanelKind = "issue" | "change";
 
@@ -38,11 +38,11 @@ export interface ProjectWorkItemsPanelItem {
 }
 
 export interface ProjectWorkItemsPanelProps {
-  createLabel: string;
   items: ProjectWorkItemsPanelItem[];
   kind: ProjectWorkItemsPanelKind;
-  onCreateClick: () => void;
-  onItemClick: (itemNumber: number) => void;
+  createLabel?: string;
+  onCreateClick?: () => void;
+  onItemClick: (itemId: string) => void;
   onRetry?: () => void;
   isError?: boolean;
   isLoading?: boolean;
@@ -201,13 +201,12 @@ export function ProjectWorkItemsPanel({
           </button>
         </div>
         <div className="flex items-center gap-2">
-          <Badge className="text-[10px]" variant="secondary">
-            프로젝트 범위
-          </Badge>
-          <Button size="sm" type="button" onClick={onCreateClick}>
-            <Plus className="size-3.5" />
-            {createLabel}
-          </Button>
+          {createLabel && onCreateClick ? (
+            <Button size="sm" type="button" onClick={onCreateClick}>
+              <Plus className="size-3.5" />
+              {createLabel}
+            </Button>
+          ) : null}
         </div>
       </div>
 
@@ -244,7 +243,7 @@ export function ProjectWorkItemsPanel({
               key={item.id}
               className="flex w-full cursor-pointer items-start gap-3 px-5 py-3 text-left transition-colors hover:bg-muted/30"
               type="button"
-              onClick={() => onItemClick(item.number)}
+              onClick={() => onItemClick(item.id)}
             >
               <div className="mt-0.5 w-14 shrink-0">
                 <WorkItemStatus kind={kind} status={item.status} />

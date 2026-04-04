@@ -23,7 +23,7 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
  * 리비전에 연결된 파일과 도면 목록을 조회합니다
  * @summary 연결된 파일 목록을 조회합니다
  */
-export const getFiles = (
+export const partRevisionAssetGetFiles = (
     partId: string,
     revisionId: string,
  options?: SecondParameter<typeof customInstance<PartFilesResponse | void>>,) => {
@@ -36,7 +36,7 @@ export const getFiles = (
  * 업로드 완료 파일들을 리비전에 배치 연결합니다
  * @summary 파일을 첨부합니다
  */
-export const attachFiles = (
+export const partRevisionAssetAttachFiles = (
     partId: string,
     revisionId: string,
     attachFilesRequest: BodyType<AttachFilesRequest>,
@@ -52,7 +52,7 @@ export const attachFiles = (
  * 업로드 완료 파일을 Drawing으로 등록하고 리비전에 연결합니다
  * @summary 도면을 등록합니다
  */
-export const createDrawing = (
+export const partRevisionAssetCreateDrawing = (
     partId: string,
     revisionId: string,
     registerDrawingRequest: BodyType<RegisterDrawingRequest>,
@@ -68,7 +68,7 @@ export const createDrawing = (
  * 리비전에 연결된 첨부 파일 1건을 제거합니다
  * @summary 첨부 파일을 제거합니다
  */
-export const deleteFile = (
+export const partRevisionAssetDeleteFile = (
     partId: string,
     revisionId: string,
     fileId: string,
@@ -82,7 +82,7 @@ export const deleteFile = (
  * 리비전에 연결된 도면 1건을 삭제합니다
  * @summary 도면을 삭제합니다
  */
-export const deleteDrawing = (
+export const partRevisionAssetDeleteDrawing = (
     partId: string,
     revisionId: string,
     drawingId: string,
@@ -92,8 +92,8 @@ export const deleteDrawing = (
     },
       options);
     }
-  export type GetFilesResult = NonNullable<Awaited<ReturnType<typeof getFiles>>>
-export type AttachFilesResult = NonNullable<Awaited<ReturnType<typeof attachFiles>>>
-export type CreateDrawingResult = NonNullable<Awaited<ReturnType<typeof createDrawing>>>
-export type DeleteFileResult = NonNullable<Awaited<ReturnType<typeof deleteFile>>>
-export type DeleteDrawingResult = NonNullable<Awaited<ReturnType<typeof deleteDrawing>>>
+  export type PartRevisionAssetGetFilesResult = NonNullable<Awaited<ReturnType<typeof partRevisionAssetGetFiles>>>
+export type PartRevisionAssetAttachFilesResult = NonNullable<Awaited<ReturnType<typeof partRevisionAssetAttachFiles>>>
+export type PartRevisionAssetCreateDrawingResult = NonNullable<Awaited<ReturnType<typeof partRevisionAssetCreateDrawing>>>
+export type PartRevisionAssetDeleteFileResult = NonNullable<Awaited<ReturnType<typeof partRevisionAssetDeleteFile>>>
+export type PartRevisionAssetDeleteDrawingResult = NonNullable<Awaited<ReturnType<typeof partRevisionAssetDeleteDrawing>>>

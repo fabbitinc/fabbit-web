@@ -9,12 +9,13 @@ import type {
   CommentResponse,
   CreateCommentRequest,
   CreateIssueRequest,
+  EcPrefillResponse,
   FileItemResponse,
+  IssueListParams,
   IssueListResponse,
+  IssueLookupParams,
   IssueLookupResponse,
   IssueResponse,
-  ListIssuesParams,
-  LookupIssuesParams,
   SyncAssigneesRequest,
   SyncDiffResponse,
   SyncLabelsRequest,
@@ -37,7 +38,7 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
  * 부품 목록을 동기화합니다
  * @summary 부품 목록을 동기화합니다
  */
-export const syncParts = (
+export const issueSyncParts = (
     issueId: string,
     syncPartsRequest: BodyType<SyncPartsRequest>,
  options?: SecondParameter<typeof customInstance<SyncDiffResponse | void>>,) => {
@@ -52,7 +53,7 @@ export const syncParts = (
  * 라벨 목록을 동기화합니다
  * @summary 라벨 목록을 동기화합니다
  */
-export const syncLabels = (
+export const issueSyncLabels = (
     issueId: string,
     syncLabelsRequest: BodyType<SyncLabelsRequest>,
  options?: SecondParameter<typeof customInstance<SyncDiffResponse | void>>,) => {
@@ -67,7 +68,7 @@ export const syncLabels = (
  * 이슈에 연결된 변경관리 목록을 동기화합니다
  * @summary 이슈에 연결된 변경관리 목록을 동기화합니다
  */
-export const syncLinkedEngineeringChanges = (
+export const issueSyncLinkedEngineeringChanges = (
     issueId: string,
     syncLinkedEngineeringChangesRequest: BodyType<SyncLinkedEngineeringChangesRequest>,
  options?: SecondParameter<typeof customInstance<SyncDiffResponse | void>>,) => {
@@ -82,7 +83,7 @@ export const syncLinkedEngineeringChanges = (
  * 개인 담당자 목록을 동기화합니다
  * @summary 개인 담당자 목록을 동기화합니다
  */
-export const syncAssignees = (
+export const issueSyncAssignees = (
     issueId: string,
     syncAssigneesRequest: BodyType<SyncAssigneesRequest>,
  options?: SecondParameter<typeof customInstance<SyncDiffResponse | void>>,) => {
@@ -97,7 +98,7 @@ export const syncAssignees = (
  * 팀 담당자 목록을 동기화합니다
  * @summary 팀 담당자 목록을 동기화합니다
  */
-export const syncTeamAssignees = (
+export const issueSyncTeamAssignees = (
     issueId: string,
     syncTeamAssigneesRequest: BodyType<SyncTeamAssigneesRequest>,
  options?: SecondParameter<typeof customInstance<SyncDiffResponse | void>>,) => {
@@ -112,8 +113,8 @@ export const syncTeamAssignees = (
  * 이슈 목록을 조회합니다
  * @summary 이슈 목록을 조회합니다
  */
-export const listIssues = (
-    params?: ListIssuesParams,
+export const issueList = (
+    params?: IssueListParams,
  options?: SecondParameter<typeof customInstance<IssueListResponse | void>>,) => {
       return customInstance<IssueListResponse | void>(
       {url: `/api/v1/issues`, method: 'GET',
@@ -125,7 +126,7 @@ export const listIssues = (
  * 이슈를 생성하고 연관 정보(부품/담당자/라벨/파일)를 일괄 연결합니다
  * @summary 이슈를 생성하고 연관 정보(부품/담당자/라벨/파일)를 일괄 연결합니다
  */
-export const createIssue = (
+export const issueCreate = (
     createIssueRequest: BodyType<CreateIssueRequest>,
  options?: SecondParameter<typeof customInstance<IssueResponse | void>>,) => {
       return customInstance<IssueResponse | void>(
@@ -139,7 +140,7 @@ export const createIssue = (
  * 이슈를 다시 엽니다 (CLOSED -> OPEN)
  * @summary 이슈를 다시 엽니다 (CLOSED -> OPEN)
  */
-export const reopenIssue = (
+export const issueReopen = (
     issueId: string,
  options?: SecondParameter<typeof customInstance<IssueResponse | void>>,) => {
       return customInstance<IssueResponse | void>(
@@ -151,7 +152,7 @@ export const reopenIssue = (
  * 첨부파일을 배치 연결합니다
  * @summary 첨부파일을 배치 연결합니다
  */
-export const addFiles = (
+export const issueAddFiles = (
     issueId: string,
     attachFilesRequest: BodyType<AttachFilesRequest>,
  options?: SecondParameter<typeof customInstance<FileItemResponse[] | void>>,) => {
@@ -166,7 +167,7 @@ export const addFiles = (
  * 댓글을 생성합니다
  * @summary 댓글을 생성합니다
  */
-export const createComment = (
+export const issueCreateComment = (
     issueId: string,
     createCommentRequest: BodyType<CreateCommentRequest>,
  options?: SecondParameter<typeof customInstance<CommentResponse | void>>,) => {
@@ -181,7 +182,7 @@ export const createComment = (
  * 이슈를 닫습니다 (OPEN -> CLOSED)
  * @summary 이슈를 닫습니다 (OPEN -> CLOSED)
  */
-export const closeIssue = (
+export const issueClose = (
     issueId: string,
  options?: SecondParameter<typeof customInstance<IssueResponse | void>>,) => {
       return customInstance<IssueResponse | void>(
@@ -193,7 +194,7 @@ export const closeIssue = (
  * 이슈 ID로 상세 정보를 조회합니다
  * @summary 이슈 상세 정보를 조회합니다
  */
-export const getIssue = (
+export const issueGet = (
     issueId: string,
  options?: SecondParameter<typeof customInstance<IssueResponse | void>>,) => {
       return customInstance<IssueResponse | void>(
@@ -205,7 +206,7 @@ export const getIssue = (
  * 이슈 제목/본문을 수정합니다
  * @summary 이슈 제목/본문을 수정합니다
  */
-export const updateIssue = (
+export const issueUpdate = (
     issueId: string,
     updateIssueRequest: BodyType<UpdateIssueRequest>,
  options?: SecondParameter<typeof customInstance<IssueResponse | void>>,) => {
@@ -220,7 +221,7 @@ export const updateIssue = (
  * 댓글을 삭제합니다
  * @summary 댓글을 삭제합니다
  */
-export const deleteComment = (
+export const issueDeleteComment = (
     issueId: string,
     commentId: string,
  options?: SecondParameter<typeof customInstance<void>>,) => {
@@ -233,7 +234,7 @@ export const deleteComment = (
  * 댓글을 수정합니다
  * @summary 댓글을 수정합니다
  */
-export const updateComment = (
+export const issueUpdateComment = (
     issueId: string,
     commentId: string,
     updateCommentRequest: BodyType<UpdateCommentRequest>,
@@ -249,7 +250,7 @@ export const updateComment = (
  * 댓글과 활동 이력을 시간순으로 병합 조회합니다
  * @summary 댓글과 활동 이력을 시간순으로 병합 조회합니다
  */
-export const getTimeline = (
+export const issueGetTimeline = (
     issueId: string,
  options?: SecondParameter<typeof customInstance<TimelineResponse | void>>,) => {
       return customInstance<TimelineResponse | void>(
@@ -258,11 +259,23 @@ export const getTimeline = (
       options);
     }
   /**
+ * 이슈에 연결된 부품 정보를 기반으로 EC 생성 시 사전 입력할 제목, 영향 항목 후보, 추천 검토자, 영향 분석 요약을 반환합니다
+ * @summary 이슈 기반 EC 사전 입력 데이터를 조회합니다
+ */
+export const issueGetEcPrefill = (
+    issueId: string,
+ options?: SecondParameter<typeof customInstance<EcPrefillResponse | void>>,) => {
+      return customInstance<EcPrefillResponse | void>(
+      {url: `/api/v1/issues/${issueId}/ec-prefill`, method: 'GET'
+    },
+      options);
+    }
+  /**
  * 이슈 연결 picker UI용 경량 목록을 조회합니다
  * @summary 이슈 연결 picker UI용 경량 목록을 조회합니다
  */
-export const lookupIssues = (
-    params?: LookupIssuesParams,
+export const issueLookup = (
+    params?: IssueLookupParams,
  options?: SecondParameter<typeof customInstance<IssueLookupResponse | void>>,) => {
       return customInstance<IssueLookupResponse | void>(
       {url: `/api/v1/issues/lookup`, method: 'GET',
@@ -274,7 +287,7 @@ export const lookupIssues = (
  * 첨부파일 1건을 삭제(soft delete)합니다
  * @summary 첨부파일 1건을 삭제(soft delete)합니다
  */
-export const deleteFile1 = (
+export const issueDeleteFile = (
     issueId: string,
     fileId: string,
  options?: SecondParameter<typeof customInstance<void>>,) => {
@@ -283,21 +296,22 @@ export const deleteFile1 = (
     },
       options);
     }
-  export type SyncPartsResult = NonNullable<Awaited<ReturnType<typeof syncParts>>>
-export type SyncLabelsResult = NonNullable<Awaited<ReturnType<typeof syncLabels>>>
-export type SyncLinkedEngineeringChangesResult = NonNullable<Awaited<ReturnType<typeof syncLinkedEngineeringChanges>>>
-export type SyncAssigneesResult = NonNullable<Awaited<ReturnType<typeof syncAssignees>>>
-export type SyncTeamAssigneesResult = NonNullable<Awaited<ReturnType<typeof syncTeamAssignees>>>
-export type ListIssuesResult = NonNullable<Awaited<ReturnType<typeof listIssues>>>
-export type CreateIssueResult = NonNullable<Awaited<ReturnType<typeof createIssue>>>
-export type ReopenIssueResult = NonNullable<Awaited<ReturnType<typeof reopenIssue>>>
-export type AddFilesResult = NonNullable<Awaited<ReturnType<typeof addFiles>>>
-export type CreateCommentResult = NonNullable<Awaited<ReturnType<typeof createComment>>>
-export type CloseIssueResult = NonNullable<Awaited<ReturnType<typeof closeIssue>>>
-export type GetIssueResult = NonNullable<Awaited<ReturnType<typeof getIssue>>>
-export type UpdateIssueResult = NonNullable<Awaited<ReturnType<typeof updateIssue>>>
-export type DeleteCommentResult = NonNullable<Awaited<ReturnType<typeof deleteComment>>>
-export type UpdateCommentResult = NonNullable<Awaited<ReturnType<typeof updateComment>>>
-export type GetTimelineResult = NonNullable<Awaited<ReturnType<typeof getTimeline>>>
-export type LookupIssuesResult = NonNullable<Awaited<ReturnType<typeof lookupIssues>>>
-export type DeleteFile1Result = NonNullable<Awaited<ReturnType<typeof deleteFile1>>>
+  export type IssueSyncPartsResult = NonNullable<Awaited<ReturnType<typeof issueSyncParts>>>
+export type IssueSyncLabelsResult = NonNullable<Awaited<ReturnType<typeof issueSyncLabels>>>
+export type IssueSyncLinkedEngineeringChangesResult = NonNullable<Awaited<ReturnType<typeof issueSyncLinkedEngineeringChanges>>>
+export type IssueSyncAssigneesResult = NonNullable<Awaited<ReturnType<typeof issueSyncAssignees>>>
+export type IssueSyncTeamAssigneesResult = NonNullable<Awaited<ReturnType<typeof issueSyncTeamAssignees>>>
+export type IssueListResult = NonNullable<Awaited<ReturnType<typeof issueList>>>
+export type IssueCreateResult = NonNullable<Awaited<ReturnType<typeof issueCreate>>>
+export type IssueReopenResult = NonNullable<Awaited<ReturnType<typeof issueReopen>>>
+export type IssueAddFilesResult = NonNullable<Awaited<ReturnType<typeof issueAddFiles>>>
+export type IssueCreateCommentResult = NonNullable<Awaited<ReturnType<typeof issueCreateComment>>>
+export type IssueCloseResult = NonNullable<Awaited<ReturnType<typeof issueClose>>>
+export type IssueGetResult = NonNullable<Awaited<ReturnType<typeof issueGet>>>
+export type IssueUpdateResult = NonNullable<Awaited<ReturnType<typeof issueUpdate>>>
+export type IssueDeleteCommentResult = NonNullable<Awaited<ReturnType<typeof issueDeleteComment>>>
+export type IssueUpdateCommentResult = NonNullable<Awaited<ReturnType<typeof issueUpdateComment>>>
+export type IssueGetTimelineResult = NonNullable<Awaited<ReturnType<typeof issueGetTimeline>>>
+export type IssueGetEcPrefillResult = NonNullable<Awaited<ReturnType<typeof issueGetEcPrefill>>>
+export type IssueLookupResult = NonNullable<Awaited<ReturnType<typeof issueLookup>>>
+export type IssueDeleteFileResult = NonNullable<Awaited<ReturnType<typeof issueDeleteFile>>>
