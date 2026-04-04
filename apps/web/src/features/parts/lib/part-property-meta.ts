@@ -25,7 +25,7 @@ const SYSTEM_FIELD_KIND_MAP: Record<PartSystemPropertyKind, PartEditorScreenSyst
   UNIT: "unit",
   DESCRIPTION: "description",
   CATEGORY: "category",
-  PHANTOM: "isPhantom",
+  ITEM_TYPE: "isPhantom",
   LIFECYCLE_STATE: "lifecycleState",
   LEAD_TIME_DAYS: "leadTimeDays",
 };

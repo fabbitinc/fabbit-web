@@ -21,7 +21,7 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
  * 부품 워크플로 정책을 변경합니다
  * @summary 부품 워크플로 정책을 변경합니다
  */
-export const updatePartWorkflowPolicy = (
+export const settingsUpdatePartWorkflowPolicy = (
     settingsPartWorkflowPolicyRequest: BodyType<SettingsPartWorkflowPolicyRequest>,
  options?: SecondParameter<typeof customInstance<SettingsPartWorkflowPolicyResponse>>,) => {
       return customInstance<SettingsPartWorkflowPolicyResponse>(
@@ -35,7 +35,7 @@ export const updatePartWorkflowPolicy = (
  * 초기 렌더에 필요한 설정 값을 조회합니다
  * @summary 초기 렌더에 필요한 설정 값을 조회합니다
  */
-export const getSettings = (
+export const settingsGet = (
     
  options?: SecondParameter<typeof customInstance<SettingsResponse>>,) => {
       return customInstance<SettingsResponse>(
@@ -43,5 +43,5 @@ export const getSettings = (
     },
       options);
     }
-  export type UpdatePartWorkflowPolicyResult = NonNullable<Awaited<ReturnType<typeof updatePartWorkflowPolicy>>>
-export type GetSettingsResult = NonNullable<Awaited<ReturnType<typeof getSettings>>>
+  export type SettingsUpdatePartWorkflowPolicyResult = NonNullable<Awaited<ReturnType<typeof settingsUpdatePartWorkflowPolicy>>>
+export type SettingsGetResult = NonNullable<Awaited<ReturnType<typeof settingsGet>>>

@@ -11,6 +11,7 @@ import type { BomParentResponseRevisionStatus } from './bomParentResponseRevisio
  * 응답 DTO
  */
 export interface BomParentResponse {
+  bom_item_id?: string;
   part_id?: string;
   revision_id?: string;
   part_number?: string;

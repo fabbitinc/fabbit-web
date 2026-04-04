@@ -37,6 +37,7 @@ export interface ProjectDetailScreenProps {
   settingsContent: ReactNode;
   isError?: boolean;
   isLoading?: boolean;
+  showWorkItemViews?: boolean;
   onDangerClick?: () => void;
   onEditClick?: () => void;
   project?: ProjectDetailScreenProject;
@@ -54,8 +55,8 @@ const views: Array<{
 }> = [
   { id: "overview", label: "개요", icon: LayoutDashboard },
   { id: "parts", label: "부품", count: (project) => project.partCount, icon: Package },
-  { id: "issues", label: "이슈", count: (project) => project.issueCount, icon: AlertCircle },
-  { id: "change", label: "변경관리", count: (project) => project.changeCount, icon: FilePen },
+  { id: "issues", label: "관련 이슈", count: (project) => project.issueCount, icon: AlertCircle },
+  { id: "change", label: "관련 변경 관리", count: (project) => project.changeCount, icon: FilePen },
   { id: "activity", label: "활동", icon: Activity },
 ];
 
@@ -68,6 +69,7 @@ export function ProjectDetailScreen({
   settingsContent,
   isError = false,
   isLoading = false,
+  showWorkItemViews = true,
   onDangerClick,
   onEditClick,
   project,
@@ -76,6 +78,10 @@ export function ProjectDetailScreen({
   onRetry,
   onSettingsClick,
 }: ProjectDetailScreenProps) {
+  const visibleViews = showWorkItemViews
+    ? views
+    : views.filter((view) => view.id !== "issues" && view.id !== "change");
+
   if (isLoading) {
     return (
       <div className="min-h-full py-20">
@@ -144,7 +150,7 @@ export function ProjectDetailScreen({
       {project.description ? <p className="mt-1 text-sm text-muted-foreground">{project.description}</p> : null}
 
       <nav className="mt-4 flex items-center gap-1 border-b">
-        {views.map((view) => {
+        {visibleViews.map((view) => {
           const Icon = view.icon;
           const count = view.count ? view.count(project) : undefined;
 

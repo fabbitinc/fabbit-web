@@ -22,7 +22,7 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
  * 팀 멤버 목록을 조회합니다
  * @summary 팀 멤버 목록을 조회합니다
  */
-export const listTeamMembers = (
+export const teamMemberList = (
     teamId: string,
  options?: SecondParameter<typeof customInstance<TeamMemberListResponse | void>>,) => {
       return customInstance<TeamMemberListResponse | void>(
@@ -34,7 +34,7 @@ export const listTeamMembers = (
  * 팀에 멤버를 배치 추가합니다. 이미 추가된 멤버는 제외됩니다
  * @summary 팀에 멤버를 배치 추가합니다. 이미 추가된 멤버는 제외됩니다
  */
-export const addTeamMembers = (
+export const teamMemberAdd = (
     teamId: string,
     addTeamMembersRequest: BodyType<AddTeamMembersRequest>,
  options?: SecondParameter<typeof customInstance<ManageTeamMembersResponse | void>>,) => {
@@ -49,7 +49,7 @@ export const addTeamMembers = (
  * 팀에서 멤버를 배치 제거합니다
  * @summary 팀에서 멤버를 배치 제거합니다
  */
-export const removeTeamMembers = (
+export const teamMemberRemove = (
     teamId: string,
     removeTeamMembersRequest: BodyType<RemoveTeamMembersRequest>,
  options?: SecondParameter<typeof customInstance<void>>,) => {
@@ -60,6 +60,6 @@ export const removeTeamMembers = (
     },
       options);
     }
-  export type ListTeamMembersResult = NonNullable<Awaited<ReturnType<typeof listTeamMembers>>>
-export type AddTeamMembersResult = NonNullable<Awaited<ReturnType<typeof addTeamMembers>>>
-export type RemoveTeamMembersResult = NonNullable<Awaited<ReturnType<typeof removeTeamMembers>>>
+  export type TeamMemberListResult = NonNullable<Awaited<ReturnType<typeof teamMemberList>>>
+export type TeamMemberAddResult = NonNullable<Awaited<ReturnType<typeof teamMemberAdd>>>
+export type TeamMemberRemoveResult = NonNullable<Awaited<ReturnType<typeof teamMemberRemove>>>

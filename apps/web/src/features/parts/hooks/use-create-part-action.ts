@@ -15,7 +15,8 @@ export interface CreatePartActionInput {
   lifecycleState: CreatePartRequestDto["lifecycle_state"] | null;
   material: string;
   name: string;
-  partNumber: string;
+  partNumber?: string;
+  numberingCategoryId?: string;
   unit: string;
 }
 
@@ -51,13 +52,14 @@ export function useCreatePartAction(options?: UseCreatePartActionOptions) {
     mutationKey: ["parts", "create-part-action"],
     mutationFn: (input: CreatePartActionInput) =>
       createPart({
-        part_number: input.partNumber.trim(),
+        // 자동 채번 모드일 때는 part_number를 생략하고 numbering_category_id를 전송
+        ...(input.numberingCategoryId
+          ? { numbering_category_id: input.numberingCategoryId }
+          : { part_number: (input.partNumber ?? "").trim() }),
         name: toOptionalString(input.name),
         material: toOptionalString(input.material),
         unit: toOptionalString(input.unit),
         description: toOptionalString(input.description),
-        category: toOptionalString(input.category),
-        is_phantom: input.isPhantom,
         lifecycle_state: input.lifecycleState ?? undefined,
         lead_time_days: toOptionalInteger(input.leadTimeDays),
         extended_properties: input.extendedProperties,

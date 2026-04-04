@@ -5,7 +5,7 @@
  * OpenAPI spec version: v0
  */
 import type {
-  ListSuppliersParams,
+  SupplierListParams,
   SupplierListResponse
 } from '../model';
 
@@ -19,8 +19,8 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
  * company_name 또는 code로 공급사를 검색해 페이징 목록을 조회합니다
  * @summary company_name 또는 code로 공급사를 검색해 페이징 목록을 조회합니다
  */
-export const listSuppliers = (
-    params?: ListSuppliersParams,
+export const supplierList = (
+    params?: SupplierListParams,
  options?: SecondParameter<typeof customInstance<SupplierListResponse>>,) => {
       return customInstance<SupplierListResponse>(
       {url: `/api/v1/suppliers`, method: 'GET',
@@ -28,4 +28,4 @@ export const listSuppliers = (
     },
       options);
     }
-  export type ListSuppliersResult = NonNullable<Awaited<ReturnType<typeof listSuppliers>>>
+  export type SupplierListResult = NonNullable<Awaited<ReturnType<typeof supplierList>>>

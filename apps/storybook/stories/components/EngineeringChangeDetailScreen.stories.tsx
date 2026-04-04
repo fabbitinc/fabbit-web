@@ -1,6 +1,68 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
-import { EngineeringChangeDetailScreen } from "@fabbit/components";
+import { EngineeringChangeDetailScreen, type EngineeringChangeWorkflowData } from "@fabbit/components";
+
+const workflow: EngineeringChangeWorkflowData = {
+  stages: [
+    {
+      id: "review",
+      label: "기술 검토",
+      type: "REVIEW",
+      status: "active",
+      description: "설계, 생산기술, 품질 검토",
+      assignees: [
+        {
+          id: "user-2",
+          name: "김서윤",
+          type: "USER",
+          status: "PENDING",
+          subtitle: "회로 설계",
+        },
+        {
+          id: "user-3",
+          name: "박지후",
+          type: "USER",
+          status: "APPROVED",
+          actedAt: "2026-03-06T10:55:00.000Z",
+          actedByName: "박지후",
+          subtitle: "생산기술",
+        },
+      ],
+    },
+    {
+      id: "approval",
+      label: "변경 승인",
+      type: "APPROVAL",
+      status: "pending",
+      description: "CCB 결재",
+      assignees: [
+        {
+          id: "team-1",
+          name: "품질팀",
+          type: "TEAM",
+          status: "PENDING",
+          subtitle: "팀 합의 필요",
+        },
+      ],
+    },
+    {
+      id: "release",
+      label: "시스템 반영",
+      type: "RELEASE",
+      status: "pending",
+      description: "BOM/도면 릴리즈",
+      assignees: [
+        {
+          id: "user-4",
+          name: "이도윤",
+          type: "USER",
+          status: "PENDING",
+          subtitle: "PLM 관리자",
+        },
+      ],
+    },
+  ],
+};
 
 function EngineeringChangeDetailScreenStory() {
   const [activeTab, setActiveTab] = useState("conversation");
@@ -10,7 +72,7 @@ function EngineeringChangeDetailScreenStory() {
       engineeringChange={{
         title: "PCB 커넥터 핀 배열 변경",
         number: 15,
-        engineeringChangeState: "SUBMITTED",
+        engineeringChangeState: "REVIEW_PENDING",
         commentsCount: 2,
         createdAt: "2026-03-06T09:40:00.000Z",
         updatedAt: "2026-03-06T11:50:00.000Z",
@@ -76,6 +138,7 @@ function EngineeringChangeDetailScreenStory() {
         ],
       }}
       activeTab={activeTab}
+      workflowData={workflow}
       tabs={[
         { id: "conversation", label: "대화" },
         { id: "changes", label: "변경 내용" },
@@ -117,24 +180,6 @@ function EngineeringChangeDetailScreenStory() {
       onBack={() => undefined}
       onRetry={() => undefined}
       onTabChange={setActiveTab}
-      assigneePicker={{
-        availableMembers: [
-          { id: "user-1", name: "문성하", email: "seongha@fabbit.ai" },
-          { id: "user-2", name: "김서윤", email: "seoyun@fabbit.ai" },
-        ],
-        selectedIds: ["user-1"],
-        onRequest: () => undefined,
-        onSync: () => undefined,
-      }}
-      reviewerPicker={{
-        availableMembers: [
-          { id: "user-1", name: "문성하", email: "seongha@fabbit.ai" },
-          { id: "user-2", name: "김서윤", email: "seoyun@fabbit.ai" },
-        ],
-        selectedIds: ["user-2"],
-        onRequest: () => undefined,
-        onSync: () => undefined,
-      }}
       labelPicker={{
         availableLabels: [
           { id: "label-1", name: "배선", colorHex: "#4F46E5" },

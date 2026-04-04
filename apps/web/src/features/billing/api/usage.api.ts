@@ -1,6 +1,6 @@
 import {
-  getCreditUsage as getCreditUsageApiV1UsageCreditsGet,
-  getStorageUsage as getStorageUsageApiV1UsageStorageGet,
+  usageGetCredit as getCreditUsageApiV1UsageCreditsGet,
+  usageGetStorage as getStorageUsageApiV1UsageStorageGet,
 } from "@/api/generated/orval/usage/usage";
 import type { CreditUsageResponseDto, StorageUsageResponseDto } from "@/features/billing/api/usage.types";
 import type { CreditUsageModel, StorageUsageModel } from "@/features/billing/types/billing-model";
@@ -34,12 +34,10 @@ function toCreditUsageModel(response: CreditUsageResponseDto): CreditUsageModel 
     currentPeriodStart: response.current_period_start,
     currentPeriodEnd: response.current_period_end,
     totalCreditsUsed: response.total_credits_used,
-    planCreditsUsed: response.plan_credits_used,
-    planCreditsLimit: response.plan_credits_limit,
-    planCreditsRemaining: response.plan_credits_remaining,
-    bonusCreditsUsed: response.bonus_credits_used,
-    bonusCreditsRemaining: response.bonus_credits_remaining,
-    categories: response.categories.map((category) => ({
+    planCreditsUsed: response.included_credits_used,
+    planCreditsLimit: response.included_credits_limit,
+    planCreditsRemaining: response.included_credits_remaining,
+    categories: (response.categories ?? []).map((category) => ({
       category: category.category,
       creditsUsed: category.credits_used,
       usageCount: category.usage_count,

@@ -194,7 +194,7 @@ export function mapTimelineActivityToEvent(item: TimelineActivitySource): Timeli
     };
   }
 
-  if (action === "cr:state_changed") {
+  if (action === "cr:state_changed" || action === "engineering_change:state_changed") {
     const change = getChangeValue(detail, "state", "cr_state");
     const from = (change?.old ?? (detail.from as string | undefined) ?? "").toUpperCase();
     const to = (change?.new ?? (detail.to as string | undefined) ?? "").toUpperCase();
@@ -466,6 +466,144 @@ export function mapTimelineActivityToEvent(item: TimelineActivitySource): Timeli
         },
       ],
       isComment: (detail.is_comment as boolean | undefined) ?? (detail.isComment as boolean | undefined) ?? false,
+    };
+  }
+
+  // EC 단계 담당자 변경
+  if (action === "engineering_change:step_changed") {
+    const change = getChangeValue(detail, "status");
+    const stepAction = change?.new ?? (detail.status as string | undefined);
+    const refs = extractRefs(detail.refs);
+    const assigneeName = refs?.[0]?.label ?? (detail.assignee_name as string | undefined);
+    const stepType = refs?.[0]?.meta?.step_type as string | undefined ?? (detail.step_type as string | undefined);
+
+    return {
+      id: item.id,
+      type: "cr_step_changed",
+      author,
+      createdAtLabel,
+      stepAction: stepAction ?? undefined,
+      stepAssigneeName: assigneeName ?? undefined,
+      stepType: stepType ?? undefined,
+    };
+  }
+
+  // EC 연결 이슈 변경
+  if (action === "engineering_change:issue_changed") {
+    const addedRefs = extractRefs(detail.added);
+    const removedRefs = extractRefs(detail.removed);
+
+    if (addedRefs) {
+      return {
+        id: item.id,
+        type: "cr_issue_linked",
+        author,
+        createdAtLabel,
+        linkedIssueCount: addedRefs.length,
+        linkedIssues: toLinkedItems(addedRefs),
+      };
+    }
+
+    if (removedRefs) {
+      return {
+        id: item.id,
+        type: "cr_issue_unlinked",
+        author,
+        createdAtLabel,
+        linkedIssueCount: removedRefs.length,
+        linkedIssues: toLinkedItems(removedRefs),
+      };
+    }
+
+    return {
+      id: item.id,
+      type: "cr_issue_linked",
+      author,
+      createdAtLabel,
+      linkedIssueCount: detail.linkedIssueCount as number | undefined,
+      linkedIssues: detail.linkedIssues as TimelineEventData["linkedIssues"],
+    };
+  }
+
+  // EC 파일 첨부
+  if (action === "engineering_change:file_attached") {
+    const refs = extractRefs(detail.refs) ?? extractRefs(detail.added);
+    const fileNames = refs?.map((ref) => ref.label) ?? (detail.fileNames as string[] | undefined);
+
+    return {
+      id: item.id,
+      type: "file_attached",
+      author,
+      createdAtLabel,
+      fileCount: refs?.length ?? (detail.fileCount as number | undefined),
+      fileNames,
+    };
+  }
+
+  // EC 파일 제거
+  if (action === "engineering_change:file_detached") {
+    const refs = extractRefs(detail.refs) ?? extractRefs(detail.removed);
+    const fileNames = refs?.map((ref) => ref.label)
+      ?? ((detail.file_name as string | undefined) ? [detail.file_name as string] : undefined)
+      ?? (detail.fileNames as string[] | undefined);
+
+    return {
+      id: item.id,
+      type: "file_detached",
+      author,
+      createdAtLabel,
+      fileCount: refs?.length ?? (detail.fileCount as number | undefined),
+      fileNames,
+    };
+  }
+
+  // EC 멘션
+  if (action === "engineering_change:mentioned") {
+    const refs = extractRefs(detail.refs);
+
+    if (refs && refs.length > 0) {
+      const ref = refs[0];
+
+      return {
+        id: item.id,
+        type: "issue_mentioned",
+        author,
+        createdAtLabel,
+        linkedIssues: [
+          {
+            number: (ref.meta?.number as number) ?? 0,
+            title: getIssueLikeTitle(ref.label, ref.meta),
+            type: toIssueType(ref.type),
+          },
+        ],
+        isComment: (ref.meta?.is_comment as boolean) ?? false,
+      };
+    }
+
+    return {
+      id: item.id,
+      type: "issue_mentioned",
+      author,
+      createdAtLabel,
+      linkedIssues: (detail.linkedIssues as TimelineEventData["linkedIssues"] | undefined) ?? [],
+      isComment: (detail.is_comment as boolean | undefined) ?? false,
+    };
+  }
+
+  // EC 부품 리비전 변경
+  if (action === "engineering_change:part_revision_changed") {
+    const addedRefs = extractRefs(detail.added);
+    const removedRefs = extractRefs(detail.removed);
+
+    return {
+      id: item.id,
+      type: "cr_part_revision_changed",
+      author,
+      createdAtLabel,
+      addedPartCount: addedRefs?.length,
+      removedPartCount: removedRefs?.length,
+      addedPartNumbers: addedRefs?.map((ref) => ref.label),
+      removedPartNumbers: removedRefs?.map((ref) => ref.label),
     };
   }
 

@@ -1,45 +1,45 @@
 import {
-  attachFiles as attachFilesApiV1PartRevisionFilesPost,
-  createDrawing as createDrawingApiV1PartRevisionDrawingsPost,
-  deleteDrawing as deleteDrawingApiV1PartRevisionDrawingsDelete,
-  deleteFile as deleteFileApiV1PartRevisionFilesDelete,
-  getFiles as getFilesApiV1PartRevisionFilesGet,
+  partRevisionAssetAttachFiles as attachFilesApiV1PartRevisionFilesPost,
+  partRevisionAssetCreateDrawing as createDrawingApiV1PartRevisionDrawingsPost,
+  partRevisionAssetDeleteDrawing as deleteDrawingApiV1PartRevisionDrawingsDelete,
+  partRevisionAssetDeleteFile as deleteFileApiV1PartRevisionFilesDelete,
+  partRevisionAssetGetFiles as getFilesApiV1PartRevisionFilesGet,
 } from "@/api/generated/orval/part-revision-assets/part-revision-assets";
 import {
-  cancel as cancelPartRevisionApiV1PartRevisionCancelPost,
-  createDraft as createDraftApiV1PartRevisionDraftPost,
-  release as releasePartRevisionApiV1PartRevisionReleasePost,
-  update1 as updatePartRevisionApiV1PartRevisionPatch,
+  partRevisionCommandCancel as cancelPartRevisionApiV1PartRevisionCancelPost,
+  partRevisionCommandCreateDraft as createDraftApiV1PartRevisionDraftPost,
+  partRevisionCommandRelease as releasePartRevisionApiV1PartRevisionReleasePost,
+  partRevisionCommandUpdate as updatePartRevisionApiV1PartRevisionPatch,
 } from "@/api/generated/orval/part-revision-commands/part-revision-commands";
 import {
-  createPreviewFile as createPreviewFileApiV1PartRevisionPreviewFilesPost,
-  delete1 as clearPartPreviewApiV1PartRevisionPreviewDelete,
-  deletePreviewFile as deletePreviewFileApiV1PartRevisionPreviewFilesDelete,
-  getProcessing as getPreviewProcessingApiV1PartRevisionPreviewProcessingGet,
-  getSources as getPreviewSourcesApiV1PartRevisionPreviewSourcesGet,
-  update2 as selectPreviewSourceApiV1PartRevisionPreviewPatch,
+  partRevisionPreviewCreatePreviewFile as createPreviewFileApiV1PartRevisionPreviewFilesPost,
+  partRevisionPreviewDelete as clearPartPreviewApiV1PartRevisionPreviewDelete,
+  partRevisionPreviewDeletePreviewFile as deletePreviewFileApiV1PartRevisionPreviewFilesDelete,
+  partRevisionPreviewGetProcessing as getPreviewProcessingApiV1PartRevisionPreviewProcessingGet,
+  partRevisionPreviewGetSources as getPreviewSourcesApiV1PartRevisionPreviewSourcesGet,
+  partRevisionPreviewUpdate as selectPreviewSourceApiV1PartRevisionPreviewPatch,
 } from "@/api/generated/orval/part-revision-previews/part-revision-previews";
 import {
-  exportBomTree as exportBomTreeApiV1PartRevisionBomTreeExportGet,
-  get1 as getPartRevisionApiV1PartRevisionGet,
-  getBom as getBomApiV1PartRevisionBomGet,
-  getBomTree as getBomTreeApiV1PartRevisionBomTreeGet,
-  getDiff as getDiffApiV1PartRevisionDiffGet,
-  getHistory as getHistoryApiV1PartHistoryGet,
-  getProjects as getProjectsApiV1PartRevisionProjectsGet,
-  getSuppliers as getSuppliersApiV1PartRevisionSuppliersGet,
+  partRevisionExportBomTree as exportBomTreeApiV1PartRevisionBomTreeExportGet,
+  partRevisionGet as getPartRevisionApiV1PartRevisionGet,
+  partRevisionGetBom as getBomApiV1PartRevisionBomGet,
+  partRevisionGetBomTree as getBomTreeApiV1PartRevisionBomTreeGet,
+  partRevisionGetDiff as getDiffApiV1PartRevisionDiffGet,
+  partRevisionGetHistory as getHistoryApiV1PartHistoryGet,
+  partRevisionGetProjects as getProjectsApiV1PartRevisionProjectsGet,
+  partRevisionGetSuppliers as getSuppliersApiV1PartRevisionSuppliersGet,
 } from "@/api/generated/orval/part-revisions/part-revisions";
 import {
-  changeLifecycleState as changeLifecycleStateApiV1PartsLifecyclePost,
-  createPart as createPartApiV1PartsPost,
-  exportParts as exportPartsApiV1PartsExportGet,
-  getFilterOptions as getFilterOptionsApiV1PartsFilterOptionsGet,
-  listInProgressParts as listInProgressPartsApiV1PartsInProgressGet,
-  listParts as listPartsApiV1PartsGet,
+  partChangeLifecycleState as changeLifecycleStateApiV1PartsLifecyclePost,
+  partCreate as createPartApiV1PartsPost,
+  partExport as exportPartsApiV1PartsExportGet,
+  partGetFilterOptions as getFilterOptionsApiV1PartsFilterOptionsGet,
+  partListInProgress as listInProgressPartsApiV1PartsInProgressGet,
+  partList as listPartsApiV1PartsGet,
 } from "@/api/generated/orval/parts/parts";
-import { linkParts as linkPartsApiV1ProjectsProjectIdPartsPost } from "@/api/generated/orval/project-parts/project-parts";
-import { listProjects as listProjectsApiV1ProjectsGet } from "@/api/generated/orval/projects/projects";
-import { listTeams as listTeamsApiV1TeamsGet } from "@/api/generated/orval/teams/teams";
+import { projectPartLinkParts as linkPartsApiV1ProjectsProjectIdPartsPost } from "@/api/generated/orval/project-parts/project-parts";
+import { projectList as listProjectsApiV1ProjectsGet } from "@/api/generated/orval/projects/projects";
+import { teamList as listTeamsApiV1TeamsGet } from "@/api/generated/orval/teams/teams";
 import type {
   AttachPartFilesRequestDto,
   AttachPartFilesResponseDto,
@@ -491,9 +491,9 @@ function toPartDetailModel(part: PartDetailResponseDto): PartDetailModel {
     material: part.material ?? null,
     unit: part.unit ?? null,
     description: part.description ?? null,
-    category: part.category ?? null,
+    category: part.numbering_category_id ?? null,
     lifecycleState: part.lifecycle_state ?? null,
-    isPhantom: part.is_phantom ?? null,
+    isPhantom: part.item_type === "PHANTOM",
     leadTimeDays: part.lead_time_days ?? null,
     extendedProperties: part.extended_properties ?? {},
     drawing: part.preview ? toPreviewDrawingModel(part.preview) : null,
@@ -542,15 +542,17 @@ function toRegisteredDrawingModel(drawing: RegisterPartDrawingResponseDto): Part
   };
 }
 
-function toPartBomItemModel(
+export function toPartBomItemModel(
   item: PartBomResponseDto["children"][number] | PartBomResponseDto["parents"][number],
 ): PartBomItemModel {
   return {
-    id: item.revision_id ?? item.part_id ?? "",
+    id: item.bom_item_id ?? `${item.revision_id ?? item.part_id ?? ""}_${item.line_number ?? ""}`,
+    bomItemId: item.bom_item_id ?? null,
     partId: item.part_id ?? null,
     revisionId: item.revision_id ?? null,
     partNumber: item.part_number ?? "",
     name: item.name ?? null,
+    lineNumber: item.line_number ?? null,
     quantity: item.quantity ?? 0,
     extendedProperties: item.extended_properties ?? {},
   };

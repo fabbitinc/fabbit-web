@@ -126,10 +126,12 @@ export interface PartDetailModel {
 
 export interface PartBomItemModel {
   id: string;
+  bomItemId: string | null;
   partId: string | null;
   revisionId: string | null;
   partNumber: string;
   name: string | null;
+  lineNumber: string | null;
   quantity: number;
   extendedProperties: Record<string, unknown>;
 }

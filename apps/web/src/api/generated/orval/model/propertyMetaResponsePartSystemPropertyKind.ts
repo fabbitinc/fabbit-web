@@ -19,7 +19,7 @@ export const PropertyMetaResponsePartSystemPropertyKind = {
   UNIT: 'UNIT',
   DESCRIPTION: 'DESCRIPTION',
   CATEGORY: 'CATEGORY',
-  PHANTOM: 'PHANTOM',
+  ITEM_TYPE: 'ITEM_TYPE',
   LIFECYCLE_STATE: 'LIFECYCLE_STATE',
   LEAD_TIME_DAYS: 'LEAD_TIME_DAYS',
 } as const;

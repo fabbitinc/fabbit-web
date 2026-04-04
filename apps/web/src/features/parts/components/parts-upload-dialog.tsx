@@ -56,14 +56,18 @@ function isSupportedFile(file: File) {
 }
 
 async function parseFileHeaders(file: File): Promise<string[]> {
-  const workbook = new ExcelJS.Workbook();
   const isCsv = file.name.toLowerCase().endsWith(".csv");
 
   if (isCsv) {
-    await workbook.csv.read(file.stream() as unknown as NodeJS.ReadableStream);
-  } else {
-    await workbook.xlsx.load(await file.arrayBuffer());
+    const [firstLine = ""] = (await file.text()).split(/\r?\n/, 1);
+    return firstLine
+      .split(",")
+      .map((value) => value.trim())
+      .filter(Boolean);
   }
+
+  const workbook = new ExcelJS.Workbook();
+  await workbook.xlsx.load(await file.arrayBuffer());
 
   const sheet = workbook.worksheets[0];
 

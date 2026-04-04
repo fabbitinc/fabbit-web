@@ -10,16 +10,19 @@ import type {
   ChangePartLifecycleStateRequest,
   ChangePartLifecycleStateResponse,
   CreatePartRequest,
-  ExportPartsParams,
-  ListInProgressPartsParams,
-  ListPartsParams,
-  LookupParts1Params,
-  LookupRevisionsParams,
+  PartChangeHistoryResponse,
   PartDetailResponse,
+  PartExportParams,
   PartFilterOptionsResponse,
+  PartGetChangeHistoryParams,
+  PartImpactAnalysisResponse,
   PartInProgressListResponse,
+  PartListInProgressParams,
+  PartListParams,
   PartListResponse,
+  PartLookupParams,
   PartLookupResponse,
+  PartLookupRevisionsParams,
   PartRevisionLookupResponse,
   RenameCategoryRequest,
   RenameCategoryResponse
@@ -36,8 +39,8 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
  * 검색/필터 조건과 함께 Part 목록을 조회합니다
  * @summary Part 목록을 조회합니다
  */
-export const listParts = (
-    params?: ListPartsParams,
+export const partList = (
+    params?: PartListParams,
  options?: SecondParameter<typeof customInstance<PartListResponse | void>>,) => {
       return customInstance<PartListResponse | void>(
       {url: `/api/v1/parts`, method: 'GET',
@@ -49,7 +52,7 @@ export const listParts = (
  * 부품을 생성하고 생성된 초기 초안 상세를 반환합니다
  * @summary 부품을 생성하고 초안 상세를 반환합니다
  */
-export const createPart = (
+export const partCreate = (
     createPartRequest: BodyType<CreatePartRequest>,
  options?: SecondParameter<typeof customInstance<PartDetailResponse | void>>,) => {
       return customInstance<PartDetailResponse | void>(
@@ -63,7 +66,7 @@ export const createPart = (
  * 부품의 수명주기 상태를 변경합니다 (ACTIVE → EOL → OBSOLETE)
  * @summary 부품의 수명주기 상태를 변경합니다
  */
-export const changeLifecycleState = (
+export const partChangeLifecycleState = (
     partId: string,
     changePartLifecycleStateRequest: BodyType<ChangePartLifecycleStateRequest>,
  options?: SecondParameter<typeof customInstance<ChangePartLifecycleStateResponse | void>>,) => {
@@ -78,7 +81,7 @@ export const changeLifecycleState = (
  * 카테고리 이름을 일괄 변경하고 변경 건수를 반환합니다
  * @summary 카테고리 이름을 일괄 변경합니다
  */
-export const renameCategory = (
+export const partRenameCategory = (
     category: string,
     renameCategoryRequest: BodyType<RenameCategoryRequest>,
  options?: SecondParameter<typeof customInstance<RenameCategoryResponse | void>>,) => {
@@ -90,11 +93,37 @@ export const renameCategory = (
       options);
     }
   /**
+ * 특정 부품 변경 시 영향받는 상위 BOM, 프로젝트, 추천 리뷰어를 분석합니다
+ * @summary 부품 영향 분석
+ */
+export const partGetImpactAnalysis = (
+    partId: string,
+ options?: SecondParameter<typeof customInstance<PartImpactAnalysisResponse | void>>,) => {
+      return customInstance<PartImpactAnalysisResponse | void>(
+      {url: `/api/v1/parts/${partId}/impact-analysis`, method: 'GET'
+    },
+      options);
+    }
+  /**
+ * 특정 부품과 연결된 이슈, 설계변경 릴리즈, 리비전 이력을 시간순으로 조회합니다
+ * @summary 부품 변경 이력을 조회합니다
+ */
+export const partGetChangeHistory = (
+    partId: string,
+    params?: PartGetChangeHistoryParams,
+ options?: SecondParameter<typeof customInstance<PartChangeHistoryResponse | void>>,) => {
+      return customInstance<PartChangeHistoryResponse | void>(
+      {url: `/api/v1/parts/${partId}/change-history`, method: 'GET',
+        params
+    },
+      options);
+    }
+  /**
  * 현재 사용자가 만든 변경관리 연결 가능한 DRAFT 리비전 목록을 조회합니다
  * @summary 변경관리 연결 가능한 리비전 목록을 조회합니다
  */
-export const lookupRevisions = (
-    params?: LookupRevisionsParams,
+export const partLookupRevisions = (
+    params?: PartLookupRevisionsParams,
  options?: SecondParameter<typeof customInstance<PartRevisionLookupResponse | void>>,) => {
       return customInstance<PartRevisionLookupResponse | void>(
       {url: `/api/v1/parts/revisions/lookup`, method: 'GET',
@@ -106,8 +135,8 @@ export const lookupRevisions = (
  * 품번/품명으로 경량 Part 목록을 조회합니다
  * @summary 품번/품명으로 경량 Part 목록을 조회합니다
  */
-export const lookupParts1 = (
-    params?: LookupParts1Params,
+export const partLookup = (
+    params?: PartLookupParams,
  options?: SecondParameter<typeof customInstance<PartLookupResponse | void>>,) => {
       return customInstance<PartLookupResponse | void>(
       {url: `/api/v1/parts/lookup`, method: 'GET',
@@ -119,8 +148,8 @@ export const lookupParts1 = (
  * 검색/필터 조건과 함께 진행중 부품 작업함 목록을 조회합니다
  * @summary 진행중 부품 작업함 목록을 조회합니다
  */
-export const listInProgressParts = (
-    params?: ListInProgressPartsParams,
+export const partListInProgress = (
+    params?: PartListInProgressParams,
  options?: SecondParameter<typeof customInstance<PartInProgressListResponse | void>>,) => {
       return customInstance<PartInProgressListResponse | void>(
       {url: `/api/v1/parts/in-progress`, method: 'GET',
@@ -132,7 +161,7 @@ export const listInProgressParts = (
  * Part 목록 필터 옵션(카테고리/수명주기 상태)을 조회합니다
  * @summary Part 목록 필터 옵션을 조회합니다
  */
-export const getFilterOptions = (
+export const partGetFilterOptions = (
     
  options?: SecondParameter<typeof customInstance<PartFilterOptionsResponse | void>>,) => {
       return customInstance<PartFilterOptionsResponse | void>(
@@ -144,8 +173,8 @@ export const getFilterOptions = (
  * 필터링된 Part 목록을 Excel(.xlsx) 파일로 내보냅니다
  * @summary 필터링된 Part 목록을 Excel 파일로 내보냅니다
  */
-export const exportParts = (
-    params?: ExportPartsParams,
+export const partExport = (
+    params?: PartExportParams,
  options?: SecondParameter<typeof customInstance<Blob | void>>,) => {
       return customInstance<Blob | void>(
       {url: `/api/v1/parts/export`, method: 'GET',
@@ -157,7 +186,7 @@ export const exportParts = (
  * 카테고리별 부품 개수를 조회합니다
  * @summary 카테고리별 부품 개수를 조회합니다
  */
-export const listCategories = (
+export const partListCategories = (
     
  options?: SecondParameter<typeof customInstance<CategoryStatsResponse | void>>,) => {
       return customInstance<CategoryStatsResponse | void>(
@@ -169,7 +198,7 @@ export const listCategories = (
  * 카테고리 문자열 목록을 경량 조회합니다
  * @summary 카테고리 문자열 목록을 경량 조회합니다
  */
-export const lookupCategories = (
+export const partLookupCategories = (
     
  options?: SecondParameter<typeof customInstance<CategoryLookupResponse | void>>,) => {
       return customInstance<CategoryLookupResponse | void>(
@@ -177,14 +206,16 @@ export const lookupCategories = (
     },
       options);
     }
-  export type ListPartsResult = NonNullable<Awaited<ReturnType<typeof listParts>>>
-export type CreatePartResult = NonNullable<Awaited<ReturnType<typeof createPart>>>
-export type ChangeLifecycleStateResult = NonNullable<Awaited<ReturnType<typeof changeLifecycleState>>>
-export type RenameCategoryResult = NonNullable<Awaited<ReturnType<typeof renameCategory>>>
-export type LookupRevisionsResult = NonNullable<Awaited<ReturnType<typeof lookupRevisions>>>
-export type LookupParts1Result = NonNullable<Awaited<ReturnType<typeof lookupParts1>>>
-export type ListInProgressPartsResult = NonNullable<Awaited<ReturnType<typeof listInProgressParts>>>
-export type GetFilterOptionsResult = NonNullable<Awaited<ReturnType<typeof getFilterOptions>>>
-export type ExportPartsResult = NonNullable<Awaited<ReturnType<typeof exportParts>>>
-export type ListCategoriesResult = NonNullable<Awaited<ReturnType<typeof listCategories>>>
-export type LookupCategoriesResult = NonNullable<Awaited<ReturnType<typeof lookupCategories>>>
+  export type PartListResult = NonNullable<Awaited<ReturnType<typeof partList>>>
+export type PartCreateResult = NonNullable<Awaited<ReturnType<typeof partCreate>>>
+export type PartChangeLifecycleStateResult = NonNullable<Awaited<ReturnType<typeof partChangeLifecycleState>>>
+export type PartRenameCategoryResult = NonNullable<Awaited<ReturnType<typeof partRenameCategory>>>
+export type PartGetImpactAnalysisResult = NonNullable<Awaited<ReturnType<typeof partGetImpactAnalysis>>>
+export type PartGetChangeHistoryResult = NonNullable<Awaited<ReturnType<typeof partGetChangeHistory>>>
+export type PartLookupRevisionsResult = NonNullable<Awaited<ReturnType<typeof partLookupRevisions>>>
+export type PartLookupResult = NonNullable<Awaited<ReturnType<typeof partLookup>>>
+export type PartListInProgressResult = NonNullable<Awaited<ReturnType<typeof partListInProgress>>>
+export type PartGetFilterOptionsResult = NonNullable<Awaited<ReturnType<typeof partGetFilterOptions>>>
+export type PartExportResult = NonNullable<Awaited<ReturnType<typeof partExport>>>
+export type PartListCategoriesResult = NonNullable<Awaited<ReturnType<typeof partListCategories>>>
+export type PartLookupCategoriesResult = NonNullable<Awaited<ReturnType<typeof partLookupCategories>>>

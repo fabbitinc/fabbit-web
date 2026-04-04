@@ -27,7 +27,7 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
  * 업로드 완료된 파일(file_id)을 조직 프로필 이미지로 설정합니다. ADMIN 이상 권한이 필요합니다
  * @summary 업로드 완료된 파일(file_id)을 조직 프로필 이미지로 설정합니다. ADMIN 이상 권한이 필요합니다
  */
-export const setProfileImage1 = (
+export const organizationSetProfileImage = (
     setProfileImageRequest: BodyType<SetProfileImageRequest>,
  options?: SecondParameter<typeof customInstance<ProfileImageResponse>>,) => {
       return customInstance<ProfileImageResponse>(
@@ -41,7 +41,7 @@ export const setProfileImage1 = (
  * 조직 프로필 이미지를 제거하고 연결된 파일을 소프트 삭제합니다. ADMIN 이상 권한이 필요합니다
  * @summary 조직 프로필 이미지를 제거하고 연결된 파일을 소프트 삭제합니다. ADMIN 이상 권한이 필요합니다
  */
-export const deleteProfileImage1 = (
+export const organizationDeleteProfileImage = (
     
  options?: SecondParameter<typeof customInstance<void>>,) => {
       return customInstance<void>(
@@ -53,7 +53,7 @@ export const deleteProfileImage1 = (
  * scope=create_org 토큰으로 워크스페이스를 생성하고 시작 플랜을 선택합니다. 현재 가입으로 시작할 수 있는 플랜은 Starter와 Team이며, 유료 플랜이면 ownerSeatType을 함께 지정해야 합니다
  * @summary 스코프 토큰으로 워크스페이스를 생성하고 access/refresh 토큰을 발급합니다
  */
-export const createOrganization = (
+export const organizationCreate = (
     createOrganizationRequest: BodyType<CreateOrganizationRequest>,
  options?: SecondParameter<typeof customInstance<CreateOrganizationResponse>>,) => {
       return customInstance<CreateOrganizationResponse>(
@@ -67,7 +67,7 @@ export const createOrganization = (
  * 대상 워크스페이스 멤버십을 확인한 뒤 새 access/refresh 토큰을 발급합니다
  * @summary 대상 워크스페이스 멤버십을 확인한 뒤 새 access/refresh 토큰을 발급합니다
  */
-export const switchOrganization = (
+export const organizationSwitch = (
     switchOrgRequest: BodyType<SwitchOrgRequest>,
  options?: SecondParameter<typeof customInstance<LoginResponse>>,) => {
       return customInstance<LoginResponse>(
@@ -81,7 +81,7 @@ export const switchOrganization = (
  * 관리자(ADMIN 이상)가 조직의 초대 목록(PENDING/ACCEPTED/CANCELLED)을 최신순으로 조회합니다
  * @summary 관리자(ADMIN 이상)가 조직의 초대 목록(PENDING/ACCEPTED/CANCELLED)을 최신순으로 조회합니다
  */
-export const listInvitations = (
+export const organizationInvitationListInvitations = (
     
  options?: SecondParameter<typeof customInstance<InvitationListResponse>>,) => {
       return customInstance<InvitationListResponse>(
@@ -93,7 +93,7 @@ export const listInvitations = (
  * 관리자(ADMIN 이상)가 이메일로 조직 초대를 발송합니다
  * @summary 관리자(ADMIN 이상)가 이메일로 조직 초대를 발송합니다
  */
-export const createInvitation = (
+export const organizationInvitationCreateInvitation = (
     createInvitationRequest: BodyType<CreateInvitationRequest>,
  options?: SecondParameter<typeof customInstance<InvitationResponse>>,) => {
       return customInstance<InvitationResponse>(
@@ -107,7 +107,7 @@ export const createInvitation = (
  * 관리자(ADMIN 이상)가 PENDING 상태 초대를 취소합니다
  * @summary 관리자(ADMIN 이상)가 PENDING 상태 초대를 취소합니다
  */
-export const cancelInvitation = (
+export const organizationInvitationCancelInvitation = (
     invitationId: string,
  options?: SecondParameter<typeof customInstance<void>>,) => {
       return customInstance<void>(
@@ -115,10 +115,10 @@ export const cancelInvitation = (
     },
       options);
     }
-  export type SetProfileImage1Result = NonNullable<Awaited<ReturnType<typeof setProfileImage1>>>
-export type DeleteProfileImage1Result = NonNullable<Awaited<ReturnType<typeof deleteProfileImage1>>>
-export type CreateOrganizationResult = NonNullable<Awaited<ReturnType<typeof createOrganization>>>
-export type SwitchOrganizationResult = NonNullable<Awaited<ReturnType<typeof switchOrganization>>>
-export type ListInvitationsResult = NonNullable<Awaited<ReturnType<typeof listInvitations>>>
-export type CreateInvitationResult = NonNullable<Awaited<ReturnType<typeof createInvitation>>>
-export type CancelInvitationResult = NonNullable<Awaited<ReturnType<typeof cancelInvitation>>>
+  export type OrganizationSetProfileImageResult = NonNullable<Awaited<ReturnType<typeof organizationSetProfileImage>>>
+export type OrganizationDeleteProfileImageResult = NonNullable<Awaited<ReturnType<typeof organizationDeleteProfileImage>>>
+export type OrganizationCreateResult = NonNullable<Awaited<ReturnType<typeof organizationCreate>>>
+export type OrganizationSwitchResult = NonNullable<Awaited<ReturnType<typeof organizationSwitch>>>
+export type OrganizationInvitationListInvitationsResult = NonNullable<Awaited<ReturnType<typeof organizationInvitationListInvitations>>>
+export type OrganizationInvitationCreateInvitationResult = NonNullable<Awaited<ReturnType<typeof organizationInvitationCreateInvitation>>>
+export type OrganizationInvitationCancelInvitationResult = NonNullable<Awaited<ReturnType<typeof organizationInvitationCancelInvitation>>>
