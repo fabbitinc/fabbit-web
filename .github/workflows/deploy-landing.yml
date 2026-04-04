@@ -22,6 +22,7 @@ jobs:
     timeout-minutes: 20
     permissions:
       contents: read
+      id-token: write
 
     steps:
       - name: Checkout
@@ -43,10 +44,15 @@ jobs:
         env:
           VITE_APP_BASE_URL: https://fabbitinc.com
 
-      - name: Deploy landing to Cloudflare Pages
-        uses: cloudflare/wrangler-action@v3
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          workingDirectory: apps/landing
-          command: pages deploy dist --project-name=fabbit-landing --branch=${{ github.ref_name }} --commit-hash=${{ github.sha }}
+          role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
+          aws-region: ap-northeast-2
+
+      - name: Deploy landing to S3
+        run: |
+          aws s3 sync apps/landing/dist s3://fabbit-prod-landing-edge --delete --exclude index.html
+          aws s3 cp apps/landing/dist/index.html s3://fabbit-prod-landing-edge/index.html \
+            --cache-control "no-cache, no-store, must-revalidate" \
+            --content-type "text/html; charset=utf-8"
