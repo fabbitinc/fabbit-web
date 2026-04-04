@@ -30,6 +30,7 @@ export interface PlanSelectionScreenProps {
   selectedPlan: string;
   planOptions: PlanSelectionScreenPlanOption[];
   seatDescriptions?: SeatDescription[];
+  errorMessage?: string;
   isConfirmOpen: boolean;
   isSubmitting?: boolean;
   isLoading?: boolean;
@@ -123,6 +124,7 @@ export function PlanSelectionScreen({
   selectedPlan,
   planOptions,
   seatDescriptions,
+  errorMessage,
   isConfirmOpen,
   isSubmitting = false,
   isLoading = false,
@@ -153,6 +155,7 @@ export function PlanSelectionScreen({
       wide
       description="지금은 Starter로 시작하고, 이후에 팀 규모에 맞춰 확장할 수 있습니다."
       eyebrow="요금제 선택"
+      errorMessage={errorMessage}
       title="플랜을 선택해 주세요"
     >
       {seatDescriptions && seatDescriptions.length > 0 ? (

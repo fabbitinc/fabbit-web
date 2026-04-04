@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { Button, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, Input } from "@fabbit/ui";
 import type { PartBomTabItem } from "@fabbit/components";
@@ -17,22 +17,16 @@ export function BomItemEditDialog({ open, onOpenChange, partId, revisionId, bomI
   const [lineNumber, setLineNumber] = useState(bomItem.lineNumber ?? "");
   const [quantity, setQuantity] = useState(bomItem.quantity);
   const updateBomItem = useUpdateBomItemAction(partId, revisionId);
-
-  const initialValues = useRef({
+  const initialValues = {
     childPartRevisionId: bomItem.id,
     lineNumber: bomItem.lineNumber ?? "",
     quantity: bomItem.quantity,
-  });
+  };
 
   useEffect(() => {
     if (open) {
       setLineNumber(bomItem.lineNumber ?? "");
       setQuantity(bomItem.quantity);
-      initialValues.current = {
-        childPartRevisionId: bomItem.id,
-        lineNumber: bomItem.lineNumber ?? "",
-        quantity: bomItem.quantity,
-      };
     }
   }, [open, bomItem]);
 
@@ -41,7 +35,7 @@ export function BomItemEditDialog({ open, onOpenChange, partId, revisionId, bomI
 
     const request = buildBomUpdateRequest(
       { childPartRevisionId: bomItem.id, lineNumber, quantity },
-      initialValues.current,
+      initialValues,
     );
 
     if (!request) return;
@@ -52,7 +46,7 @@ export function BomItemEditDialog({ open, onOpenChange, partId, revisionId, bomI
 
   const updateRequest = buildBomUpdateRequest(
     { childPartRevisionId: bomItem.id, lineNumber, quantity },
-    initialValues.current,
+    initialValues,
   );
   const canSubmit = updateRequest !== null && !updateBomItem.isPending;
 

@@ -1,4 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
+import { toast } from "sonner";
 import {
   createOrganization,
   registerUser,
@@ -6,12 +7,16 @@ import {
 import { useRegistrationStore } from "@/features/registration/stores/registration-store";
 import type { OwnerSeatType, PlanTier } from "@/features/registration/types/registration.types";
 import { setAuthCookies } from "@/lib/auth-cookies";
+import { extractApiError } from "@/lib/api-error";
 
 const APP_DOMAIN = import.meta.env.VITE_APP_DOMAIN;
 
 interface CreateWorkspaceActionResult {
   redirectUrl: string;
 }
+
+const CREATE_WORKSPACE_ERROR_MESSAGE =
+  "워크스페이스를 준비하는 중 문제가 발생했습니다. 잠시 후 다시 시도해 주세요. 문제가 계속되면 고객지원에 문의해 주세요.";
 
 function toApiPlanType(planTier: PlanTier): "STARTER" | "TEAM" {
   switch (planTier) {
@@ -32,6 +37,18 @@ function toApiOwnerSeatType(seatType: OwnerSeatType | null) {
 
 function buildSubdomainUrl(slug: string, path: string) {
   return `${window.location.protocol}//${slug}.${APP_DOMAIN}${path}`;
+}
+
+export function extractCreateWorkspaceError(error: unknown) {
+  return extractApiError(error, {
+    fallback: "워크스페이스 생성에 실패했습니다. 잠시 후 다시 시도해 주세요.",
+    codeMessages: {
+      INTERNAL_SERVER_ERROR: CREATE_WORKSPACE_ERROR_MESSAGE,
+    },
+    statusMessages: {
+      500: CREATE_WORKSPACE_ERROR_MESSAGE,
+    },
+  });
 }
 
 export function useCreateWorkspaceAction() {
@@ -88,6 +105,9 @@ export function useCreateWorkspaceAction() {
       return {
         redirectUrl: buildSubdomainUrl(response.organization.slug, "/"),
       };
+    },
+    onError: (error) => {
+      toast.error(extractCreateWorkspaceError(error));
     },
   });
 }

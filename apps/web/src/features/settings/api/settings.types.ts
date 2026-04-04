@@ -5,10 +5,10 @@ import type {
 } from "@/api/generated/orval/settings/settings";
 import type { PartWorkflowMode } from "@/features/settings/types/settings-model";
 
-export interface FetchSettingsResponse extends GetSettingsResult {}
+export type FetchSettingsResponse = GetSettingsResult;
 
 export interface UpdatePartWorkflowPolicyRequest extends Omit<SettingsPartWorkflowPolicyRequest, "mode"> {
   mode: PartWorkflowMode;
 }
 
-export interface UpdatePartWorkflowPolicyResponse extends UpdatePartWorkflowPolicyResult {}
+export type UpdatePartWorkflowPolicyResponse = UpdatePartWorkflowPolicyResult;

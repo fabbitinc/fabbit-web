@@ -39,4 +39,10 @@ export default defineConfig([
       "react-hooks/preserve-manual-memoization": "warn"
     },
   },
+  {
+    files: ["src/api/generated/orval/**/*.{ts,tsx}"],
+    rules: {
+      "@typescript-eslint/no-empty-object-type": "off",
+    },
+  },
 ]);

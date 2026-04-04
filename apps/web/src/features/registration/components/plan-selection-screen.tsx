@@ -8,7 +8,10 @@ import {
   type SeatDescription,
 } from "@fabbit/components";
 import { planQueries } from "@/features/auth/api/plan.queries";
-import { useCreateWorkspaceAction } from "@/features/auth/hooks/use-create-workspace-action";
+import {
+  extractCreateWorkspaceError,
+  useCreateWorkspaceAction,
+} from "@/features/auth/hooks/use-create-workspace-action";
 import type { PlanModel } from "@/features/auth/types/plan-model";
 import { useRegistrationStore } from "@/features/registration/stores/registration-store";
 import type { PlanTier } from "@/features/registration/types/registration.types";
@@ -140,6 +143,7 @@ export function PlanSelectionScreen() {
   const workspaceData = useRegistrationStore((state) => state.workspaceData);
   const createWorkspaceAction = useCreateWorkspaceAction();
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const plansQuery = useQuery(planQueries.list());
 
@@ -162,12 +166,19 @@ export function PlanSelectionScreen() {
   }
 
   const handleConfirm = async () => {
-    const result = await createWorkspaceAction.mutateAsync();
-    window.location.href = result.redirectUrl;
+    setErrorMessage("");
+
+    try {
+      const result = await createWorkspaceAction.mutateAsync();
+      window.location.href = result.redirectUrl;
+    } catch (error) {
+      setErrorMessage(extractCreateWorkspaceError(error));
+    }
   };
 
   return (
     <PlanSelectionScreenView
+      errorMessage={errorMessage}
       isConfirmOpen={confirmOpen}
       isLoading={plansQuery.isLoading}
       isSubmitting={createWorkspaceAction.isPending}
@@ -178,8 +189,17 @@ export function PlanSelectionScreen() {
       onConfirm={() => {
         void handleConfirm();
       }}
-      onOpenConfirmChange={setConfirmOpen}
-      onSelectPlan={(plan) => setSelectedPlan(plan as PlanTier)}
+      onOpenConfirmChange={(open) => {
+        if (open) {
+          setErrorMessage("");
+        }
+
+        setConfirmOpen(open);
+      }}
+      onSelectPlan={(plan) => {
+        setErrorMessage("");
+        setSelectedPlan(plan as PlanTier);
+      }}
     />
   );
 }
