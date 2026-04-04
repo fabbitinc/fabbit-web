@@ -13,7 +13,7 @@
     "@fontsource-variable/dm-sans": "^5.2.8",
     "@fontsource-variable/outfit": "^5.2.8",
     "@heroui/react": "^2.7.12",
-    "framer-motion": "^11.18.0",
+    "framer-motion": "^12.38.0",
     "lucide-react": "^0.513.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
