@@ -7,9 +7,10 @@
 import type {
   AcceptInvitationRequest,
   AcceptInvitationResponse,
-  CheckEmailParams,
+  AuthCheckEmailParams,
+  AuthCheckSlugParams,
+  AuthVerifyInvitationParams,
   CheckEmailResponse,
-  CheckSlugParams,
   CheckSlugResponse,
   LoginRequest,
   LoginVariantResponse,
@@ -23,7 +24,6 @@ import type {
   TokenResponse,
   VerifyEmailRequest,
   VerifyEmailResponse,
-  VerifyInvitationParams,
   VerifyInvitationResponse
 } from '../model';
 
@@ -38,7 +38,7 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
  * 이메일 인증 코드 검증
  * @summary 이메일 인증 코드 검증
  */
-export const verifyEmail = (
+export const authVerifyEmail = (
     verifyEmailRequest: BodyType<VerifyEmailRequest>,
  options?: SecondParameter<typeof customInstance<VerifyEmailResponse>>,) => {
       return customInstance<VerifyEmailResponse>(
@@ -52,7 +52,7 @@ export const verifyEmail = (
  * 이메일 인증 코드 발송
  * @summary 이메일 인증 코드 발송
  */
-export const sendVerification = (
+export const authSendVerification = (
     sendVerificationRequest: BodyType<SendVerificationRequest>,
  options?: SecondParameter<typeof customInstance<SendVerificationResponse>>,) => {
       return customInstance<SendVerificationResponse>(
@@ -66,7 +66,7 @@ export const sendVerification = (
  * 이메일 인증이 끝난 사용자가 워크스페이스를 생성하고 시작 플랜을 선택합니다. 현재 가입으로 시작할 수 있는 플랜은 Starter와 Team이며, 유료 플랜이면 ownerSeatType을 함께 지정해야 합니다
  * @summary 회원가입
  */
-export const register = (
+export const authRegister = (
     registerRequest: BodyType<RegisterRequest>,
  options?: SecondParameter<typeof customInstance<RegisterResponse>>,) => {
       return customInstance<RegisterResponse>(
@@ -80,7 +80,7 @@ export const register = (
  * 리프레시 토큰으로 액세스 토큰 재발급
  * @summary 리프레시 토큰으로 액세스 토큰 재발급
  */
-export const refresh = (
+export const authRefresh = (
     refreshRequest: BodyType<RefreshRequest>,
  options?: SecondParameter<typeof customInstance<TokenResponse>>,) => {
       return customInstance<TokenResponse>(
@@ -94,7 +94,7 @@ export const refresh = (
  * 리프레시 토큰 폐기
  * @summary 리프레시 토큰 폐기
  */
-export const logout = (
+export const authLogout = (
     refreshRequest: BodyType<RefreshRequest>,
  options?: SecondParameter<typeof customInstance<void>>,) => {
       return customInstance<void>(
@@ -108,7 +108,7 @@ export const logout = (
  * 로그인
  * @summary 로그인
  */
-export const login = (
+export const authLogin = (
     loginRequest: BodyType<LoginRequest>,
  options?: SecondParameter<typeof customInstance<LoginVariantResponse>>,) => {
       return customInstance<LoginVariantResponse>(
@@ -122,7 +122,7 @@ export const login = (
  * 조직 초대 수락
  * @summary 조직 초대 수락
  */
-export const acceptInvitation = (
+export const authAcceptInvitation = (
     acceptInvitationRequest: BodyType<AcceptInvitationRequest>,
  options?: SecondParameter<typeof customInstance<AcceptInvitationResponse>>,) => {
       return customInstance<AcceptInvitationResponse>(
@@ -136,7 +136,7 @@ export const acceptInvitation = (
  * Origin 기반 워크스페이스 정보 조회
  * @summary Origin 기반 워크스페이스 정보 조회
  */
-export const getSite = (
+export const authGetSite = (
     
  options?: SecondParameter<typeof customInstance<SiteResponse>>,) => {
       return customInstance<SiteResponse>(
@@ -148,7 +148,7 @@ export const getSite = (
  * 워크스페이스 시작 플랜 목록과 좌석 단가, 멤버 정책, 스토리지 기본 정책, AI 과금 모드, 현재 가입 가능 여부를 조회합니다
  * @summary 플랜 목록 조회
  */
-export const getPlans = (
+export const authGetPlans = (
     
  options?: SecondParameter<typeof customInstance<PlanResponse[]>>,) => {
       return customInstance<PlanResponse[]>(
@@ -160,8 +160,8 @@ export const getPlans = (
  * 초대 토큰 검증
  * @summary 초대 토큰 검증
  */
-export const verifyInvitation = (
-    params: VerifyInvitationParams,
+export const authVerifyInvitation = (
+    params: AuthVerifyInvitationParams,
  options?: SecondParameter<typeof customInstance<VerifyInvitationResponse>>,) => {
       return customInstance<VerifyInvitationResponse>(
       {url: `/api/v1/auth/invitations/verify`, method: 'GET',
@@ -173,8 +173,8 @@ export const verifyInvitation = (
  * 워크스페이스 slug 중복/형식 검사
  * @summary 워크스페이스 slug 중복/형식 검사
  */
-export const checkSlug = (
-    params: CheckSlugParams,
+export const authCheckSlug = (
+    params: AuthCheckSlugParams,
  options?: SecondParameter<typeof customInstance<CheckSlugResponse>>,) => {
       return customInstance<CheckSlugResponse>(
       {url: `/api/v1/auth/check-slug`, method: 'GET',
@@ -186,8 +186,8 @@ export const checkSlug = (
  * 이메일 중복 확인
  * @summary 이메일 중복 확인
  */
-export const checkEmail = (
-    params: CheckEmailParams,
+export const authCheckEmail = (
+    params: AuthCheckEmailParams,
  options?: SecondParameter<typeof customInstance<CheckEmailResponse>>,) => {
       return customInstance<CheckEmailResponse>(
       {url: `/api/v1/auth/check-email`, method: 'GET',
@@ -195,15 +195,15 @@ export const checkEmail = (
     },
       options);
     }
-  export type VerifyEmailResult = NonNullable<Awaited<ReturnType<typeof verifyEmail>>>
-export type SendVerificationResult = NonNullable<Awaited<ReturnType<typeof sendVerification>>>
-export type RegisterResult = NonNullable<Awaited<ReturnType<typeof register>>>
-export type RefreshResult = NonNullable<Awaited<ReturnType<typeof refresh>>>
-export type LogoutResult = NonNullable<Awaited<ReturnType<typeof logout>>>
-export type LoginResult = NonNullable<Awaited<ReturnType<typeof login>>>
-export type AcceptInvitationResult = NonNullable<Awaited<ReturnType<typeof acceptInvitation>>>
-export type GetSiteResult = NonNullable<Awaited<ReturnType<typeof getSite>>>
-export type GetPlansResult = NonNullable<Awaited<ReturnType<typeof getPlans>>>
-export type VerifyInvitationResult = NonNullable<Awaited<ReturnType<typeof verifyInvitation>>>
-export type CheckSlugResult = NonNullable<Awaited<ReturnType<typeof checkSlug>>>
-export type CheckEmailResult = NonNullable<Awaited<ReturnType<typeof checkEmail>>>
+  export type AuthVerifyEmailResult = NonNullable<Awaited<ReturnType<typeof authVerifyEmail>>>
+export type AuthSendVerificationResult = NonNullable<Awaited<ReturnType<typeof authSendVerification>>>
+export type AuthRegisterResult = NonNullable<Awaited<ReturnType<typeof authRegister>>>
+export type AuthRefreshResult = NonNullable<Awaited<ReturnType<typeof authRefresh>>>
+export type AuthLogoutResult = NonNullable<Awaited<ReturnType<typeof authLogout>>>
+export type AuthLoginResult = NonNullable<Awaited<ReturnType<typeof authLogin>>>
+export type AuthAcceptInvitationResult = NonNullable<Awaited<ReturnType<typeof authAcceptInvitation>>>
+export type AuthGetSiteResult = NonNullable<Awaited<ReturnType<typeof authGetSite>>>
+export type AuthGetPlansResult = NonNullable<Awaited<ReturnType<typeof authGetPlans>>>
+export type AuthVerifyInvitationResult = NonNullable<Awaited<ReturnType<typeof authVerifyInvitation>>>
+export type AuthCheckSlugResult = NonNullable<Awaited<ReturnType<typeof authCheckSlug>>>
+export type AuthCheckEmailResult = NonNullable<Awaited<ReturnType<typeof authCheckEmail>>>

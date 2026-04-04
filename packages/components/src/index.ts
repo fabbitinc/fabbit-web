@@ -59,6 +59,12 @@ export type {
   ChangeCreateScreenSubmitInput,
 } from "./change-create-screen";
 export { EngineeringChangeSidebar } from "./engineering-change-sidebar";
+export { EngineeringChangeWorkflowHeader } from "./engineering-change-workflow-header";
+export type {
+  EngineeringChangeWorkflowHeaderProps,
+  EngineeringChangeWorkflowHeaderStagePicker,
+} from "./engineering-change-workflow-header";
+export { EngineeringChangeWorkflowSection } from "./engineering-change-workflow-section";
 export type {
   AIUsagePanelData,
   AIUsagePanelProps,
@@ -75,6 +81,16 @@ export type {
   EngineeringChangeSidebarReviewer,
   EngineeringChangeSidebarUser,
 } from "./engineering-change-sidebar";
+export type {
+  EngineeringChangeWorkflowAssignee,
+  EngineeringChangeWorkflowAssigneeStatus,
+  EngineeringChangeWorkflowAssigneeType,
+  EngineeringChangeWorkflowData,
+  EngineeringChangeWorkflowSectionProps,
+  EngineeringChangeWorkflowStage,
+  EngineeringChangeWorkflowStageStatus,
+  EngineeringChangeWorkflowStageType,
+} from "./engineering-change-workflow-section";
 export { DescriptionList } from "./description-list";
 export type { DescriptionItem, DescriptionListProps } from "./description-list";
 export { EmptyState } from "./empty-state";
@@ -152,6 +168,7 @@ export type {
   PartEditorScreenDrawingSummary,
   PartEditorScreenExtendedField,
   PartEditorScreenFormValues,
+  PartEditorScreenNumberingCategory,
   PartEditorScreenOption,
   PartEditorScreenProps,
   PartEditorScreenReferenceStats,

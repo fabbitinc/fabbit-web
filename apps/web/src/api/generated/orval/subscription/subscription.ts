@@ -23,7 +23,7 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
  * 현재 Starter 워크스페이스를 Team 또는 Organization으로 즉시 전환하고, 기존 멤버 전원의 좌석 타입을 한 번에 확정합니다
  * @summary Starter 플랜 즉시 업그레이드
  */
-export const upgradeStarter = (
+export const subscriptionUpgradeStarter = (
     upgradeStarterSubscriptionRequest: BodyType<UpgradeStarterSubscriptionRequest>,
  options?: SecondParameter<typeof customInstance<CurrentSubscriptionDetailResponse>>,) => {
       return customInstance<CurrentSubscriptionDetailResponse>(
@@ -37,7 +37,7 @@ export const upgradeStarter = (
  * 관리자 권한으로 유료 플랜 워크스페이스에서 구매한 좌석 수량을 변경합니다
  * @summary 현재 구독 좌석 수량 변경
  */
-export const updateSeatQuotas = (
+export const subscriptionUpdateSeatQuotas = (
     updateSubscriptionSeatQuotasRequest: BodyType<UpdateSubscriptionSeatQuotasRequest>,
  options?: SecondParameter<typeof customInstance<CurrentSubscriptionDetailResponse>>,) => {
       return customInstance<CurrentSubscriptionDetailResponse>(
@@ -51,7 +51,7 @@ export const updateSeatQuotas = (
  * 관리자 권한으로 이미 유료 플랜인 워크스페이스의 다음 갱신 시점 플랜 변경을 예약합니다. Starter에서 유료 플랜으로의 즉시 전환은 starter-upgrade API를 사용합니다
  * @summary 현재 구독 플랜 변경 예약
  */
-export const updatePlan = (
+export const subscriptionUpdatePlan = (
     updateSubscriptionPlanRequest: BodyType<UpdateSubscriptionPlanRequest>,
  options?: SecondParameter<typeof customInstance<CurrentSubscriptionDetailResponse>>,) => {
       return customInstance<CurrentSubscriptionDetailResponse>(
@@ -65,7 +65,7 @@ export const updatePlan = (
  * 관리자 권한으로 유료 플랜의 월간 AI 한도와 하드 리밋 여부를 변경합니다
  * @summary 현재 구독 AI 한도 정책 변경
  */
-export const updateAiLimit = (
+export const subscriptionUpdateAiLimit = (
     updateSubscriptionAiLimitRequest: BodyType<UpdateSubscriptionAiLimitRequest>,
  options?: SecondParameter<typeof customInstance<CurrentSubscriptionDetailResponse>>,) => {
       return customInstance<CurrentSubscriptionDetailResponse>(
@@ -79,7 +79,7 @@ export const updateAiLimit = (
  * 현재 로그인한 워크스페이스의 플랜/좌석/스토리지/AI 정책 요약을 조회합니다
  * @summary 현재 구독 요약 조회
  */
-export const get2 = (
+export const subscriptionGet = (
     
  options?: SecondParameter<typeof customInstance<CurrentSubscriptionDetailResponse>>,) => {
       return customInstance<CurrentSubscriptionDetailResponse>(
@@ -87,8 +87,8 @@ export const get2 = (
     },
       options);
     }
-  export type UpgradeStarterResult = NonNullable<Awaited<ReturnType<typeof upgradeStarter>>>
-export type UpdateSeatQuotasResult = NonNullable<Awaited<ReturnType<typeof updateSeatQuotas>>>
-export type UpdatePlanResult = NonNullable<Awaited<ReturnType<typeof updatePlan>>>
-export type UpdateAiLimitResult = NonNullable<Awaited<ReturnType<typeof updateAiLimit>>>
-export type Get2Result = NonNullable<Awaited<ReturnType<typeof get2>>>
+  export type SubscriptionUpgradeStarterResult = NonNullable<Awaited<ReturnType<typeof subscriptionUpgradeStarter>>>
+export type SubscriptionUpdateSeatQuotasResult = NonNullable<Awaited<ReturnType<typeof subscriptionUpdateSeatQuotas>>>
+export type SubscriptionUpdatePlanResult = NonNullable<Awaited<ReturnType<typeof subscriptionUpdatePlan>>>
+export type SubscriptionUpdateAiLimitResult = NonNullable<Awaited<ReturnType<typeof subscriptionUpdateAiLimit>>>
+export type SubscriptionGetResult = NonNullable<Awaited<ReturnType<typeof subscriptionGet>>>

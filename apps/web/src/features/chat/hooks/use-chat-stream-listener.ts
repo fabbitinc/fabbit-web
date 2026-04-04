@@ -133,7 +133,7 @@ export function useChatStreamListener() {
       }
     }
 
-    function handleError(error: Error) {
+    function handleError() {
       if (abortController.signal.aborted) return;
 
       const attempt = reconnectAttemptRef.current;

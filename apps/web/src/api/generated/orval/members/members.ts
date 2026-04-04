@@ -7,8 +7,8 @@
 import type {
   ChangeRoleRequest,
   ChangeSeatRequest,
-  LookupMembers1Params,
   MemberListResponse,
+  MemberLookupParams,
   MemberLookupResponse
 } from '../model';
 
@@ -23,7 +23,7 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
  * 관리자(ADMIN 이상) 권한으로 멤버 좌석 타입을 변경합니다
  * @summary 멤버 좌석 변경
  */
-export const changeMemberSeat = (
+export const memberChangeMemberSeat = (
     userId: string,
     changeSeatRequest: BodyType<ChangeSeatRequest>,
  options?: SecondParameter<typeof customInstance<void>>,) => {
@@ -38,7 +38,7 @@ export const changeMemberSeat = (
  * 소유자(OWNER) 권한으로 멤버 역할을 변경합니다
  * @summary 소유자(OWNER) 권한으로 멤버 역할을 변경합니다
  */
-export const changeMemberRole = (
+export const memberChangeMemberRole = (
     userId: string,
     changeRoleRequest: BodyType<ChangeRoleRequest>,
  options?: SecondParameter<typeof customInstance<void>>,) => {
@@ -53,7 +53,7 @@ export const changeMemberRole = (
  * 현재 조직의 전체 멤버 목록을 조회합니다
  * @summary 현재 조직의 전체 멤버 목록을 조회합니다
  */
-export const listMembers = (
+export const memberList = (
     
  options?: SecondParameter<typeof customInstance<MemberListResponse>>,) => {
       return customInstance<MemberListResponse>(
@@ -65,8 +65,8 @@ export const listMembers = (
  * 조직 멤버 lookup 목록을 조회합니다 (autocomplete/picker 용도)
  * @summary 조직 멤버 lookup 목록을 조회합니다 (autocomplete/picker 용도)
  */
-export const lookupMembers1 = (
-    params?: LookupMembers1Params,
+export const memberLookup = (
+    params?: MemberLookupParams,
  options?: SecondParameter<typeof customInstance<MemberLookupResponse>>,) => {
       return customInstance<MemberLookupResponse>(
       {url: `/api/v1/members/lookup`, method: 'GET',
@@ -78,7 +78,7 @@ export const lookupMembers1 = (
  * 관리자(ADMIN 이상) 권한으로 조직 멤버를 제거합니다
  * @summary 관리자(ADMIN 이상) 권한으로 조직 멤버를 제거합니다
  */
-export const removeMember = (
+export const memberRemove = (
     userId: string,
  options?: SecondParameter<typeof customInstance<void>>,) => {
       return customInstance<void>(
@@ -86,8 +86,8 @@ export const removeMember = (
     },
       options);
     }
-  export type ChangeMemberSeatResult = NonNullable<Awaited<ReturnType<typeof changeMemberSeat>>>
-export type ChangeMemberRoleResult = NonNullable<Awaited<ReturnType<typeof changeMemberRole>>>
-export type ListMembersResult = NonNullable<Awaited<ReturnType<typeof listMembers>>>
-export type LookupMembers1Result = NonNullable<Awaited<ReturnType<typeof lookupMembers1>>>
-export type RemoveMemberResult = NonNullable<Awaited<ReturnType<typeof removeMember>>>
+  export type MemberChangeMemberSeatResult = NonNullable<Awaited<ReturnType<typeof memberChangeMemberSeat>>>
+export type MemberChangeMemberRoleResult = NonNullable<Awaited<ReturnType<typeof memberChangeMemberRole>>>
+export type MemberListResult = NonNullable<Awaited<ReturnType<typeof memberList>>>
+export type MemberLookupResult = NonNullable<Awaited<ReturnType<typeof memberLookup>>>
+export type MemberRemoveResult = NonNullable<Awaited<ReturnType<typeof memberRemove>>>

@@ -6,7 +6,7 @@ import type {
   PartsListScreenPrimaryTab,
   PartsListScreenWorkbenchFilter,
 } from "@fabbit/components";
-import { ListInProgressPartsStatusesItem } from "@/api/generated/orval/model/listInProgressPartsStatusesItem";
+import { PartListInProgressStatusesItem as ListInProgressPartsStatusesItem } from "@/api/generated/orval/model/partListInProgressStatusesItem";
 import { LinkPartsToProjectDialog } from "@/features/parts/components/link-parts-to-project-dialog";
 import { useExportPartsAction } from "@/features/parts/hooks/use-export-parts-action";
 import { usePartFilterOptionsQuery } from "@/features/parts/hooks/use-part-filter-options-query";

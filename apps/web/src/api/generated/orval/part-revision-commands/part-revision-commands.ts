@@ -22,7 +22,7 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
  * DRAFT 상태 리비전을 직접 반영해 공식 리비전으로 전환합니다
  * @summary 리비전을 직접 반영합니다
  */
-export const release = (
+export const partRevisionCommandRelease = (
     partId: string,
     revisionId: string,
     partRevisionChangeReasonRequest: BodyType<PartRevisionChangeReasonRequest>,
@@ -38,7 +38,7 @@ export const release = (
  * 기준 리비전에서 새 DRAFT 리비전을 생성합니다
  * @summary 기준 리비전에서 새 DRAFT 리비전을 생성합니다
  */
-export const createDraft = (
+export const partRevisionCommandCreateDraft = (
     partId: string,
     revisionId: string,
     createPartDraftRequest: BodyType<CreatePartDraftRequest>,
@@ -54,7 +54,7 @@ export const createDraft = (
  * DRAFT 상태 리비전을 폐기합니다
  * @summary 리비전을 폐기합니다
  */
-export const cancel = (
+export const partRevisionCommandCancel = (
     partId: string,
     revisionId: string,
     partRevisionChangeReasonRequest: BodyType<PartRevisionChangeReasonRequest>,
@@ -70,7 +70,7 @@ export const cancel = (
  * DRAFT 상태의 리비전을 수정합니다
  * @summary 리비전을 수정합니다
  */
-export const update1 = (
+export const partRevisionCommandUpdate = (
     partId: string,
     revisionId: string,
     updatePartRevisionRequest: BodyType<UpdatePartRevisionRequest>,
@@ -82,7 +82,7 @@ export const update1 = (
     },
       options);
     }
-  export type ReleaseResult = NonNullable<Awaited<ReturnType<typeof release>>>
-export type CreateDraftResult = NonNullable<Awaited<ReturnType<typeof createDraft>>>
-export type CancelResult = NonNullable<Awaited<ReturnType<typeof cancel>>>
-export type Update1Result = NonNullable<Awaited<ReturnType<typeof update1>>>
+  export type PartRevisionCommandReleaseResult = NonNullable<Awaited<ReturnType<typeof partRevisionCommandRelease>>>
+export type PartRevisionCommandCreateDraftResult = NonNullable<Awaited<ReturnType<typeof partRevisionCommandCreateDraft>>>
+export type PartRevisionCommandCancelResult = NonNullable<Awaited<ReturnType<typeof partRevisionCommandCancel>>>
+export type PartRevisionCommandUpdateResult = NonNullable<Awaited<ReturnType<typeof partRevisionCommandUpdate>>>

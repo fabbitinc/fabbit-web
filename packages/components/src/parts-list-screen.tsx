@@ -58,6 +58,11 @@ export interface PartsListScreenProps {
   activePrimaryTab?: PartsListScreenPrimaryTab;
   activeWorkbenchFilter?: PartsListScreenWorkbenchFilter;
   filterOptions: PartsListScreenFilterOptions;
+  header?: {
+    title: string;
+    description: string;
+    actions?: ReactNode;
+  } | null;
   hasNextPage?: boolean;
   hasPreviousPage?: boolean;
   isExporting: boolean;
@@ -66,6 +71,8 @@ export interface PartsListScreenProps {
   items: PartsListTableItem[];
   linkDialogContent?: ReactNode;
   mode?: PartsListScreenMode;
+  selectedToolbarActions?: ReactNode;
+  showModeTabs?: boolean;
   onNextPage: () => void;
   onPrimaryTabChange?: (tab: PartsListScreenPrimaryTab) => void;
   onPreviousPage: () => void;
@@ -105,6 +112,7 @@ export function PartsListScreen({
   activePrimaryTab = "master",
   activeWorkbenchFilter = "draft",
   filterOptions,
+  header,
   hasNextPage,
   hasPreviousPage,
   isExporting,
@@ -113,6 +121,8 @@ export function PartsListScreen({
   items,
   linkDialogContent,
   mode = "change-managed",
+  selectedToolbarActions,
+  showModeTabs = true,
   onNextPage,
   onPrimaryTabChange,
   onPreviousPage,
@@ -221,42 +231,55 @@ export function PartsListScreen({
   }
 
   const selectedCount = selectedIds.size;
+  const resolvedHeader =
+    header === undefined
+      ? {
+          title: "부품 관리",
+          description: "조직의 전체 부품을 관리합니다",
+          actions: (
+            <div className="flex items-center gap-2">
+              <Button className="ai-outline-btn ai-theme-1" type="button" variant="outline" onClick={onTemplateAnalysisClick}>
+                <Sparkles className="ai-outline-btn__icon h-4 w-4" />
+                속성 분석
+              </Button>
+              <Button type="button" variant="outline" onClick={onUploadClick}>
+                <Upload className="h-4 w-4" />
+                부품 업로드
+              </Button>
+              <Button type="button" onClick={onCreateClick}>
+                <Plus className="h-4 w-4" />
+                새 부품
+              </Button>
+            </div>
+          ),
+        }
+      : header;
 
   return (
     <div className="w-full">
-      <div className="mb-6 flex items-start justify-between">
-        <div>
-          <h1 className="text-xl font-bold text-foreground">부품 관리</h1>
-          <p className="mt-1 text-sm text-muted-foreground">조직의 전체 부품을 관리합니다</p>
+      {resolvedHeader ? (
+        <div className="mb-6 flex items-start justify-between">
+          <div>
+            <h1 className="text-xl font-bold text-foreground">{resolvedHeader.title}</h1>
+            <p className="mt-1 text-sm text-muted-foreground">{resolvedHeader.description}</p>
+          </div>
+          {resolvedHeader.actions ?? null}
         </div>
+      ) : null}
 
-        <div className="flex items-center gap-2">
-          <Button className="ai-outline-btn ai-theme-1" type="button" variant="outline" onClick={onTemplateAnalysisClick}>
-            <Sparkles className="ai-outline-btn__icon h-4 w-4" />
-            속성 분석
-          </Button>
-          <Button type="button" variant="outline" onClick={onUploadClick}>
-            <Upload className="h-4 w-4" />
-            부품 업로드
-          </Button>
-          <Button type="button" onClick={onCreateClick}>
-            <Plus className="h-4 w-4" />
-            새 부품
-          </Button>
+      {showModeTabs ? (
+        <div className="mb-4">
+          <PartsListModeTabs
+            activePrimaryTab={activePrimaryTab}
+            activeWorkbenchFilter={activeWorkbenchFilter}
+            isMineOnly={queryState.mineOnly}
+            mode={mode}
+            onMineOnlyChange={onMineOnlyChange}
+            onPrimaryTabChange={onPrimaryTabChange ?? (() => undefined)}
+            onWorkbenchFilterChange={onWorkbenchFilterChange ?? (() => undefined)}
+          />
         </div>
-      </div>
-
-      <div className="mb-4">
-        <PartsListModeTabs
-          activePrimaryTab={activePrimaryTab}
-          activeWorkbenchFilter={activeWorkbenchFilter}
-          isMineOnly={queryState.mineOnly}
-          mode={mode}
-          onMineOnlyChange={onMineOnlyChange}
-          onPrimaryTabChange={onPrimaryTabChange ?? (() => undefined)}
-          onWorkbenchFilterChange={onWorkbenchFilterChange ?? (() => undefined)}
-        />
-      </div>
+      ) : null}
 
       <div className="mb-2 flex items-center gap-2">
         <div className="relative flex-1">
@@ -287,26 +310,30 @@ export function PartsListScreen({
               </button>
             </div>
             <div className="flex-1" />
-            <Button size="sm" type="button" variant="outline" onClick={onLinkClick}>
-              <Link2 className="h-3.5 w-3.5" />
-              프로젝트 연결
-            </Button>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button disabled={isExporting} size="sm" type="button" variant="outline">
-                  {isExporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
-                  내려받기
-                  <ChevronDown className="h-3.5 w-3.5" />
+            {selectedToolbarActions ?? (
+              <>
+                <Button size="sm" type="button" variant="outline" onClick={onLinkClick}>
+                  <Link2 className="h-3.5 w-3.5" />
+                  프로젝트 연결
                 </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={onSelectedExportClick}>선택 내려받기 ({selectedCount}건)</DropdownMenuItem>
-                <DropdownMenuItem onClick={onAllExportClick}>전체 내려받기</DropdownMenuItem>
-                {hasAppliedFilters ? (
-                  <DropdownMenuItem onClick={onFilteredExportClick}>검색 결과 내려받기</DropdownMenuItem>
-                ) : null}
-              </DropdownMenuContent>
-            </DropdownMenu>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button disabled={isExporting} size="sm" type="button" variant="outline">
+                      {isExporting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                      내려받기
+                      <ChevronDown className="h-3.5 w-3.5" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem onClick={onSelectedExportClick}>선택 내려받기 ({selectedCount}건)</DropdownMenuItem>
+                    <DropdownMenuItem onClick={onAllExportClick}>전체 내려받기</DropdownMenuItem>
+                    {hasAppliedFilters ? (
+                      <DropdownMenuItem onClick={onFilteredExportClick}>검색 결과 내려받기</DropdownMenuItem>
+                    ) : null}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </>
+            )}
           </>
         ) : (
           <>

@@ -23,7 +23,7 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
  * 전체 합성 작업 이력을 최신순으로 조회합니다
  * @summary 전체 합성 작업 이력을 최신순으로 조회합니다
  */
-export const listSynthesisJobs = (
+export const synthesisListSynthesisJobs = (
     
  options?: SecondParameter<typeof customInstance<SynthesisListResponse>>,) => {
       return customInstance<SynthesisListResponse>(
@@ -35,7 +35,7 @@ export const listSynthesisJobs = (
  * 매핑 기반 합성 배치를 시작하고 batch/job 정보를 반환합니다
  * @summary 매핑 기반 합성 배치를 시작하고 batch/job 정보를 반환합니다
  */
-export const startSynthesis = (
+export const synthesisStart = (
     synthesisStartRequest: BodyType<SynthesisStartRequest>,
  options?: SecondParameter<typeof customInstance<SynthesisBatchStartResponse>>,) => {
       return customInstance<SynthesisBatchStartResponse>(
@@ -49,7 +49,7 @@ export const startSynthesis = (
  * 개별 합성 작업 상태를 조회합니다
  * @summary 개별 합성 작업 상태를 조회합니다
  */
-export const getSynthesisJob = (
+export const synthesisGetSynthesisJob = (
     jobId: string,
  options?: SecondParameter<typeof customInstance<SynthesisJobResponse>>,) => {
       return customInstance<SynthesisJobResponse>(
@@ -61,7 +61,7 @@ export const getSynthesisJob = (
  * 합성 배치 진행 상태를 조회합니다
  * @summary 합성 배치 진행 상태를 조회합니다
  */
-export const getSynthesisBatch = (
+export const synthesisGetSynthesisBatch = (
     batchId: string,
  options?: SecondParameter<typeof customInstance<SynthesisBatchStatusResponse>>,) => {
       return customInstance<SynthesisBatchStatusResponse>(
@@ -69,7 +69,7 @@ export const getSynthesisBatch = (
     },
       options);
     }
-  export type ListSynthesisJobsResult = NonNullable<Awaited<ReturnType<typeof listSynthesisJobs>>>
-export type StartSynthesisResult = NonNullable<Awaited<ReturnType<typeof startSynthesis>>>
-export type GetSynthesisJobResult = NonNullable<Awaited<ReturnType<typeof getSynthesisJob>>>
-export type GetSynthesisBatchResult = NonNullable<Awaited<ReturnType<typeof getSynthesisBatch>>>
+  export type SynthesisListSynthesisJobsResult = NonNullable<Awaited<ReturnType<typeof synthesisListSynthesisJobs>>>
+export type SynthesisStartResult = NonNullable<Awaited<ReturnType<typeof synthesisStart>>>
+export type SynthesisGetSynthesisJobResult = NonNullable<Awaited<ReturnType<typeof synthesisGetSynthesisJob>>>
+export type SynthesisGetSynthesisBatchResult = NonNullable<Awaited<ReturnType<typeof synthesisGetSynthesisBatch>>>

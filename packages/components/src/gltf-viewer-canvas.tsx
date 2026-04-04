@@ -28,13 +28,22 @@ import {
   Sphere,
   Vector3,
   WebGLRenderer,
-  type Camera,
-  type Material,
-  type Object3D,
 } from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { RoomEnvironment } from "three/examples/jsm/environments/RoomEnvironment.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+
+type ThreeAxesHelper = any;
+type ThreeBox3 = any;
+type ThreeCamera = any;
+type ThreeColor = any;
+type ThreeGridHelper = any;
+type ThreeMaterial = any;
+type ThreeObject3D = any;
+type ThreeOrbitControls = any;
+type ThreeOrthographicCamera = any;
+type ThreePerspectiveCamera = any;
+type ThreeVector3 = any;
 
 export type GltfViewerRenderMode = "solid" | "wireframe";
 export type GltfViewerStatus = "loading" | "ready" | "error";
@@ -89,14 +98,14 @@ interface GltfViewerScaleBar {
 }
 
 interface GltfViewerFrameConfig {
-  bounds: Box3;
+  bounds: ThreeBox3;
   fitDistance: number;
   floorOffset: number;
   maxDistance: number;
   maxDimension: number;
   minDistance: number;
   orthographicZoom: number;
-  target: Vector3;
+  target: ThreeVector3;
 }
 
 interface GltfViewerWireframeMaterialState {
@@ -108,15 +117,15 @@ interface GltfViewerWireframeMaterialState {
 }
 
 interface LoadedGltfScene {
-  scene?: Object3D;
-  scenes: Object3D[];
+  scene?: ThreeObject3D;
+  scenes: ThreeObject3D[];
 }
 
 const VIEW_PRESETS: Record<
   GltfViewerStandardView,
   {
-    direction: Vector3;
-    up: Vector3;
+    direction: ThreeVector3;
+    up: ThreeVector3;
   }
 > = {
   iso: {
@@ -141,7 +150,7 @@ function clamp(value: number, min: number, max: number) {
   return Math.min(Math.max(value, min), max);
 }
 
-function disposeMaterial(material: Material | Material[]) {
+function disposeMaterial(material: ThreeMaterial | ThreeMaterial[]) {
   const materials = Array.isArray(material) ? material : [material];
 
   for (const item of materials) {
@@ -149,8 +158,8 @@ function disposeMaterial(material: Material | Material[]) {
   }
 }
 
-function disposeObject(root: Object3D) {
-  root.traverse((child: Object3D) => {
+function disposeObject(root: ThreeObject3D) {
+  root.traverse((child: ThreeObject3D) => {
     if (child instanceof Mesh) {
       child.geometry.dispose();
       disposeMaterial(child.material);
@@ -196,8 +205,8 @@ function resolveResourceUrl(
   return url;
 }
 
-function applyRenderMode(object: Object3D, renderMode: GltfViewerRenderMode) {
-  object.traverse((child: Object3D) => {
+function applyRenderMode(object: ThreeObject3D, renderMode: GltfViewerRenderMode) {
+  object.traverse((child: ThreeObject3D) => {
     if (!(child instanceof Mesh)) {
       return;
     }
@@ -207,9 +216,9 @@ function applyRenderMode(object: Object3D, renderMode: GltfViewerRenderMode) {
       : [child.material];
 
     for (const material of materials) {
-      const wireframeMaterial = material as Material & {
-        color?: Color;
-        emissive?: Color;
+      const wireframeMaterial = material as ThreeMaterial & {
+        color?: ThreeColor;
+        emissive?: ThreeColor;
         opacity?: number;
         toneMapped?: boolean;
         transparent?: boolean;
@@ -279,15 +288,15 @@ function applyRenderMode(object: Object3D, renderMode: GltfViewerRenderMode) {
   });
 }
 
-function collectSceneStats(object: Object3D): GltfViewerSceneStats {
+function collectSceneStats(object: ThreeObject3D): GltfViewerSceneStats {
   const bounds = new Box3().setFromObject(object);
   const size = bounds.getSize(new Vector3());
-  const uniqueMaterials = new Set<Material>();
+  const uniqueMaterials = new Set<ThreeMaterial>();
   let meshCount = 0;
   let nodeCount = 0;
   let triangleCount = 0;
 
-  object.traverse((child: Object3D) => {
+  object.traverse((child: ThreeObject3D) => {
     nodeCount += 1;
 
     if (!(child instanceof Mesh)) {
@@ -350,22 +359,22 @@ function getNiceScale(value: number) {
   return 10 * magnitude;
 }
 
-function getGridSize(size: Vector3) {
+function getGridSize(size: ThreeVector3) {
   const footprint = Math.max(size.x, size.z, 1);
   return getNiceScale(footprint * 1.6);
 }
 
-function getOriginAxesSize(size: Vector3, gridSize: number) {
+function getOriginAxesSize(size: ThreeVector3, gridSize: number) {
   const maxDimension = Math.max(size.x, size.y, size.z, 1);
   const preferredSize = Math.max(maxDimension * 0.3, gridSize * 0.18);
 
   return clamp(preferredSize, 0.28, gridSize * 0.28);
 }
 
-function hasEmbeddedLights(object: Object3D) {
+function hasEmbeddedLights(object: ThreeObject3D) {
   let detected = false;
 
-  object.traverse((child: Object3D) => {
+  object.traverse((child: ThreeObject3D) => {
     if (child instanceof Light) {
       detected = true;
     }
@@ -393,8 +402,8 @@ function formatViewerLength(value: number) {
 }
 
 function getScaleBar(
-  camera: PerspectiveCamera | OrthographicCamera,
-  controls: OrbitControls,
+  camera: ThreePerspectiveCamera | ThreeOrthographicCamera,
+  controls: ThreeOrbitControls,
   containerWidth: number,
 ): GltfViewerScaleBar | null {
   if (containerWidth <= 0) {
@@ -457,7 +466,7 @@ function getScaleBar(
 }
 
 function getOrthographicZoom(
-  camera: OrthographicCamera,
+  camera: ThreeOrthographicCamera,
   radius: number,
   margin = 1.35,
 ) {
@@ -470,9 +479,9 @@ function getOrthographicZoom(
 }
 
 function getFrameConfig(
-  camera: PerspectiveCamera,
-  orthographicCamera: OrthographicCamera,
-  object: Object3D,
+  camera: ThreePerspectiveCamera,
+  orthographicCamera: ThreeOrthographicCamera,
+  object: ThreeObject3D,
 ) {
   const bounds = new Box3().setFromObject(object);
   const size = bounds.getSize(new Vector3());
@@ -528,11 +537,11 @@ export const GltfViewerCanvas = forwardRef<
   ref,
 ) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const controlsRef = useRef<OrbitControls | null>(null);
-  const cameraRef = useRef<Camera | null>(null);
-  const axesHelperRef = useRef<AxesHelper | null>(null);
-  const gridHelperRef = useRef<GridHelper | null>(null);
-  const modelRootRef = useRef<Object3D | null>(null);
+  const controlsRef = useRef<ThreeOrbitControls | null>(null);
+  const cameraRef = useRef<ThreeCamera | null>(null);
+  const axesHelperRef = useRef<ThreeAxesHelper | null>(null);
+  const gridHelperRef = useRef<ThreeGridHelper | null>(null);
+  const modelRootRef = useRef<ThreeObject3D | null>(null);
   const frameConfigRef = useRef<GltfViewerFrameConfig | null>(null);
   const projectionModeRef = useRef<GltfViewerProjectionMode>(projectionMode);
   const viewPresetRef = useRef<GltfViewerStandardView>("iso");
@@ -657,7 +666,7 @@ export const GltfViewerCanvas = forwardRef<
     }
 
     let disposed = false;
-    let modelRoot: Object3D | null = null;
+    let modelRoot: ThreeObject3D | null = null;
     let lastScaleBarSnapshot = "";
 
     setStatus("loading");
@@ -913,7 +922,7 @@ export const GltfViewerCanvas = forwardRef<
         modelRoot = loadedScene;
         modelRootRef.current = loadedScene;
 
-        modelRoot.traverse((child: Object3D) => {
+        modelRoot.traverse((child: ThreeObject3D) => {
           if (!(child instanceof Mesh)) {
             return;
           }
@@ -930,7 +939,7 @@ export const GltfViewerCanvas = forwardRef<
             : [child.material];
 
           for (const material of materials) {
-            (material as Material & { side?: number }).side = DoubleSide;
+            (material as ThreeMaterial & { side?: number }).side = DoubleSide;
             material.needsUpdate = true;
           }
         });

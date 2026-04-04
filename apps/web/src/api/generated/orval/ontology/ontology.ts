@@ -7,7 +7,7 @@
 import type {
   NodeSearchResponse,
   OntologySchemaResponse,
-  SearchNodesParams
+  OntologySearchNodesParams
 } from '../model';
 
 import { customInstance } from '../../../orval/custom-instance.js';
@@ -20,7 +20,7 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
  * 온톨로지 스키마(노드/관계 정의)를 조회합니다
  * @summary 온톨로지 스키마(노드/관계 정의)를 조회합니다
  */
-export const getOntologySchema = (
+export const ontologyGetOntologySchema = (
     
  options?: SecondParameter<typeof customInstance<OntologySchemaResponse>>,) => {
       return customInstance<OntologySchemaResponse>(
@@ -32,8 +32,8 @@ export const getOntologySchema = (
  * 라벨(Part, Drawing, Supplier, Project)별 merge key 자동완성 목록을 조회합니다
  * @summary 라벨(Part, Drawing, Supplier, Project)별 merge key 자동완성 목록을 조회합니다
  */
-export const searchNodes = (
-    params: SearchNodesParams,
+export const ontologySearchNodes = (
+    params: OntologySearchNodesParams,
  options?: SecondParameter<typeof customInstance<NodeSearchResponse>>,) => {
       return customInstance<NodeSearchResponse>(
       {url: `/api/v1/ontology/nodes/search`, method: 'GET',
@@ -41,5 +41,5 @@ export const searchNodes = (
     },
       options);
     }
-  export type GetOntologySchemaResult = NonNullable<Awaited<ReturnType<typeof getOntologySchema>>>
-export type SearchNodesResult = NonNullable<Awaited<ReturnType<typeof searchNodes>>>
+  export type OntologyGetOntologySchemaResult = NonNullable<Awaited<ReturnType<typeof ontologyGetOntologySchema>>>
+export type OntologySearchNodesResult = NonNullable<Awaited<ReturnType<typeof ontologySearchNodes>>>

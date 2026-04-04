@@ -19,7 +19,11 @@ type DeepDefined<T> = T extends Blob
     : T extends object
       ? { [Key in keyof T]-?: DeepDefined<Defined<T[Key]>> }
       : T;
-type NormalizedResponse<T> = [Exclude<T, Blob>] extends [never] ? T : DeepDefined<Exclude<T, Blob>>;
+type BlobResponse<T> = Extract<T, Blob>;
+type JsonResponse<T> = Exclude<T, Blob | void>;
+type NormalizedResponse<T> = [JsonResponse<T>] extends [never]
+  ? ([BlobResponse<T>] extends [never] ? void : BlobResponse<T>)
+  : DeepDefined<JsonResponse<T>> | BlobResponse<T>;
 
 export async function customInstance<T>(
   { url, method, params, data, headers, responseType, signal }: CustomInstanceOptions,

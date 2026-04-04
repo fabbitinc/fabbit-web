@@ -14,8 +14,8 @@ export interface AIUsagePanelData {
   planCreditsUsed: number;
   planCreditsLimit: number;
   planCreditsRemaining: number;
-  bonusCreditsUsed: number;
-  bonusCreditsRemaining: number;
+  bonusCreditsUsed?: number | null;
+  bonusCreditsRemaining?: number | null;
   categories: AIUsageCategoryItem[];
 }
 
@@ -57,6 +57,8 @@ export function AIUsagePanel({ trend, usage }: AIUsagePanelProps) {
   const planPercent = usage.planCreditsLimit > 0 ? (usage.planCreditsUsed / usage.planCreditsLimit) * 100 : 0;
   const periodEnd = formatDate(usage.currentPeriodEnd);
   const daysLeft = daysUntil(usage.currentPeriodEnd);
+  const hasBonusCredits =
+    typeof usage.bonusCreditsRemaining === "number" || typeof usage.bonusCreditsUsed === "number";
 
   return (
     <div className="space-y-8">
@@ -118,29 +120,31 @@ export function AIUsagePanel({ trend, usage }: AIUsagePanelProps) {
         </div>
       </section>
 
-      <section className="space-y-3">
-        <h2 className="text-base font-semibold text-foreground">추가 구매 크레딧</h2>
-        <div className="rounded-lg border border-border/70 bg-card p-4">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <div className="flex h-6 w-6 items-center justify-center rounded bg-[var(--status-warning-bg)]">
-                <ShoppingCart className="size-3.5 text-[var(--status-warning)]" />
+      {hasBonusCredits ? (
+        <section className="space-y-3">
+          <h2 className="text-base font-semibold text-foreground">추가 구매 크레딧</h2>
+          <div className="rounded-lg border border-border/70 bg-card p-4">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <div className="flex h-6 w-6 items-center justify-center rounded bg-[var(--status-warning-bg)]">
+                  <ShoppingCart className="size-3.5 text-[var(--status-warning)]" />
+                </div>
+                <span className="text-sm font-medium text-foreground">
+                  잔여 {(usage.bonusCreditsRemaining ?? 0).toLocaleString()} 크레딧
+                </span>
               </div>
-              <span className="text-sm font-medium text-foreground">
-                잔여 {usage.bonusCreditsRemaining.toLocaleString()} 크레딧
-              </span>
+              {(usage.bonusCreditsUsed ?? 0) > 0 ? (
+                <span className="text-xs tabular-nums text-muted-foreground">사용 {(usage.bonusCreditsUsed ?? 0).toLocaleString()}</span>
+              ) : null}
             </div>
-            {usage.bonusCreditsUsed > 0 ? (
-              <span className="text-xs tabular-nums text-muted-foreground">사용 {usage.bonusCreditsUsed.toLocaleString()}</span>
-            ) : null}
+            <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
+              플랜 크레딧을 먼저 소진한 뒤 추가 구매 크레딧이 사용됩니다.
+              <br />
+              추가 구매 크레딧은 결제 주기와 관계없이 유지됩니다.
+            </p>
           </div>
-          <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-            플랜 크레딧을 먼저 소진한 뒤 추가 구매 크레딧이 사용됩니다.
-            <br />
-            추가 구매 크레딧은 결제 주기와 관계없이 유지됩니다.
-          </p>
-        </div>
-      </section>
+        </section>
+      ) : null}
 
       {usage.categories.length > 0 ? (
         <section className="space-y-3">

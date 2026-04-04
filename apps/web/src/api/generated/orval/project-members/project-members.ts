@@ -6,11 +6,11 @@
  */
 import type {
   AddMembersRequest,
-  LookupMembersParams,
   ManageMembersRequest,
   ManageMembersResponse,
   MemberLookupResponse,
-  ProjectMemberListResponse
+  ProjectMemberListResponse,
+  ProjectMemberLookupMembersParams
 } from '../model';
 
 import { customInstance } from '../../../orval/custom-instance.js';
@@ -24,7 +24,7 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
  * 프로젝트 멤버 목록을 조회합니다
  * @summary 프로젝트 멤버 목록을 조회합니다
  */
-export const listProjectMembers = (
+export const projectMemberList = (
     projectId: string,
  options?: SecondParameter<typeof customInstance<ProjectMemberListResponse>>,) => {
       return customInstance<ProjectMemberListResponse>(
@@ -36,7 +36,7 @@ export const listProjectMembers = (
  * 프로젝트에 멤버를 배치 추가합니다
  * @summary 프로젝트에 멤버를 배치 추가합니다
  */
-export const addProjectMembers = (
+export const projectMemberAdd = (
     projectId: string,
     addMembersRequest: BodyType<AddMembersRequest>,
  options?: SecondParameter<typeof customInstance<ManageMembersResponse>>,) => {
@@ -51,7 +51,7 @@ export const addProjectMembers = (
  * 프로젝트에서 멤버를 배치 제거합니다
  * @summary 프로젝트에서 멤버를 배치 제거합니다
  */
-export const removeProjectMembers = (
+export const projectMemberRemove = (
     projectId: string,
     manageMembersRequest: BodyType<ManageMembersRequest>,
  options?: SecondParameter<typeof customInstance<void>>,) => {
@@ -66,9 +66,9 @@ export const removeProjectMembers = (
  * 프로젝트 멤버 picker용 lookup 목록을 조회합니다
  * @summary 프로젝트 멤버 picker용 lookup 목록을 조회합니다
  */
-export const lookupMembers = (
+export const projectMemberLookupMembers = (
     projectId: string,
-    params?: LookupMembersParams,
+    params?: ProjectMemberLookupMembersParams,
  options?: SecondParameter<typeof customInstance<MemberLookupResponse>>,) => {
       return customInstance<MemberLookupResponse>(
       {url: `/api/v1/projects/${projectId}/members/lookup`, method: 'GET',
@@ -76,7 +76,7 @@ export const lookupMembers = (
     },
       options);
     }
-  export type ListProjectMembersResult = NonNullable<Awaited<ReturnType<typeof listProjectMembers>>>
-export type AddProjectMembersResult = NonNullable<Awaited<ReturnType<typeof addProjectMembers>>>
-export type RemoveProjectMembersResult = NonNullable<Awaited<ReturnType<typeof removeProjectMembers>>>
-export type LookupMembersResult = NonNullable<Awaited<ReturnType<typeof lookupMembers>>>
+  export type ProjectMemberListResult = NonNullable<Awaited<ReturnType<typeof projectMemberList>>>
+export type ProjectMemberAddResult = NonNullable<Awaited<ReturnType<typeof projectMemberAdd>>>
+export type ProjectMemberRemoveResult = NonNullable<Awaited<ReturnType<typeof projectMemberRemove>>>
+export type ProjectMemberLookupMembersResult = NonNullable<Awaited<ReturnType<typeof projectMemberLookupMembers>>>
