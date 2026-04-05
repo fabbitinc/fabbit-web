@@ -6,6 +6,7 @@ import { StorageUsageTab } from "@/features/billing/components/storage-usage-tab
 import { OrganizationGeneralSettingsTab } from "@/features/organization-settings/components/organization-general-settings-tab";
 import { OrganizationLabelsTab } from "@/features/organization-settings/components/organization-labels-tab";
 import { OrganizationMembersUsersTab } from "@/features/organization-settings/components/organization-members-users-tab";
+import { OrganizationPartsCategoriesSettingsTab } from "@/features/organization-settings/components/organization-parts-categories-settings-tab";
 import { OrganizationPartsSettingsTab } from "@/features/organization-settings/components/organization-parts-settings-tab";
 import { OrganizationSecuritySettingsTab } from "@/features/organization-settings/components/organization-security-settings-tab";
 import { OrganizationTeamsTab } from "@/features/organization-settings/components/organization-teams-tab";
@@ -13,6 +14,7 @@ import { mockActivityLogs } from "@/features/organization-settings/mock-data/act
 import type {
   OrganizationChangeSubTab,
   OrganizationMembersSubTab,
+  OrganizationPartsSubTab,
   OrganizationSettingsTab,
 } from "@/features/organization-settings/types/organization-settings-model";
 
@@ -20,10 +22,12 @@ interface OrganizationSettingsScreenProps {
   activeTab: OrganizationSettingsTab;
   changeTab: OrganizationChangeSubTab;
   memberTab: OrganizationMembersSubTab;
+  partsTab: OrganizationPartsSubTab;
   usageTab: UsageSubTab;
   onActiveTabChange: (tab: OrganizationSettingsTab) => void;
   onChangeTabChange: (tab: OrganizationChangeSubTab) => void;
   onMemberTabChange: (tab: OrganizationMembersSubTab) => void;
+  onPartsTabChange: (tab: OrganizationPartsSubTab) => void;
   onUsageTabChange: (tab: UsageSubTab) => void;
 }
 
@@ -31,10 +35,12 @@ export function OrganizationSettingsScreen({
   activeTab,
   changeTab,
   memberTab,
+  partsTab,
   usageTab,
   onActiveTabChange,
   onChangeTabChange,
   onMemberTabChange,
+  onPartsTabChange,
   onUsageTabChange,
 }: OrganizationSettingsScreenProps) {
   return (
@@ -42,11 +48,13 @@ export function OrganizationSettingsScreen({
       activeTab={activeTab}
       changeTab={changeTab}
       memberTab={memberTab}
+      partsTab={partsTab}
       usageTab={usageTab}
       generalContent={<OrganizationGeneralSettingsTab />}
       membersUsersContent={<OrganizationMembersUsersTab />}
       membersTeamsContent={<OrganizationTeamsTab />}
-      partsCategoriesContent={<OrganizationPartsSettingsTab />}
+      partsPropertiesContent={<OrganizationPartsSettingsTab />}
+      partsCategoriesContent={<OrganizationPartsCategoriesSettingsTab />}
       changeGeneralContent={<OrganizationChangeGeneralTab />}
       labelsContent={<OrganizationLabelsTab />}
       billingContent={<BillingSection />}
@@ -57,6 +65,7 @@ export function OrganizationSettingsScreen({
       onActiveTabChange={(tab) => onActiveTabChange(tab as OrganizationSettingsTab)}
       onChangeTabChange={(tab) => onChangeTabChange(tab as OrganizationChangeSubTab)}
       onMemberTabChange={(tab) => onMemberTabChange(tab as OrganizationMembersSubTab)}
+      onPartsTabChange={(tab) => onPartsTabChange(tab as OrganizationPartsSubTab)}
       onUsageTabChange={onUsageTabChange}
     />
   );

@@ -152,12 +152,12 @@ export function PartCreateScreen({ onBack, onCreated }: PartCreateScreenProps) {
     setNumberingMode(mode);
   }, []);
 
-  // 채번 카테고리 목록을 PartEditorScreen에 전달할 형태로 변환
+  // 카테고리 목록을 PartEditorScreen에 전달할 형태로 변환
   const numberingCategories = (categoriesQuery.data ?? []).map((c) => ({
     id: c.id,
     name: c.name,
-    prefix: c.prefix,
-    delimiter: c.delimiter,
+    prefix: c.formatPrefix,
+    delimiter: c.formatSuffix,
     digits: c.digits,
     previewPartNumber: c.previewPartNumber,
   }));

@@ -1,9 +1,9 @@
-// 채번 카테고리 UI 모델
+// 카테고리 UI 모델
 export interface NumberingCategoryModel {
   id: string;
   name: string;
-  prefix: string;
-  delimiter: string;
+  formatPrefix: string;
+  formatSuffix: string;
   digits: number;
   previewPartNumber: string;
 }

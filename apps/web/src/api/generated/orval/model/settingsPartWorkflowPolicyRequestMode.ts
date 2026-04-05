@@ -13,5 +13,5 @@ export type SettingsPartWorkflowPolicyRequestMode = typeof SettingsPartWorkflowP
 
 export const SettingsPartWorkflowPolicyRequestMode = {
   DIRECT: 'DIRECT',
-  CHANGE_REQUEST_REQUIRED: 'CHANGE_REQUEST_REQUIRED',
+  ENGINEERING_CHANGE_REQUIRED: 'ENGINEERING_CHANGE_REQUIRED',
 } as const;

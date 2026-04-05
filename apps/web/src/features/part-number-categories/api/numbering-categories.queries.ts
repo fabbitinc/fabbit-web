@@ -1,5 +1,5 @@
 import { queryOptions, mutationOptions } from "@tanstack/react-query";
-import type { CreatePartNumberCategoryRequest, UpdatePartNumberCategoryRequest } from "@/api/generated/orval/model";
+import type { CreatePartCategoryRequest, UpdatePartCategoryRequest } from "@/api/generated/orval/model";
 import {
   fetchNumberingCategories,
   fetchNextNumber,
@@ -43,12 +43,12 @@ export const numberingCategoriesMutations = {
   create: () =>
     mutationOptions({
       mutationKey: ["numbering-categories", "create"],
-      mutationFn: (request: CreatePartNumberCategoryRequest) => createNumberingCategory(request),
+      mutationFn: (request: CreatePartCategoryRequest) => createNumberingCategory(request),
     }),
   update: (categoryId: string) =>
     mutationOptions({
       mutationKey: ["numbering-categories", categoryId, "update"],
-      mutationFn: (request: UpdatePartNumberCategoryRequest) =>
+      mutationFn: (request: UpdatePartCategoryRequest) =>
         updateNumberingCategory(categoryId, request),
     }),
   delete: (categoryId: string) =>

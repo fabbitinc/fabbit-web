@@ -68,7 +68,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/part-number-categories/{categoryId}": {
+    "/api/v1/part-categories/{categoryId}": {
         parameters: {
             query?: never;
             header?: never;
@@ -77,16 +77,16 @@ export interface paths {
         };
         get?: never;
         /**
-         * 채번 카테고리를 수정합니다
-         * @description 기존 채번 카테고리의 이름, 접두어, 구분자, 자릿수를 수정합니다
+         * 부품 카테고리를 수정합니다
+         * @description 기존 부품 카테고리의 이름, itemType, 접두어, 구분자, 자릿수를 수정합니다
          */
-        put: operations["partNumberCategoryUpdate"];
+        put: operations["partCategoryUpdate"];
         post?: never;
         /**
-         * 채번 카테고리를 삭제합니다
-         * @description 사용 중이지 않은 채번 카테고리를 삭제합니다
+         * 부품 카테고리를 삭제합니다
+         * @description 사용 중이지 않은 부품 카테고리를 삭제합니다
          */
-        delete: operations["partNumberCategoryDelete"];
+        delete: operations["partCategoryDelete"];
         options?: never;
         head?: never;
         patch?: never;
@@ -872,7 +872,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/part-number-categories": {
+    "/api/v1/part-categories": {
         parameters: {
             query?: never;
             header?: never;
@@ -880,16 +880,16 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * 채번 카테고리 목록을 조회합니다
-         * @description 품번 생성 규칙으로 사용하는 채번 카테고리 목록과 예시 품번을 반환합니다
+         * 부품 카테고리 목록을 조회합니다
+         * @description 부품 카테고리 목록과 예시 품번을 반환합니다
          */
-        get: operations["partNumberCategoryList"];
+        get: operations["partCategoryList"];
         put?: never;
         /**
-         * 채번 카테고리를 생성합니다
-         * @description 새 채번 카테고리를 생성하고 시퀀스를 초기화합니다
+         * 부품 카테고리를 생성합니다
+         * @description 새 부품 카테고리를 생성하고 시퀀스를 초기화합니다
          */
-        post: operations["partNumberCategoryCreate"];
+        post: operations["partCategoryCreate"];
         delete?: never;
         options?: never;
         head?: never;
@@ -2096,26 +2096,6 @@ export interface paths {
         patch: operations["bomItemCommandUpdateBomItem"];
         trace?: never;
     };
-    "/api/v1/parts/categories/{category}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        /**
-         * 카테고리 이름을 일괄 변경합니다
-         * @description 카테고리 이름을 일괄 변경하고 변경 건수를 반환합니다
-         */
-        patch: operations["partRenameCategory"];
-        trace?: never;
-    };
     "/api/v1/members/{userId}/seat": {
         parameters: {
             query?: never;
@@ -2996,7 +2976,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/part-number-categories/{categoryId}/next-number": {
+    "/api/v1/part-categories/{categoryId}/next-number": {
         parameters: {
             query?: never;
             header?: never;
@@ -3005,9 +2985,9 @@ export interface paths {
         };
         /**
          * 다음 품번을 미리봅니다
-         * @description 지정한 채번 카테고리 기준으로 다음에 생성될 예상 품번을 반환합니다
+         * @description 지정한 카테고리 기준으로 다음에 생성될 예상 품번을 반환합니다
          */
-        get: operations["partNumberCategoryGetNextNumber"];
+        get: operations["partCategoryGetNextNumber"];
         put?: never;
         post?: never;
         delete?: never;
@@ -3016,7 +2996,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/part-number-categories/check-number": {
+    "/api/v1/part-categories/check-number": {
         parameters: {
             query?: never;
             header?: never;
@@ -3027,7 +3007,7 @@ export interface paths {
          * 품번 중복 여부를 확인합니다
          * @description 입력한 품번이 현재 사용 가능한지 여부를 반환합니다
          */
-        get: operations["partNumberCategoryCheckNumber"];
+        get: operations["partCategoryCheckNumber"];
         put?: never;
         post?: never;
         delete?: never;
@@ -3776,7 +3756,7 @@ export interface components {
              * @example DIRECT
              * @enum {string}
              */
-            mode: "DIRECT" | "CHANGE_REQUEST_REQUIRED";
+            mode: "DIRECT" | "ENGINEERING_CHANGE_REQUIRED";
         };
         /** @description 설정 부품 워크플로 정책 응답 DTO */
         SettingsPartWorkflowPolicyResponse: {
@@ -3787,23 +3767,23 @@ export interface components {
              */
             mode?: "DIRECT" | "ENGINEERING_CHANGE_REQUIRED";
         };
-        /** @description 채번 카테고리 수정 요청 */
-        UpdatePartNumberCategoryRequest: {
+        /** @description 부품 카테고리 수정 요청 */
+        UpdatePartCategoryRequest: {
             /**
              * @description 카테고리 이름
              * @example PCB
              */
             name: string;
             /**
-             * @description 채번 접두어
-             * @example PCB
+             * @description 숫자 앞 포맷 문자열
+             * @example PCB-
              */
-            prefix: string;
+            format_prefix: string;
             /**
-             * @description 구분자
-             * @example -
+             * @description 숫자 뒤 포맷 문자열
+             * @example -A
              */
-            delimiter?: string;
+            format_suffix?: string;
             /**
              * Format: int32
              * @description 자릿수
@@ -3811,11 +3791,11 @@ export interface components {
              */
             digits?: number;
         };
-        /** @description 채번 카테고리 응답 */
-        PartNumberCategoryResponse: {
+        /** @description 부품 카테고리 응답 */
+        PartCategoryResponse: {
             /**
              * Format: uuid
-             * @description 채번 카테고리 ID
+             * @description 카테고리 ID
              * @example 019d0000-0000-7000-8000-000000000001
              */
             id?: string;
@@ -3825,15 +3805,15 @@ export interface components {
              */
             name?: string;
             /**
-             * @description 채번 접두어
-             * @example PCB
+             * @description 숫자 앞 포맷 문자열
+             * @example PCB-
              */
-            prefix?: string;
+            format_prefix?: string;
             /**
-             * @description 구분자
-             * @example -
+             * @description 숫자 뒤 포맷 문자열
+             * @example -A
              */
-            delimiter?: string;
+            format_suffix?: string;
             /**
              * Format: int32
              * @description 자릿수
@@ -4222,19 +4202,17 @@ export interface components {
             created_at?: string;
         };
         JsonNode: {
-            null?: boolean;
             float?: boolean;
+            null?: boolean;
             array?: boolean;
             empty?: boolean;
-            integral_number?: boolean;
-            floating_point_number?: boolean;
             number?: boolean;
-            /** @enum {string} */
-            node_type?: "ARRAY" | "BINARY" | "BOOLEAN" | "MISSING" | "NULL" | "NUMBER" | "OBJECT" | "POJO" | "STRING";
-            string?: boolean;
             value_node?: boolean;
             missing_node?: boolean;
             object?: boolean;
+            /** @enum {string} */
+            node_type?: "ARRAY" | "BINARY" | "BOOLEAN" | "MISSING" | "NULL" | "NUMBER" | "OBJECT" | "POJO" | "STRING";
+            string?: boolean;
             short?: boolean;
             double?: boolean;
             big_decimal?: boolean;
@@ -4247,6 +4225,8 @@ export interface components {
             pojo?: boolean;
             int?: boolean;
             long?: boolean;
+            integral_number?: boolean;
+            floating_point_number?: boolean;
             embedded_value?: boolean;
         };
         /** @description 연결 이슈 요약 */
@@ -4812,7 +4792,7 @@ export interface components {
             owner_type?: "PART" | "SUPPLIER" | "DRAWING" | "BOM_LINK" | "PART_SUPPLIER";
             /**
              * @description 속성 key. 시스템 속성은 property_key, 커스텀 속성은 UUID 문자열
-             * @example category
+             * @example material
              */
             property_key?: string;
             /**
@@ -4822,10 +4802,10 @@ export interface components {
             system?: boolean;
             /**
              * @description PART 시스템 속성 종류. PART 시스템 속성이 아니면 null
-             * @example CATEGORY
+             * @example MATERIAL
              * @enum {string}
              */
-            part_system_property_kind?: "PART_NUMBER" | "NAME" | "REVISION" | "MATERIAL" | "UNIT" | "DESCRIPTION" | "CATEGORY" | "ITEM_TYPE" | "LIFECYCLE_STATE" | "LEAD_TIME_DAYS";
+            part_system_property_kind?: "PART_NUMBER" | "NAME" | "REVISION" | "MATERIAL" | "UNIT" | "DESCRIPTION" | "LIFECYCLE_STATE" | "LEAD_TIME_DAYS";
             /**
              * @description 활성 여부를 조직 설정에서 변경할 수 있는지 여부
              * @example true
@@ -4833,17 +4813,17 @@ export interface components {
             active_configurable?: boolean;
             /**
              * @description 시스템 컬럼명. 커스텀 속성이면 null
-             * @example category
+             * @example material
              */
             column_name?: string;
             /**
              * @description 표시명
-             * @example 카테고리
+             * @example 재질
              */
             display_name?: string;
             /**
              * @description 설명
-             * @example 부품 분류
+             * @example 부품 재질
              */
             description?: string;
             /**
@@ -4996,15 +4976,15 @@ export interface components {
             part_number?: string;
             /**
              * Format: uuid
-             * @description 채번 카테고리 ID
+             * @description 카테고리 ID
              */
-            numbering_category_id?: string;
+            category_id: string;
             /**
-             * @description 부품 유형
+             * @description 아이템 유형
              * @example MANUFACTURED
              * @enum {string}
              */
-            item_type?: "MANUFACTURED" | "PURCHASED" | "SUBCONTRACTED" | "SERVICE" | "PHANTOM";
+            item_type: "MANUFACTURED" | "PURCHASED" | "SUBCONTRACTED" | "SERVICE" | "PHANTOM";
             /**
              * @description 품명
              * @example M3 볼트
@@ -5062,7 +5042,7 @@ export interface components {
             revision_status?: "DRAFT" | "RELEASED" | "SUPERSEDED" | "CANCELED";
             part_number?: string;
             /** Format: uuid */
-            numbering_category_id?: string;
+            category_id?: string;
             /** Format: uuid */
             base_revision_id?: string;
             base_revision_code?: string;
@@ -5404,23 +5384,23 @@ export interface components {
              */
             lifecycle_state?: "ACTIVE" | "EOL" | "OBSOLETE";
         };
-        /** @description 채번 카테고리 생성 요청 */
-        CreatePartNumberCategoryRequest: {
+        /** @description 부품 카테고리 생성 요청 */
+        CreatePartCategoryRequest: {
             /**
              * @description 카테고리 이름
              * @example PCB
              */
             name: string;
             /**
-             * @description 채번 접두어
-             * @example PCB
+             * @description 숫자 앞 포맷 문자열
+             * @example PCB-
              */
-            prefix: string;
+            format_prefix: string;
             /**
-             * @description 구분자
-             * @example -
+             * @description 숫자 뒤 포맷 문자열
+             * @example -A
              */
-            delimiter?: string;
+            format_suffix?: string;
             /**
              * Format: int32
              * @description 자릿수
@@ -6794,15 +6774,6 @@ export interface components {
                 [key: string]: unknown;
             };
         };
-        /** @description 요청 DTO */
-        RenameCategoryRequest: {
-            new_name: string;
-        };
-        /** @description 응답 DTO */
-        RenameCategoryResponse: {
-            /** Format: int32 */
-            updated_count?: number;
-        };
         /** @description 멤버 좌석 변경 요청 */
         ChangeSeatRequest: {
             /**
@@ -8142,10 +8113,10 @@ export interface components {
         CategoryLookupResponse: {
             items?: string[];
         };
-        /** @description 채번 카테고리 목록 응답 */
-        PartNumberCategoryListResponse: {
-            /** @description 채번 카테고리 목록 */
-            items?: components["schemas"]["PartNumberCategoryResponse"][];
+        /** @description 부품 카테고리 목록 응답 */
+        PartCategoryListResponse: {
+            /** @description 부품 카테고리 목록 */
+            items?: components["schemas"]["PartCategoryResponse"][];
         };
         /** @description 다음 품번 미리보기 응답 */
         PartNumberPreviewResponse: {
@@ -9434,19 +9405,19 @@ export interface operations {
             };
         };
     };
-    partNumberCategoryUpdate: {
+    partCategoryUpdate: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                /** @description 채번 카테고리 ID */
+                /** @description 카테고리 ID */
                 categoryId: string;
             };
             cookie?: never;
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["UpdatePartNumberCategoryRequest"];
+                "application/json": components["schemas"]["UpdatePartCategoryRequest"];
             };
         };
         responses: {
@@ -9456,7 +9427,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartNumberCategoryResponse"];
+                    "application/json": components["schemas"]["PartCategoryResponse"];
                 };
             };
             /** @description 잘못된 요청 */
@@ -9497,12 +9468,12 @@ export interface operations {
             };
         };
     };
-    partNumberCategoryDelete: {
+    partCategoryDelete: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                /** @description 채번 카테고리 ID */
+                /** @description 카테고리 ID */
                 categoryId: string;
             };
             cookie?: never;
@@ -13176,7 +13147,7 @@ export interface operations {
             };
         };
     };
-    partNumberCategoryList: {
+    partCategoryList: {
         parameters: {
             query?: never;
             header?: never;
@@ -13191,7 +13162,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartNumberCategoryListResponse"];
+                    "application/json": components["schemas"]["PartCategoryListResponse"];
                 };
             };
             /** @description 잘못된 요청 */
@@ -13232,7 +13203,7 @@ export interface operations {
             };
         };
     };
-    partNumberCategoryCreate: {
+    partCategoryCreate: {
         parameters: {
             query?: never;
             header?: never;
@@ -13241,7 +13212,7 @@ export interface operations {
         };
         requestBody: {
             content: {
-                "application/json": components["schemas"]["CreatePartNumberCategoryRequest"];
+                "application/json": components["schemas"]["CreatePartCategoryRequest"];
             };
         };
         responses: {
@@ -13251,7 +13222,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["PartNumberCategoryResponse"];
+                    "application/json": components["schemas"]["PartCategoryResponse"];
                 };
             };
             /** @description 잘못된 요청 */
@@ -18409,84 +18380,6 @@ export interface operations {
             };
         };
     };
-    partRenameCategory: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                category: string;
-            };
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "application/json": components["schemas"]["RenameCategoryRequest"];
-            };
-        };
-        responses: {
-            /** @description 요청 성공 */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["RenameCategoryResponse"];
-                };
-            };
-            /** @description 생성 성공 */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["RenameCategoryResponse"];
-                };
-            };
-            /** @description 삭제 성공 */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description 잘못된 요청 */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiErrorResponse"];
-                };
-            };
-            /** @description 인증 필요 */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiErrorResponse"];
-                };
-            };
-            /** @description 권한 없음 */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiErrorResponse"];
-                };
-            };
-            /** @description 리소스를 찾을 수 없음 */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiErrorResponse"];
-                };
-            };
-        };
-    };
     memberChangeMemberSeat: {
         parameters: {
             query?: never;
@@ -21751,12 +21644,12 @@ export interface operations {
             };
         };
     };
-    partNumberCategoryGetNextNumber: {
+    partCategoryGetNextNumber: {
         parameters: {
             query?: never;
             header?: never;
             path: {
-                /** @description 채번 카테고리 ID */
+                /** @description 카테고리 ID */
                 categoryId: string;
             };
             cookie?: never;
@@ -21810,7 +21703,7 @@ export interface operations {
             };
         };
     };
-    partNumberCategoryCheckNumber: {
+    partCategoryCheckNumber: {
         parameters: {
             query: {
                 /** @description 확인할 품번 */

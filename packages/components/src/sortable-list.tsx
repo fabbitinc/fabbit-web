@@ -73,7 +73,7 @@ function SortableRow<T>({
     <div
       ref={setNodeRef}
       className={cn(
-        "grid items-center border-t border-border/70 bg-card",
+        "grid items-center border-t border-border/70 bg-card text-sm",
         isDragging && "opacity-0",
       )}
       style={{
@@ -127,7 +127,7 @@ function OverlayRow<T>({
 }) {
   return (
     <div
-      className="grid items-center rounded-lg border border-primary/30 bg-card shadow-xl"
+      className="grid items-center rounded-lg border border-primary/30 bg-card text-sm shadow-xl"
       style={{ gridTemplateColumns }}
     >
       <div className="flex items-center justify-center px-2 py-3">

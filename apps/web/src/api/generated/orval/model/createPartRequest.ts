@@ -18,10 +18,10 @@ export interface CreatePartRequest {
    * @maxLength 100
    */
   part_number?: string;
-  /** 채번 카테고리 ID */
-  numbering_category_id?: string;
-  /** 부품 유형 */
-  item_type?: CreatePartRequestItemType;
+  /** 카테고리 ID */
+  category_id: string;
+  /** 아이템 유형 */
+  item_type: CreatePartRequestItemType;
   /**
    * 품명
    * @minLength 0

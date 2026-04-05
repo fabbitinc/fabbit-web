@@ -45,9 +45,9 @@ export function OrganizationNumberingCategoriesSection() {
     <div className="space-y-6">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h2 className="text-base font-semibold text-foreground">품번 자동 채번</h2>
+          <h2 className="text-base font-semibold text-foreground">카테고리 관리</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            카테고리별 접두어, 구분자, 자릿수를 설정하면 부품 생성 시 품번이 자동으로 부여됩니다
+            카테고리별 채번 규칙을 설정하면 부품 생성 시 품번이 자동으로 부여됩니다
           </p>
         </div>
         {!isEmpty ? (
@@ -61,7 +61,7 @@ export function OrganizationNumberingCategoriesSection() {
             }}
           >
             <Plus className="mr-1.5 size-3.5" />
-            규칙 추가
+            카테고리 추가
           </Button>
         ) : null}
       </div>
@@ -74,7 +74,7 @@ export function OrganizationNumberingCategoriesSection() {
               <tr>
                 <th className="px-4 py-3 text-left font-medium">이름</th>
                 <th className="px-4 py-3 text-left font-medium">접두어</th>
-                <th className="px-4 py-3 text-left font-medium">구분자</th>
+                <th className="px-4 py-3 text-left font-medium">접미어</th>
                 <th className="px-4 py-3 text-left font-medium">자릿수</th>
                 <th className="px-4 py-3 text-left font-medium">미리보기</th>
                 <th className="w-20 px-4 py-3">
@@ -101,7 +101,7 @@ export function OrganizationNumberingCategoriesSection() {
       {isEmpty ? (
         <div className="rounded-lg border border-dashed border-border/70 bg-card px-6 py-10 text-center">
           <p className="text-sm text-muted-foreground">
-            아직 채번 규칙이 없습니다. 품번 규칙을 만들어 부품 생성 시 자동으로 번호를 부여하세요.
+            아직 카테고리가 없습니다. 카테고리를 만들어 부품 생성 시 품번을 자동으로 부여하세요.
           </p>
           <Button
             className="mt-4 cursor-pointer"
@@ -112,7 +112,7 @@ export function OrganizationNumberingCategoriesSection() {
             }}
           >
             <Plus className="mr-1.5 size-3.5" />
-            규칙 추가
+            카테고리 추가
           </Button>
         </div>
       ) : null}
@@ -125,7 +125,7 @@ export function OrganizationNumberingCategoriesSection() {
               <tr>
                 <th className="px-4 py-3 text-left font-medium">이름</th>
                 <th className="px-4 py-3 text-left font-medium">접두어</th>
-                <th className="px-4 py-3 text-left font-medium">구분자</th>
+                <th className="px-4 py-3 text-left font-medium">접미어</th>
                 <th className="px-4 py-3 text-left font-medium">자릿수</th>
                 <th className="px-4 py-3 text-left font-medium">미리보기</th>
                 <th className="w-20 px-4 py-3">
@@ -137,9 +137,9 @@ export function OrganizationNumberingCategoriesSection() {
               {categories.map((category) => (
                 <tr key={category.id} className="border-t border-border/70">
                   <td className="px-4 py-3 font-medium">{category.name}</td>
-                  <td className="px-4 py-3 font-mono text-xs">{category.prefix}</td>
+                  <td className="px-4 py-3 font-mono text-xs">{category.formatPrefix}</td>
                   <td className="px-4 py-3 font-mono text-xs">
-                    {category.delimiter || <span className="text-muted-foreground/40">없음</span>}
+                    {category.formatSuffix || <span className="text-muted-foreground/40">없음</span>}
                   </td>
                   <td className="px-4 py-3">{category.digits}</td>
                   <td className="px-4 py-3 font-mono text-xs text-muted-foreground">
@@ -185,15 +185,21 @@ export function OrganizationNumberingCategoriesSection() {
           setEditTarget(null);
         }}
         onSubmit={(values) => {
+          const request = {
+            name: values.name,
+            format_prefix: values.formatPrefix,
+            format_suffix: values.formatSuffix || undefined,
+            digits: values.digits,
+          };
           if (editTarget) {
-            updateAction.mutate(values, {
+            updateAction.mutate(request, {
               onSuccess: () => {
                 setFormOpen(false);
                 setEditTarget(null);
               },
             });
           } else {
-            createAction.mutate(values);
+            createAction.mutate(request);
           }
         }}
       />
@@ -207,9 +213,9 @@ export function OrganizationNumberingCategoriesSection() {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>채번 규칙을 삭제하시겠습니까?</AlertDialogTitle>
+            <AlertDialogTitle>카테고리를 삭제하시겠습니까?</AlertDialogTitle>
             <AlertDialogDescription>
-              &ldquo;{deleteTarget?.name}&rdquo; 규칙을 삭제합니다. 이미 이 규칙으로 생성된 부품의 품번은 변경되지 않습니다.
+              &ldquo;{deleteTarget?.name}&rdquo; 카테고리를 삭제합니다. 이미 생성된 부품의 품번은 변경되지 않습니다.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

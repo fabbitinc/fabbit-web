@@ -14,12 +14,12 @@ export function useCreateNumberingCategoryAction(options?: UseCreateNumberingCat
   return useMutation({
     ...numberingCategoriesMutations.create(),
     onSuccess: async (category) => {
-      toast.success("채번 규칙을 추가했습니다.");
+      toast.success("카테고리를 추가했습니다.");
       await queryClient.invalidateQueries({ queryKey: numberingCategoriesKeys.list() });
       options?.onSuccess?.(category);
     },
     onError: (error) => {
-      toast.error(extractApiError(error, "채번 규칙 추가에 실패했습니다."));
+      toast.error(extractApiError(error, "카테고리 추가에 실패했습니다."));
     },
   });
 }

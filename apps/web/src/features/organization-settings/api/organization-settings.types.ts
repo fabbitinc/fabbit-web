@@ -2,7 +2,6 @@ import type { DeepDefined } from "@/api/types";
 import type { components } from "@/api/generated/schema";
 
 export type AddTeamMembersRequestDto = components["schemas"]["AddTeamMembersRequest"];
-export type CategoryStatsResponseDto = DeepDefined<components["schemas"]["CategoryStatsResponse"]>;
 export type ChangeMemberRoleRequestDto = components["schemas"]["ChangeRoleRequest"];
 export type CreateInvitationRequestDto = components["schemas"]["CreateInvitationRequest"];
 export type CreateTeamRequestDto = components["schemas"]["CreateTeamRequest"];
@@ -14,7 +13,6 @@ export type MemberListResponseDto = DeepDefined<components["schemas"]["MemberLis
 export type MemberSummaryDto = DeepDefined<components["schemas"]["MemberSummaryResponse"]>;
 export type ProfileImageResponseDto = DeepDefined<components["schemas"]["ProfileImageResponse"]>;
 export type RemoveTeamMembersRequestDto = components["schemas"]["RemoveTeamMembersRequest"];
-export type RenameCategoryRequestDto = components["schemas"]["RenameCategoryRequest"];
 export type SetProfileImageRequestDto = components["schemas"]["SetProfileImageRequest"];
 export type TeamListResponseDto = DeepDefined<components["schemas"]["TeamListResponse"]>;
 export type TeamMemberListResponseDto = DeepDefined<components["schemas"]["TeamMemberListResponse"]>;

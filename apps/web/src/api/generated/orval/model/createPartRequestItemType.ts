@@ -6,7 +6,7 @@
  */
 
 /**
- * 부품 유형
+ * 아이템 유형
  */
 export type CreatePartRequestItemType = typeof CreatePartRequestItemType[keyof typeof CreatePartRequestItemType];
 

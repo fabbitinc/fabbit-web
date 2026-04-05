@@ -1,6 +1,10 @@
 const APP_DOMAIN = import.meta.env.VITE_APP_DOMAIN || "localhost";
 const ROOT_DOMAIN = APP_DOMAIN.split(":")[0];
 
+export function getRootDomain() {
+  return ROOT_DOMAIN;
+}
+
 export function getSubdomain(): string | null {
   const hostname = window.location.hostname;
 

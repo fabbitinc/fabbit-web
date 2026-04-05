@@ -27,7 +27,7 @@ export function UserAvatar({
   const radius = variant === "rounded" ? "rounded-md" : "rounded-full";
 
   return (
-    <Avatar className={cn(radius, className)}>
+    <Avatar key={imageUrl ?? "no-image"} className={cn(radius, className)}>
       {imageUrl && <AvatarImage src={imageUrl} alt={name} />}
       <AvatarFallback className={cn("text-xs font-medium", radius)}>
         {getInitials(name)}

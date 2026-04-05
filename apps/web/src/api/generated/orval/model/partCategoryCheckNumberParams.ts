@@ -5,7 +5,7 @@
  * OpenAPI spec version: v0
  */
 
-export type PartNumberCategoryCheckNumberParams = {
+export type PartCategoryCheckNumberParams = {
 /**
  * 확인할 품번
  */

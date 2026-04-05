@@ -9,11 +9,11 @@ export function useUpdateNumberingCategoryAction(categoryId: string) {
   return useMutation({
     ...numberingCategoriesMutations.update(categoryId),
     onSuccess: async () => {
-      toast.success("채번 규칙을 수정했습니다.");
+      toast.success("카테고리를 수정했습니다.");
       await queryClient.invalidateQueries({ queryKey: numberingCategoriesKeys.list() });
     },
     onError: (error) => {
-      toast.error(extractApiError(error, "채번 규칙 수정에 실패했습니다."));
+      toast.error(extractApiError(error, "카테고리 수정에 실패했습니다."));
     },
   });
 }

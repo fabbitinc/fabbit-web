@@ -20,6 +20,7 @@ import {
   Label,
   Select,
   SelectContent,
+  SelectEmptyState,
   SelectItem,
   SelectTrigger,
   SelectValue,
@@ -289,11 +290,15 @@ function TeamMembersPanel({
             <SelectValue placeholder="멤버 선택..." />
           </SelectTrigger>
           <SelectContent>
-            {availableMembers.map((member) => (
-              <SelectItem key={member.userId} value={member.userId}>
-                {member.fullName} ({member.email})
-              </SelectItem>
-            ))}
+            {availableMembers.length > 0 ? (
+              availableMembers.map((member) => (
+                <SelectItem key={member.userId} value={member.userId}>
+                  {member.fullName} ({member.email})
+                </SelectItem>
+              ))
+            ) : (
+              <SelectEmptyState>추가할 수 있는 멤버가 없습니다</SelectEmptyState>
+            )}
           </SelectContent>
         </Select>
         <Button

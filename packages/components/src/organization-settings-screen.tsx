@@ -24,6 +24,8 @@ export interface OrganizationSettingsScreenProps {
   generalContent: ReactNode;
   membersUsersContent: ReactNode;
   membersTeamsContent: ReactNode;
+  partsTab: string;
+  partsPropertiesContent: ReactNode;
   partsCategoriesContent: ReactNode;
   changeGeneralContent: ReactNode;
   labelsContent: ReactNode;
@@ -37,6 +39,7 @@ export interface OrganizationSettingsScreenProps {
   onActiveTabChange: (tab: string) => void;
   onChangeTabChange: (tab: string) => void;
   onMemberTabChange: (tab: string) => void;
+  onPartsTabChange: (tab: string) => void;
   onUsageTabChange: (tab: UsageSubTab) => void;
 }
 
@@ -57,6 +60,11 @@ const memberTabs = [
   { key: "teams", label: "팀" },
 ] as const;
 
+const partsTabs = [
+  { key: "properties", label: "부품 항목" },
+  { key: "categories", label: "카테고리" },
+] as const;
+
 const changeTabs = [
   { key: "general", label: "일반" },
   { key: "labels", label: "라벨" },
@@ -66,10 +74,12 @@ export function OrganizationSettingsScreen({
   activeTab,
   changeTab,
   memberTab,
+  partsTab,
   usageTab,
   generalContent,
   membersUsersContent,
   membersTeamsContent,
+  partsPropertiesContent,
   partsCategoriesContent,
   changeGeneralContent,
   labelsContent,
@@ -83,6 +93,7 @@ export function OrganizationSettingsScreen({
   onActiveTabChange,
   onChangeTabChange,
   onMemberTabChange,
+  onPartsTabChange,
   onUsageTabChange,
 }: OrganizationSettingsScreenProps) {
   return (
@@ -102,7 +113,8 @@ export function OrganizationSettingsScreen({
       ) : null}
       {activeTab === "parts" ? (
         <div className="space-y-6">
-          {partsCategoriesContent}
+          <InlineTabs activeKey={partsTab} items={partsTabs} onChange={onPartsTabChange} />
+          {partsTab === "properties" ? partsPropertiesContent : partsCategoriesContent}
         </div>
       ) : null}
       {activeTab === "change" ? (

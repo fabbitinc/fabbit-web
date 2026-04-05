@@ -10,6 +10,7 @@ export type OrganizationSettingsTab =
   | "advanced";
 
 export type OrganizationMembersSubTab = "users" | "teams";
+export type OrganizationPartsSubTab = "properties" | "categories";
 export type OrganizationChangeSubTab = "general" | "labels";
 export type MemberRoleModel = "MEMBER" | "ADMIN" | "OWNER";
 
@@ -45,11 +46,6 @@ export interface OrganizationTeamModel {
   memberCount: number;
   createdBy: string;
   createdAt: string;
-}
-
-export interface OrganizationCategoryModel {
-  category: string;
-  partCount: number;
 }
 
 export interface OrganizationLabelModel {

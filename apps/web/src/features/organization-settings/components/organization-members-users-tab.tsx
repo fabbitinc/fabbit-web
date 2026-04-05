@@ -137,7 +137,7 @@ export function OrganizationMembersUsersTab() {
             }}
           />
           <Select disabled={isAtLimit} value={inviteRole} onValueChange={(value) => setInviteRole(value as MemberRoleModel)}>
-            <SelectTrigger className="w-full xl:w-36">
+            <SelectTrigger className="h-9 w-full xl:w-36">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

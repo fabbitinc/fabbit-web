@@ -6,17 +6,17 @@
  */
 
 /**
- * 채번 카테고리 응답
+ * 부품 카테고리 응답
  */
-export interface PartNumberCategoryResponse {
-  /** 채번 카테고리 ID */
+export interface PartCategoryResponse {
+  /** 카테고리 ID */
   id?: string;
   /** 카테고리 이름 */
   name?: string;
-  /** 채번 접두어 */
-  prefix?: string;
-  /** 구분자 */
-  delimiter?: string;
+  /** 숫자 앞 포맷 문자열 */
+  format_prefix?: string;
+  /** 숫자 뒤 포맷 문자열 */
+  format_suffix?: string;
   /** 자릿수 */
   digits?: number;
   /** 예시 품번 */

@@ -15,21 +15,26 @@ import type { NumberingCategoryModel } from "@/features/part-number-categories/t
 
 interface NumberingCategoryFormValues {
   name: string;
-  prefix: string;
-  delimiter: string;
+  formatPrefix: string;
+  formatSuffix: string;
   digits: number;
 }
 
 const DEFAULT_VALUES: NumberingCategoryFormValues = {
   name: "",
-  prefix: "",
-  delimiter: "-",
+  formatPrefix: "",
+  formatSuffix: "",
   digits: 4,
 };
 
+function clampDigits(value: number): number {
+  return Math.max(1, Math.min(10, value));
+}
+
 function buildPreview(values: NumberingCategoryFormValues): string {
-  const seq = "0".repeat(Math.max(1, values.digits - 1)) + "1";
-  return `${values.prefix}${values.delimiter}${seq}`;
+  const clamped = clampDigits(values.digits);
+  const seq = "0".repeat(Math.max(1, clamped - 1)) + "1";
+  return `${values.formatPrefix}${seq}${values.formatSuffix}`;
 }
 
 interface NumberingCategoryFormModalProps {
@@ -55,8 +60,8 @@ export function NumberingCategoryFormModal({
       if (editTarget) {
         setValues({
           name: editTarget.name,
-          prefix: editTarget.prefix,
-          delimiter: editTarget.delimiter,
+          formatPrefix: editTarget.formatPrefix,
+          formatSuffix: editTarget.formatSuffix,
           digits: editTarget.digits,
         });
       } else {
@@ -66,7 +71,7 @@ export function NumberingCategoryFormModal({
   }, [open, editTarget]);
 
   const nameEmpty = values.name.trim() === "";
-  const prefixEmpty = values.prefix.trim() === "";
+  const prefixEmpty = values.formatPrefix.trim() === "";
   const digitsInvalid = values.digits < 1 || values.digits > 10;
   const canSubmit = !nameEmpty && !prefixEmpty && !digitsInvalid && !isPending;
 
@@ -74,11 +79,11 @@ export function NumberingCategoryFormModal({
     <Dialog open={open} onOpenChange={(nextOpen) => { if (!nextOpen) onClose(); }}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>{isEdit ? "채번 규칙 수정" : "채번 규칙 추가"}</DialogTitle>
+          <DialogTitle>{isEdit ? "카테고리 수정" : "카테고리 추가"}</DialogTitle>
           <DialogDescription>
             {isEdit
-              ? "채번 규칙의 설정을 수정합니다."
-              : "새로운 채번 규칙을 만들어 부품 생성 시 품번을 자동으로 부여하세요."}
+              ? "카테고리의 채번 규칙을 수정합니다."
+              : "새 카테고리를 만들어 부품 생성 시 품번을 자동으로 부여하세요."}
           </DialogDescription>
         </DialogHeader>
 
@@ -93,39 +98,39 @@ export function NumberingCategoryFormModal({
             />
           </div>
 
-          <div className="space-y-1.5">
-            <Label htmlFor="nc-prefix">접두어</Label>
-            <Input
-              id="nc-prefix"
-              placeholder="예: MECH"
-              maxLength={20}
-              value={values.prefix}
-              onChange={(e) => setValues({ ...values, prefix: e.target.value })}
-            />
-          </div>
-
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
-              <Label htmlFor="nc-delimiter">구분자</Label>
+              <Label htmlFor="nc-prefix">접두어</Label>
               <Input
-                id="nc-delimiter"
-                placeholder="예: -"
-                maxLength={5}
-                value={values.delimiter}
-                onChange={(e) => setValues({ ...values, delimiter: e.target.value })}
+                id="nc-prefix"
+                placeholder="예: MECH-"
+                maxLength={20}
+                value={values.formatPrefix}
+                onChange={(e) => setValues({ ...values, formatPrefix: e.target.value })}
               />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="nc-digits">자릿수</Label>
+              <Label htmlFor="nc-suffix">접미어</Label>
               <Input
-                id="nc-digits"
-                type="number"
-                min={1}
-                max={10}
-                value={values.digits}
-                onChange={(e) => setValues({ ...values, digits: Number(e.target.value) || 1 })}
+                id="nc-suffix"
+                placeholder="예: -A (선택)"
+                maxLength={20}
+                value={values.formatSuffix}
+                onChange={(e) => setValues({ ...values, formatSuffix: e.target.value })}
               />
             </div>
+          </div>
+
+          <div className="w-1/2 space-y-1.5 pr-2">
+            <Label htmlFor="nc-digits">자릿수</Label>
+            <Input
+              id="nc-digits"
+              type="number"
+              min={1}
+              max={10}
+              value={values.digits}
+              onChange={(e) => setValues({ ...values, digits: clampDigits(Number(e.target.value) || 1) })}
+            />
           </div>
 
           {/* 미리보기 */}

@@ -16,10 +16,6 @@ import {
   memberRemove as removeMemberApiV1MembersUserIdDelete,
 } from "@/api/generated/orval/members/members";
 import {
-  partListCategories as listCategoriesApiV1PartsCategoriesGet,
-  partRenameCategory as renameCategoryApiV1PartsCategoriesCategoryPatch,
-} from "@/api/generated/orval/parts/parts";
-import {
   teamMemberAdd as addTeamMembersApiV1TeamsTeamIdMembersPost,
   teamMemberList as listTeamMembersApiV1TeamsTeamIdMembersGet,
   teamMemberRemove as removeTeamMembersApiV1TeamsTeamIdMembersDelete,
@@ -31,7 +27,6 @@ import {
 } from "@/api/generated/orval/teams/teams";
 import type {
   AddTeamMembersRequestDto,
-  CategoryStatsResponseDto,
   ChangeMemberRoleRequestDto,
   CreateInvitationRequestDto,
   CreateLabelRequestDto,
@@ -43,7 +38,6 @@ import type {
   MemberListResponseDto,
   MemberSummaryDto,
   RemoveTeamMembersRequestDto,
-  RenameCategoryRequestDto,
   SetProfileImageRequestDto,
   TeamListResponseDto,
   TeamMemberListResponseDto,
@@ -52,7 +46,6 @@ import type {
   UserSummaryDto,
 } from "@/features/organization-settings/api/organization-settings.types";
 import type {
-  OrganizationCategoryModel,
   OrganizationInvitationModel,
   OrganizationLabelModel,
   OrganizationMemberModel,
@@ -126,17 +119,6 @@ export async function removeOrganizationTeamMembers(teamId: string, request: Rem
   await removeTeamMembersApiV1TeamsTeamIdMembersDelete(teamId, request);
 }
 
-export async function fetchOrganizationCategories() {
-  const response = await listCategoriesApiV1PartsCategoriesGet();
-  return (response as CategoryStatsResponseDto).items.map((item) => ({
-    category: item.category,
-    partCount: item.part_count,
-  } satisfies OrganizationCategoryModel));
-}
-
-export async function renameOrganizationCategory(category: string, request: RenameCategoryRequestDto) {
-  await renameCategoryApiV1PartsCategoriesCategoryPatch(encodeURIComponent(category), request);
-}
 
 export async function fetchOrganizationLabels() {
   const response = await listLabelsApiV1LabelsGet();

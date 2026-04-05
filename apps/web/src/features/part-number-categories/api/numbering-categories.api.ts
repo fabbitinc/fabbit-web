@@ -1,16 +1,16 @@
 import {
-  partNumberCategoryList as listCategoriesApi,
-  partNumberCategoryCreate as createCategoryApi,
-  partNumberCategoryUpdate as updateCategoryApi,
-  partNumberCategoryDelete as deleteCategoryApi,
-  partNumberCategoryGetNextNumber as getNextNumberApi,
-  partNumberCategoryCheckNumber as checkNumberApi,
-} from "@/api/generated/orval/part-number-categories/part-number-categories";
+  partCategoryList as listCategoriesApi,
+  partCategoryCreate as createCategoryApi,
+  partCategoryUpdate as updateCategoryApi,
+  partCategoryDelete as deleteCategoryApi,
+  partCategoryGetNextNumber as getNextNumberApi,
+  partCategoryCheckNumber as checkNumberApi,
+} from "@/api/generated/orval/part-categories/part-categories";
 import type {
-  CreatePartNumberCategoryRequest,
-  UpdatePartNumberCategoryRequest,
-  PartNumberCategoryListResponse,
-  PartNumberCategoryResponse,
+  CreatePartCategoryRequest,
+  UpdatePartCategoryRequest,
+  PartCategoryListResponse,
+  PartCategoryResponse,
   PartNumberPreviewResponse,
   PartNumberAvailabilityResponse,
 } from "@/api/generated/orval/model";
@@ -24,7 +24,7 @@ import type {
 
 export async function fetchNumberingCategories(): Promise<NumberingCategoryModel[]> {
   const response = await listCategoriesApi();
-  const result = response as PartNumberCategoryListResponse;
+  const result = response as PartCategoryListResponse;
   return (result.items ?? []).map(toNumberingCategoryModel);
 }
 
@@ -49,18 +49,18 @@ export async function fetchCheckNumber(partNumber: string): Promise<PartNumberAv
 // ── 생성/수정/삭제 ──
 
 export async function createNumberingCategory(
-  request: CreatePartNumberCategoryRequest,
+  request: CreatePartCategoryRequest,
 ): Promise<NumberingCategoryModel> {
   const response = await createCategoryApi(request);
-  return toNumberingCategoryModel(response as PartNumberCategoryResponse);
+  return toNumberingCategoryModel(response as PartCategoryResponse);
 }
 
 export async function updateNumberingCategory(
   categoryId: string,
-  request: UpdatePartNumberCategoryRequest,
+  request: UpdatePartCategoryRequest,
 ): Promise<NumberingCategoryModel> {
   const response = await updateCategoryApi(categoryId, request);
-  return toNumberingCategoryModel(response as PartNumberCategoryResponse);
+  return toNumberingCategoryModel(response as PartCategoryResponse);
 }
 
 export async function deleteNumberingCategory(categoryId: string): Promise<void> {
@@ -69,12 +69,12 @@ export async function deleteNumberingCategory(categoryId: string): Promise<void>
 
 // ── 변환 ──
 
-function toNumberingCategoryModel(dto: PartNumberCategoryResponse): NumberingCategoryModel {
+function toNumberingCategoryModel(dto: PartCategoryResponse): NumberingCategoryModel {
   return {
     id: dto.id ?? "",
     name: dto.name ?? "",
-    prefix: dto.prefix ?? "",
-    delimiter: dto.delimiter ?? "-",
+    formatPrefix: dto.format_prefix ?? "",
+    formatSuffix: dto.format_suffix ?? "",
     digits: dto.digits ?? 4,
     previewPartNumber: dto.preview_part_number ?? "",
   };

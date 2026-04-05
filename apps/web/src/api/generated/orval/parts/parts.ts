@@ -23,9 +23,7 @@ import type {
   PartLookupParams,
   PartLookupResponse,
   PartLookupRevisionsParams,
-  PartRevisionLookupResponse,
-  RenameCategoryRequest,
-  RenameCategoryResponse
+  PartRevisionLookupResponse
 } from '../model';
 
 import { customInstance } from '../../../orval/custom-instance.js';
@@ -74,21 +72,6 @@ export const partChangeLifecycleState = (
       {url: `/api/v1/parts/${partId}/lifecycle`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: changePartLifecycleStateRequest
-    },
-      options);
-    }
-  /**
- * 카테고리 이름을 일괄 변경하고 변경 건수를 반환합니다
- * @summary 카테고리 이름을 일괄 변경합니다
- */
-export const partRenameCategory = (
-    category: string,
-    renameCategoryRequest: BodyType<RenameCategoryRequest>,
- options?: SecondParameter<typeof customInstance<RenameCategoryResponse | void>>,) => {
-      return customInstance<RenameCategoryResponse | void>(
-      {url: `/api/v1/parts/categories/${category}`, method: 'PATCH',
-      headers: {'Content-Type': 'application/json', },
-      data: renameCategoryRequest
     },
       options);
     }
@@ -209,7 +192,6 @@ export const partLookupCategories = (
   export type PartListResult = NonNullable<Awaited<ReturnType<typeof partList>>>
 export type PartCreateResult = NonNullable<Awaited<ReturnType<typeof partCreate>>>
 export type PartChangeLifecycleStateResult = NonNullable<Awaited<ReturnType<typeof partChangeLifecycleState>>>
-export type PartRenameCategoryResult = NonNullable<Awaited<ReturnType<typeof partRenameCategory>>>
 export type PartGetImpactAnalysisResult = NonNullable<Awaited<ReturnType<typeof partGetImpactAnalysis>>>
 export type PartGetChangeHistoryResult = NonNullable<Awaited<ReturnType<typeof partGetChangeHistory>>>
 export type PartLookupRevisionsResult = NonNullable<Awaited<ReturnType<typeof partLookupRevisions>>>

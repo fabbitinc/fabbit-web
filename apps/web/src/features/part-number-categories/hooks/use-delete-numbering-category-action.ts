@@ -9,15 +9,15 @@ export function useDeleteNumberingCategoryAction(categoryId: string) {
   return useMutation({
     ...numberingCategoriesMutations.delete(categoryId),
     onSuccess: async () => {
-      toast.success("삭제했습니다.");
+      toast.success("카테고리를 삭제했습니다.");
       await queryClient.invalidateQueries({ queryKey: numberingCategoriesKeys.list() });
     },
     onError: (error) => {
       toast.error(
         extractApiError(error, {
-          fallback: "채번 규칙 삭제에 실패했습니다.",
+          fallback: "카테고리 삭제에 실패했습니다.",
           statusMessages: {
-            400: "사용 중인 규칙은 삭제할 수 없습니다.",
+            400: "사용 중인 카테고리는 삭제할 수 없습니다.",
           },
         }),
       );

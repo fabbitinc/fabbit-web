@@ -6,9 +6,9 @@
  */
 
 /**
- * 채번 카테고리 수정 요청
+ * 부품 카테고리 수정 요청
  */
-export interface UpdatePartNumberCategoryRequest {
+export interface UpdatePartCategoryRequest {
   /**
    * 카테고리 이름
    * @minLength 0
@@ -16,17 +16,17 @@ export interface UpdatePartNumberCategoryRequest {
    */
   name: string;
   /**
-   * 채번 접두어
+   * 숫자 앞 포맷 문자열
    * @minLength 0
    * @maxLength 20
    */
-  prefix: string;
+  format_prefix: string;
   /**
-   * 구분자
+   * 숫자 뒤 포맷 문자열
    * @minLength 0
-   * @maxLength 5
+   * @maxLength 20
    */
-  delimiter?: string;
+  format_suffix?: string;
   /**
    * 자릿수
    * @minimum 1

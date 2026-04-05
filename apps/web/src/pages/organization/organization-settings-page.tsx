@@ -5,6 +5,7 @@ import {
   OrganizationSettingsScreen,
   type OrganizationChangeSubTab,
   type OrganizationMembersSubTab,
+  type OrganizationPartsSubTab,
   type OrganizationSettingsTab,
 } from "@/features/organization-settings";
 
@@ -31,6 +32,8 @@ export function OrganizationSettingsPage() {
 
   const memberTab: OrganizationMembersSubTab =
     activeTab === "members" && searchParams.get("tab") === "teams" ? "teams" : "users";
+  const partsTab: OrganizationPartsSubTab =
+    activeTab === "parts" && searchParams.get("tab") === "categories" ? "categories" : "properties";
   const changeTab: OrganizationChangeSubTab =
     activeTab === "change" && searchParams.get("tab") === "labels" ? "labels" : "general";
   const usageTab: UsageSubTab = activeTab === "usage" && searchParams.get("tab") === "ai" ? "ai" : "storage";
@@ -71,10 +74,12 @@ export function OrganizationSettingsPage() {
       activeTab={activeTab}
       changeTab={changeTab}
       memberTab={memberTab}
+      partsTab={partsTab}
       usageTab={usageTab}
       onActiveTabChange={setActiveTab}
       onChangeTabChange={(tab) => setSubTab(tab, "general")}
       onMemberTabChange={(tab) => setSubTab(tab, "users")}
+      onPartsTabChange={(tab) => setSubTab(tab, "properties")}
       onUsageTabChange={(tab) => setSubTab(tab, "storage")}
     />
   );

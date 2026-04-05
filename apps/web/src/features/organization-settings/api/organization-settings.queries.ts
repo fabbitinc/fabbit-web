@@ -9,7 +9,6 @@ import {
   deleteOrganizationLabel,
   deleteOrganizationProfileImage,
   deleteOrganizationTeam,
-  fetchOrganizationCategories,
   fetchOrganizationInvitations,
   fetchOrganizationLabels,
   fetchOrganizationMembers,
@@ -17,7 +16,6 @@ import {
   fetchOrganizationTeams,
   removeOrganizationMember,
   removeOrganizationTeamMembers,
-  renameOrganizationCategory,
   setOrganizationProfileImage,
 } from "@/features/organization-settings/api/organization-settings.api";
 import type {
@@ -25,7 +23,6 @@ import type {
   CreateInvitationRequestDto,
   CreateLabelRequestDto,
   CreateTeamRequestDto,
-  RenameCategoryRequestDto,
   SetProfileImageRequestDto,
 } from "@/features/organization-settings/api/organization-settings.types";
 
@@ -34,7 +31,6 @@ export const organizationSettingsKeys = {
   invitations: ["organization-settings", "invitations"] as const,
   teams: ["organization-settings", "teams"] as const,
   teamMembers: (teamId: string) => ["organization-settings", "teams", teamId, "members"] as const,
-  categories: ["organization-settings", "parts", "categories"] as const,
   labels: ["organization-settings", "change", "labels"] as const,
 };
 
@@ -62,12 +58,6 @@ export const organizationSettingsQueries = {
       queryKey: organizationSettingsKeys.teamMembers(teamId),
       queryFn: () => fetchOrganizationTeamMembers(teamId),
       enabled: Boolean(teamId),
-    }),
-  categories: () =>
-    queryOptions({
-      queryKey: organizationSettingsKeys.categories,
-      queryFn: fetchOrganizationCategories,
-      staleTime: 30_000,
     }),
   labels: () =>
     queryOptions({
@@ -130,12 +120,6 @@ export const organizationSettingsMutations = {
       mutationKey: ["organization-settings", "remove-team-members"],
       mutationFn: ({ teamId, userIds }: { teamId: string; userIds: string[] }) =>
         removeOrganizationTeamMembers(teamId, { user_ids: userIds }),
-    }),
-  renameCategory: () =>
-    mutationOptions({
-      mutationKey: ["organization-settings", "rename-category"],
-      mutationFn: ({ category, request }: { category: string; request: RenameCategoryRequestDto }) =>
-        renameOrganizationCategory(category, request),
     }),
   createLabel: () =>
     mutationOptions({
