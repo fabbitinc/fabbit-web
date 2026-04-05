@@ -148,6 +148,10 @@
             "description": "\ub300\uc2dc\ubcf4\ub4dc \ud1b5\uacc4 API"
         },
         {
+            "name": "workflow-templates",
+            "description": "\uc6cc\ud06c\ud50c\ub85c\uc6b0 \ud15c\ud50c\ub9bf \uad00\ub9ac API"
+        },
+        {
             "name": "part-revision-commands",
             "description": "\ubd80\ud488 \ub9ac\ube44\uc804 \uc0dd\uc131/\uc218\uc815/\uc0c1\ud0dc \uc804\uc774 API"
         },
@@ -1768,6 +1772,258 @@
                     },
                     "204": {
                         "description": "\uc0ad\uc81c \uc131\uacf5"
+                    },
+                    "400": {
+                        "description": "\uc798\ubabb\ub41c \uc694\uccad",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "\uc778\uc99d \ud544\uc694",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "\uad8c\ud55c \uc5c6\uc74c",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "\ub9ac\uc18c\uc2a4\ub97c \ucc3e\uc744 \uc218 \uc5c6\uc74c",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/workflow-templates": {
+            "get": {
+                "tags": [
+                    "workflow-templates"
+                ],
+                "summary": "\uc6cc\ud06c\ud50c\ub85c\uc6b0 \ud15c\ud50c\ub9bf \ubaa9\ub85d\uc744 \uc870\ud68c\ud569\ub2c8\ub2e4",
+                "description": "\uc0dd\uc131\uc77c \uc5ed\uc21c\uc73c\ub85c \ubaa8\ub4e0 \uc6cc\ud06c\ud50c\ub85c\uc6b0 \ud15c\ud50c\ub9bf \ubaa9\ub85d\uc744 \uc870\ud68c\ud569\ub2c8\ub2e4",
+                "operationId": "workflowTemplateList",
+                "responses": {
+                    "200": {
+                        "description": "\uc694\uccad \uc131\uacf5",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/WorkflowTemplateResponse"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "201": {
+                        "description": "\uc0dd\uc131 \uc131\uacf5",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/WorkflowTemplateResponse"
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "\uc798\ubabb\ub41c \uc694\uccad",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "\uc778\uc99d \ud544\uc694",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "\uad8c\ud55c \uc5c6\uc74c",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "\ub9ac\uc18c\uc2a4\ub97c \ucc3e\uc744 \uc218 \uc5c6\uc74c",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "workflow-templates"
+                ],
+                "summary": "\uc6cc\ud06c\ud50c\ub85c\uc6b0 \ud15c\ud50c\ub9bf\uc744 \uc0dd\uc131\ud569\ub2c8\ub2e4",
+                "description": "\uc7ac\uc0ac\uc6a9 \uac00\ub2a5\ud55c \uc6cc\ud06c\ud50c\ub85c\uc6b0 \ud15c\ud50c\ub9bf\uc744 \uc0dd\uc131\ud569\ub2c8\ub2e4",
+                "operationId": "workflowTemplateCreate",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CreateWorkflowTemplateRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "\uc694\uccad \uc131\uacf5",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WorkflowTemplateResponse"
+                                }
+                            }
+                        }
+                    },
+                    "201": {
+                        "description": "\uc0dd\uc131 \uc131\uacf5",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WorkflowTemplateResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "\uc798\ubabb\ub41c \uc694\uccad",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "\uc778\uc99d \ud544\uc694",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "\uad8c\ud55c \uc5c6\uc74c",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "\ub9ac\uc18c\uc2a4\ub97c \ucc3e\uc744 \uc218 \uc5c6\uc74c",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/workflow-templates/{templateId}/apply/{engineeringChangeId}": {
+            "post": {
+                "tags": [
+                    "workflow-templates"
+                ],
+                "summary": "\uc6cc\ud06c\ud50c\ub85c\uc6b0 \ud15c\ud50c\ub9bf\uc744 \ubcc0\uacbd\uad00\ub9ac\uc5d0 \uc801\uc6a9\ud569\ub2c8\ub2e4",
+                "description": "\uc120\ud0dd\ud55c \uc6cc\ud06c\ud50c\ub85c\uc6b0 \ud15c\ud50c\ub9bf\uc758 \ub2e8\uacc4 \uad6c\uc131\uc744 \ubcc0\uacbd\uad00\ub9ac\uc5d0 \uc77c\uad04 \uc801\uc6a9\ud569\ub2c8\ub2e4",
+                "operationId": "workflowTemplateApply",
+                "parameters": [
+                    {
+                        "name": "templateId",
+                        "in": "path",
+                        "description": "\uc801\uc6a9\ud560 \uc6cc\ud06c\ud50c\ub85c\uc6b0 \ud15c\ud50c\ub9bf ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "engineeringChangeId",
+                        "in": "path",
+                        "description": "\ub300\uc0c1 \ubcc0\uacbd\uad00\ub9ac ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "\uc694\uccad \uc131\uacf5",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EngineeringChangeResponse"
+                                }
+                            }
+                        }
+                    },
+                    "201": {
+                        "description": "\uc0dd\uc131 \uc131\uacf5",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EngineeringChangeResponse"
+                                }
+                            }
+                        }
                     },
                     "400": {
                         "description": "\uc798\ubabb\ub41c \uc694\uccad",
@@ -7013,6 +7269,206 @@
                 }
             }
         },
+        "/api/v1/engineering-changes/{engineeringChangeId}/steps/{stepId}/resubmit": {
+            "post": {
+                "tags": [
+                    "engineering-changes"
+                ],
+                "summary": "\uc218\uc815 \uc694\uccad\ub41c \ub2e8\uacc4\ub97c \uc7ac\uc81c\ucd9c\ud569\ub2c8\ub2e4",
+                "description": "CHANGES_REQUESTED \uc0c1\ud0dc\uc758 step\uc744 PENDING\uc73c\ub85c \ub418\ub3cc\ub824 \uc7ac\uac80\ud1a0\ub97c \uc694\uccad\ud569\ub2c8\ub2e4. EC \uc791\uc131\uc790\ub9cc \uc2e4\ud589\ud560 \uc218 \uc788\uc2b5\ub2c8\ub2e4.",
+                "operationId": "engineeringChangeResubmit",
+                "parameters": [
+                    {
+                        "name": "engineeringChangeId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "stepId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "\uc694\uccad \uc131\uacf5",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EngineeringChangeResponse"
+                                }
+                            }
+                        }
+                    },
+                    "201": {
+                        "description": "\uc0dd\uc131 \uc131\uacf5",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EngineeringChangeResponse"
+                                }
+                            }
+                        }
+                    },
+                    "204": {
+                        "description": "\uc0ad\uc81c \uc131\uacf5"
+                    },
+                    "400": {
+                        "description": "\uc798\ubabb\ub41c \uc694\uccad",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "\uc778\uc99d \ud544\uc694",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "\uad8c\ud55c \uc5c6\uc74c",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "\ub9ac\uc18c\uc2a4\ub97c \ucc3e\uc744 \uc218 \uc5c6\uc74c",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/engineering-changes/{engineeringChangeId}/steps/{stepId}/request-changes": {
+            "post": {
+                "tags": [
+                    "engineering-changes"
+                ],
+                "summary": "\ud604\uc7ac \ub2e8\uacc4 \ub2f4\ub2f9\uc790\uac00 \uc218\uc815\uc744 \uc694\uccad\ud569\ub2c8\ub2e4",
+                "description": "\ud574\ub2f9 step\uc744 CHANGES_REQUESTED \uc0c1\ud0dc\ub85c \uc804\ud658\ud569\ub2c8\ub2e4. stage\ub294 \uba48\ucd94\uace0 \uc791\uc131\uc790\uc758 \uc7ac\uc81c\ucd9c\uc744 \uae30\ub2e4\ub9bd\ub2c8\ub2e4.",
+                "operationId": "engineeringChangeRequestChanges",
+                "parameters": [
+                    {
+                        "name": "engineeringChangeId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    {
+                        "name": "stepId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/StepActionRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "\uc694\uccad \uc131\uacf5",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EngineeringChangeResponse"
+                                }
+                            }
+                        }
+                    },
+                    "201": {
+                        "description": "\uc0dd\uc131 \uc131\uacf5",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EngineeringChangeResponse"
+                                }
+                            }
+                        }
+                    },
+                    "204": {
+                        "description": "\uc0ad\uc81c \uc131\uacf5"
+                    },
+                    "400": {
+                        "description": "\uc798\ubabb\ub41c \uc694\uccad",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "\uc778\uc99d \ud544\uc694",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "\uad8c\ud55c \uc5c6\uc74c",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "\ub9ac\uc18c\uc2a4\ub97c \ucc3e\uc744 \uc218 \uc5c6\uc74c",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/engineering-changes/{engineeringChangeId}/review/approve": {
             "post": {
                 "tags": [
@@ -7614,6 +8070,93 @@
                     },
                     "required": true
                 },
+                "responses": {
+                    "200": {
+                        "description": "\uc694\uccad \uc131\uacf5",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EngineeringChangeResponse"
+                                }
+                            }
+                        }
+                    },
+                    "201": {
+                        "description": "\uc0dd\uc131 \uc131\uacf5",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/EngineeringChangeResponse"
+                                }
+                            }
+                        }
+                    },
+                    "204": {
+                        "description": "\uc0ad\uc81c \uc131\uacf5"
+                    },
+                    "400": {
+                        "description": "\uc798\ubabb\ub41c \uc694\uccad",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "\uc778\uc99d \ud544\uc694",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "\uad8c\ud55c \uc5c6\uc74c",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "\ub9ac\uc18c\uc2a4\ub97c \ucc3e\uc744 \uc218 \uc5c6\uc74c",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/engineering-changes/{engineeringChangeId}/affected-items/populate-where-used": {
+            "post": {
+                "tags": [
+                    "engineering-changes"
+                ],
+                "summary": "\ubcc0\uacbd \uc601\ud5a5 \ud56d\ubaa9\uc744 where-used \uae30\ubc18\uc73c\ub85c \uc790\ub3d9 \ub3c4\ucd9c\ud569\ub2c8\ub2e4",
+                "description": "EC\uc5d0 \uc5f0\uacb0\ub41c \ub9ac\ube44\uc804\uc758 \uc0c1\uc704 \uc5b4\uc148\ube14\ub9ac\ub97c \uc790\ub3d9\uc73c\ub85c \uc601\ud5a5 \ud56d\ubaa9\uc5d0 \ucd94\uac00\ud569\ub2c8\ub2e4",
+                "operationId": "engineeringChangePopulateWhereUsed",
+                "parameters": [
+                    {
+                        "name": "engineeringChangeId",
+                        "in": "path",
+                        "description": "\ub300\uc0c1 \ubcc0\uacbd\uad00\ub9ac ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "\uc694\uccad \uc131\uacf5",
@@ -18873,6 +19416,25 @@
                         "format": "int32",
                         "description": "\ub2e8\uacc4 \uc21c\uc11c"
                     },
+                    "step_stage_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "\uc18c\uc18d Stage ID"
+                    },
+                    "completion_policy": {
+                        "type": "string",
+                        "description": "\uc644\ub8cc \uc815\ucc45",
+                        "enum": [
+                            "ALL_MUST_APPROVE",
+                            "ANY_ONE_APPROVES",
+                            "MIN_N_APPROVES"
+                        ]
+                    },
+                    "deadline": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "\ub9c8\uac10\uae30\ud55c"
+                    },
                     "status": {
                         "type": "string",
                         "description": "\ub2e8\uacc4 \ucc98\ub9ac \uc0c1\ud0dc",
@@ -18936,19 +19498,22 @@
                     "null": {
                         "type": "boolean"
                     },
+                    "float": {
+                        "type": "boolean"
+                    },
                     "array": {
                         "type": "boolean"
                     },
                     "empty": {
                         "type": "boolean"
                     },
-                    "float": {
-                        "type": "boolean"
-                    },
                     "integral_number": {
                         "type": "boolean"
                     },
                     "floating_point_number": {
+                        "type": "boolean"
+                    },
+                    "number": {
                         "type": "boolean"
                     },
                     "node_type": {
@@ -19000,9 +19565,6 @@
                         "type": "boolean"
                     },
                     "container": {
-                        "type": "boolean"
-                    },
-                    "number": {
                         "type": "boolean"
                     },
                     "pojo": {
@@ -19136,6 +19698,180 @@
                         "description": "\ucd5c\uc885 \uc601\ud5a5 \ud56d\ubaa9 \ubaa9\ub85d",
                         "items": {
                             "$ref": "#/components/schemas/EngineeringChangeAffectedItemTargetRequest"
+                        }
+                    }
+                }
+            },
+            "CreateWorkflowTemplateRequest": {
+                "type": "object",
+                "description": "\uc6cc\ud06c\ud50c\ub85c\uc6b0 \ud15c\ud50c\ub9bf \uc0dd\uc131 \uc694\uccad",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "\ud15c\ud50c\ub9bf \uc774\ub984",
+                        "example": "\uae30\ubcf8 \uac80\ud1a0/\uc2b9\uc778 \uc6cc\ud06c\ud50c\ub85c\uc6b0",
+                        "maxLength": 200,
+                        "minLength": 0
+                    },
+                    "description": {
+                        "type": "string",
+                        "description": "\ud15c\ud50c\ub9bf \uc124\uba85"
+                    },
+                    "stages": {
+                        "type": "array",
+                        "description": "\ub2e8\uacc4 \ubaa9\ub85d",
+                        "items": {
+                            "$ref": "#/components/schemas/StageRequest"
+                        }
+                    }
+                },
+                "required": [
+                    "name",
+                    "stages"
+                ]
+            },
+            "StageRequest": {
+                "type": "object",
+                "description": "\uc6cc\ud06c\ud50c\ub85c\uc6b0 \ud15c\ud50c\ub9bf \ub2e8\uacc4 \uc9c0\uc815 \uc694\uccad",
+                "properties": {
+                    "step_type": {
+                        "type": "string",
+                        "description": "\ub2e8\uacc4 \ud0c0\uc785",
+                        "enum": [
+                            "REVIEW",
+                            "APPROVAL",
+                            "RELEASE"
+                        ],
+                        "example": "REVIEW"
+                    },
+                    "sequence": {
+                        "type": "integer",
+                        "format": "int32",
+                        "description": "\ub2e8\uacc4 \uc21c\uc11c",
+                        "example": 1,
+                        "minimum": 1
+                    },
+                    "completion_policy": {
+                        "type": "string",
+                        "description": "\uc644\ub8cc \uc815\ucc45",
+                        "enum": [
+                            "ALL_MUST_APPROVE",
+                            "ANY_ONE_APPROVES",
+                            "MIN_N_APPROVES"
+                        ],
+                        "example": "ALL_MUST_APPROVE"
+                    },
+                    "min_approvals": {
+                        "type": "integer",
+                        "format": "int32",
+                        "description": "\ucd5c\uc18c \uc2b9\uc778 \uc218 (MIN_N_APPROVES \uc815\ucc45\uc5d0\uc11c \ud544\uc218)"
+                    },
+                    "assignees": {
+                        "type": "array",
+                        "description": "\ub2f4\ub2f9\uc790 \ubaa9\ub85d",
+                        "items": {
+                            "$ref": "#/components/schemas/AssigneeRequest"
+                        }
+                    }
+                },
+                "required": [
+                    "assignees",
+                    "completion_policy",
+                    "step_type"
+                ]
+            },
+            "AssigneeResponse": {
+                "type": "object",
+                "description": "\uc6cc\ud06c\ud50c\ub85c\uc6b0 \ud15c\ud50c\ub9bf \ub2e8\uacc4 \ub2f4\ub2f9\uc790 \uc751\ub2f5",
+                "properties": {
+                    "assignee_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "\ub2f4\ub2f9\uc790 ID"
+                    },
+                    "assignee_type": {
+                        "type": "string",
+                        "description": "\ub2f4\ub2f9\uc790 \ud0c0\uc785",
+                        "enum": [
+                            "USER",
+                            "TEAM"
+                        ]
+                    }
+                }
+            },
+            "WorkflowTemplateResponse": {
+                "type": "object",
+                "description": "\uc6cc\ud06c\ud50c\ub85c\uc6b0 \ud15c\ud50c\ub9bf \uc751\ub2f5",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "\ud15c\ud50c\ub9bf ID"
+                    },
+                    "name": {
+                        "type": "string",
+                        "description": "\ud15c\ud50c\ub9bf \uc774\ub984"
+                    },
+                    "description": {
+                        "type": "string",
+                        "description": "\ud15c\ud50c\ub9bf \uc124\uba85"
+                    },
+                    "stages": {
+                        "type": "array",
+                        "description": "\ub2e8\uacc4 \ubaa9\ub85d",
+                        "items": {
+                            "$ref": "#/components/schemas/WorkflowTemplateStageResponse"
+                        }
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "\uc0dd\uc131 \uc2dc\uac01"
+                    }
+                }
+            },
+            "WorkflowTemplateStageResponse": {
+                "type": "object",
+                "description": "\uc6cc\ud06c\ud50c\ub85c\uc6b0 \ud15c\ud50c\ub9bf \ub2e8\uacc4 \uc751\ub2f5",
+                "properties": {
+                    "stage_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "\ub2e8\uacc4 ID"
+                    },
+                    "step_type": {
+                        "type": "string",
+                        "description": "\ub2e8\uacc4 \ud0c0\uc785",
+                        "enum": [
+                            "REVIEW",
+                            "APPROVAL",
+                            "RELEASE"
+                        ]
+                    },
+                    "sequence": {
+                        "type": "integer",
+                        "format": "int32",
+                        "description": "\ub2e8\uacc4 \uc21c\uc11c"
+                    },
+                    "completion_policy": {
+                        "type": "string",
+                        "description": "\uc644\ub8cc \uc815\ucc45",
+                        "enum": [
+                            "ALL_MUST_APPROVE",
+                            "ANY_ONE_APPROVES",
+                            "MIN_N_APPROVES"
+                        ]
+                    },
+                    "min_approvals": {
+                        "type": "integer",
+                        "format": "int32",
+                        "description": "\ucd5c\uc18c \uc2b9\uc778 \uc218"
+                    },
+                    "assignees": {
+                        "type": "array",
+                        "description": "\ub2f4\ub2f9\uc790 \ubaa9\ub85d",
+                        "items": {
+                            "$ref": "#/components/schemas/AssigneeResponse"
                         }
                     }
                 }

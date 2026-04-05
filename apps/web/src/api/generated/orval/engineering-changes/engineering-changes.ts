@@ -118,6 +118,35 @@ export const engineeringChangeSubmit = (
       options);
     }
   /**
+ * CHANGES_REQUESTED 상태의 step을 PENDING으로 되돌려 재검토를 요청합니다. EC 작성자만 실행할 수 있습니다.
+ * @summary 수정 요청된 단계를 재제출합니다
+ */
+export const engineeringChangeResubmit = (
+    engineeringChangeId: string,
+    stepId: string,
+ options?: SecondParameter<typeof customInstance<EngineeringChangeResponse | void>>,) => {
+      return customInstance<EngineeringChangeResponse | void>(
+      {url: `/api/v1/engineering-changes/${engineeringChangeId}/steps/${stepId}/resubmit`, method: 'POST'
+    },
+      options);
+    }
+  /**
+ * 해당 step을 CHANGES_REQUESTED 상태로 전환합니다. stage는 멈추고 작성자의 재제출을 기다립니다.
+ * @summary 현재 단계 담당자가 수정을 요청합니다
+ */
+export const engineeringChangeRequestChanges = (
+    engineeringChangeId: string,
+    stepId: string,
+    stepActionRequest: BodyType<StepActionRequest>,
+ options?: SecondParameter<typeof customInstance<EngineeringChangeResponse | void>>,) => {
+      return customInstance<EngineeringChangeResponse | void>(
+      {url: `/api/v1/engineering-changes/${engineeringChangeId}/steps/${stepId}/request-changes`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: stepActionRequest
+    },
+      options);
+    }
+  /**
  * 현재 검토 단계 담당자가 자신의 검토 단계를 승인합니다
  * @summary 현재 검토 단계 담당자가 자신의 검토 단계를 승인합니다
  */
@@ -216,6 +245,18 @@ export const engineeringChangeApprove = (
       {url: `/api/v1/engineering-changes/${engineeringChangeId}/approve`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: stepActionRequest
+    },
+      options);
+    }
+  /**
+ * EC에 연결된 리비전의 상위 어셈블리를 자동으로 영향 항목에 추가합니다
+ * @summary 변경 영향 항목을 where-used 기반으로 자동 도출합니다
+ */
+export const engineeringChangePopulateWhereUsed = (
+    engineeringChangeId: string,
+ options?: SecondParameter<typeof customInstance<EngineeringChangeResponse | void>>,) => {
+      return customInstance<EngineeringChangeResponse | void>(
+      {url: `/api/v1/engineering-changes/${engineeringChangeId}/affected-items/populate-where-used`, method: 'POST'
     },
       options);
     }
@@ -334,6 +375,8 @@ export type EngineeringChangeSyncAffectedItemsResult = NonNullable<Awaited<Retur
 export type EngineeringChangeListResult = NonNullable<Awaited<ReturnType<typeof engineeringChangeList>>>
 export type EngineeringChangeCreateResult = NonNullable<Awaited<ReturnType<typeof engineeringChangeCreate>>>
 export type EngineeringChangeSubmitResult = NonNullable<Awaited<ReturnType<typeof engineeringChangeSubmit>>>
+export type EngineeringChangeResubmitResult = NonNullable<Awaited<ReturnType<typeof engineeringChangeResubmit>>>
+export type EngineeringChangeRequestChangesResult = NonNullable<Awaited<ReturnType<typeof engineeringChangeRequestChanges>>>
 export type EngineeringChangeApproveReviewResult = NonNullable<Awaited<ReturnType<typeof engineeringChangeApproveReview>>>
 export type EngineeringChangeReleaseResult = NonNullable<Awaited<ReturnType<typeof engineeringChangeRelease>>>
 export type EngineeringChangeRejectResult = NonNullable<Awaited<ReturnType<typeof engineeringChangeReject>>>
@@ -341,6 +384,7 @@ export type EngineeringChangeAddFilesResult = NonNullable<Awaited<ReturnType<typ
 export type EngineeringChangeCreateCommentResult = NonNullable<Awaited<ReturnType<typeof engineeringChangeCreateComment>>>
 export type EngineeringChangeCancelResult = NonNullable<Awaited<ReturnType<typeof engineeringChangeCancel>>>
 export type EngineeringChangeApproveResult = NonNullable<Awaited<ReturnType<typeof engineeringChangeApprove>>>
+export type EngineeringChangePopulateWhereUsedResult = NonNullable<Awaited<ReturnType<typeof engineeringChangePopulateWhereUsed>>>
 export type EngineeringChangeCreateEcFromIssueResult = NonNullable<Awaited<ReturnType<typeof engineeringChangeCreateEcFromIssue>>>
 export type EngineeringChangeGetResult = NonNullable<Awaited<ReturnType<typeof engineeringChangeGet>>>
 export type EngineeringChangeUpdateResult = NonNullable<Awaited<ReturnType<typeof engineeringChangeUpdate>>>

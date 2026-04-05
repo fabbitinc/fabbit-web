@@ -5,6 +5,7 @@
  * OpenAPI spec version: v0
  */
 import type { EngineeringChangeStepResponseAssigneeType } from './engineeringChangeStepResponseAssigneeType';
+import type { EngineeringChangeStepResponseCompletionPolicy } from './engineeringChangeStepResponseCompletionPolicy';
 import type { EngineeringChangeStepResponseStatus } from './engineeringChangeStepResponseStatus';
 import type { EngineeringChangeStepResponseStepType } from './engineeringChangeStepResponseStepType';
 import type { TeamBadgeResponse } from './teamBadgeResponse';
@@ -22,6 +23,12 @@ export interface EngineeringChangeStepResponse {
   assignee_type?: EngineeringChangeStepResponseAssigneeType;
   /** 단계 순서 */
   sequence?: number;
+  /** 소속 Stage ID */
+  step_stage_id?: string;
+  /** 완료 정책 */
+  completion_policy?: EngineeringChangeStepResponseCompletionPolicy;
+  /** 마감기한 */
+  deadline?: string;
   /** 단계 처리 상태 */
   status?: EngineeringChangeStepResponseStatus;
   /** 사용자 담당자 */

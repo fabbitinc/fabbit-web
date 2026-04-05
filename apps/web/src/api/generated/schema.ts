@@ -344,6 +344,50 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/workflow-templates": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 워크플로우 템플릿 목록을 조회합니다
+         * @description 생성일 역순으로 모든 워크플로우 템플릿 목록을 조회합니다
+         */
+        get: operations["workflowTemplateList"];
+        put?: never;
+        /**
+         * 워크플로우 템플릿을 생성합니다
+         * @description 재사용 가능한 워크플로우 템플릿을 생성합니다
+         */
+        post: operations["workflowTemplateCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/workflow-templates/{templateId}/apply/{engineeringChangeId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 워크플로우 템플릿을 변경관리에 적용합니다
+         * @description 선택한 워크플로우 템플릿의 단계 구성을 변경관리에 일괄 적용합니다
+         */
+        post: operations["workflowTemplateApply"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/teams": {
         parameters: {
             query?: never;
@@ -1268,6 +1312,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/engineering-changes/{engineeringChangeId}/steps/{stepId}/resubmit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 수정 요청된 단계를 재제출합니다
+         * @description CHANGES_REQUESTED 상태의 step을 PENDING으로 되돌려 재검토를 요청합니다. EC 작성자만 실행할 수 있습니다.
+         */
+        post: operations["engineeringChangeResubmit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/engineering-changes/{engineeringChangeId}/steps/{stepId}/request-changes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 현재 단계 담당자가 수정을 요청합니다
+         * @description 해당 step을 CHANGES_REQUESTED 상태로 전환합니다. stage는 멈추고 작성자의 재제출을 기다립니다.
+         */
+        post: operations["engineeringChangeRequestChanges"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/engineering-changes/{engineeringChangeId}/review/approve": {
         parameters: {
             query?: never;
@@ -1402,6 +1486,26 @@ export interface paths {
          * @description 현재 승인 단계 담당자가 변경관리를 승인해 반영 대기로 전환합니다 (APPROVAL_PENDING -> RELEASE_PENDING)
          */
         post: operations["engineeringChangeApprove"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/engineering-changes/{engineeringChangeId}/affected-items/populate-where-used": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * 변경 영향 항목을 where-used 기반으로 자동 도출합니다
+         * @description EC에 연결된 리비전의 상위 어셈블리를 자동으로 영향 항목에 추가합니다
+         */
+        post: operations["engineeringChangePopulateWhereUsed"];
         delete?: never;
         options?: never;
         head?: never;
@@ -4074,6 +4178,21 @@ export interface components {
              */
             sequence?: number;
             /**
+             * Format: uuid
+             * @description 소속 Stage ID
+             */
+            step_stage_id?: string;
+            /**
+             * @description 완료 정책
+             * @enum {string}
+             */
+            completion_policy?: "ALL_MUST_APPROVE" | "ANY_ONE_APPROVES" | "MIN_N_APPROVES";
+            /**
+             * Format: date-time
+             * @description 마감기한
+             */
+            deadline?: string;
+            /**
              * @description 단계 처리 상태
              * @enum {string}
              */
@@ -4104,11 +4223,12 @@ export interface components {
         };
         JsonNode: {
             null?: boolean;
+            float?: boolean;
             array?: boolean;
             empty?: boolean;
-            float?: boolean;
             integral_number?: boolean;
             floating_point_number?: boolean;
+            number?: boolean;
             /** @enum {string} */
             node_type?: "ARRAY" | "BINARY" | "BOOLEAN" | "MISSING" | "NULL" | "NUMBER" | "OBJECT" | "POJO" | "STRING";
             string?: boolean;
@@ -4124,7 +4244,6 @@ export interface components {
             boolean?: boolean;
             binary?: boolean;
             container?: boolean;
-            number?: boolean;
             pojo?: boolean;
             int?: boolean;
             long?: boolean;
@@ -4184,6 +4303,108 @@ export interface components {
         SyncAffectedItemsRequest: {
             /** @description 최종 영향 항목 목록 */
             items?: components["schemas"]["EngineeringChangeAffectedItemTargetRequest"][];
+        };
+        /** @description 워크플로우 템플릿 생성 요청 */
+        CreateWorkflowTemplateRequest: {
+            /**
+             * @description 템플릿 이름
+             * @example 기본 검토/승인 워크플로우
+             */
+            name: string;
+            /** @description 템플릿 설명 */
+            description?: string;
+            /** @description 단계 목록 */
+            stages: components["schemas"]["StageRequest"][];
+        };
+        /** @description 워크플로우 템플릿 단계 지정 요청 */
+        StageRequest: {
+            /**
+             * @description 단계 타입
+             * @example REVIEW
+             * @enum {string}
+             */
+            step_type: "REVIEW" | "APPROVAL" | "RELEASE";
+            /**
+             * Format: int32
+             * @description 단계 순서
+             * @example 1
+             */
+            sequence?: number;
+            /**
+             * @description 완료 정책
+             * @example ALL_MUST_APPROVE
+             * @enum {string}
+             */
+            completion_policy: "ALL_MUST_APPROVE" | "ANY_ONE_APPROVES" | "MIN_N_APPROVES";
+            /**
+             * Format: int32
+             * @description 최소 승인 수 (MIN_N_APPROVES 정책에서 필수)
+             */
+            min_approvals?: number;
+            /** @description 담당자 목록 */
+            assignees: components["schemas"]["AssigneeRequest"][];
+        };
+        /** @description 워크플로우 템플릿 단계 담당자 응답 */
+        AssigneeResponse: {
+            /**
+             * Format: uuid
+             * @description 담당자 ID
+             */
+            assignee_id?: string;
+            /**
+             * @description 담당자 타입
+             * @enum {string}
+             */
+            assignee_type?: "USER" | "TEAM";
+        };
+        /** @description 워크플로우 템플릿 응답 */
+        WorkflowTemplateResponse: {
+            /**
+             * Format: uuid
+             * @description 템플릿 ID
+             */
+            id?: string;
+            /** @description 템플릿 이름 */
+            name?: string;
+            /** @description 템플릿 설명 */
+            description?: string;
+            /** @description 단계 목록 */
+            stages?: components["schemas"]["WorkflowTemplateStageResponse"][];
+            /**
+             * Format: date-time
+             * @description 생성 시각
+             */
+            created_at?: string;
+        };
+        /** @description 워크플로우 템플릿 단계 응답 */
+        WorkflowTemplateStageResponse: {
+            /**
+             * Format: uuid
+             * @description 단계 ID
+             */
+            stage_id?: string;
+            /**
+             * @description 단계 타입
+             * @enum {string}
+             */
+            step_type?: "REVIEW" | "APPROVAL" | "RELEASE";
+            /**
+             * Format: int32
+             * @description 단계 순서
+             */
+            sequence?: number;
+            /**
+             * @description 완료 정책
+             * @enum {string}
+             */
+            completion_policy?: "ALL_MUST_APPROVE" | "ANY_ONE_APPROVES" | "MIN_N_APPROVES";
+            /**
+             * Format: int32
+             * @description 최소 승인 수
+             */
+            min_approvals?: number;
+            /** @description 담당자 목록 */
+            assignees?: components["schemas"]["AssigneeResponse"][];
         };
         /** @description 팀 생성 요청 */
         CreateTeamRequest: {
@@ -10375,6 +10596,210 @@ export interface operations {
             };
         };
     };
+    workflowTemplateList: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkflowTemplateResponse"][];
+                };
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkflowTemplateResponse"][];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    workflowTemplateCreate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateWorkflowTemplateRequest"];
+            };
+        };
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkflowTemplateResponse"];
+                };
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorkflowTemplateResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    workflowTemplateApply: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 적용할 워크플로우 템플릿 ID */
+                templateId: string;
+                /** @description 대상 변경관리 ID */
+                engineeringChangeId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EngineeringChangeResponse"];
+                };
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EngineeringChangeResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
     teamList: {
         parameters: {
             query?: never;
@@ -14568,6 +14993,160 @@ export interface operations {
             };
         };
     };
+    engineeringChangeResubmit: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                engineeringChangeId: string;
+                stepId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EngineeringChangeResponse"];
+                };
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EngineeringChangeResponse"];
+                };
+            };
+            /** @description 삭제 성공 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    engineeringChangeRequestChanges: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                engineeringChangeId: string;
+                stepId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StepActionRequest"];
+            };
+        };
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EngineeringChangeResponse"];
+                };
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EngineeringChangeResponse"];
+                };
+            };
+            /** @description 삭제 성공 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
     engineeringChangeApproveReview: {
         parameters: {
             query?: never;
@@ -15046,6 +15625,81 @@ export interface operations {
                 "application/json": components["schemas"]["StepActionRequest"];
             };
         };
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EngineeringChangeResponse"];
+                };
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EngineeringChangeResponse"];
+                };
+            };
+            /** @description 삭제 성공 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    engineeringChangePopulateWhereUsed: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description 대상 변경관리 ID */
+                engineeringChangeId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
         responses: {
             /** @description 요청 성공 */
             200: {
