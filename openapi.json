@@ -20,6 +20,10 @@
             "description": "BOM \uac00\uc838\uc624\uae30 API"
         },
         {
+            "name": "inventor-migrations",
+            "description": "Inventor \ub9c8\uc774\uadf8\ub808\uc774\uc158 API"
+        },
+        {
             "name": "auth",
             "description": "\uc778\uc99d/\ud68c\uc6d0\uac00\uc785/\ucd08\ub300 \uc218\ub77d API"
         },
@@ -5264,6 +5268,170 @@
                 }
             }
         },
+        "/api/v1/migrations/inventor": {
+            "post": {
+                "tags": [
+                    "inventor-migrations"
+                ],
+                "summary": "Inventor \ub9c8\uc774\uadf8\ub808\uc774\uc158 \uc138\uc158\uc744 \uc0dd\uc131\ud569\ub2c8\ub2e4",
+                "description": "\ub9e4\ub2c8\ud398\uc2a4\ud2b8\ub97c \uc218\uc2e0\ud558\uace0 \uc5c5\ub85c\ub4dc\uc6a9 presigned URL\uc744 \uc77c\uad04 \ubc1c\uae09\ud569\ub2c8\ub2e4",
+                "operationId": "inventorMigrationCreate",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/StartInventorMigrationRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "\uc694\uccad \uc131\uacf5",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/InventorMigrationStartResponse"
+                                }
+                            }
+                        }
+                    },
+                    "201": {
+                        "description": "\uc0dd\uc131 \uc131\uacf5",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/InventorMigrationStartResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "\uc798\ubabb\ub41c \uc694\uccad",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "\uc778\uc99d \ud544\uc694",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "\uad8c\ud55c \uc5c6\uc74c",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "\ub9ac\uc18c\uc2a4\ub97c \ucc3e\uc744 \uc218 \uc5c6\uc74c",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/migrations/inventor/commit": {
+            "post": {
+                "tags": [
+                    "inventor-migrations"
+                ],
+                "summary": "Inventor \ub9c8\uc774\uadf8\ub808\uc774\uc158\uc744 \ucee4\ubc0b\ud569\ub2c8\ub2e4",
+                "description": "\ud504\ub85c\uc81d\ud2b8\uc640 Part\ub97c \uc0dd\uc131\ud558\uace0 \uc5c5\ub85c\ub4dc\ub41c CAD/\ub3c4\uba74 \ud30c\uc77c\uc744 \uc5f0\uacb0\ud569\ub2c8\ub2e4",
+                "operationId": "inventorMigrationCommit",
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CommitInventorMigrationRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "\uc694\uccad \uc131\uacf5",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/InventorMigrationCommitResponse"
+                                }
+                            }
+                        }
+                    },
+                    "201": {
+                        "description": "\uc0dd\uc131 \uc131\uacf5",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/InventorMigrationCommitResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "\uc798\ubabb\ub41c \uc694\uccad",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "\uc778\uc99d \ud544\uc694",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "\uad8c\ud55c \uc5c6\uc74c",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "\ub9ac\uc18c\uc2a4\ub97c \ucc3e\uc744 \uc218 \uc5c6\uc74c",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/mappings/validate": {
             "post": {
                 "tags": [
@@ -6864,6 +7032,16 @@
                         }
                     }
                 ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/StepActionRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
                 "responses": {
                     "200": {
                         "description": "\uc694\uccad \uc131\uacf5",
@@ -6950,6 +7128,16 @@
                         }
                     }
                 ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/StepActionRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
                 "responses": {
                     "200": {
                         "description": "\uc694\uccad \uc131\uacf5",
@@ -7036,6 +7224,16 @@
                         }
                     }
                 ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/StepActionRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
                 "responses": {
                     "200": {
                         "description": "\uc694\uccad \uc131\uacf5",
@@ -7406,6 +7604,16 @@
                         }
                     }
                 ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/StepActionRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
                 "responses": {
                     "200": {
                         "description": "\uc694\uccad \uc131\uacf5",
@@ -15487,6 +15695,90 @@
                 }
             }
         },
+        "/api/v1/migrations/inventor/preview": {
+            "get": {
+                "tags": [
+                    "inventor-migrations"
+                ],
+                "summary": "Inventor \ub9c8\uc774\uadf8\ub808\uc774\uc158 \ubbf8\ub9ac\ubcf4\uae30\ub97c \uc870\ud68c\ud569\ub2c8\ub2e4",
+                "description": "\uc138\uc158 \uae30\uc900\uc73c\ub85c import \ub300\uc0c1, \uc911\ubcf5, orphan drawing, \uc5c5\ub85c\ub4dc \uc0c1\ud0dc\ub97c \uc870\ud68c\ud569\ub2c8\ub2e4",
+                "operationId": "inventorMigrationGetPreview",
+                "parameters": [
+                    {
+                        "name": "sessionId",
+                        "in": "query",
+                        "description": "\ub9c8\uc774\uadf8\ub808\uc774\uc158 \uc138\uc158 ID",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "\uc694\uccad \uc131\uacf5",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/InventorMigrationPreviewResponse"
+                                }
+                            }
+                        }
+                    },
+                    "201": {
+                        "description": "\uc0dd\uc131 \uc131\uacf5",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/InventorMigrationPreviewResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "\uc798\ubabb\ub41c \uc694\uccad",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "\uc778\uc99d \ud544\uc694",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "\uad8c\ud55c \uc5c6\uc74c",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "\ub9ac\uc18c\uc2a4\ub97c \ucc3e\uc744 \uc218 \uc5c6\uc74c",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/members": {
             "get": {
                 "tags": [
@@ -16632,6 +16924,71 @@
                             "application/json": {
                                 "schema": {
                                     "$ref": "#/components/schemas/ChangeStatisticsResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "\uc798\ubabb\ub41c \uc694\uccad",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "\uc778\uc99d \ud544\uc694",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "\uad8c\ud55c \uc5c6\uc74c",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "\ub9ac\uc18c\uc2a4\ub97c \ucc3e\uc744 \uc218 \uc5c6\uc74c",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/change-statistics/step-progress": {
+            "get": {
+                "tags": [
+                    "change-statistics"
+                ],
+                "summary": "EC\ubcc4 \ub2e8\uacc4 \uc9c4\ud589 \ud604\ud669\uc744 \uc870\ud68c\ud569\ub2c8\ub2e4",
+                "description": "\ube44\uc885\ub8cc \uc0c1\ud0dc(RELEASED, CANCELED \uc81c\uc678)\uc758 EC\uc5d0 \ub300\ud574 \uc2a4\ud14c\uc774\uc9c0\ubcc4 \uc9c4\ud589 \ud604\ud669\uc744 \ubaa9\ub85d\uc73c\ub85c \uc870\ud68c\ud569\ub2c8\ub2e4. \uc804\uccb4 \uc2a4\ud14c\uc774\uc9c0 \uc218, \uc644\ub8cc \uc2a4\ud14c\uc774\uc9c0 \uc218, \ud604\uc7ac \uc2a4\ud14c\uc774\uc9c0\uc758 \uc2a4\ud15d \uc0c1\ud0dc \uc9d1\uacc4\ub97c \ud3ec\ud568\ud569\ub2c8\ub2e4.",
+                "operationId": "changeStatisticsStepProgressList",
+                "responses": {
+                    "200": {
+                        "description": "\uc694\uccad \uc131\uacf5",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/StepProgressResponse"
+                                    }
                                 }
                             }
                         }
@@ -18248,20 +18605,10 @@
                     }
                 }
             },
-            "EngineeringChangeStepRequest": {
+            "AssigneeRequest": {
                 "type": "object",
-                "description": "\ubcc0\uacbd\uad00\ub9ac \ub2e8\uacc4 \uc9c0\uc815 \uc694\uccad",
+                "description": "\ub2e8\uacc4 \ub2f4\ub2f9\uc790 \uc9c0\uc815 \uc694\uccad",
                 "properties": {
-                    "step_type": {
-                        "type": "string",
-                        "description": "\ub2e8\uacc4 \ud0c0\uc785",
-                        "enum": [
-                            "REVIEW",
-                            "APPROVAL",
-                            "RELEASE"
-                        ],
-                        "example": "REVIEW"
-                    },
                     "assignee_type": {
                         "type": "string",
                         "description": "\ub2f4\ub2f9\uc790 \ud0c0\uc785",
@@ -18275,6 +18622,26 @@
                         "type": "string",
                         "format": "uuid",
                         "description": "\ub2f4\ub2f9\uc790 ID"
+                    }
+                },
+                "required": [
+                    "assignee_id",
+                    "assignee_type"
+                ]
+            },
+            "EngineeringChangeStepRequest": {
+                "type": "object",
+                "description": "\ubcc0\uacbd\uad00\ub9ac \ub2e8\uacc4(Stage) \uc9c0\uc815 \uc694\uccad",
+                "properties": {
+                    "step_type": {
+                        "type": "string",
+                        "description": "\ub2e8\uacc4 \ud0c0\uc785",
+                        "enum": [
+                            "REVIEW",
+                            "APPROVAL",
+                            "RELEASE"
+                        ],
+                        "example": "REVIEW"
                     },
                     "sequence": {
                         "type": "integer",
@@ -18282,11 +18649,38 @@
                         "description": "\ub2e8\uacc4 \uc21c\uc11c",
                         "example": 1,
                         "minimum": 1
+                    },
+                    "completion_policy": {
+                        "type": "string",
+                        "description": "\uc644\ub8cc \uc815\ucc45",
+                        "enum": [
+                            "ALL_MUST_APPROVE",
+                            "ANY_ONE_APPROVES",
+                            "MIN_N_APPROVES"
+                        ],
+                        "example": "ALL_MUST_APPROVE"
+                    },
+                    "min_approvals": {
+                        "type": "integer",
+                        "format": "int32",
+                        "description": "\ucd5c\uc18c \uc2b9\uc778 \uc218 (MIN_N_APPROVES \uc815\ucc45\uc5d0\uc11c \ud544\uc218)"
+                    },
+                    "deadline": {
+                        "type": "string",
+                        "format": "date-time",
+                        "description": "\ub9c8\uac10 \uae30\ud55c"
+                    },
+                    "assignees": {
+                        "type": "array",
+                        "description": "\ub2f4\ub2f9\uc790 \ubaa9\ub85d",
+                        "items": {
+                            "$ref": "#/components/schemas/AssigneeRequest"
+                        }
                     }
                 },
                 "required": [
-                    "assignee_id",
-                    "assignee_type",
+                    "assignees",
+                    "completion_policy",
                     "step_type"
                 ]
             },
@@ -18320,7 +18714,8 @@
                         "description": "\ud56d\ubaa9 \uc720\ud615",
                         "enum": [
                             "REVISION_RELEASE",
-                            "LIFECYCLE_CHANGE"
+                            "LIFECYCLE_CHANGE",
+                            "WHERE_USED_IMPACT"
                         ],
                         "example": "REVISION_RELEASE"
                     },
@@ -18484,7 +18879,9 @@
                         "enum": [
                             "PENDING",
                             "APPROVED",
-                            "REJECTED"
+                            "CHANGES_REQUESTED",
+                            "REJECTED",
+                            "CANCELED"
                         ]
                     },
                     "assignee_user": {
@@ -18539,16 +18936,19 @@
                     "null": {
                         "type": "boolean"
                     },
-                    "float": {
-                        "type": "boolean"
-                    },
                     "array": {
                         "type": "boolean"
                     },
                     "empty": {
                         "type": "boolean"
                     },
-                    "container": {
+                    "float": {
+                        "type": "boolean"
+                    },
+                    "integral_number": {
+                        "type": "boolean"
+                    },
+                    "floating_point_number": {
                         "type": "boolean"
                     },
                     "node_type": {
@@ -18599,6 +18999,9 @@
                     "binary": {
                         "type": "boolean"
                     },
+                    "container": {
+                        "type": "boolean"
+                    },
                     "number": {
                         "type": "boolean"
                     },
@@ -18609,12 +19012,6 @@
                         "type": "boolean"
                     },
                     "long": {
-                        "type": "boolean"
-                    },
-                    "integral_number": {
-                        "type": "boolean"
-                    },
-                    "floating_point_number": {
                         "type": "boolean"
                     },
                     "embedded_value": {
@@ -18704,7 +19101,8 @@
                         "description": "\ud56d\ubaa9 \uc720\ud615",
                         "enum": [
                             "REVISION_RELEASE",
-                            "LIFECYCLE_CHANGE"
+                            "LIFECYCLE_CHANGE",
+                            "WHERE_USED_IMPACT"
                         ],
                         "example": "REVISION_RELEASE"
                     },
@@ -20691,6 +21089,193 @@
                     }
                 }
             },
+            "FileItemRequest": {
+                "type": "object",
+                "description": "\ub9e4\ub2c8\ud398\uc2a4\ud2b8 \ud30c\uc77c \ud56d\ubaa9",
+                "properties": {
+                    "path": {
+                        "type": "string",
+                        "description": "\ud30c\uc77c \uc0c1\ub300 \uacbd\ub85c",
+                        "example": "Parts/Shaft.ipt",
+                        "maxLength": 1000,
+                        "minLength": 0
+                    },
+                    "original_name": {
+                        "type": "string",
+                        "description": "\uc6d0\ubcf8 \ud30c\uc77c\uba85, \uc0dd\ub7b5 \uc2dc path\uc758 \ub9c8\uc9c0\ub9c9 \uc138\uadf8\uba3c\ud2b8\ub97c \uc0ac\uc6a9\ud569\ub2c8\ub2e4",
+                        "example": "Shaft.ipt",
+                        "maxLength": 500,
+                        "minLength": 0
+                    },
+                    "type": {
+                        "type": "string",
+                        "description": "\ub9e4\ub2c8\ud398\uc2a4\ud2b8 \ud30c\uc77c \ud0c0\uc785",
+                        "enum": [
+                            "PART",
+                            "ASSEMBLY",
+                            "DRAWING",
+                            "ATTACHMENT"
+                        ],
+                        "example": "PART"
+                    },
+                    "content_type": {
+                        "type": "string",
+                        "description": "\ucf58\ud150\uce20 \ud0c0\uc785, \uc0dd\ub7b5 \uc2dc application/octet-stream",
+                        "example": "application/octet-stream",
+                        "maxLength": 100,
+                        "minLength": 0
+                    },
+                    "size_bytes": {
+                        "type": "integer",
+                        "format": "int64",
+                        "description": "\ud30c\uc77c \ud06c\uae30(bytes)",
+                        "example": 245760
+                    },
+                    "content_hash": {
+                        "type": "string",
+                        "description": "SHA-256 hex, \uc120\ud0dd\uac12",
+                        "example": "6d2bc3f13b59bf38368ffce5aa7498479f880c6da14961fb1bc696ff44e43173",
+                        "pattern": "^$|^[0-9A-Fa-f]{64}$"
+                    }
+                },
+                "required": [
+                    "path",
+                    "type"
+                ]
+            },
+            "StartInventorMigrationRequest": {
+                "type": "object",
+                "description": "Inventor \ub9c8\uc774\uadf8\ub808\uc774\uc158 \uc2dc\uc791 \uc694\uccad",
+                "properties": {
+                    "project_name": {
+                        "type": "string",
+                        "description": "\ud504\ub85c\uc81d\ud2b8 \uc774\ub984",
+                        "example": "Motor Assembly",
+                        "maxLength": 200,
+                        "minLength": 0
+                    },
+                    "ipj_path": {
+                        "type": "string",
+                        "description": "IPJ \ud30c\uc77c \uacbd\ub85c",
+                        "example": "Motor Assembly.ipj",
+                        "maxLength": 1000,
+                        "minLength": 0
+                    },
+                    "inventor_version": {
+                        "type": "string",
+                        "description": "Inventor \ubc84\uc804",
+                        "example": "2024",
+                        "maxLength": 50,
+                        "minLength": 0
+                    },
+                    "files": {
+                        "type": "array",
+                        "description": "\ub9e4\ub2c8\ud398\uc2a4\ud2b8 \ud30c\uc77c \ubaa9\ub85d",
+                        "items": {
+                            "$ref": "#/components/schemas/FileItemRequest"
+                        },
+                        "minItems": 1
+                    }
+                },
+                "required": [
+                    "files",
+                    "ipj_path",
+                    "project_name"
+                ]
+            },
+            "InventorMigrationStartResponse": {
+                "type": "object",
+                "description": "Inventor \ub9c8\uc774\uadf8\ub808\uc774\uc158 \uc2dc\uc791 \uc751\ub2f5",
+                "properties": {
+                    "session_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "\ub9c8\uc774\uadf8\ub808\uc774\uc158 \uc138\uc158 ID"
+                    },
+                    "project_name": {
+                        "type": "string",
+                        "description": "\ud504\ub85c\uc81d\ud2b8 \uc774\ub984"
+                    },
+                    "total_file_count": {
+                        "type": "integer",
+                        "format": "int32",
+                        "description": "\uc804\uccb4 \ud30c\uc77c \uc218"
+                    },
+                    "importable_file_count": {
+                        "type": "integer",
+                        "format": "int32",
+                        "description": "\uac00\uc838\uc624\uae30 \ub300\uc0c1 \ud30c\uc77c \uc218"
+                    },
+                    "upload_targets": {
+                        "type": "array",
+                        "description": "\uc5c5\ub85c\ub4dc \ub300\uc0c1 \ubaa9\ub85d",
+                        "items": {
+                            "$ref": "#/components/schemas/UploadTargetResponse"
+                        }
+                    }
+                }
+            },
+            "UploadTargetResponse": {
+                "type": "object",
+                "description": "\uc5c5\ub85c\ub4dc \ub300\uc0c1",
+                "properties": {
+                    "path": {
+                        "type": "string",
+                        "description": "\ub9e4\ub2c8\ud398\uc2a4\ud2b8 \uacbd\ub85c"
+                    },
+                    "file_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "\ud30c\uc77c ID"
+                    },
+                    "upload_url": {
+                        "type": "string",
+                        "description": "\uc5c5\ub85c\ub4dc URL"
+                    },
+                    "file_key": {
+                        "type": "string",
+                        "description": "\uc2a4\ud1a0\ub9ac\uc9c0 \ud0a4"
+                    }
+                }
+            },
+            "CommitInventorMigrationRequest": {
+                "type": "object",
+                "description": "Inventor \ub9c8\uc774\uadf8\ub808\uc774\uc158 \ucee4\ubc0b \uc694\uccad",
+                "properties": {
+                    "session_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "\ub9c8\uc774\uadf8\ub808\uc774\uc158 \uc138\uc158 ID",
+                        "example": "550e8400-e29b-41d4-a716-446655440000"
+                    }
+                },
+                "required": [
+                    "session_id"
+                ]
+            },
+            "InventorMigrationCommitResponse": {
+                "type": "object",
+                "description": "Inventor \ub9c8\uc774\uadf8\ub808\uc774\uc158 \ucee4\ubc0b \uc751\ub2f5",
+                "properties": {
+                    "project_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "\uc0dd\uc131\ub41c \ud504\ub85c\uc81d\ud2b8 ID"
+                    },
+                    "created_part_ids": {
+                        "type": "array",
+                        "description": "\uc0dd\uc131\ub41c part ID \ubaa9\ub85d",
+                        "items": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    "summary": {
+                        "$ref": "#/components/schemas/SummaryResponse",
+                        "description": "\uc694\uc57d"
+                    }
+                }
+            },
             "MappingValidateRequest": {
                 "type": "object",
                 "description": "\ub9e4\ud551 \uac80\uc99d \uc694\uccad",
@@ -21427,6 +22012,24 @@
                 },
                 "required": [
                     "title"
+                ]
+            },
+            "StepActionRequest": {
+                "type": "object",
+                "description": "\ub2e8\uacc4 \ucc98\ub9ac \uc694\uccad",
+                "properties": {
+                    "step_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "\ucc98\ub9ac\ud560 \ub2e8\uacc4 ID"
+                    },
+                    "comment": {
+                        "type": "string",
+                        "description": "\ucf54\uba58\ud2b8 (\ubc18\ub824 \uc2dc \uc0ac\uc720)"
+                    }
+                },
+                "required": [
+                    "step_id"
                 ]
             },
             "CreateEcFromIssueRequest": {
@@ -23692,7 +24295,11 @@
                             "engineering_change:file_attached",
                             "engineering_change:file_detached",
                             "engineering_change:mentioned",
-                            "engineering_change:part_revision_changed"
+                            "engineering_change:part_revision_changed",
+                            "engineering_change:step_approved",
+                            "engineering_change:step_rejected",
+                            "engineering_change:step_changes_requested",
+                            "engineering_change:step_resubmitted"
                         ]
                     },
                     "scope": {
@@ -25277,6 +25884,117 @@
                 }
             },
             "StreamingResponseBody": {},
+            "InventorMigrationPreviewResponse": {
+                "type": "object",
+                "description": "Inventor \ub9c8\uc774\uadf8\ub808\uc774\uc158 \ubbf8\ub9ac\ubcf4\uae30 \uc751\ub2f5",
+                "properties": {
+                    "session_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "\ub9c8\uc774\uadf8\ub808\uc774\uc158 \uc138\uc158 ID"
+                    },
+                    "project_name": {
+                        "type": "string",
+                        "description": "\ud504\ub85c\uc81d\ud2b8 \uc774\ub984"
+                    },
+                    "summary": {
+                        "$ref": "#/components/schemas/SummaryResponse",
+                        "description": "\uc694\uc57d"
+                    },
+                    "items": {
+                        "type": "array",
+                        "description": "\uac00\uc838\uc624\uae30 \ud56d\ubaa9 \ubaa9\ub85d",
+                        "items": {
+                            "$ref": "#/components/schemas/ItemResponse"
+                        }
+                    },
+                    "orphan_drawings": {
+                        "type": "array",
+                        "description": "orphan drawing \ubaa9\ub85d",
+                        "items": {
+                            "$ref": "#/components/schemas/OrphanDrawingResponse"
+                        }
+                    },
+                    "ready_to_commit": {
+                        "type": "boolean",
+                        "description": "\ucee4\ubc0b \uac00\ub2a5 \uc5ec\ubd80"
+                    }
+                }
+            },
+            "ItemResponse": {
+                "type": "object",
+                "description": "\uac00\uc838\uc624\uae30 \ud56d\ubaa9",
+                "properties": {
+                    "path": {
+                        "type": "string",
+                        "description": "\ub9e4\ub2c8\ud398\uc2a4\ud2b8 \uacbd\ub85c"
+                    },
+                    "file_type": {
+                        "type": "string",
+                        "description": "\ud30c\uc77c \ud0c0\uc785"
+                    },
+                    "derived_part_number": {
+                        "type": "string",
+                        "description": "\ub3c4\ucd9c\ub41c partNumber"
+                    },
+                    "model_file_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "\ubaa8\ub378 \ud30c\uc77c ID"
+                    },
+                    "uploaded": {
+                        "type": "boolean",
+                        "description": "\uc5c5\ub85c\ub4dc \uc644\ub8cc \uc5ec\ubd80"
+                    },
+                    "status": {
+                        "type": "string",
+                        "description": "\ud56d\ubaa9 \uc0c1\ud0dc",
+                        "example": "READY"
+                    },
+                    "message": {
+                        "type": "string",
+                        "description": "\uc124\uba85 \uba54\uc2dc\uc9c0"
+                    },
+                    "drawing_file_ids": {
+                        "type": "array",
+                        "description": "\ub9e4\uce6d\ub41c \ub3c4\uba74 \ud30c\uc77c ID \ubaa9\ub85d",
+                        "items": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
+                    "drawing_paths": {
+                        "type": "array",
+                        "description": "\ub9e4\uce6d\ub41c \ub3c4\uba74 \uacbd\ub85c \ubaa9\ub85d",
+                        "items": {
+                            "type": "string"
+                        }
+                    }
+                }
+            },
+            "OrphanDrawingResponse": {
+                "type": "object",
+                "description": "orphan drawing \ud56d\ubaa9",
+                "properties": {
+                    "path": {
+                        "type": "string",
+                        "description": "\ub9e4\ub2c8\ud398\uc2a4\ud2b8 \uacbd\ub85c"
+                    },
+                    "file_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "\ud30c\uc77c ID"
+                    },
+                    "uploaded": {
+                        "type": "boolean",
+                        "description": "\uc5c5\ub85c\ub4dc \uc644\ub8cc \uc5ec\ubd80"
+                    },
+                    "message": {
+                        "type": "string",
+                        "description": "\uc124\uba85 \uba54\uc2dc\uc9c0"
+                    }
+                }
+            },
             "MemberListResponse": {
                 "type": "object",
                 "description": "\uc870\uc9c1 \uba64\ubc84 \ubaa9\ub85d \uc751\ub2f5",
@@ -25478,7 +26196,11 @@
                             "engineering_change:file_attached",
                             "engineering_change:file_detached",
                             "engineering_change:mentioned",
-                            "engineering_change:part_revision_changed"
+                            "engineering_change:part_revision_changed",
+                            "engineering_change:step_approved",
+                            "engineering_change:step_rejected",
+                            "engineering_change:step_changes_requested",
+                            "engineering_change:step_resubmitted"
                         ]
                     },
                     "scope": {
@@ -26098,6 +26820,58 @@
                         "format": "int32",
                         "description": "\ubcc0\uacbd \ud69f\uc218",
                         "example": 8
+                    }
+                }
+            },
+            "StepProgressResponse": {
+                "type": "object",
+                "description": "EC \ub2e8\uacc4\ubcc4 \uc9c4\ud589 \ud604\ud669 \uc751\ub2f5",
+                "properties": {
+                    "engineering_change_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "EC \uc2dd\ubcc4\uc790"
+                    },
+                    "total_stages": {
+                        "type": "integer",
+                        "format": "int32",
+                        "description": "\uc804\uccb4 \uc2a4\ud14c\uc774\uc9c0 \uc218",
+                        "example": 3
+                    },
+                    "completed_stages": {
+                        "type": "integer",
+                        "format": "int32",
+                        "description": "\uc644\ub8cc\ub41c \uc2a4\ud14c\uc774\uc9c0 \uc218",
+                        "example": 1
+                    },
+                    "current_stage_type": {
+                        "type": "string",
+                        "description": "\ud604\uc7ac \uc2a4\ud14c\uc774\uc9c0 \ud0c0\uc785 (REVIEW/APPROVAL/RELEASE), \ubaa8\ub4e0 \uc2a4\ud14c\uc774\uc9c0 \uc644\ub8cc \uc2dc null",
+                        "example": "APPROVAL"
+                    },
+                    "current_stage_steps_total": {
+                        "type": "integer",
+                        "format": "int32",
+                        "description": "\ud604\uc7ac \uc2a4\ud14c\uc774\uc9c0\uc758 \uc804\uccb4 \uc2a4\ud15d \uc218",
+                        "example": 3
+                    },
+                    "current_stage_steps_approved": {
+                        "type": "integer",
+                        "format": "int32",
+                        "description": "\ud604\uc7ac \uc2a4\ud14c\uc774\uc9c0\uc758 \uc2b9\uc778\ub41c \uc2a4\ud15d \uc218",
+                        "example": 1
+                    },
+                    "current_stage_steps_pending": {
+                        "type": "integer",
+                        "format": "int32",
+                        "description": "\ud604\uc7ac \uc2a4\ud14c\uc774\uc9c0\uc758 \ub300\uae30 \uc911\uc778 \uc2a4\ud15d \uc218",
+                        "example": 1
+                    },
+                    "current_stage_steps_changes_requested": {
+                        "type": "integer",
+                        "format": "int32",
+                        "description": "\ud604\uc7ac \uc2a4\ud14c\uc774\uc9c0\uc758 \uc218\uc815 \uc694\uccad\ub41c \uc2a4\ud15d \uc218",
+                        "example": 1
                     }
                 }
             },

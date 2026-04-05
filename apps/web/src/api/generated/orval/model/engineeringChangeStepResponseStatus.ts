@@ -14,5 +14,7 @@ export type EngineeringChangeStepResponseStatus = typeof EngineeringChangeStepRe
 export const EngineeringChangeStepResponseStatus = {
   PENDING: 'PENDING',
   APPROVED: 'APPROVED',
+  CHANGES_REQUESTED: 'CHANGES_REQUESTED',
   REJECTED: 'REJECTED',
+  CANCELED: 'CANCELED',
 } as const;

@@ -14,4 +14,5 @@ export type EngineeringChangeAffectedItemTargetRequestItemType = typeof Engineer
 export const EngineeringChangeAffectedItemTargetRequestItemType = {
   REVISION_RELEASE: 'REVISION_RELEASE',
   LIFECYCLE_CHANGE: 'LIFECYCLE_CHANGE',
+  WHERE_USED_IMPACT: 'WHERE_USED_IMPACT',
 } as const;

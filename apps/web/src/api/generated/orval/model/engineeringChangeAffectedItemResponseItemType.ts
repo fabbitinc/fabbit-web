@@ -14,4 +14,5 @@ export type EngineeringChangeAffectedItemResponseItemType = typeof EngineeringCh
 export const EngineeringChangeAffectedItemResponseItemType = {
   REVISION_RELEASE: 'REVISION_RELEASE',
   LIFECYCLE_CHANGE: 'LIFECYCLE_CHANGE',
+  WHERE_USED_IMPACT: 'WHERE_USED_IMPACT',
 } as const;

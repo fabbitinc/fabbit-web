@@ -916,6 +916,46 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/migrations/inventor": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Inventor 마이그레이션 세션을 생성합니다
+         * @description 매니페스트를 수신하고 업로드용 presigned URL을 일괄 발급합니다
+         */
+        post: operations["inventorMigrationCreate"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/migrations/inventor/commit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Inventor 마이그레이션을 커밋합니다
+         * @description 프로젝트와 Part를 생성하고 업로드된 CAD/도면 파일을 연결합니다
+         */
+        post: operations["inventorMigrationCommit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/mappings/validate": {
         parameters: {
             query?: never;
@@ -2992,6 +3032,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/migrations/inventor/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Inventor 마이그레이션 미리보기를 조회합니다
+         * @description 세션 기준으로 import 대상, 중복, orphan drawing, 업로드 상태를 조회합니다
+         */
+        get: operations["inventorMigrationGetPreview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/members": {
         parameters: {
             query?: never;
@@ -3264,6 +3324,26 @@ export interface paths {
          * @description 조직 전체의 엔지니어링 변경 통계를 조회합니다. 전체 릴리즈 건수, 이번 달 릴리즈 건수, 평균 승인 소요일, 변경 빈도 상위 파트를 포함합니다.
          */
         get: operations["changeStatisticsGet"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/change-statistics/step-progress": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * EC별 단계 진행 현황을 조회합니다
+         * @description 비종료 상태(RELEASED, CANCELED 제외)의 EC에 대해 스테이지별 진행 현황을 목록으로 조회합니다. 전체 스테이지 수, 완료 스테이지 수, 현재 스테이지의 스텝 상태 집계를 포함합니다.
+         */
+        get: operations["changeStatisticsStepProgressList"];
         put?: never;
         post?: never;
         delete?: never;
@@ -3844,14 +3924,8 @@ export interface components {
             /** @description 최종 팀 ID 목록 */
             team_ids?: string[];
         };
-        /** @description 변경관리 단계 지정 요청 */
-        EngineeringChangeStepRequest: {
-            /**
-             * @description 단계 타입
-             * @example REVIEW
-             * @enum {string}
-             */
-            step_type: "REVIEW" | "APPROVAL" | "RELEASE";
+        /** @description 단계 담당자 지정 요청 */
+        AssigneeRequest: {
             /**
              * @description 담당자 타입
              * @example USER
@@ -3863,12 +3937,39 @@ export interface components {
              * @description 담당자 ID
              */
             assignee_id: string;
+        };
+        /** @description 변경관리 단계(Stage) 지정 요청 */
+        EngineeringChangeStepRequest: {
+            /**
+             * @description 단계 타입
+             * @example REVIEW
+             * @enum {string}
+             */
+            step_type: "REVIEW" | "APPROVAL" | "RELEASE";
             /**
              * Format: int32
              * @description 단계 순서
              * @example 1
              */
             sequence?: number;
+            /**
+             * @description 완료 정책
+             * @example ALL_MUST_APPROVE
+             * @enum {string}
+             */
+            completion_policy: "ALL_MUST_APPROVE" | "ANY_ONE_APPROVES" | "MIN_N_APPROVES";
+            /**
+             * Format: int32
+             * @description 최소 승인 수 (MIN_N_APPROVES 정책에서 필수)
+             */
+            min_approvals?: number;
+            /**
+             * Format: date-time
+             * @description 마감 기한
+             */
+            deadline?: string;
+            /** @description 담당자 목록 */
+            assignees: components["schemas"]["AssigneeRequest"][];
         };
         /** @description 변경관리 단계 동기화 요청 */
         SyncEngineeringChangeStepsRequest: {
@@ -3887,7 +3988,7 @@ export interface components {
              * @example REVISION_RELEASE
              * @enum {string}
              */
-            item_type?: "REVISION_RELEASE" | "LIFECYCLE_CHANGE";
+            item_type?: "REVISION_RELEASE" | "LIFECYCLE_CHANGE" | "WHERE_USED_IMPACT";
             /**
              * Format: uuid
              * @description 대상 ID (리비전 ID 또는 부품 ID)
@@ -3976,7 +4077,7 @@ export interface components {
              * @description 단계 처리 상태
              * @enum {string}
              */
-            status?: "PENDING" | "APPROVED" | "REJECTED";
+            status?: "PENDING" | "APPROVED" | "CHANGES_REQUESTED" | "REJECTED" | "CANCELED";
             /** @description 사용자 담당자 */
             assignee_user?: components["schemas"]["UserSummaryResponse"];
             /** @description 팀 담당자 */
@@ -4003,10 +4104,11 @@ export interface components {
         };
         JsonNode: {
             null?: boolean;
-            float?: boolean;
             array?: boolean;
             empty?: boolean;
-            container?: boolean;
+            float?: boolean;
+            integral_number?: boolean;
+            floating_point_number?: boolean;
             /** @enum {string} */
             node_type?: "ARRAY" | "BINARY" | "BOOLEAN" | "MISSING" | "NULL" | "NUMBER" | "OBJECT" | "POJO" | "STRING";
             string?: boolean;
@@ -4021,12 +4123,11 @@ export interface components {
             textual?: boolean;
             boolean?: boolean;
             binary?: boolean;
+            container?: boolean;
             number?: boolean;
             pojo?: boolean;
             int?: boolean;
             long?: boolean;
-            integral_number?: boolean;
-            floating_point_number?: boolean;
             embedded_value?: boolean;
         };
         /** @description 연결 이슈 요약 */
@@ -4066,7 +4167,7 @@ export interface components {
              * @example REVISION_RELEASE
              * @enum {string}
              */
-            item_type: "REVISION_RELEASE" | "LIFECYCLE_CHANGE";
+            item_type: "REVISION_RELEASE" | "LIFECYCLE_CHANGE" | "WHERE_USED_IMPACT";
             /**
              * Format: uuid
              * @description 대상 ID (리비전 ID 또는 부품 ID)
@@ -5323,6 +5424,118 @@ export interface components {
              */
             created_at?: string;
         };
+        /** @description 매니페스트 파일 항목 */
+        FileItemRequest: {
+            /**
+             * @description 파일 상대 경로
+             * @example Parts/Shaft.ipt
+             */
+            path: string;
+            /**
+             * @description 원본 파일명, 생략 시 path의 마지막 세그먼트를 사용합니다
+             * @example Shaft.ipt
+             */
+            original_name?: string;
+            /**
+             * @description 매니페스트 파일 타입
+             * @example PART
+             * @enum {string}
+             */
+            type: "PART" | "ASSEMBLY" | "DRAWING" | "ATTACHMENT";
+            /**
+             * @description 콘텐츠 타입, 생략 시 application/octet-stream
+             * @example application/octet-stream
+             */
+            content_type?: string;
+            /**
+             * Format: int64
+             * @description 파일 크기(bytes)
+             * @example 245760
+             */
+            size_bytes?: number;
+            /**
+             * @description SHA-256 hex, 선택값
+             * @example 6d2bc3f13b59bf38368ffce5aa7498479f880c6da14961fb1bc696ff44e43173
+             */
+            content_hash?: string;
+        };
+        /** @description Inventor 마이그레이션 시작 요청 */
+        StartInventorMigrationRequest: {
+            /**
+             * @description 프로젝트 이름
+             * @example Motor Assembly
+             */
+            project_name: string;
+            /**
+             * @description IPJ 파일 경로
+             * @example Motor Assembly.ipj
+             */
+            ipj_path: string;
+            /**
+             * @description Inventor 버전
+             * @example 2024
+             */
+            inventor_version?: string;
+            /** @description 매니페스트 파일 목록 */
+            files: components["schemas"]["FileItemRequest"][];
+        };
+        /** @description Inventor 마이그레이션 시작 응답 */
+        InventorMigrationStartResponse: {
+            /**
+             * Format: uuid
+             * @description 마이그레이션 세션 ID
+             */
+            session_id?: string;
+            /** @description 프로젝트 이름 */
+            project_name?: string;
+            /**
+             * Format: int32
+             * @description 전체 파일 수
+             */
+            total_file_count?: number;
+            /**
+             * Format: int32
+             * @description 가져오기 대상 파일 수
+             */
+            importable_file_count?: number;
+            /** @description 업로드 대상 목록 */
+            upload_targets?: components["schemas"]["UploadTargetResponse"][];
+        };
+        /** @description 업로드 대상 */
+        UploadTargetResponse: {
+            /** @description 매니페스트 경로 */
+            path?: string;
+            /**
+             * Format: uuid
+             * @description 파일 ID
+             */
+            file_id?: string;
+            /** @description 업로드 URL */
+            upload_url?: string;
+            /** @description 스토리지 키 */
+            file_key?: string;
+        };
+        /** @description Inventor 마이그레이션 커밋 요청 */
+        CommitInventorMigrationRequest: {
+            /**
+             * Format: uuid
+             * @description 마이그레이션 세션 ID
+             * @example 550e8400-e29b-41d4-a716-446655440000
+             */
+            session_id: string;
+        };
+        /** @description Inventor 마이그레이션 커밋 응답 */
+        InventorMigrationCommitResponse: {
+            /**
+             * Format: uuid
+             * @description 생성된 프로젝트 ID
+             */
+            project_id?: string;
+            /** @description 생성된 part ID 목록 */
+            created_part_ids?: string[];
+            /** @description 요약 */
+            summary?: components["schemas"]["SummaryResponse"];
+        };
         /** @description 매핑 검증 요청 */
         MappingValidateRequest: {
             /**
@@ -5621,6 +5834,16 @@ export interface components {
             file_ids?: string[];
             /** @description 변경관리 단계 목록 */
             steps?: components["schemas"]["EngineeringChangeStepRequest"][];
+        };
+        /** @description 단계 처리 요청 */
+        StepActionRequest: {
+            /**
+             * Format: uuid
+             * @description 처리할 단계 ID
+             */
+            step_id: string;
+            /** @description 코멘트 (반려 시 사유) */
+            comment?: string;
         };
         /** @description 이슈로부터 설계변경 생성 요청 */
         CreateEcFromIssueRequest: {
@@ -7062,7 +7285,7 @@ export interface components {
             /** Format: uuid */
             id?: string;
             /** @enum {string} */
-            action?: "issue:created" | "issue:state_changed" | "issue:assignee_changed" | "issue:reviewer_changed" | "issue:label_changed" | "issue:part_changed" | "issue:file_attached" | "issue:file_detached" | "issue:engineering_change_changed" | "issue:mentioned" | "engineering_change:state_changed" | "engineering_change:issue_changed" | "engineering_change:step_changed" | "engineering_change:file_attached" | "engineering_change:file_detached" | "engineering_change:mentioned" | "engineering_change:part_revision_changed";
+            action?: "issue:created" | "issue:state_changed" | "issue:assignee_changed" | "issue:reviewer_changed" | "issue:label_changed" | "issue:part_changed" | "issue:file_attached" | "issue:file_detached" | "issue:engineering_change_changed" | "issue:mentioned" | "engineering_change:state_changed" | "engineering_change:issue_changed" | "engineering_change:step_changed" | "engineering_change:file_attached" | "engineering_change:file_detached" | "engineering_change:mentioned" | "engineering_change:part_revision_changed" | "engineering_change:step_approved" | "engineering_change:step_rejected" | "engineering_change:step_changes_requested" | "engineering_change:step_resubmitted";
             /** @enum {string} */
             scope?: "issue" | "engineering_change" | "project" | "organization";
             /** Format: uuid */
@@ -7879,6 +8102,65 @@ export interface components {
             count?: number;
         };
         StreamingResponseBody: unknown;
+        /** @description Inventor 마이그레이션 미리보기 응답 */
+        InventorMigrationPreviewResponse: {
+            /**
+             * Format: uuid
+             * @description 마이그레이션 세션 ID
+             */
+            session_id?: string;
+            /** @description 프로젝트 이름 */
+            project_name?: string;
+            /** @description 요약 */
+            summary?: components["schemas"]["SummaryResponse"];
+            /** @description 가져오기 항목 목록 */
+            items?: components["schemas"]["ItemResponse"][];
+            /** @description orphan drawing 목록 */
+            orphan_drawings?: components["schemas"]["OrphanDrawingResponse"][];
+            /** @description 커밋 가능 여부 */
+            ready_to_commit?: boolean;
+        };
+        /** @description 가져오기 항목 */
+        ItemResponse: {
+            /** @description 매니페스트 경로 */
+            path?: string;
+            /** @description 파일 타입 */
+            file_type?: string;
+            /** @description 도출된 partNumber */
+            derived_part_number?: string;
+            /**
+             * Format: uuid
+             * @description 모델 파일 ID
+             */
+            model_file_id?: string;
+            /** @description 업로드 완료 여부 */
+            uploaded?: boolean;
+            /**
+             * @description 항목 상태
+             * @example READY
+             */
+            status?: string;
+            /** @description 설명 메시지 */
+            message?: string;
+            /** @description 매칭된 도면 파일 ID 목록 */
+            drawing_file_ids?: string[];
+            /** @description 매칭된 도면 경로 목록 */
+            drawing_paths?: string[];
+        };
+        /** @description orphan drawing 항목 */
+        OrphanDrawingResponse: {
+            /** @description 매니페스트 경로 */
+            path?: string;
+            /**
+             * Format: uuid
+             * @description 파일 ID
+             */
+            file_id?: string;
+            /** @description 업로드 완료 여부 */
+            uploaded?: boolean;
+            /** @description 설명 메시지 */
+            message?: string;
+        };
         /** @description 조직 멤버 목록 응답 */
         MemberListResponse: {
             /** @description 조직 멤버 목록 */
@@ -7977,7 +8259,7 @@ export interface components {
             /** Format: uuid */
             id?: string;
             /** @enum {string} */
-            action?: "issue:created" | "issue:state_changed" | "issue:assignee_changed" | "issue:reviewer_changed" | "issue:label_changed" | "issue:part_changed" | "issue:file_attached" | "issue:file_detached" | "issue:engineering_change_changed" | "issue:mentioned" | "engineering_change:state_changed" | "engineering_change:issue_changed" | "engineering_change:step_changed" | "engineering_change:file_attached" | "engineering_change:file_detached" | "engineering_change:mentioned" | "engineering_change:part_revision_changed";
+            action?: "issue:created" | "issue:state_changed" | "issue:assignee_changed" | "issue:reviewer_changed" | "issue:label_changed" | "issue:part_changed" | "issue:file_attached" | "issue:file_detached" | "issue:engineering_change_changed" | "issue:mentioned" | "engineering_change:state_changed" | "engineering_change:issue_changed" | "engineering_change:step_changed" | "engineering_change:file_attached" | "engineering_change:file_detached" | "engineering_change:mentioned" | "engineering_change:part_revision_changed" | "engineering_change:step_approved" | "engineering_change:step_rejected" | "engineering_change:step_changes_requested" | "engineering_change:step_resubmitted";
             /** @enum {string} */
             scope?: "issue" | "engineering_change" | "project" | "organization";
             actor?: components["schemas"]["UserSummaryResponse"];
@@ -8378,6 +8660,55 @@ export interface components {
              * @example 8
              */
             change_count?: number;
+        };
+        /** @description EC 단계별 진행 현황 응답 */
+        StepProgressResponse: {
+            /**
+             * Format: uuid
+             * @description EC 식별자
+             */
+            engineering_change_id?: string;
+            /**
+             * Format: int32
+             * @description 전체 스테이지 수
+             * @example 3
+             */
+            total_stages?: number;
+            /**
+             * Format: int32
+             * @description 완료된 스테이지 수
+             * @example 1
+             */
+            completed_stages?: number;
+            /**
+             * @description 현재 스테이지 타입 (REVIEW/APPROVAL/RELEASE), 모든 스테이지 완료 시 null
+             * @example APPROVAL
+             */
+            current_stage_type?: string;
+            /**
+             * Format: int32
+             * @description 현재 스테이지의 전체 스텝 수
+             * @example 3
+             */
+            current_stage_steps_total?: number;
+            /**
+             * Format: int32
+             * @description 현재 스테이지의 승인된 스텝 수
+             * @example 1
+             */
+            current_stage_steps_approved?: number;
+            /**
+             * Format: int32
+             * @description 현재 스테이지의 대기 중인 스텝 수
+             * @example 1
+             */
+            current_stage_steps_pending?: number;
+            /**
+             * Format: int32
+             * @description 현재 스테이지의 수정 요청된 스텝 수
+             * @example 1
+             */
+            current_stage_steps_changes_requested?: number;
         };
         /** @description 변경 피드 항목 */
         ChangeFeedItemResponse: {
@@ -12772,6 +13103,144 @@ export interface operations {
             };
         };
     };
+    inventorMigrationCreate: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StartInventorMigrationRequest"];
+            };
+        };
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InventorMigrationStartResponse"];
+                };
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InventorMigrationStartResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    inventorMigrationCommit: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CommitInventorMigrationRequest"];
+            };
+        };
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InventorMigrationCommitResponse"];
+                };
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InventorMigrationCommitResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
     mappingValidate: {
         parameters: {
             query?: never;
@@ -14108,7 +14577,11 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StepActionRequest"];
+            };
+        };
         responses: {
             /** @description 요청 성공 */
             200: {
@@ -14182,7 +14655,11 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StepActionRequest"];
+            };
+        };
         responses: {
             /** @description 요청 성공 */
             200: {
@@ -14256,7 +14733,11 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StepActionRequest"];
+            };
+        };
         responses: {
             /** @description 요청 성공 */
             200: {
@@ -14560,7 +15041,11 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["StepActionRequest"];
+            };
+        };
         responses: {
             /** @description 요청 성공 */
             200: {
@@ -21060,6 +21545,74 @@ export interface operations {
             };
         };
     };
+    inventorMigrationGetPreview: {
+        parameters: {
+            query: {
+                /** @description 마이그레이션 세션 ID */
+                sessionId: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InventorMigrationPreviewResponse"];
+                };
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InventorMigrationPreviewResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
     memberList: {
         parameters: {
             query?: never;
@@ -22018,6 +22571,62 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ChangeStatisticsResponse"];
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    changeStatisticsStepProgressList: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["StepProgressResponse"][];
                 };
             };
             /** @description 잘못된 요청 */

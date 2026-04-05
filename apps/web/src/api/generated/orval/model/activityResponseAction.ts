@@ -26,4 +26,8 @@ export const ActivityResponseAction = {
   'engineering_change:file_detached': 'engineering_change:file_detached',
   'engineering_change:mentioned': 'engineering_change:mentioned',
   'engineering_change:part_revision_changed': 'engineering_change:part_revision_changed',
+  'engineering_change:step_approved': 'engineering_change:step_approved',
+  'engineering_change:step_rejected': 'engineering_change:step_rejected',
+  'engineering_change:step_changes_requested': 'engineering_change:step_changes_requested',
+  'engineering_change:step_resubmitted': 'engineering_change:step_resubmitted',
 } as const;

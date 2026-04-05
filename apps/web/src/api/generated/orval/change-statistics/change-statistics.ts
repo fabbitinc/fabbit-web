@@ -5,7 +5,8 @@
  * OpenAPI spec version: v0
  */
 import type {
-  ChangeStatisticsResponse
+  ChangeStatisticsResponse,
+  StepProgressResponse
 } from '../model';
 
 import { customInstance } from '../../../orval/custom-instance.js';
@@ -26,4 +27,17 @@ export const changeStatisticsGet = (
     },
       options);
     }
+  /**
+ * 비종료 상태(RELEASED, CANCELED 제외)의 EC에 대해 스테이지별 진행 현황을 목록으로 조회합니다. 전체 스테이지 수, 완료 스테이지 수, 현재 스테이지의 스텝 상태 집계를 포함합니다.
+ * @summary EC별 단계 진행 현황을 조회합니다
+ */
+export const changeStatisticsStepProgressList = (
+    
+ options?: SecondParameter<typeof customInstance<StepProgressResponse[]>>,) => {
+      return customInstance<StepProgressResponse[]>(
+      {url: `/api/v1/change-statistics/step-progress`, method: 'GET'
+    },
+      options);
+    }
   export type ChangeStatisticsGetResult = NonNullable<Awaited<ReturnType<typeof changeStatisticsGet>>>
+export type ChangeStatisticsStepProgressListResult = NonNullable<Awaited<ReturnType<typeof changeStatisticsStepProgressList>>>

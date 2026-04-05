@@ -16,6 +16,7 @@ import type {
   EngineeringChangeLookupResponse,
   EngineeringChangeResponse,
   FileItemResponse,
+  StepActionRequest,
   SyncAffectedItemsRequest,
   SyncDiffResponse,
   SyncEngineeringChangeStepsRequest,
@@ -122,9 +123,12 @@ export const engineeringChangeSubmit = (
  */
 export const engineeringChangeApproveReview = (
     engineeringChangeId: string,
+    stepActionRequest: BodyType<StepActionRequest>,
  options?: SecondParameter<typeof customInstance<EngineeringChangeResponse | void>>,) => {
       return customInstance<EngineeringChangeResponse | void>(
-      {url: `/api/v1/engineering-changes/${engineeringChangeId}/review/approve`, method: 'POST'
+      {url: `/api/v1/engineering-changes/${engineeringChangeId}/review/approve`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: stepActionRequest
     },
       options);
     }
@@ -134,9 +138,12 @@ export const engineeringChangeApproveReview = (
  */
 export const engineeringChangeRelease = (
     engineeringChangeId: string,
+    stepActionRequest: BodyType<StepActionRequest>,
  options?: SecondParameter<typeof customInstance<EngineeringChangeResponse | void>>,) => {
       return customInstance<EngineeringChangeResponse | void>(
-      {url: `/api/v1/engineering-changes/${engineeringChangeId}/release`, method: 'POST'
+      {url: `/api/v1/engineering-changes/${engineeringChangeId}/release`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: stepActionRequest
     },
       options);
     }
@@ -146,9 +153,12 @@ export const engineeringChangeRelease = (
  */
 export const engineeringChangeReject = (
     engineeringChangeId: string,
+    stepActionRequest: BodyType<StepActionRequest>,
  options?: SecondParameter<typeof customInstance<EngineeringChangeResponse | void>>,) => {
       return customInstance<EngineeringChangeResponse | void>(
-      {url: `/api/v1/engineering-changes/${engineeringChangeId}/reject`, method: 'POST'
+      {url: `/api/v1/engineering-changes/${engineeringChangeId}/reject`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: stepActionRequest
     },
       options);
     }
@@ -200,9 +210,12 @@ export const engineeringChangeCancel = (
  */
 export const engineeringChangeApprove = (
     engineeringChangeId: string,
+    stepActionRequest: BodyType<StepActionRequest>,
  options?: SecondParameter<typeof customInstance<EngineeringChangeResponse | void>>,) => {
       return customInstance<EngineeringChangeResponse | void>(
-      {url: `/api/v1/engineering-changes/${engineeringChangeId}/approve`, method: 'POST'
+      {url: `/api/v1/engineering-changes/${engineeringChangeId}/approve`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: stepActionRequest
     },
       options);
     }

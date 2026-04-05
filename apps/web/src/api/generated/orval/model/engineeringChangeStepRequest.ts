@@ -4,22 +4,27 @@
  * OpenAPI definition
  * OpenAPI spec version: v0
  */
-import type { EngineeringChangeStepRequestAssigneeType } from './engineeringChangeStepRequestAssigneeType';
+import type { AssigneeRequest } from './assigneeRequest';
+import type { EngineeringChangeStepRequestCompletionPolicy } from './engineeringChangeStepRequestCompletionPolicy';
 import type { EngineeringChangeStepRequestStepType } from './engineeringChangeStepRequestStepType';
 
 /**
- * 변경관리 단계 지정 요청
+ * 변경관리 단계(Stage) 지정 요청
  */
 export interface EngineeringChangeStepRequest {
   /** 단계 타입 */
   step_type: EngineeringChangeStepRequestStepType;
-  /** 담당자 타입 */
-  assignee_type: EngineeringChangeStepRequestAssigneeType;
-  /** 담당자 ID */
-  assignee_id: string;
   /**
    * 단계 순서
    * @minimum 1
    */
   sequence?: number;
+  /** 완료 정책 */
+  completion_policy: EngineeringChangeStepRequestCompletionPolicy;
+  /** 최소 승인 수 (MIN_N_APPROVES 정책에서 필수) */
+  min_approvals?: number;
+  /** 마감 기한 */
+  deadline?: string;
+  /** 담당자 목록 */
+  assignees: AssigneeRequest[];
 }
