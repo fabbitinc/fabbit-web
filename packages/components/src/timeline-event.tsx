@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import {
+  AlertCircle,
   CheckCircle2,
   FileCheck,
   FilePen,
@@ -7,6 +8,7 @@ import {
   MessageSquare,
   Package,
   Paperclip,
+  RefreshCw,
   Tag,
   Unlink,
   UserCheck,
@@ -285,6 +287,14 @@ export function TimelineEventItem({ event, onNavigate }: TimelineEventItemProps)
         ? ` 님이 ${stageLabel} 단계를 반려했습니다 (${assigneeName})`
         : ` 님이 ${stageLabel} 단계를 반려했습니다`;
       icon = <XCircle className="h-3.5 w-3.5 text-destructive" />;
+    } else if (stepAction === "CHANGES_REQUESTED") {
+      message = assigneeName
+        ? ` 님이 ${stageLabel} 단계에서 수정을 요청했습니다 (${assigneeName})`
+        : ` 님이 ${stageLabel} 단계에서 수정을 요청했습니다`;
+      icon = <AlertCircle className="h-3.5 w-3.5 text-amber-600" />;
+    } else if (stepAction === "RESUBMITTED") {
+      message = ` 님이 ${stageLabel} 단계를 재제출했습니다`;
+      icon = <RefreshCw className="h-3.5 w-3.5 text-blue-600" />;
     } else {
       message = ` 님이 ${stageLabel} 담당자를 변경했습니다`;
       icon = <UserPlus className="h-3.5 w-3.5 text-muted-foreground" />;

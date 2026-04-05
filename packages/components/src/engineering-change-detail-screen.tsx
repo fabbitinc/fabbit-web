@@ -112,7 +112,10 @@ export interface EngineeringChangeDetailScreenProps {
   isNotFound?: boolean;
   isReopeningEngineeringChange?: boolean;
   isSavingEngineeringChange?: boolean;
+  isStepActionPending?: boolean;
   isSubmittingEngineeringChange?: boolean;
+  currentUserStepId?: string | null;
+  isEcCreator?: boolean;
   isTimelineLoading?: boolean;
   labelPicker?: EngineeringChangeSidebarProps["labelPicker"];
   linkedIssuePicker?: EngineeringChangeSidebarProps["linkedIssuePicker"];
@@ -130,6 +133,10 @@ export interface EngineeringChangeDetailScreenProps {
   onEditLabels?: () => void;
   onEditParts?: () => void;
   onMergeEngineeringChange: () => Promise<void> | void;
+  onStepApprove?: (stepId: string, comment?: string) => void;
+  onStepReject?: (stepId: string, comment?: string) => void;
+  onStepRequestChanges?: (stepId: string, comment?: string) => void;
+  onStepResubmit?: (stepId: string) => void;
   onNavigateToIssue: (issueNumber: number) => void;
   onNavigateToIssueMention: (issueNumber: number, issueType: "issue" | "engineering_change") => void;
   onReopenEngineeringChange: () => Promise<void> | void;
@@ -533,6 +540,14 @@ function GateCardAssigneeRow({ assignee }: { assignee: EngineeringChangeWorkflow
         <Badge variant="outline" className="ml-auto border-red-200 bg-red-50 text-red-600 text-[10px]">
           반려
         </Badge>
+      ) : assignee.status === "CHANGES_REQUESTED" ? (
+        <Badge variant="outline" className="ml-auto border-amber-200 bg-amber-50 text-amber-600 text-[10px]">
+          수정 요청
+        </Badge>
+      ) : assignee.status === "CANCELED" ? (
+        <Badge variant="outline" className="ml-auto text-muted-foreground text-[10px]">
+          취소됨
+        </Badge>
       ) : (
         <Badge variant="outline" className="ml-auto text-[10px]">대기</Badge>
       )}
@@ -542,23 +557,23 @@ function GateCardAssigneeRow({ assignee }: { assignee: EngineeringChangeWorkflow
 
 function WorkflowGateCard({
   stage,
-  advanceLabel,
-  canAdvance,
-  canSubmit,
-  isMerging,
-  isSubmitting,
-  onAdvance,
-  onSubmit,
+  isActionPending,
+  currentUserStepId,
+  isEcCreator,
+  onStepApprove,
+  onStepReject,
+  onStepRequestChanges,
+  onStepResubmit,
   picker,
 }: {
   stage: EngineeringChangeWorkflowStage;
-  advanceLabel: string;
-  canAdvance: boolean;
-  canSubmit: boolean;
-  isMerging: boolean;
-  isSubmitting: boolean;
-  onAdvance: () => void;
-  onSubmit: () => void;
+  isActionPending: boolean;
+  currentUserStepId?: string | null;
+  isEcCreator?: boolean;
+  onStepApprove?: (stepId: string, comment?: string) => void;
+  onStepReject?: (stepId: string, comment?: string) => void;
+  onStepRequestChanges?: (stepId: string, comment?: string) => void;
+  onStepResubmit?: (stepId: string) => void;
   picker?: {
     availableMembers: { id: string; name: string; email: string }[];
     selectedIds: string[];
@@ -570,9 +585,18 @@ function WorkflowGateCard({
   };
 }) {
   const [expanded, setExpanded] = useState(true);
+  const [actionMode, setActionMode] = useState<"none" | "reject" | "request-changes">("none");
+  const [actionComment, setActionComment] = useState("");
   const approvedCount = stage.assignees.filter((a) => a.status === "APPROVED").length;
   const totalCount = stage.assignees.length;
   const pendingCount = stage.assignees.filter((a) => a.status === "PENDING").length;
+  const changesRequestedCount = stage.assignees.filter((a) => a.status === "CHANGES_REQUESTED").length;
+
+  const currentUserStep = currentUserStepId
+    ? stage.assignees.find((a) => a.id === currentUserStepId)
+    : null;
+  const canAct = currentUserStep?.status === "PENDING";
+  const changesRequestedSteps = stage.assignees.filter((a) => a.status === "CHANGES_REQUESTED");
 
   const STAGE_PICKER_LABEL: Record<string, string> = {
     REVIEW: "검토자",
@@ -580,6 +604,15 @@ function WorkflowGateCard({
     RELEASE: "배포자",
   };
   const pickerLabel = STAGE_PICKER_LABEL[stage.type] ?? "담당자";
+
+  let summaryText: string;
+  if (changesRequestedCount > 0) {
+    summaryText = `${changesRequestedCount}명이 수정을 요청했습니다.`;
+  } else if (pendingCount > 0) {
+    summaryText = `${pendingCount}명의 처리가 남아있습니다.`;
+  } else {
+    summaryText = "모든 담당자가 처리했습니다.";
+  }
 
   return (
     <div className="overflow-hidden rounded-lg border-2 border-amber-300/50">
@@ -596,9 +629,7 @@ function WorkflowGateCard({
             <p className="text-sm font-semibold text-foreground">
               {stage.label} — {approvedCount}/{totalCount} 승인 완료
             </p>
-            <p className="text-xs text-muted-foreground">
-              {pendingCount > 0 ? `${pendingCount}명의 처리가 남아있습니다.` : "모든 담당자가 처리했습니다."}
-            </p>
+            <p className="text-xs text-muted-foreground">{summaryText}</p>
           </div>
         </div>
         {expanded ? (
@@ -635,37 +666,106 @@ function WorkflowGateCard({
               <p className="py-2 text-xs text-muted-foreground">{pickerLabel}가 아직 지정되지 않았습니다.</p>
             )}
           </div>
-          <div className="flex items-center justify-end gap-2 border-t bg-muted/20 px-4 py-3">
-            {canSubmit ? (
-              <Button
-                size="sm"
-                disabled={isSubmitting}
-                onClick={(e) => { e.stopPropagation(); onSubmit(); }}
-              >
-                {isSubmitting ? (
-                  <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-                ) : (
-                  <FileCheck className="mr-1.5 h-3.5 w-3.5" />
-                )}
-                제출
-              </Button>
-            ) : null}
-            {canAdvance ? (
-              <Button
-                size="sm"
-                className="bg-green-600 text-white hover:bg-green-700"
-                disabled={isMerging}
-                onClick={(e) => { e.stopPropagation(); onAdvance(); }}
-              >
-                {isMerging ? (
-                  <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-                ) : (
-                  <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" />
-                )}
-                {advanceLabel}
-              </Button>
-            ) : null}
-          </div>
+
+          {/* 코멘트 입력 (반려/수정요청 시) */}
+          {actionMode !== "none" ? (
+            <div className="border-t px-4 py-3">
+              <p className="mb-2 text-xs font-medium text-foreground">
+                {actionMode === "reject" ? "반려 사유" : "수정 요청 사항"}
+              </p>
+              <Input
+                value={actionComment}
+                onChange={(e) => setActionComment(e.target.value)}
+                placeholder={actionMode === "reject" ? "반려 사유를 입력하세요..." : "수정이 필요한 사항을 입력하세요..."}
+              />
+              <div className="mt-2 flex justify-end gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => { setActionMode("none"); setActionComment(""); }}
+                >
+                  취소
+                </Button>
+                <Button
+                  size="sm"
+                  variant={actionMode === "reject" ? "destructive" : "default"}
+                  disabled={isActionPending}
+                  onClick={() => {
+                    if (!currentUserStepId) return;
+                    if (actionMode === "reject") {
+                      onStepReject?.(currentUserStepId, actionComment || undefined);
+                    } else {
+                      onStepRequestChanges?.(currentUserStepId, actionComment || undefined);
+                    }
+                    setActionMode("none");
+                    setActionComment("");
+                  }}
+                >
+                  {isActionPending ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : null}
+                  {actionMode === "reject" ? "반려 확인" : "수정 요청 확인"}
+                </Button>
+              </div>
+            </div>
+          ) : null}
+
+          {/* 액션 버튼 */}
+          {actionMode === "none" ? (
+            <div className="flex items-center justify-end gap-2 border-t bg-muted/20 px-4 py-3">
+              {/* 현재 사용자가 PENDING step 담당자 */}
+              {canAct && onStepReject ? (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={isActionPending}
+                  onClick={(e) => { e.stopPropagation(); setActionMode("reject"); }}
+                >
+                  <XCircle className="mr-1.5 h-3.5 w-3.5" />
+                  반려
+                </Button>
+              ) : null}
+              {canAct && onStepRequestChanges ? (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={isActionPending}
+                  onClick={(e) => { e.stopPropagation(); setActionMode("request-changes"); }}
+                >
+                  <AlertCircle className="mr-1.5 h-3.5 w-3.5" />
+                  수정 요청
+                </Button>
+              ) : null}
+              {canAct && onStepApprove && currentUserStepId ? (
+                <Button
+                  size="sm"
+                  className="bg-green-600 text-white hover:bg-green-700"
+                  disabled={isActionPending}
+                  onClick={(e) => { e.stopPropagation(); onStepApprove(currentUserStepId); }}
+                >
+                  {isActionPending ? (
+                    <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <CheckCircle2 className="mr-1.5 h-3.5 w-3.5" />
+                  )}
+                  승인
+                </Button>
+              ) : null}
+
+              {/* EC 작성자 + CHANGES_REQUESTED step 존재 → 재제출 */}
+              {!canAct && isEcCreator && changesRequestedSteps.length > 0 && onStepResubmit ? (
+                changesRequestedSteps.map((step) => (
+                  <Button
+                    key={step.id}
+                    size="sm"
+                    disabled={isActionPending}
+                    onClick={(e) => { e.stopPropagation(); onStepResubmit(step.id); }}
+                  >
+                    {isActionPending ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : null}
+                    {step.name} 재제출
+                  </Button>
+                ))
+              ) : null}
+            </div>
+          ) : null}
         </div>
       ) : null}
     </div>
@@ -690,7 +790,10 @@ export function EngineeringChangeDetailScreen({
   isNotFound = false,
   isReopeningEngineeringChange = false,
   isSavingEngineeringChange = false,
+  isStepActionPending = false,
   isSubmittingEngineeringChange = false,
+  currentUserStepId,
+  isEcCreator = false,
   isTimelineLoading = false,
   labelPicker,
   linkedIssuePicker,
@@ -705,6 +808,10 @@ export function EngineeringChangeDetailScreen({
   onEditLabels,
   onEditParts,
   onMergeEngineeringChange,
+  onStepApprove,
+  onStepReject,
+  onStepRequestChanges,
+  onStepResubmit,
   onNavigateToIssue,
   onNavigateToIssueMention,
   onReopenEngineeringChange,
@@ -982,13 +1089,13 @@ export function EngineeringChangeDetailScreen({
                   return (
                     <WorkflowGateCard
                       stage={activeStage}
-                      advanceLabel={advanceLabel}
-                      canAdvance={canAdvance}
-                      canSubmit={false}
-                      isMerging={isMergingEngineeringChange}
-                      isSubmitting={isSubmittingEngineeringChange}
-                      onAdvance={() => { void onMergeEngineeringChange(); }}
-                      onSubmit={() => {}}
+                      isActionPending={isStepActionPending}
+                      currentUserStepId={currentUserStepId}
+                      isEcCreator={isEcCreator}
+                      onStepApprove={onStepApprove}
+                      onStepReject={onStepReject}
+                      onStepRequestChanges={onStepRequestChanges}
+                      onStepResubmit={onStepResubmit}
                       picker={workflowStagePicker ? {
                         availableMembers: workflowStagePicker.availableMembers,
                         selectedIds: activeStage.assignees.map((a) => a.id),

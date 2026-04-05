@@ -73,6 +73,8 @@ export interface EngineeringChangeWorkflowStageModel {
   type: "REVIEW" | "APPROVAL" | "RELEASE";
   status: "completed" | "active" | "pending";
   description: string;
+  completionPolicy?: "ALL_MUST_APPROVE" | "ANY_ONE_APPROVES" | "MIN_N_APPROVES";
+  deadline?: string | null;
   assignees: EngineeringChangeWorkflowAssigneeModel[];
 }
 
@@ -81,7 +83,7 @@ export interface EngineeringChangeWorkflowAssigneeModel {
   assigneeId: string;
   name: string;
   type: "USER" | "TEAM";
-  status: "PENDING" | "APPROVED" | "REJECTED";
+  status: "PENDING" | "APPROVED" | "CHANGES_REQUESTED" | "REJECTED" | "CANCELED";
   profileImageUrl: string | null;
   actedAt: string | null;
   actedByName: string | null;

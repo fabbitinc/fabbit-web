@@ -469,7 +469,36 @@ export function mapTimelineActivityToEvent(item: TimelineActivitySource): Timeli
     };
   }
 
-  // EC 단계 담당자 변경
+  // EC step 구체 액션 (승인/반려/수정요청/재제출)
+  if (
+    action === "engineering_change:step_approved" ||
+    action === "engineering_change:step_rejected" ||
+    action === "engineering_change:step_changes_requested" ||
+    action === "engineering_change:step_resubmitted"
+  ) {
+    const refs = extractRefs(detail.refs);
+    const assigneeName = refs?.[0]?.label ?? (detail.assignee_name as string | undefined);
+    const stepType = (refs?.[0]?.meta?.step_type as string | undefined) ?? (detail.step_type as string | undefined);
+
+    const ACTION_MAP: Record<string, string> = {
+      "engineering_change:step_approved": "APPROVED",
+      "engineering_change:step_rejected": "REJECTED",
+      "engineering_change:step_changes_requested": "CHANGES_REQUESTED",
+      "engineering_change:step_resubmitted": "RESUBMITTED",
+    };
+
+    return {
+      id: item.id,
+      type: "cr_step_changed",
+      author,
+      createdAtLabel,
+      stepAction: ACTION_MAP[action],
+      stepAssigneeName: assigneeName ?? undefined,
+      stepType: stepType ?? undefined,
+    };
+  }
+
+  // EC 단계 담당자 변경 (범용)
   if (action === "engineering_change:step_changed") {
     const change = getChangeValue(detail, "status");
     const stepAction = change?.new ?? (detail.status as string | undefined);

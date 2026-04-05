@@ -21,8 +21,11 @@ import { useCloseEngineeringChangeAction } from "@/features/engineering-change/h
 import { useCreateEngineeringChangeCommentAction } from "@/features/engineering-change/hooks/use-create-engineering-change-comment-action";
 import { useDeleteEngineeringChangeCommentAction } from "@/features/engineering-change/hooks/use-delete-engineering-change-comment-action";
 import { useDeleteEngineeringChangeFileAction } from "@/features/engineering-change/hooks/use-delete-engineering-change-file-action";
-import { useMergeEngineeringChangeAction } from "@/features/engineering-change/hooks/use-merge-engineering-change-action";
 import { useReopenEngineeringChangeAction } from "@/features/engineering-change/hooks/use-reopen-engineering-change-action";
+import { useStepApproveAction } from "@/features/engineering-change/hooks/use-step-approve-action";
+import { useStepRejectAction } from "@/features/engineering-change/hooks/use-step-reject-action";
+import { useStepRequestChangesAction } from "@/features/engineering-change/hooks/use-step-request-changes-action";
+import { useStepResubmitAction } from "@/features/engineering-change/hooks/use-step-resubmit-action";
 import { useSubmitEngineeringChangeAction } from "@/features/engineering-change/hooks/use-submit-engineering-change-action";
 import { useSyncEngineeringChangeIssuesAction } from "@/features/engineering-change/hooks/use-sync-engineering-change-issues-action";
 import { useUpdateEngineeringChangeAction } from "@/features/engineering-change/hooks/use-update-engineering-change-action";
@@ -67,10 +70,10 @@ export function EngineeringChangeDetailScreen({
   const addFilesAction = useAddEngineeringChangeFilesAction(engineeringChangeId);
   const deleteFileAction = useDeleteEngineeringChangeFileAction(engineeringChangeId);
   const submitEngineeringChangeAction = useSubmitEngineeringChangeAction(engineeringChangeId);
-  const mergeEngineeringChangeAction = useMergeEngineeringChangeAction(
-    engineeringChangeId,
-    engineeringChangeQuery.data?.state,
-  );
+  const stepApproveAction = useStepApproveAction(engineeringChangeId, engineeringChangeQuery.data?.state);
+  const stepRejectAction = useStepRejectAction(engineeringChangeId);
+  const stepRequestChangesAction = useStepRequestChangesAction(engineeringChangeId);
+  const stepResubmitAction = useStepResubmitAction(engineeringChangeId);
   const closeEngineeringChangeAction = useCloseEngineeringChangeAction(engineeringChangeId);
   const reopenEngineeringChangeAction = useReopenEngineeringChangeAction(engineeringChangeId);
 
@@ -233,6 +236,12 @@ export function EngineeringChangeDetailScreen({
       }
     : undefined;
 
+  const activeStage = engineeringChange?.workflow?.stages.find((s) => s.status === "active");
+  const currentUserStepId = activeStage?.assignees.find(
+    (a) => a.assigneeId === currentUser?.id,
+  )?.id ?? null;
+  const isEcCreator = engineeringChange?.createdBy?.userId === currentUser?.id;
+
   return (
     <EngineeringChangeDetailScreenView
       engineeringChange={engineeringChangeViewModel}
@@ -285,11 +294,14 @@ export function EngineeringChangeDetailScreen({
       isCreatingComment={createCommentAction.isPending}
       isError={engineeringChangeQuery.isError || timelineQuery.isError}
       isLoading={engineeringChangeQuery.isLoading}
-      isMergingEngineeringChange={mergeEngineeringChangeAction.isPending}
+      isMergingEngineeringChange={false}
       isNotFound={!engineeringChangeQuery.isLoading && !engineeringChangeQuery.isError && !engineeringChange}
       isReopeningEngineeringChange={reopenEngineeringChangeAction.isPending}
       isSavingEngineeringChange={updateEngineeringChangeAction.isPending}
+      isStepActionPending={stepApproveAction.isPending || stepRejectAction.isPending || stepRequestChangesAction.isPending || stepResubmitAction.isPending}
       isSubmittingEngineeringChange={submitEngineeringChangeAction.isPending}
+      currentUserStepId={currentUserStepId}
+      isEcCreator={isEcCreator}
       isTimelineLoading={timelineQuery.isLoading}
       mentionFetchers={{
         user: userMentionFetcher,
@@ -331,9 +343,11 @@ export function EngineeringChangeDetailScreen({
       onDeleteFile={async (fileId: string) => {
         await deleteFileAction.mutateAsync(fileId);
       }}
-      onMergeEngineeringChange={() => {
-        mergeEngineeringChangeAction.mutate();
-      }}
+      onMergeEngineeringChange={() => {}}
+      onStepApprove={(stepId, comment) => { stepApproveAction.mutate({ stepId, comment }); }}
+      onStepReject={(stepId, comment) => { stepRejectAction.mutate({ stepId, comment }); }}
+      onStepRequestChanges={(stepId, comment) => { stepRequestChangesAction.mutate({ stepId, comment }); }}
+      onStepResubmit={(stepId) => { stepResubmitAction.mutate({ stepId }); }}
       onNavigateToIssue={async (linkedIssueDisplayNumber: number) => {
         const linkedIssue = engineeringChange?.linkedIssues.find(
           (issue) => issue.number === linkedIssueDisplayNumber,

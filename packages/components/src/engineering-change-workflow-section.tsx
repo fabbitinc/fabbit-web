@@ -1,7 +1,7 @@
 import { Badge, UserAvatar, WorkflowStepper, type WorkflowStep } from "@fabbit/ui";
 
 export type EngineeringChangeWorkflowStageStatus = "completed" | "active" | "pending";
-export type EngineeringChangeWorkflowAssigneeStatus = "PENDING" | "APPROVED" | "REJECTED";
+export type EngineeringChangeWorkflowAssigneeStatus = "PENDING" | "APPROVED" | "CHANGES_REQUESTED" | "REJECTED" | "CANCELED";
 export type EngineeringChangeWorkflowAssigneeType = "USER" | "TEAM";
 export type EngineeringChangeWorkflowStageType = "REVIEW" | "APPROVAL" | "RELEASE";
 
@@ -42,6 +42,14 @@ function getAssigneeStatusLabel(status: EngineeringChangeWorkflowAssigneeStatus)
     return "반려";
   }
 
+  if (status === "CHANGES_REQUESTED") {
+    return "수정 요청";
+  }
+
+  if (status === "CANCELED") {
+    return "취소됨";
+  }
+
   return "대기";
 }
 
@@ -52,6 +60,14 @@ function getAssigneeStatusClassName(status: EngineeringChangeWorkflowAssigneeSta
 
   if (status === "REJECTED") {
     return "text-destructive";
+  }
+
+  if (status === "CHANGES_REQUESTED") {
+    return "text-amber-600";
+  }
+
+  if (status === "CANCELED") {
+    return "text-muted-foreground/50";
   }
 
   return "text-muted-foreground";

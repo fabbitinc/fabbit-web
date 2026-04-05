@@ -12,6 +12,8 @@ import {
   engineeringChangeReject as rejectEngineeringChangeApi,
   engineeringChangeRelease as releaseEngineeringChangeApi,
   engineeringChangeReplaceSteps as replaceEngineeringChangeStepsApi,
+  engineeringChangeRequestChanges as requestChangesEngineeringChangeApi,
+  engineeringChangeResubmit as resubmitEngineeringChangeApi,
   engineeringChangeSubmit as submitEngineeringChangeApi,
   engineeringChangeSyncAffectedItems as syncAffectedItemsApi,
   engineeringChangeSyncIssues as syncEngineeringChangeIssuesApi,
@@ -102,23 +104,50 @@ export async function submitEngineeringChange(engineeringChangeId: string): Prom
 
 export async function approveReviewEngineeringChange(
   engineeringChangeId: string,
+  stepAction: { step_id: string; comment?: string },
 ): Promise<EngineeringChangeDetailModel> {
-  const response = await approveReviewEngineeringChangeApi(engineeringChangeId);
+  const response = await approveReviewEngineeringChangeApi(engineeringChangeId, stepAction);
   return toEngineeringChangeDetailModel(response as EngineeringChangeDetailResponseDto);
 }
 
-export async function approveEngineeringChange(engineeringChangeId: string): Promise<EngineeringChangeDetailModel> {
-  const response = await approveEngineeringChangeApi(engineeringChangeId);
+export async function approveEngineeringChange(
+  engineeringChangeId: string,
+  stepAction: { step_id: string; comment?: string },
+): Promise<EngineeringChangeDetailModel> {
+  const response = await approveEngineeringChangeApi(engineeringChangeId, stepAction);
   return toEngineeringChangeDetailModel(response as EngineeringChangeDetailResponseDto);
 }
 
-export async function releaseEngineeringChange(engineeringChangeId: string): Promise<EngineeringChangeDetailModel> {
-  const response = await releaseEngineeringChangeApi(engineeringChangeId);
+export async function releaseEngineeringChange(
+  engineeringChangeId: string,
+  stepAction: { step_id: string; comment?: string },
+): Promise<EngineeringChangeDetailModel> {
+  const response = await releaseEngineeringChangeApi(engineeringChangeId, stepAction);
   return toEngineeringChangeDetailModel(response as EngineeringChangeDetailResponseDto);
 }
 
-export async function rejectEngineeringChange(engineeringChangeId: string): Promise<EngineeringChangeDetailModel> {
-  const response = await rejectEngineeringChangeApi(engineeringChangeId);
+export async function rejectEngineeringChange(
+  engineeringChangeId: string,
+  stepAction: { step_id: string; comment?: string },
+): Promise<EngineeringChangeDetailModel> {
+  const response = await rejectEngineeringChangeApi(engineeringChangeId, stepAction);
+  return toEngineeringChangeDetailModel(response as EngineeringChangeDetailResponseDto);
+}
+
+export async function requestChangesEngineeringChange(
+  engineeringChangeId: string,
+  stepId: string,
+  stepAction: { step_id: string; comment?: string },
+): Promise<EngineeringChangeDetailModel> {
+  const response = await requestChangesEngineeringChangeApi(engineeringChangeId, stepId, stepAction);
+  return toEngineeringChangeDetailModel(response as EngineeringChangeDetailResponseDto);
+}
+
+export async function resubmitEngineeringChangeStep(
+  engineeringChangeId: string,
+  stepId: string,
+): Promise<EngineeringChangeDetailModel> {
+  const response = await resubmitEngineeringChangeApi(engineeringChangeId, stepId);
   return toEngineeringChangeDetailModel(response as EngineeringChangeDetailResponseDto);
 }
 
@@ -453,12 +482,16 @@ function deriveWorkflowModel(
     const stageSteps = grouped.get(config.type) ?? [];
     stageSteps.sort((a, b) => (a.sequence ?? 0) - (b.sequence ?? 0));
 
+    const firstStep = stageSteps[0];
+
     return {
       id: config.type.toLowerCase(),
       label: config.label,
       type: config.type,
       status: stateMap[config.type] ?? "pending",
       description: config.description,
+      completionPolicy: (firstStep?.completion_policy as EngineeringChangeWorkflowStageModel["completionPolicy"]) ?? undefined,
+      deadline: firstStep?.deadline ?? null,
       assignees: stageSteps.map(toWorkflowAssigneeModel),
     };
   });
@@ -478,7 +511,7 @@ function toWorkflowAssigneeModel(step: StepResponse): EngineeringChangeWorkflowA
       ? (step.assignee_team?.name ?? "알 수 없는 팀")
       : (step.assignee_user?.full_name ?? "알 수 없는 사용자"),
     type: (step.assignee_type as "USER" | "TEAM") ?? "USER",
-    status: (step.status as "PENDING" | "APPROVED" | "REJECTED") ?? "PENDING",
+    status: (step.status as EngineeringChangeWorkflowAssigneeModel["status"]) ?? "PENDING",
     profileImageUrl: step.assignee_user?.profile_image_url ?? null,
     actedAt: step.acted_at ?? null,
     actedByName: step.acted_by?.full_name ?? null,

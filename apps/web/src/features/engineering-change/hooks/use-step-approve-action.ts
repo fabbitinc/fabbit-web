@@ -8,30 +8,31 @@ import {
 import { invalidateEngineeringChangeQueries } from "@/features/engineering-change/lib/invalidate-engineering-change-queries";
 import { extractApiError } from "@/lib/api-error";
 
-export function useMergeEngineeringChangeAction(engineeringChangeId: string, state: string | null | undefined) {
+export function useStepApproveAction(engineeringChangeId: string, ecState: string | null | undefined) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationKey: ["engineering-change", engineeringChangeId, "merge-engineering-change-action"],
-    mutationFn: async () => {
-      const normalized = state?.toUpperCase() ?? "";
+    mutationKey: ["engineering-change", engineeringChangeId, "step-approve"],
+    mutationFn: async ({ stepId, comment }: { stepId: string; comment?: string }) => {
+      const normalized = ecState?.toUpperCase() ?? "";
+      const stepAction = { step_id: stepId, comment };
 
       if (normalized === "REVIEW_PENDING") {
-        return approveReviewEngineeringChange(engineeringChangeId);
+        return approveReviewEngineeringChange(engineeringChangeId, stepAction);
       }
 
       if (normalized === "APPROVAL_PENDING") {
-        return approveEngineeringChange(engineeringChangeId);
+        return approveEngineeringChange(engineeringChangeId, stepAction);
       }
 
-      return releaseEngineeringChange(engineeringChangeId);
+      return releaseEngineeringChange(engineeringChangeId, stepAction);
     },
     onSuccess: async () => {
-      toast.success("변경관리 단계를 진행했습니다.");
+      toast.success("단계를 승인했습니다.");
       await invalidateEngineeringChangeQueries(queryClient, engineeringChangeId, { includeList: true });
     },
     onError: (error) => {
-      toast.error(extractApiError(error, "변경관리 단계 진행에 실패했습니다."));
+      toast.error(extractApiError(error, "단계 승인에 실패했습니다."));
     },
   });
 }
