@@ -76,6 +76,7 @@ function toNumberingCategoryModel(dto: PartCategoryResponse): NumberingCategoryM
     formatPrefix: dto.format_prefix ?? "",
     formatSuffix: dto.format_suffix ?? "",
     digits: dto.digits ?? 4,
+    autoNumberingEnabled: dto.auto_numbering_enabled ?? false,
     previewPartNumber: dto.preview_part_number ?? "",
   };
 }

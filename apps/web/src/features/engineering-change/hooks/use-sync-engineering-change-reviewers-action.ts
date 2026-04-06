@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { replaceEngineeringChangeSteps } from "@/features/engineering-change/api/engineering-change.api";
 import { invalidateEngineeringChangeQueries } from "@/features/engineering-change/lib/invalidate-engineering-change-queries";
-import { EngineeringChangeStepRequestAssigneeType } from "@/api/generated/orval/model/engineeringChangeStepRequestAssigneeType";
+import { AssigneeRequestAssigneeType } from "@/api/generated/orval/model/assigneeRequestAssigneeType";
 import { EngineeringChangeStepRequestStepType } from "@/api/generated/orval/model/engineeringChangeStepRequestStepType";
 import { extractApiError } from "@/lib/api-error";
 
@@ -15,7 +15,7 @@ export function useSyncEngineeringChangeReviewersAction(engineeringChangeId: str
       replaceEngineeringChangeSteps(engineeringChangeId, {
         steps: userIds.map((userId, index) => ({
           assignee_id: userId,
-          assignee_type: EngineeringChangeStepRequestAssigneeType.USER,
+          assignee_type: AssigneeRequestAssigneeType.USER,
           sequence: index + 1,
           step_type: EngineeringChangeStepRequestStepType.REVIEW,
         })),

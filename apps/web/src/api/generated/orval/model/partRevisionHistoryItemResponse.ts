@@ -6,6 +6,7 @@
  */
 import type { PartRevisionDiffSummaryResponse } from './partRevisionDiffSummaryResponse';
 import type { PartRevisionHistoryDraftResponse } from './partRevisionHistoryDraftResponse';
+import type { PartRevisionHistoryItemResponseReleaseWorkflowType } from './partRevisionHistoryItemResponseReleaseWorkflowType';
 import type { PartRevisionHistoryItemResponseStatus } from './partRevisionHistoryItemResponseStatus';
 import type { PartUserSummaryResponse } from './partUserSummaryResponse';
 
@@ -19,6 +20,11 @@ export interface PartRevisionHistoryItemResponse {
   name?: string;
   released_at?: string;
   released_by?: PartUserSummaryResponse;
+  release_reason?: string;
+  release_workflow_type?: PartRevisionHistoryItemResponseReleaseWorkflowType;
+  release_source_id?: string;
+  release_source_number?: number;
+  release_source_title?: string;
   summary?: PartRevisionDiffSummaryResponse;
   drafts?: PartRevisionHistoryDraftResponse[];
 }

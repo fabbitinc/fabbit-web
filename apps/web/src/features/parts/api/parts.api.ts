@@ -491,7 +491,7 @@ function toPartDetailModel(part: PartDetailResponseDto): PartDetailModel {
     material: part.material ?? null,
     unit: part.unit ?? null,
     description: part.description ?? null,
-    category: part.numbering_category_id ?? null,
+    category: part.category_name ?? null,
     lifecycleState: part.lifecycle_state ?? null,
     isPhantom: part.item_type === "PHANTOM",
     leadTimeDays: part.lead_time_days ?? null,
@@ -619,6 +619,11 @@ function toPartRevisionHistoryItemModel(
     name: item.name ?? null,
     releasedAt: item.released_at ?? null,
     releasedByName: item.released_by?.full_name ?? null,
+    releaseReason: item.release_reason ?? null,
+    releaseWorkflowType: item.release_workflow_type ?? null,
+    releaseSourceId: item.release_source_id ?? null,
+    releaseSourceNumber: item.release_source_number ?? null,
+    releaseSourceTitle: item.release_source_title ?? null,
     summary: item.summary
       ? {
           attributeChanges: item.summary.attribute_changes ?? 0,
@@ -637,6 +642,7 @@ function toPartRevisionHistoryDraftModel(
     revisionId: draft.revision_id ?? "",
     name: draft.name ?? null,
     status: draft.status ?? "DRAFT",
+    creationSourceType: draft.creation_source_type ?? null,
     createdAt: draft.created_at ?? null,
     createdByName: draft.created_by?.full_name ?? null,
     completedAt: draft.completed_at ?? null,

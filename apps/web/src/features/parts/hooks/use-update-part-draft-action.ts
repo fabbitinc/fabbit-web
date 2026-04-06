@@ -6,10 +6,8 @@ import type { PartDetailModel } from "@/features/parts/types/parts-model";
 import { extractApiError } from "@/lib/api-error";
 
 export interface UpdatePartDraftActionInput {
-  category: string;
   description: string;
   extendedProperties: Record<string, unknown>;
-  isPhantom: boolean;
   leadTimeDays: string;
   material: string;
   name: string;

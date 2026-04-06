@@ -3,11 +3,7 @@ export type OrganizationSettingsTab =
   | "members"
   | "parts"
   | "change"
-  | "billing"
-  | "usage"
-  | "security"
-  | "logs"
-  | "advanced";
+  | "usage";
 
 export type OrganizationMembersSubTab = "users" | "teams";
 export type OrganizationPartsSubTab = "properties" | "categories";

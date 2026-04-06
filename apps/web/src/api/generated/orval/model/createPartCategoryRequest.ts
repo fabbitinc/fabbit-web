@@ -20,7 +20,7 @@ export interface CreatePartCategoryRequest {
    * @minLength 0
    * @maxLength 20
    */
-  format_prefix: string;
+  format_prefix?: string;
   /**
    * 숫자 뒤 포맷 문자열
    * @minLength 0
@@ -29,8 +29,9 @@ export interface CreatePartCategoryRequest {
   format_suffix?: string;
   /**
    * 자릿수
-   * @minimum 1
    * @maximum 10
    */
   digits?: number;
+  /** 자동채번 활성화 여부 */
+  auto_numbering_enabled: boolean;
 }

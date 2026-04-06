@@ -2,17 +2,11 @@ import type { ReactNode } from "react";
 import {
   BarChart3,
   Building2,
-  CreditCard,
   GitPullRequestArrow,
-  History,
-  ListChecks,
   Package,
-  ShieldCheck,
   Users,
 } from "lucide-react";
 import { InlineTabs } from "@fabbit/ui";
-import { OrganizationAdvancedTab, type OrganizationAdvancedPolicyCard } from "./organization-advanced-tab";
-import { OrganizationLogsTab, type OrganizationLogsTabItem } from "./organization-logs-tab";
 import { SettingsShell, type SettingsNavItem } from "./settings-shell";
 import { UsageSection, type UsageSubTab } from "./usage-section";
 
@@ -20,22 +14,17 @@ export interface OrganizationSettingsScreenProps {
   activeTab: string;
   changeTab: string;
   memberTab: string;
+  partsTab: string;
   usageTab: UsageSubTab;
   generalContent: ReactNode;
   membersUsersContent: ReactNode;
   membersTeamsContent: ReactNode;
-  partsTab: string;
   partsPropertiesContent: ReactNode;
   partsCategoriesContent: ReactNode;
   changeGeneralContent: ReactNode;
   labelsContent: ReactNode;
-  billingContent: ReactNode;
   usageStorageContent: ReactNode;
   usageAiContent: ReactNode;
-  securityContent: ReactNode;
-  logs: OrganizationLogsTabItem[];
-  logsCaption?: string;
-  advancedPolicies?: OrganizationAdvancedPolicyCard[];
   onActiveTabChange: (tab: string) => void;
   onChangeTabChange: (tab: string) => void;
   onMemberTabChange: (tab: string) => void;
@@ -48,11 +37,7 @@ const tabs: SettingsNavItem[] = [
   { id: "members", label: "멤버", icon: Users },
   { id: "parts", label: "부품", icon: Package },
   { id: "change", label: "변경 관리", icon: GitPullRequestArrow },
-  { id: "billing", label: "결제 관리", icon: CreditCard },
   { id: "usage", label: "사용량", icon: BarChart3 },
-  { id: "security", label: "보안", icon: ShieldCheck },
-  { id: "logs", label: "로그 기록", icon: History },
-  { id: "advanced", label: "기타 설정", icon: ListChecks },
 ];
 
 const memberTabs = [
@@ -83,13 +68,8 @@ export function OrganizationSettingsScreen({
   partsCategoriesContent,
   changeGeneralContent,
   labelsContent,
-  billingContent,
   usageStorageContent,
   usageAiContent,
-  securityContent,
-  logs,
-  logsCaption,
-  advancedPolicies,
   onActiveTabChange,
   onChangeTabChange,
   onMemberTabChange,
@@ -99,7 +79,7 @@ export function OrganizationSettingsScreen({
   return (
     <SettingsShell
       activeTab={activeTab}
-      description="조직 멤버, 부품 운영 규칙, 라벨, 과금과 사용량을 관리합니다."
+      description="조직 멤버, 부품 운영 규칙, 라벨, 사용량을 관리합니다."
       tabs={tabs}
       title="조직 설정"
       onTabChange={onActiveTabChange}
@@ -123,7 +103,6 @@ export function OrganizationSettingsScreen({
           {changeTab === "general" ? changeGeneralContent : labelsContent}
         </div>
       ) : null}
-      {activeTab === "billing" ? billingContent : null}
       {activeTab === "usage" ? (
         <UsageSection
           activeSubTab={usageTab}
@@ -132,9 +111,6 @@ export function OrganizationSettingsScreen({
           onSubTabChange={onUsageTabChange}
         />
       ) : null}
-      {activeTab === "security" ? securityContent : null}
-      {activeTab === "logs" ? <OrganizationLogsTab caption={logsCaption} logs={logs} /> : null}
-      {activeTab === "advanced" ? <OrganizationAdvancedTab cards={advancedPolicies} /> : null}
     </SettingsShell>
   );
 }

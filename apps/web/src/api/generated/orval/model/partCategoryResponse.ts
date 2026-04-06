@@ -19,6 +19,8 @@ export interface PartCategoryResponse {
   format_suffix?: string;
   /** 자릿수 */
   digits?: number;
+  /** 자동채번 활성화 여부 */
+  auto_numbering_enabled?: boolean;
   /** 예시 품번 */
   preview_part_number?: string;
 }

@@ -41,9 +41,8 @@ const DEFAULT_UNIT_OPTIONS: PartEditorScreenOption[] = [
 ];
 
 const INITIAL_FORM_VALUES: PartEditorScreenFormValues = {
-  category: null,
   description: "",
-  isPhantom: false,
+  itemType: "MANUFACTURED",
   leadTimeDays: "",
   lifecycleState: null,
   material: "",
@@ -84,16 +83,17 @@ export function PartCreateScreen({ onBack, onCreated }: PartCreateScreenProps) {
     onSuccess: onCreated,
   });
 
-  // 채번 카테고리 관련 상태
+  // 카테고리 관련 상태
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | undefined>();
-  const [numberingMode, setNumberingMode] = useState<"manual" | "auto">("manual");
   const [partNumberForCheck, setPartNumberForCheck] = useState("");
   const [inlineModalOpen, setInlineModalOpen] = useState(false);
 
-  // 채번 카테고리 쿼리 훅
+  // 카테고리 쿼리 훅
   const categoriesQuery = useNumberingCategoriesQuery();
+  const selectedCategory = (categoriesQuery.data ?? []).find((c) => c.id === selectedCategoryId);
+  const isAutoMode = selectedCategory?.autoNumberingEnabled ?? false;
   const nextNumberQuery = useNextNumberQuery(
-    numberingMode === "auto" ? selectedCategoryId : undefined,
+    isAutoMode ? selectedCategoryId : undefined,
   );
   const checkNumberQuery = useCheckNumberQuery(partNumberForCheck);
 
@@ -118,7 +118,6 @@ export function PartCreateScreen({ onBack, onCreated }: PartCreateScreenProps) {
     return null;
   })();
 
-  const categoryOptions = toOptions(filterOptionsQuery.data?.categories ?? []);
   const lifecycleOptions = filterOptionsQuery.data?.lifecycleStates?.length
     ? toOptions(filterOptionsQuery.data.lifecycleStates)
     : DEFAULT_LIFECYCLE_OPTIONS;
@@ -148,25 +147,12 @@ export function PartCreateScreen({ onBack, onCreated }: PartCreateScreenProps) {
     setSelectedCategoryId(categoryId);
   }, []);
 
-  const handleNumberingModeChange = useCallback((mode: "manual" | "auto") => {
-    setNumberingMode(mode);
-  }, []);
-
-  // 카테고리 목록을 PartEditorScreen에 전달할 형태로 변환
-  const numberingCategories = (categoriesQuery.data ?? []).map((c) => ({
-    id: c.id,
-    name: c.name,
-    prefix: c.formatPrefix,
-    delimiter: c.formatSuffix,
-    digits: c.digits,
-    previewPartNumber: c.previewPartNumber,
-  }));
+  const numberingMode = isAutoMode ? "auto" : "manual";
 
   return (
     <>
       <PartEditorScreen
         backLabel="부품 목록"
-        categoryOptions={categoryOptions}
         extendedFields={extendedFields}
         formValues={formValues}
         isSubmitting={createPartAction.isPending}
@@ -174,8 +160,7 @@ export function PartCreateScreen({ onBack, onCreated }: PartCreateScreenProps) {
         mode="create"
         systemFields={systemFields}
         unitOptions={DEFAULT_UNIT_OPTIONS}
-        // 채번 카테고리 props
-        numberingCategories={numberingCategories}
+        numberingCategories={categoriesQuery.data ?? []}
         numberingCategoriesLoading={categoriesQuery.isLoading}
         selectedNumberingCategoryId={selectedCategoryId}
         nextPartNumber={nextNumberQuery.data?.partNumber ?? null}
@@ -185,7 +170,6 @@ export function PartCreateScreen({ onBack, onCreated }: PartCreateScreenProps) {
         isAdmin={isAdmin}
         onNumberingCategoryChange={handleNumberingCategoryChange}
         onPartNumberBlur={handlePartNumberBlur}
-        onNumberingModeChange={handleNumberingModeChange}
         onInlineCreateCategory={() => setInlineModalOpen(true)}
         onBack={onBack}
         onChange={setFormValues}
@@ -193,18 +177,15 @@ export function PartCreateScreen({ onBack, onCreated }: PartCreateScreenProps) {
         onSubmit={() => {
           try {
             createPartAction.mutate({
-              category: formValues.category ?? "",
+              categoryId: selectedCategoryId || "",
+              itemType: formValues.itemType || "MANUFACTURED",
               description: formValues.description,
               extendedProperties: buildPartCustomPropertiesPayload(propertyMetaQuery.data ?? [], extendedFields),
-              isPhantom: formValues.isPhantom,
               leadTimeDays: formValues.leadTimeDays,
               lifecycleState: toCreatePartLifecycleState(formValues.lifecycleState),
               material: formValues.material,
               name: formValues.name,
-              // 자동 채번 모드에서는 numberingCategoryId를 전달하고 partNumber는 생략
-              ...(numberingMode === "auto" && selectedCategoryId
-                ? { numberingCategoryId: selectedCategoryId }
-                : { partNumber: formValues.partNumber }),
+              partNumber: numberingMode === "manual" ? formValues.partNumber : undefined,
               unit: formValues.unit ?? "",
             });
           } catch (error) {
@@ -218,7 +199,19 @@ export function PartCreateScreen({ onBack, onCreated }: PartCreateScreenProps) {
         open={inlineModalOpen}
         isPending={inlineCreateAction.isPending}
         onClose={() => setInlineModalOpen(false)}
-        onSubmit={(values) => inlineCreateAction.mutate(values)}
+        onSubmit={(values) =>
+          inlineCreateAction.mutate({
+            name: values.name,
+            auto_numbering_enabled: values.autoNumberingEnabled,
+            ...(values.autoNumberingEnabled
+              ? {
+                  format_prefix: values.formatPrefix,
+                  format_suffix: values.formatSuffix || undefined,
+                  digits: values.digits,
+                }
+              : {}),
+          })
+        }
       />
     </>
   );

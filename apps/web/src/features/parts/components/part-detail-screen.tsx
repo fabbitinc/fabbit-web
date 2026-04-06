@@ -73,7 +73,7 @@ const REVISION_STATUS_MAP: Record<string, PartHistoryRevisionStatus> = {
 function toHistoryDraft(draft: PartRevisionHistoryDraftModel): PartHistoryDraft {
   return {
     id: draft.revisionId,
-    label: "초안 생성",
+    creationSourceType: draft.creationSourceType ?? undefined,
     status: REVISION_STATUS_MAP[draft.status] ?? "draft",
     createdAt: draft.createdAt ?? undefined,
     createdBy: draft.createdByName ?? undefined,
@@ -92,6 +92,10 @@ function toHistoryRevisions(items: PartRevisionHistoryItemModel[]): PartHistoryR
     author: item.releasedByName ?? undefined,
     timestamp: item.releasedAt ?? undefined,
     status: REVISION_STATUS_MAP[item.status] ?? "draft",
+    releaseReason: item.releaseReason ?? undefined,
+    releaseWorkflowType: item.releaseWorkflowType ?? undefined,
+    releaseSourceNumber: item.releaseSourceNumber ?? undefined,
+    releaseSourceTitle: item.releaseSourceTitle ?? undefined,
     changeSummary: item.summary
       ? {
           property: item.summary.attributeChanges,

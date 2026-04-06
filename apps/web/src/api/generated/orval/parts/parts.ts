@@ -10,11 +10,9 @@ import type {
   ChangePartLifecycleStateRequest,
   ChangePartLifecycleStateResponse,
   CreatePartRequest,
-  PartChangeHistoryResponse,
   PartDetailResponse,
   PartExportParams,
   PartFilterOptionsResponse,
-  PartGetChangeHistoryParams,
   PartImpactAnalysisResponse,
   PartInProgressListResponse,
   PartListInProgressParams,
@@ -84,20 +82,6 @@ export const partGetImpactAnalysis = (
  options?: SecondParameter<typeof customInstance<PartImpactAnalysisResponse | void>>,) => {
       return customInstance<PartImpactAnalysisResponse | void>(
       {url: `/api/v1/parts/${partId}/impact-analysis`, method: 'GET'
-    },
-      options);
-    }
-  /**
- * 특정 부품과 연결된 이슈, 설계변경 릴리즈, 리비전 이력을 시간순으로 조회합니다
- * @summary 부품 변경 이력을 조회합니다
- */
-export const partGetChangeHistory = (
-    partId: string,
-    params?: PartGetChangeHistoryParams,
- options?: SecondParameter<typeof customInstance<PartChangeHistoryResponse | void>>,) => {
-      return customInstance<PartChangeHistoryResponse | void>(
-      {url: `/api/v1/parts/${partId}/change-history`, method: 'GET',
-        params
     },
       options);
     }
@@ -193,7 +177,6 @@ export const partLookupCategories = (
 export type PartCreateResult = NonNullable<Awaited<ReturnType<typeof partCreate>>>
 export type PartChangeLifecycleStateResult = NonNullable<Awaited<ReturnType<typeof partChangeLifecycleState>>>
 export type PartGetImpactAnalysisResult = NonNullable<Awaited<ReturnType<typeof partGetImpactAnalysis>>>
-export type PartGetChangeHistoryResult = NonNullable<Awaited<ReturnType<typeof partGetChangeHistory>>>
 export type PartLookupRevisionsResult = NonNullable<Awaited<ReturnType<typeof partLookupRevisions>>>
 export type PartLookupResult = NonNullable<Awaited<ReturnType<typeof partLookup>>>
 export type PartListInProgressResult = NonNullable<Awaited<ReturnType<typeof partListInProgress>>>

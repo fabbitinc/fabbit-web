@@ -2,7 +2,7 @@ import { useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
 import { UserSettingsScreen, type UserSettingsTab } from "@/features/user-settings";
 
-const validTabs = new Set<UserSettingsTab>(["profile", "security", "notifications", "preferences"]);
+const validTabs = new Set<UserSettingsTab>(["profile", "security"]);
 
 export function UserSettingsPage() {
   const [searchParams, setSearchParams] = useSearchParams();

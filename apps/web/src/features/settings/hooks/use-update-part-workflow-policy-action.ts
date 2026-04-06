@@ -23,7 +23,10 @@ export function useUpdatePartWorkflowPolicyAction() {
 
   return {
     ...mutation,
-    updatePartWorkflowMode: (mode: PartWorkflowMode) => mutation.mutate({ mode }),
+    updatePartWorkflowMode: (
+      mode: PartWorkflowMode,
+      options?: { onSuccess?: () => void },
+    ) => mutation.mutate({ mode }, { onSuccess: options?.onSuccess }),
     updatePartWorkflowModeAsync: (mode: PartWorkflowMode) =>
       mutation.mutateAsync({ mode }),
   };

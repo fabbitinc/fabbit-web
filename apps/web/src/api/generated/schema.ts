@@ -2816,26 +2816,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/parts/{partId}/change-history": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * 부품 변경 이력을 조회합니다
-         * @description 특정 부품과 연결된 이슈, 설계변경 릴리즈, 리비전 이력을 시간순으로 조회합니다
-         */
-        get: operations["partGetChangeHistory"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/parts/revisions/lookup": {
         parameters: {
             query?: never;
@@ -3778,7 +3758,7 @@ export interface components {
              * @description 숫자 앞 포맷 문자열
              * @example PCB-
              */
-            format_prefix: string;
+            format_prefix?: string;
             /**
              * @description 숫자 뒤 포맷 문자열
              * @example -A
@@ -3790,6 +3770,11 @@ export interface components {
              * @example 4
              */
             digits?: number;
+            /**
+             * @description 자동채번 활성화 여부
+             * @example true
+             */
+            auto_numbering_enabled: boolean;
         };
         /** @description 부품 카테고리 응답 */
         PartCategoryResponse: {
@@ -3820,6 +3805,11 @@ export interface components {
              * @example 4
              */
             digits?: number;
+            /**
+             * @description 자동채번 활성화 여부
+             * @example true
+             */
+            auto_numbering_enabled?: boolean;
             /**
              * @description 예시 품번
              * @example PCB-0001
@@ -4202,17 +4192,21 @@ export interface components {
             created_at?: string;
         };
         JsonNode: {
-            float?: boolean;
             null?: boolean;
+            float?: boolean;
             array?: boolean;
             empty?: boolean;
-            number?: boolean;
-            value_node?: boolean;
-            missing_node?: boolean;
-            object?: boolean;
+            integral_number?: boolean;
+            floating_point_number?: boolean;
+            pojo?: boolean;
+            int?: boolean;
+            long?: boolean;
             /** @enum {string} */
             node_type?: "ARRAY" | "BINARY" | "BOOLEAN" | "MISSING" | "NULL" | "NUMBER" | "OBJECT" | "POJO" | "STRING";
             string?: boolean;
+            value_node?: boolean;
+            missing_node?: boolean;
+            object?: boolean;
             short?: boolean;
             double?: boolean;
             big_decimal?: boolean;
@@ -4221,12 +4215,8 @@ export interface components {
             textual?: boolean;
             boolean?: boolean;
             binary?: boolean;
+            number?: boolean;
             container?: boolean;
-            pojo?: boolean;
-            int?: boolean;
-            long?: boolean;
-            integral_number?: boolean;
-            floating_point_number?: boolean;
             embedded_value?: boolean;
         };
         /** @description 연결 이슈 요약 */
@@ -5043,6 +5033,7 @@ export interface components {
             part_number?: string;
             /** Format: uuid */
             category_id?: string;
+            category_name?: string;
             /** Format: uuid */
             base_revision_id?: string;
             base_revision_code?: string;
@@ -5395,7 +5386,7 @@ export interface components {
              * @description 숫자 앞 포맷 문자열
              * @example PCB-
              */
-            format_prefix: string;
+            format_prefix?: string;
             /**
              * @description 숫자 뒤 포맷 문자열
              * @example -A
@@ -5407,6 +5398,11 @@ export interface components {
              * @example 4
              */
             digits?: number;
+            /**
+             * @description 자동채번 활성화 여부
+             * @example true
+             */
+            auto_numbering_enabled: boolean;
         };
         /** @description 조직 생성 요청 */
         CreateOrganizationRequest: {
@@ -7923,6 +7919,8 @@ export interface components {
             /** Format: date-time */
             created_at?: string;
             created_by?: components["schemas"]["PartUserSummaryResponse"];
+            /** @enum {string} */
+            creation_source_type?: "USER" | "SYNTHESIS";
             /** Format: date-time */
             completed_at?: string;
             completed_by?: components["schemas"]["PartUserSummaryResponse"];
@@ -7940,51 +7938,20 @@ export interface components {
             /** Format: date-time */
             released_at?: string;
             released_by?: components["schemas"]["PartUserSummaryResponse"];
+            release_reason?: string;
+            /** @enum {string} */
+            release_workflow_type?: "DIRECT" | "ENGINEERING_CHANGE";
+            /** Format: uuid */
+            release_source_id?: string;
+            /** Format: int32 */
+            release_source_number?: number;
+            release_source_title?: string;
             summary?: components["schemas"]["PartRevisionDiffSummaryResponse"];
             drafts?: components["schemas"]["PartRevisionHistoryDraftResponse"][];
         };
         /** @description 리비전 이력 목록 응답 */
         PartRevisionHistoryResponse: {
             items?: components["schemas"]["PartRevisionHistoryItemResponse"][];
-        };
-        /** @description 부품 변경 이력 항목 */
-        PartChangeHistoryItemResponse: {
-            /**
-             * Format: date-time
-             * @description 시각
-             */
-            timestamp?: string;
-            /**
-             * @description 유형
-             * @example EC_RELEASED
-             */
-            type?: string;
-            /**
-             * Format: uuid
-             * @description 참조 ID
-             */
-            reference_id?: string;
-            /**
-             * Format: int32
-             * @description 참조 번호
-             * @example 12
-             */
-            reference_number?: number;
-            /**
-             * @description 제목
-             * @example 부품 재질 변경
-             */
-            title?: string;
-            /**
-             * @description 행위자 이름
-             * @example 홍길동
-             */
-            actor_name?: string;
-        };
-        /** @description 부품 변경 이력 응답 */
-        PartChangeHistoryResponse: {
-            /** @description 변경 이력 항목 목록 */
-            items?: components["schemas"]["PartChangeHistoryItemResponse"][];
         };
         /** @description 부품 리비전 lookup 항목 */
         PartRevisionLookupItemResponse: {
@@ -20997,83 +20964,6 @@ export interface operations {
                 content: {
                     "application/json": components["schemas"]["PartRevisionHistoryResponse"];
                 };
-            };
-            /** @description 잘못된 요청 */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiErrorResponse"];
-                };
-            };
-            /** @description 인증 필요 */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiErrorResponse"];
-                };
-            };
-            /** @description 권한 없음 */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiErrorResponse"];
-                };
-            };
-            /** @description 리소스를 찾을 수 없음 */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiErrorResponse"];
-                };
-            };
-        };
-    };
-    partGetChangeHistory: {
-        parameters: {
-            query?: {
-                offset?: number;
-                limit?: number;
-            };
-            header?: never;
-            path: {
-                partId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description 요청 성공 */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PartChangeHistoryResponse"];
-                };
-            };
-            /** @description 생성 성공 */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PartChangeHistoryResponse"];
-                };
-            };
-            /** @description 삭제 성공 */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
             };
             /** @description 잘못된 요청 */
             400: {

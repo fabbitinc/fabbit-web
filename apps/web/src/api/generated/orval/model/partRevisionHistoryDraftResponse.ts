@@ -4,6 +4,7 @@
  * OpenAPI definition
  * OpenAPI spec version: v0
  */
+import type { PartRevisionHistoryDraftResponseCreationSourceType } from './partRevisionHistoryDraftResponseCreationSourceType';
 import type { PartRevisionHistoryDraftResponseStatus } from './partRevisionHistoryDraftResponseStatus';
 import type { PartUserSummaryResponse } from './partUserSummaryResponse';
 
@@ -16,6 +17,7 @@ export interface PartRevisionHistoryDraftResponse {
   status?: PartRevisionHistoryDraftResponseStatus;
   created_at?: string;
   created_by?: PartUserSummaryResponse;
+  creation_source_type?: PartRevisionHistoryDraftResponseCreationSourceType;
   completed_at?: string;
   completed_by?: PartUserSummaryResponse;
   released_revision_code?: string;

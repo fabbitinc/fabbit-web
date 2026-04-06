@@ -1,1 +1,1 @@
-export type UserSettingsTab = "profile" | "security" | "notifications" | "preferences";
+export type UserSettingsTab = "profile" | "security";

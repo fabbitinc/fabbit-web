@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { replaceEngineeringChangeSteps } from "@/features/engineering-change/api/engineering-change.api";
 import { invalidateEngineeringChangeQueries } from "@/features/engineering-change/lib/invalidate-engineering-change-queries";
-import { EngineeringChangeStepRequestAssigneeType } from "@/api/generated/orval/model/engineeringChangeStepRequestAssigneeType";
+import { AssigneeRequestAssigneeType } from "@/api/generated/orval/model/assigneeRequestAssigneeType";
 import type { EngineeringChangeStepRequestStepType } from "@/api/generated/orval/model/engineeringChangeStepRequestStepType";
 import { extractApiError } from "@/lib/api-error";
 import type { EngineeringChangeWorkflowModel } from "@/features/engineering-change/types/engineering-change-model";
@@ -31,7 +31,7 @@ export function useSyncEngineeringChangeStepsAction(engineeringChangeId: string)
         .flatMap((stage) =>
           stage.assignees.map((assignee, index) => ({
             assignee_id: assignee.assigneeId,
-            assignee_type: assignee.type as EngineeringChangeStepRequestAssigneeType,
+            assignee_type: assignee.type as AssigneeRequestAssigneeType,
             sequence: index + 1,
             step_type: stage.type as EngineeringChangeStepRequestStepType,
           })),
@@ -40,7 +40,7 @@ export function useSyncEngineeringChangeStepsAction(engineeringChangeId: string)
       // 대상 단계의 새 step 생성
       const newSteps = userIds.map((userId, index) => ({
         assignee_id: userId,
-        assignee_type: EngineeringChangeStepRequestAssigneeType.USER,
+        assignee_type: AssigneeRequestAssigneeType.USER,
         sequence: index + 1,
         step_type: stageType,
       }));

@@ -19,6 +19,7 @@ export interface PartDetailResponse {
   revision_status?: PartDetailResponseRevisionStatus;
   part_number?: string;
   category_id?: string;
+  category_name?: string;
   base_revision_id?: string;
   base_revision_code?: string;
   name?: string;

@@ -1,6 +1,8 @@
 import type { PartDetailResponseLifecycleState } from "@/api/generated/orval/model/partDetailResponseLifecycleState";
 import type { PartDetailResponseRevisionStatus } from "@/api/generated/orval/model/partDetailResponseRevisionStatus";
+import type { PartRevisionHistoryDraftResponseCreationSourceType } from "@/api/generated/orval/model/partRevisionHistoryDraftResponseCreationSourceType";
 import type { PartRevisionHistoryDraftResponseStatus } from "@/api/generated/orval/model/partRevisionHistoryDraftResponseStatus";
+import type { PartRevisionHistoryItemResponseReleaseWorkflowType } from "@/api/generated/orval/model/partRevisionHistoryItemResponseReleaseWorkflowType";
 import type { PartRevisionHistoryItemResponseStatus } from "@/api/generated/orval/model/partRevisionHistoryItemResponseStatus";
 import type { PartSummaryResponseRevisionStatus } from "@/api/generated/orval/model/partSummaryResponseRevisionStatus";
 
@@ -256,6 +258,8 @@ export type PartDetailTab = "properties" | "bom" | "attachments" | "suppliers" |
 
 export type PartRevisionStatus = PartRevisionHistoryItemResponseStatus;
 export type PartRevisionDraftStatus = PartRevisionHistoryDraftResponseStatus;
+export type PartRevisionDraftCreationSourceType = PartRevisionHistoryDraftResponseCreationSourceType;
+export type PartRevisionReleaseWorkflowType = PartRevisionHistoryItemResponseReleaseWorkflowType;
 
 export interface PartRevisionHistoryChangeSummaryModel {
   attributeChanges: number;
@@ -267,6 +271,7 @@ export interface PartRevisionHistoryDraftModel {
   revisionId: string;
   name: string | null;
   status: PartRevisionDraftStatus;
+  creationSourceType: PartRevisionDraftCreationSourceType | null;
   createdAt: string | null;
   createdByName: string | null;
   completedAt: string | null;
@@ -282,6 +287,11 @@ export interface PartRevisionHistoryItemModel {
   name: string | null;
   releasedAt: string | null;
   releasedByName: string | null;
+  releaseReason: string | null;
+  releaseWorkflowType: PartRevisionReleaseWorkflowType | null;
+  releaseSourceId: string | null;
+  releaseSourceNumber: number | null;
+  releaseSourceTitle: string | null;
   summary: PartRevisionHistoryChangeSummaryModel | null;
   drafts: PartRevisionHistoryDraftModel[];
 }

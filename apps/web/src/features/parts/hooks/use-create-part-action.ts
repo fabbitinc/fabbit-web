@@ -7,16 +7,15 @@ import type { PartDetailModel } from "@/features/parts/types/parts-model";
 import { extractApiError } from "@/lib/api-error";
 
 export interface CreatePartActionInput {
-  category: string;
+  categoryId: string;
+  itemType: string;
   description: string;
   extendedProperties: Record<string, unknown>;
-  isPhantom: boolean;
   leadTimeDays: string;
   lifecycleState: CreatePartRequestDto["lifecycle_state"] | null;
   material: string;
   name: string;
   partNumber?: string;
-  numberingCategoryId?: string;
   unit: string;
 }
 
@@ -52,10 +51,9 @@ export function useCreatePartAction(options?: UseCreatePartActionOptions) {
     mutationKey: ["parts", "create-part-action"],
     mutationFn: (input: CreatePartActionInput) =>
       createPart({
-        // 자동 채번 모드일 때는 part_number를 생략하고 numbering_category_id를 전송
-        ...(input.numberingCategoryId
-          ? { numbering_category_id: input.numberingCategoryId }
-          : { part_number: (input.partNumber ?? "").trim() }),
+        category_id: input.categoryId,
+        item_type: input.itemType as CreatePartRequestDto["item_type"],
+        part_number: input.partNumber ? input.partNumber.trim() : undefined,
         name: toOptionalString(input.name),
         material: toOptionalString(input.material),
         unit: toOptionalString(input.unit),

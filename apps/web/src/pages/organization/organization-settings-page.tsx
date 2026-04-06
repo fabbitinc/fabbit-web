@@ -14,11 +14,7 @@ const validTabs = new Set<OrganizationSettingsTab>([
   "members",
   "parts",
   "change",
-  "billing",
   "usage",
-  "security",
-  "logs",
-  "advanced",
 ]);
 
 export function OrganizationSettingsPage() {

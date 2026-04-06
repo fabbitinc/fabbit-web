@@ -1,5 +1,5 @@
 import { OrganizationSettingsScreen as OrganizationSettingsScreenView } from "@fabbit/components";
-import { BillingSection, type UsageSubTab } from "@/features/billing";
+import { type UsageSubTab } from "@/features/billing";
 import { OrganizationChangeGeneralTab } from "@/features/organization-settings/components/organization-change-general-tab";
 import { AIUsageTab } from "@/features/billing/components/ai-usage-tab";
 import { StorageUsageTab } from "@/features/billing/components/storage-usage-tab";
@@ -8,9 +8,7 @@ import { OrganizationLabelsTab } from "@/features/organization-settings/componen
 import { OrganizationMembersUsersTab } from "@/features/organization-settings/components/organization-members-users-tab";
 import { OrganizationPartsCategoriesSettingsTab } from "@/features/organization-settings/components/organization-parts-categories-settings-tab";
 import { OrganizationPartsSettingsTab } from "@/features/organization-settings/components/organization-parts-settings-tab";
-import { OrganizationSecuritySettingsTab } from "@/features/organization-settings/components/organization-security-settings-tab";
 import { OrganizationTeamsTab } from "@/features/organization-settings/components/organization-teams-tab";
-import { mockActivityLogs } from "@/features/organization-settings/mock-data/activity-logs";
 import type {
   OrganizationChangeSubTab,
   OrganizationMembersSubTab,
@@ -57,11 +55,8 @@ export function OrganizationSettingsScreen({
       partsCategoriesContent={<OrganizationPartsCategoriesSettingsTab />}
       changeGeneralContent={<OrganizationChangeGeneralTab />}
       labelsContent={<OrganizationLabelsTab />}
-      billingContent={<BillingSection />}
       usageStorageContent={<StorageUsageTab />}
       usageAiContent={<AIUsageTab />}
-      securityContent={<OrganizationSecuritySettingsTab />}
-      logs={mockActivityLogs}
       onActiveTabChange={(tab) => onActiveTabChange(tab as OrganizationSettingsTab)}
       onChangeTabChange={(tab) => onChangeTabChange(tab as OrganizationChangeSubTab)}
       onMemberTabChange={(tab) => onMemberTabChange(tab as OrganizationMembersSubTab)}

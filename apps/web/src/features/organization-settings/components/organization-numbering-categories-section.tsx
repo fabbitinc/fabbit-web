@@ -8,6 +8,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
+  Badge,
   Button,
 } from "@fabbit/ui";
 import { Loader2, Pencil, Plus, Trash2 } from "lucide-react";
@@ -73,9 +74,7 @@ export function OrganizationNumberingCategoriesSection() {
             <thead className="bg-muted/40 text-muted-foreground">
               <tr>
                 <th className="px-4 py-3 text-left font-medium">이름</th>
-                <th className="px-4 py-3 text-left font-medium">접두어</th>
-                <th className="px-4 py-3 text-left font-medium">접미어</th>
-                <th className="px-4 py-3 text-left font-medium">자릿수</th>
+                <th className="px-4 py-3 text-left font-medium">자동 채번</th>
                 <th className="px-4 py-3 text-left font-medium">미리보기</th>
                 <th className="w-20 px-4 py-3">
                   <span className="sr-only">관리</span>
@@ -85,7 +84,7 @@ export function OrganizationNumberingCategoriesSection() {
             <tbody>
               {[1, 2, 3].map((i) => (
                 <tr key={i} className="border-t border-border/70">
-                  {[1, 2, 3, 4, 5, 6].map((j) => (
+                  {[1, 2, 3, 4].map((j) => (
                     <td key={j} className="px-4 py-3">
                       <div className="h-4 w-16 animate-pulse rounded bg-muted" />
                     </td>
@@ -124,9 +123,7 @@ export function OrganizationNumberingCategoriesSection() {
             <thead className="bg-muted/40 text-muted-foreground">
               <tr>
                 <th className="px-4 py-3 text-left font-medium">이름</th>
-                <th className="px-4 py-3 text-left font-medium">접두어</th>
-                <th className="px-4 py-3 text-left font-medium">접미어</th>
-                <th className="px-4 py-3 text-left font-medium">자릿수</th>
+                <th className="px-4 py-3 text-left font-medium">자동 채번</th>
                 <th className="px-4 py-3 text-left font-medium">미리보기</th>
                 <th className="w-20 px-4 py-3">
                   <span className="sr-only">관리</span>
@@ -137,13 +134,13 @@ export function OrganizationNumberingCategoriesSection() {
               {categories.map((category) => (
                 <tr key={category.id} className="border-t border-border/70">
                   <td className="px-4 py-3 font-medium">{category.name}</td>
-                  <td className="px-4 py-3 font-mono text-xs">{category.formatPrefix}</td>
-                  <td className="px-4 py-3 font-mono text-xs">
-                    {category.formatSuffix || <span className="text-muted-foreground/40">없음</span>}
+                  <td className="px-4 py-3">
+                    <Badge variant={category.autoNumberingEnabled ? "success" : "outline"}>
+                      {category.autoNumberingEnabled ? "사용 중" : "사용 안 함"}
+                    </Badge>
                   </td>
-                  <td className="px-4 py-3">{category.digits}</td>
                   <td className="px-4 py-3 font-mono text-xs text-muted-foreground">
-                    {category.previewPartNumber}
+                    {category.autoNumberingEnabled ? category.previewPartNumber : "—"}
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-1">
@@ -185,12 +182,18 @@ export function OrganizationNumberingCategoriesSection() {
           setEditTarget(null);
         }}
         onSubmit={(values) => {
-          const request = {
-            name: values.name,
-            format_prefix: values.formatPrefix,
-            format_suffix: values.formatSuffix || undefined,
-            digits: values.digits,
-          };
+          const request = values.autoNumberingEnabled
+            ? {
+                name: values.name,
+                auto_numbering_enabled: true as const,
+                format_prefix: values.formatPrefix,
+                format_suffix: values.formatSuffix || undefined,
+                digits: values.digits,
+              }
+            : {
+                name: values.name,
+                auto_numbering_enabled: false as const,
+              };
           if (editTarget) {
             updateAction.mutate(request, {
               onSuccess: () => {

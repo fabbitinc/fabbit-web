@@ -5,6 +5,7 @@ export interface NumberingCategoryModel {
   formatPrefix: string;
   formatSuffix: string;
   digits: number;
+  autoNumberingEnabled: boolean;
   previewPartNumber: string;
 }
 

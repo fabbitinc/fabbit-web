@@ -36,9 +36,8 @@ const DEFAULT_UNIT_OPTIONS: PartEditorScreenOption[] = [
 ];
 
 const EMPTY_FORM_VALUES: PartEditorScreenFormValues = {
-  category: null,
   description: "",
-  isPhantom: false,
+  itemType: "MANUFACTURED",
   leadTimeDays: "",
   lifecycleState: null,
   material: "",
@@ -61,9 +60,8 @@ function toOptions(values: string[]): PartEditorScreenOption[] {
 
 function toPartEditorFormValues(part: PartDetailModel): PartEditorScreenFormValues {
   return {
-    category: part.category,
     description: part.description ?? "",
-    isPhantom: part.isPhantom ?? false,
+    itemType: part.isPhantom ? "PHANTOM" : "MANUFACTURED",
     leadTimeDays: part.leadTimeDays != null ? String(part.leadTimeDays) : "",
     lifecycleState: part.lifecycleState,
     material: part.material ?? "",
@@ -148,7 +146,6 @@ export function PartEditScreen({ onBack, onSaved, partId, revisionId }: PartEdit
     });
   }, [partQuery.data, propertyMetaQuery.data, revisionId]);
 
-  const categoryOptions = toOptions(filterOptionsQuery.data?.categories ?? []);
   const lifecycleOptions = filterOptionsQuery.data?.lifecycleStates?.length
     ? toOptions(filterOptionsQuery.data.lifecycleStates)
     : DEFAULT_LIFECYCLE_OPTIONS;
@@ -187,7 +184,6 @@ export function PartEditScreen({ onBack, onSaved, partId, revisionId }: PartEdit
   return (
     <PartEditorScreen
       backLabel="부품 상세"
-      categoryOptions={categoryOptions}
       drawing={toDrawingSummary(part.drawing)}
       extendedFields={extendedFields}
       formValues={formValues}
@@ -211,10 +207,8 @@ export function PartEditScreen({ onBack, onSaved, partId, revisionId }: PartEdit
         {
           try {
             updatePartDraftAction.mutate({
-              category: formValues.category ?? "",
               description: formValues.description,
               extendedProperties: buildPartCustomPropertiesPayload(propertyMetaQuery.data ?? [], extendedFields),
-              isPhantom: formValues.isPhantom,
               leadTimeDays: formValues.leadTimeDays,
               material: formValues.material,
               name: formValues.name,

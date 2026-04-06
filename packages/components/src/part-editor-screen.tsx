@@ -12,7 +12,7 @@ import {
   Paperclip,
   Plus,
 } from "lucide-react";
-import { type ComponentType, useEffect, useRef, useState } from "react";
+import { type ComponentType, useState } from "react";
 import {
   Button,
   Command,
@@ -22,12 +22,9 @@ import {
   CommandItem,
   CommandList,
   Input,
-  Label,
   Popover,
   PopoverContent,
   PopoverTrigger,
-  RadioGroup,
-  RadioGroupItem,
   Select,
   SelectContent,
   SelectEmptyState,
@@ -50,15 +47,15 @@ export interface PartEditorScreenOption {
 }
 
 export type PartEditorScreenSystemFieldKey =
+  | "itemType"
+  | "category"
   | "partNumber"
   | "name"
   | "revision"
   | "lifecycleState"
-  | "category"
   | "material"
   | "unit"
   | "leadTimeDays"
-  | "isPhantom"
   | "description";
 
 export interface PartEditorScreenSystemField {
@@ -106,9 +103,8 @@ export interface PartEditorScreenReferenceStats {
 }
 
 export interface PartEditorScreenFormValues {
-  category: string | null;
   description: string;
-  isPhantom: boolean;
+  itemType: string;
   leadTimeDays: string;
   lifecycleState: string | null;
   material: string;
@@ -121,15 +117,15 @@ export interface PartEditorScreenFormValues {
 export interface PartEditorScreenNumberingCategory {
   id: string;
   name: string;
-  prefix: string;
-  delimiter: string;
+  formatPrefix: string;
+  formatSuffix: string;
   digits: number;
+  autoNumberingEnabled: boolean;
   previewPartNumber: string;
 }
 
 export interface PartEditorScreenProps {
   backLabel?: string;
-  categoryOptions: PartEditorScreenOption[];
   description?: string;
   drawing?: PartEditorScreenDrawingSummary | null;
   extendedFields?: PartEditorScreenExtendedField[];
@@ -155,7 +151,6 @@ export interface PartEditorScreenProps {
   isAdmin?: boolean;
   onNumberingCategoryChange?: (categoryId: string) => void;
   onPartNumberBlur?: (value: string) => void;
-  onNumberingModeChange?: (mode: "manual" | "auto") => void;
   onInlineCreateCategory?: () => void;
   onBack: () => void;
   onChange: (values: PartEditorScreenFormValues) => void;
@@ -177,92 +172,6 @@ interface EditorTabItem {
   value?: number | null;
 }
 
-interface CategoryComboboxProps {
-  className?: string;
-  options: PartEditorScreenOption[];
-  value: string | null;
-  onChange: (value: string | null) => void;
-}
-
-function CategoryCombobox({ className, options, value, onChange }: CategoryComboboxProps) {
-  const [open, setOpen] = useState(false);
-  const [search, setSearch] = useState("");
-
-  const displayValue = value ?? "";
-  const filtered = options.filter((o) =>
-    o.label.toLowerCase().includes(search.toLowerCase()),
-  );
-  const hasExactMatch = options.some((o) => o.value === search);
-
-  return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <button
-          type="button"
-          className={cn(
-            className,
-            "flex w-full items-center justify-between text-left",
-            !displayValue && "text-muted-foreground",
-          )}
-        >
-          <span className="truncate">{displayValue || "카테고리를 선택하거나 입력하세요"}</span>
-          <ChevronsUpDown className="ml-2 h-3.5 w-3.5 shrink-0 opacity-50" />
-        </button>
-      </PopoverTrigger>
-      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
-        <Command shouldFilter={false}>
-          <CommandInput
-            placeholder="검색 또는 직접 입력"
-            value={search}
-            onValueChange={setSearch}
-          />
-          <CommandList>
-            {filtered.length === 0 && !search.trim() ? (
-              <CommandEmpty>등록된 카테고리가 없습니다.</CommandEmpty>
-            ) : null}
-            {search.trim() && !hasExactMatch ? (
-              <CommandGroup heading="직접 입력">
-                <CommandItem
-                  value={`__custom__${search}`}
-                  onSelect={() => {
-                    onChange(search.trim());
-                    setOpen(false);
-                    setSearch("");
-                  }}
-                >
-                  <span>&ldquo;{search.trim()}&rdquo; 추가</span>
-                </CommandItem>
-              </CommandGroup>
-            ) : null}
-            {filtered.length > 0 ? (
-              <CommandGroup heading="카테고리">
-                {filtered.map((option) => (
-                  <CommandItem
-                    key={option.value}
-                    value={option.value}
-                    onSelect={() => {
-                      onChange(option.value === value ? null : option.value);
-                      setOpen(false);
-                      setSearch("");
-                    }}
-                  >
-                    <Check
-                      className={cn(
-                        "mr-2 h-3.5 w-3.5",
-                        value === option.value ? "opacity-100" : "opacity-0",
-                      )}
-                    />
-                    {option.label}
-                  </CommandItem>
-                ))}
-              </CommandGroup>
-            ) : null}
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
-  );
-}
 
 interface CreatableOptionComboboxProps {
   className?: string;
@@ -393,10 +302,10 @@ function NumberingCategorySelect({
     );
   }
 
-  if (categories.length === 0) {
+  if (categories.length === 0 && !isAdmin) {
     return (
       <div className="flex h-8 items-center rounded-md border border-input bg-background px-2.5 text-sm text-muted-foreground">
-        채번 규칙 없음
+        카테고리 없음
       </div>
     );
   }
@@ -406,14 +315,14 @@ function NumberingCategorySelect({
       <PopoverTrigger asChild>
         <button
           type="button"
-          aria-label="채번 카테고리"
+          aria-label="카테고리 선택"
           className={cn(
             "flex h-8 w-full items-center justify-between rounded-md border border-input bg-background px-2.5 text-sm shadow-xs",
             !selected && "text-muted-foreground",
           )}
         >
           <span className="truncate">
-            {selected ? `${selected.name} (${selected.previewPartNumber})` : "카테고리를 선택하세요"}
+            {selected ? selected.name : "카테고리를 선택하세요"}
           </span>
           <ChevronsUpDown className="ml-2 h-3.5 w-3.5 shrink-0 opacity-50" />
         </button>
@@ -438,9 +347,11 @@ function NumberingCategorySelect({
                     )}
                   />
                   <span className="flex-1 truncate">{category.name}</span>
-                  <span className="ml-2 font-mono text-xs text-muted-foreground">
-                    {category.previewPartNumber}
-                  </span>
+                  {category.autoNumberingEnabled ? (
+                    <span className="ml-2 font-mono text-xs text-muted-foreground">
+                      {category.previewPartNumber}
+                    </span>
+                  ) : null}
                 </CommandItem>
               ))}
             </CommandGroup>
@@ -456,7 +367,7 @@ function NumberingCategorySelect({
                     className="cursor-pointer"
                   >
                     <Plus className="mr-2 h-3.5 w-3.5" />
-                    새 채번 규칙 만들기
+                    새 카테고리 만들기
                   </CommandItem>
                 </CommandGroup>
               </>
@@ -469,21 +380,20 @@ function NumberingCategorySelect({
 }
 
 const DEFAULT_SYSTEM_FIELDS: PartEditorScreenSystemField[] = [
-  { key: "partNumber", label: "품번", displayOrder: 10 },
-  { key: "name", label: "품명", displayOrder: 20 },
-  { key: "revision", label: "리비전", displayOrder: 30 },
-  { key: "lifecycleState", label: "상태", displayOrder: 40 },
-  { key: "category", label: "카테고리", displayOrder: 50 },
-  { key: "material", label: "재질", displayOrder: 60 },
-  { key: "unit", label: "단위", displayOrder: 70 },
-  { key: "leadTimeDays", label: "리드타임", displayOrder: 80 },
-  { key: "isPhantom", label: "팬텀", displayOrder: 90 },
+  { key: "itemType", label: "아이템 유형", displayOrder: 10 },
+  { key: "category", label: "카테고리", displayOrder: 20 },
+  { key: "partNumber", label: "품번", displayOrder: 30 },
+  { key: "name", label: "품명", displayOrder: 40 },
+  { key: "revision", label: "리비전", displayOrder: 50 },
+  { key: "lifecycleState", label: "상태", displayOrder: 60 },
+  { key: "material", label: "재질", displayOrder: 70 },
+  { key: "unit", label: "단위", displayOrder: 80 },
+  { key: "leadTimeDays", label: "리드타임", displayOrder: 90 },
   { key: "description", label: "설명", displayOrder: 100 },
 ];
 
 export function PartEditorScreen({
   backLabel = "부품 관리",
-  categoryOptions,
   description,
   drawing,
   extendedFields = [],
@@ -505,7 +415,6 @@ export function PartEditorScreen({
   isAdmin = false,
   onNumberingCategoryChange,
   onPartNumberBlur,
-  onNumberingModeChange,
   onInlineCreateCategory,
   onBack,
   onChange,
@@ -525,32 +434,11 @@ export function PartEditorScreen({
     saveDraftLabel ?? (mode === "create" ? "초안 저장" : "임시 저장");
   const [submitted, setSubmitted] = useState(false);
 
-  // 채번 모드 상태
-  const hasNumberingCategories = (numberingCategories ?? []).length > 0;
-  const [numberingMode, setNumberingMode] = useState<"manual" | "auto">(
-    hasNumberingCategories ? "auto" : "manual",
-  );
-  const initialModeSet = useRef(false);
-  // 카테고리 로드 완료 시 기본 모드를 한 번만 설정 (사용자가 이미 타이핑을 시작했으면 수동 유지)
-  useEffect(() => {
-    if (initialModeSet.current) return;
-    if (numberingCategoriesLoading) return;
-    initialModeSet.current = true;
-    if (hasNumberingCategories && formValues.partNumber.trim() === "") {
-      setNumberingMode("auto");
-      onNumberingModeChange?.("auto");
-    } else {
-      setNumberingMode("manual");
-      onNumberingModeChange?.("manual");
-    }
-  }, [hasNumberingCategories, numberingCategoriesLoading, formValues.partNumber, onNumberingModeChange]);
-
-  // 수동 입력값 보존용 내부 상태
-  const [savedManualPartNumber, setSavedManualPartNumber] = useState(formValues.partNumber);
-
-  const isAutoMode = numberingMode === "auto";
+  // 선택된 카테고리의 자동 채번 여부에 따라 모드 결정
+  const selectedCategory = (numberingCategories ?? []).find((c) => c.id === selectedNumberingCategoryId);
+  const isAutoMode = selectedCategory?.autoNumberingEnabled ?? false;
+  const noCategorySelected = !selectedNumberingCategoryId;
   const partNumberEmpty = !isAutoMode && formValues.partNumber.trim() === "";
-  const autoModeNoCategorySelected = isAutoMode && !selectedNumberingCategoryId;
   const revisionLabel =
     mode === "create" ? "자동 부여" : formValues.revision.trim() || "미정";
   const headerDescription =
@@ -601,108 +489,89 @@ export function PartEditorScreen({
 
   const tableRows = [
     {
+      key: "itemType" as const,
+      value: (
+        <Select
+          value={formValues.itemType || "MANUFACTURED"}
+          onValueChange={(value) => onChange({ ...formValues, itemType: value })}
+        >
+          <SelectTrigger className={tableSelectTriggerClassName}>
+            <SelectValue placeholder="유형을 선택하세요" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="MANUFACTURED">제조</SelectItem>
+            <SelectItem value="PURCHASED">구매</SelectItem>
+            <SelectItem value="SUBCONTRACTED">외주</SelectItem>
+            <SelectItem value="SERVICE">서비스</SelectItem>
+            <SelectItem value="PHANTOM">팬텀</SelectItem>
+          </SelectContent>
+        </Select>
+      ),
+    },
+    {
+      key: "category" as const,
+      error: submitted && noCategorySelected ? "카테고리를 선택해 주세요." : undefined,
+      value: mode === "create" ? (
+        <NumberingCategorySelect
+          categories={numberingCategories ?? []}
+          loading={numberingCategoriesLoading}
+          selectedId={selectedNumberingCategoryId}
+          isAdmin={isAdmin}
+          onSelect={(id) => onNumberingCategoryChange?.(id)}
+          onInlineCreate={() => onInlineCreateCategory?.()}
+        />
+      ) : (
+        <span className="text-sm">{selectedCategory?.name ?? <span className="text-muted-foreground/40">—</span>}</span>
+      ),
+    },
+    {
       key: "partNumber" as const,
-      error: submitted && partNumberEmpty
-        ? "품번을 입력해 주세요."
-        : submitted && autoModeNoCategorySelected
-          ? "채번 카테고리를 선택해 주세요."
-          : undefined,
+      error: submitted && !isAutoMode && partNumberEmpty ? "품번을 입력해 주세요." : undefined,
       value: lockedFields?.partNumber ? (
         <span className="font-mono text-xs">{formValues.partNumber}</span>
-      ) : (
-        <div className="space-y-2">
-          {/* 채번 카테고리가 있을 때만 RadioGroup 표시 */}
-          {hasNumberingCategories && mode === "create" ? (
-            <RadioGroup
-              aria-label="품번 입력 방식"
-              className="flex items-center gap-4"
-              value={numberingMode}
-              onValueChange={(value: string) => {
-                const nextMode = value as "manual" | "auto";
-                if (nextMode === "manual" && isAutoMode) {
-                  // 자동 -> 수동 전환: 보존된 값 복원
-                  onChange({ ...formValues, partNumber: savedManualPartNumber });
-                }
-                if (nextMode === "auto" && !isAutoMode) {
-                  // 수동 -> 자동 전환: 현재 값 보존
-                  setSavedManualPartNumber(formValues.partNumber);
-                }
-                setNumberingMode(nextMode);
-                onNumberingModeChange?.(nextMode);
-              }}
-            >
-              <div className="flex items-center gap-1.5">
-                <RadioGroupItem value="manual" id="pn-mode-manual" />
-                <Label htmlFor="pn-mode-manual" className="cursor-pointer text-sm font-normal">수동 입력</Label>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <RadioGroupItem value="auto" id="pn-mode-auto" />
-                <Label htmlFor="pn-mode-auto" className="cursor-pointer text-sm font-normal">자동 채번</Label>
-              </div>
-            </RadioGroup>
-          ) : null}
-
-          {/* 수동 입력 모드 */}
-          {!isAutoMode ? (
-            <div className="space-y-1">
-              <Input
-                className={tableFieldClassName}
-                id="part-editor-part-number"
-                placeholder="예: DRV-BASE-0142"
-                value={formValues.partNumber}
-                onChange={(event) =>
-                  onChange({ ...formValues, partNumber: event.target.value })
-                }
-                onBlur={() => onPartNumberBlur?.(formValues.partNumber)}
-              />
-              {/* 품번 중복 확인 결과 */}
-              {partNumberAvailability ? (
-                <div aria-live="polite" className="flex items-center gap-1.5 text-xs">
-                  {partNumberAvailability === "checking" ? (
-                    <span className="flex items-center gap-1 text-muted-foreground">
-                      <Loader2 className="size-3 animate-spin" />
-                      확인 중...
-                    </span>
-                  ) : partNumberAvailability === "available" ? (
-                    <span className="text-emerald-600">&#10003; 사용 가능</span>
-                  ) : partNumberAvailability === "taken" ? (
-                    <span className="text-amber-600">&#9888; 이미 사용 중</span>
-                  ) : null}
-                </div>
+      ) : isAutoMode ? (
+        <div aria-live="polite">
+          {!selectedNumberingCategoryId ? (
+            <span className="text-sm text-muted-foreground">카테고리를 선택하면 자동으로 부여됩니다</span>
+          ) : nextPartNumberLoading ? (
+            <div className="flex items-center gap-1.5">
+              <div className="h-4 w-24 animate-pulse rounded bg-muted" />
+            </div>
+          ) : nextPartNumber ? (
+            <div className="rounded-md border border-border/70 bg-muted/30 px-3 py-2">
+              <p className="text-xs text-muted-foreground">예상 번호</p>
+              <p className="font-mono text-sm font-medium text-foreground">{nextPartNumber}</p>
+              {nextPartNumberNote ? (
+                <p className="mt-0.5 text-xs text-muted-foreground">{nextPartNumberNote}</p>
               ) : null}
             </div>
-          ) : null}
-
-          {/* 자동 채번 모드 */}
-          {isAutoMode ? (
-            <div className="space-y-2">
-              <NumberingCategorySelect
-                categories={numberingCategories ?? []}
-                loading={numberingCategoriesLoading}
-                selectedId={selectedNumberingCategoryId}
-                isAdmin={isAdmin}
-                onSelect={(id) => onNumberingCategoryChange?.(id)}
-                onInlineCreate={() => onInlineCreateCategory?.()}
-              />
-              {/* 다음 품번 미리보기 */}
-              {selectedNumberingCategoryId ? (
-                <div aria-live="polite" className="rounded-md border border-border/70 bg-muted/30 px-3 py-2">
-                  {nextPartNumberLoading ? (
-                    <div className="flex items-center gap-1.5">
-                      <div className="h-4 w-24 animate-pulse rounded bg-muted" />
-                    </div>
-                  ) : nextPartNumber ? (
-                    <div>
-                      <p className="text-xs text-muted-foreground">예상 번호</p>
-                      <p className="font-mono text-sm font-medium text-foreground">{nextPartNumber}</p>
-                      {nextPartNumberNote ? (
-                        <p className="mt-0.5 text-xs text-muted-foreground">{nextPartNumberNote}</p>
-                      ) : null}
-                    </div>
-                  ) : (
-                    <p className="text-xs text-destructive">품번을 불러올 수 없습니다</p>
-                  )}
-                </div>
+          ) : (
+            <p className="text-xs text-destructive">품번을 불러올 수 없습니다</p>
+          )}
+        </div>
+      ) : (
+        <div className="space-y-1">
+          <Input
+            className={tableFieldClassName}
+            id="part-editor-part-number"
+            placeholder="예: DRV-BASE-0142"
+            value={formValues.partNumber}
+            onChange={(event) =>
+              onChange({ ...formValues, partNumber: event.target.value })
+            }
+            onBlur={() => onPartNumberBlur?.(formValues.partNumber)}
+          />
+          {partNumberAvailability ? (
+            <div aria-live="polite" className="flex items-center gap-1.5 text-xs">
+              {partNumberAvailability === "checking" ? (
+                <span className="flex items-center gap-1 text-muted-foreground">
+                  <Loader2 className="size-3 animate-spin" />
+                  확인 중...
+                </span>
+              ) : partNumberAvailability === "available" ? (
+                <span className="text-emerald-600">&#10003; 사용 가능</span>
+              ) : partNumberAvailability === "taken" ? (
+                <span className="text-amber-600">&#9888; 이미 사용 중</span>
               ) : null}
             </div>
           ) : null}
@@ -775,17 +644,6 @@ export function PartEditorScreen({
       ),
     },
     {
-      key: "category" as const,
-      value: (
-        <CategoryCombobox
-          className={tableFieldClassName}
-          options={categoryOptions}
-          value={formValues.category}
-          onChange={(value) => onChange({ ...formValues, category: value })}
-        />
-      ),
-    },
-    {
       key: "material" as const,
       value: (
         <Input
@@ -836,22 +694,6 @@ export function PartEditorScreen({
             onChange({ ...formValues, leadTimeDays: event.target.value })
           }
         />
-      ),
-    },
-    {
-      key: "isPhantom" as const,
-      value: (
-        <div className="flex min-h-8 items-center justify-between gap-3">
-          <span className="text-sm text-foreground">
-            상위 조립 계산에만 사용합니다.
-          </span>
-          <Switch
-            checked={formValues.isPhantom}
-            onCheckedChange={(checked) =>
-              onChange({ ...formValues, isPhantom: checked })
-            }
-          />
-        </div>
       ),
     },
     {
