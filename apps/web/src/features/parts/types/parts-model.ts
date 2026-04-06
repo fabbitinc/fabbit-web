@@ -1,8 +1,5 @@
 import type { PartDetailResponseLifecycleState } from "@/api/generated/orval/model/partDetailResponseLifecycleState";
 import type { PartDetailResponseRevisionStatus } from "@/api/generated/orval/model/partDetailResponseRevisionStatus";
-import type { PartRevisionHistoryDraftResponseCreationSourceType } from "@/api/generated/orval/model/partRevisionHistoryDraftResponseCreationSourceType";
-import type { PartRevisionHistoryDraftResponseStatus } from "@/api/generated/orval/model/partRevisionHistoryDraftResponseStatus";
-import type { PartRevisionHistoryItemResponseReleaseWorkflowType } from "@/api/generated/orval/model/partRevisionHistoryItemResponseReleaseWorkflowType";
 import type { PartRevisionHistoryItemResponseStatus } from "@/api/generated/orval/model/partRevisionHistoryItemResponseStatus";
 import type { PartSummaryResponseRevisionStatus } from "@/api/generated/orval/model/partSummaryResponseRevisionStatus";
 
@@ -257,9 +254,10 @@ export type PartDetailTab = "properties" | "bom" | "attachments" | "suppliers" |
 // ── 리비전 이력 ──────────────────────────────────────────
 
 export type PartRevisionStatus = PartRevisionHistoryItemResponseStatus;
-export type PartRevisionDraftStatus = PartRevisionHistoryDraftResponseStatus;
-export type PartRevisionDraftCreationSourceType = PartRevisionHistoryDraftResponseCreationSourceType;
-export type PartRevisionReleaseWorkflowType = PartRevisionHistoryItemResponseReleaseWorkflowType;
+
+export type PartRevisionEventType = "CREATED" | "DRAFT_CREATED" | "DRAFT_RELEASED" | "DRAFT_CANCELED";
+export type PartRevisionCreationSourceType = "USER" | "SYNTHESIS";
+export type PartRevisionReleaseWorkflowType = "DIRECT" | "ENGINEERING_CHANGE";
 
 export interface PartRevisionHistoryChangeSummaryModel {
   attributeChanges: number;
@@ -267,17 +265,18 @@ export interface PartRevisionHistoryChangeSummaryModel {
   bomChanges: number;
 }
 
-export interface PartRevisionHistoryDraftModel {
-  revisionId: string;
-  name: string | null;
-  status: PartRevisionDraftStatus;
-  creationSourceType: PartRevisionDraftCreationSourceType | null;
-  createdAt: string | null;
-  createdByName: string | null;
-  completedAt: string | null;
-  completedByName: string | null;
-  releasedRevisionCode: string | null;
+export interface PartRevisionHistoryEventModel {
+  eventType: PartRevisionEventType;
+  occurredAt: string | null;
+  actorName: string | null;
   reason: string | null;
+  creationSourceType: PartRevisionCreationSourceType | null;
+  releaseWorkflowType: PartRevisionReleaseWorkflowType | null;
+  draftRevisionId: string | null;
+  targetRevisionCode: string | null;
+  sourceRefId: string | null;
+  sourceRefNumber: number | null;
+  sourceRefTitle: string | null;
 }
 
 export interface PartRevisionHistoryItemModel {
@@ -285,15 +284,8 @@ export interface PartRevisionHistoryItemModel {
   revisionCode: string;
   status: PartRevisionStatus;
   name: string | null;
-  releasedAt: string | null;
-  releasedByName: string | null;
-  releaseReason: string | null;
-  releaseWorkflowType: PartRevisionReleaseWorkflowType | null;
-  releaseSourceId: string | null;
-  releaseSourceNumber: number | null;
-  releaseSourceTitle: string | null;
   summary: PartRevisionHistoryChangeSummaryModel | null;
-  drafts: PartRevisionHistoryDraftModel[];
+  events: PartRevisionHistoryEventModel[];
 }
 
 // ── 리비전 diff ──────────────────────────────────────────

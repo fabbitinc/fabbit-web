@@ -176,40 +176,6 @@ export function EngineeringChangeSidebar({
 
   return (
     <div className="space-y-5">
-      <div>
-        {labelPicker ? (
-          <LabelPickerSection
-            availableLabels={labelPicker.availableLabels}
-            selectedIds={labelPicker.selectedIds}
-            displayLabels={engineeringChange.labels.map((label) => ({
-              id: label.id,
-              name: label.name,
-              colorHex: label.color,
-            }))}
-            onSync={labelPicker.onSync}
-            onRequestLabels={labelPicker.onRequest}
-            onSearchChange={labelPicker.onSearchChange}
-            isSearching={labelPicker.isSearching}
-            isUpdating={labelPicker.isUpdating}
-          />
-        ) : (
-          <div>
-            <div className="flex items-center justify-between">
-              <h3 className="text-xs font-medium text-muted-foreground">라벨</h3>
-              <SectionSettingsButton onClick={onEditLabels} />
-            </div>
-            {engineeringChange.labels.length > 0 ? (
-              <div className="mt-2 flex flex-wrap gap-1.5">
-                {engineeringChange.labels.map((label) => (
-                  <LabelBadge key={label.id} label={label.name} colorHex={label.color} />
-                ))}
-              </div>
-            ) : (
-              <p className="mt-2 text-xs text-muted-foreground/50">연결된 라벨 없음</p>
-            )}
-          </div>
-        )}
-      </div>
 
       <div>
         <div className="flex items-center justify-between">

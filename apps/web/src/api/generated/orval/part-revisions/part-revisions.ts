@@ -122,8 +122,8 @@ export const partRevisionExportBomTree = (
       options);
     }
   /**
- * 공식 리비전 카드와 초안 시도 이력을 함께 조회합니다
- * @summary Part 변경 이력을 조회합니다
+ * 공식 리비전 카드별 상태와 시간순 이벤트를 함께 조회합니다
+ * @summary Part 리비전 타임라인을 조회합니다
  */
 export const partRevisionGetHistory = (
     partId: string,

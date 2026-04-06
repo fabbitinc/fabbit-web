@@ -96,7 +96,7 @@ import type {
   PartsAvailableProjectModel,
   PartsAvailableTeamModel,
   PartRevisionDiffModel,
-  PartRevisionHistoryDraftModel,
+  PartRevisionHistoryEventModel,
   PartRevisionHistoryItemModel,
   PartSupplierModel,
 } from "@/features/parts/types/parts-model";
@@ -617,13 +617,6 @@ function toPartRevisionHistoryItemModel(
     revisionCode: item.revision_code ?? "",
     status: item.status ?? "DRAFT",
     name: item.name ?? null,
-    releasedAt: item.released_at ?? null,
-    releasedByName: item.released_by?.full_name ?? null,
-    releaseReason: item.release_reason ?? null,
-    releaseWorkflowType: item.release_workflow_type ?? null,
-    releaseSourceId: item.release_source_id ?? null,
-    releaseSourceNumber: item.release_source_number ?? null,
-    releaseSourceTitle: item.release_source_title ?? null,
     summary: item.summary
       ? {
           attributeChanges: item.summary.attribute_changes ?? 0,
@@ -631,24 +624,25 @@ function toPartRevisionHistoryItemModel(
           bomChanges: item.summary.bom_changes ?? 0,
         }
       : null,
-    drafts: (item.drafts ?? []).map(toPartRevisionHistoryDraftModel),
+    events: (item.events ?? []).map(toPartRevisionHistoryEventModel),
   };
 }
 
-function toPartRevisionHistoryDraftModel(
-  draft: NonNullable<NonNullable<PartRevisionHistoryResponseDto["items"]>[number]["drafts"]>[number],
-): PartRevisionHistoryDraftModel {
+function toPartRevisionHistoryEventModel(
+  event: NonNullable<NonNullable<PartRevisionHistoryResponseDto["items"]>[number]["events"]>[number],
+): PartRevisionHistoryEventModel {
   return {
-    revisionId: draft.revision_id ?? "",
-    name: draft.name ?? null,
-    status: draft.status ?? "DRAFT",
-    creationSourceType: draft.creation_source_type ?? null,
-    createdAt: draft.created_at ?? null,
-    createdByName: draft.created_by?.full_name ?? null,
-    completedAt: draft.completed_at ?? null,
-    completedByName: draft.completed_by?.full_name ?? null,
-    releasedRevisionCode: draft.released_revision_code ?? null,
-    reason: draft.reason ?? null,
+    eventType: event.event_type ?? "CREATED",
+    occurredAt: event.occurred_at ?? null,
+    actorName: event.actor?.full_name ?? null,
+    reason: event.reason ?? null,
+    creationSourceType: event.creation_source_type ?? null,
+    releaseWorkflowType: event.release_workflow_type ?? null,
+    draftRevisionId: event.draft_revision_id ?? null,
+    targetRevisionCode: event.target_revision_code ?? null,
+    sourceRefId: event.source_ref_id ?? null,
+    sourceRefNumber: event.source_ref_number ?? null,
+    sourceRefTitle: event.source_ref_title ?? null,
   };
 }
 

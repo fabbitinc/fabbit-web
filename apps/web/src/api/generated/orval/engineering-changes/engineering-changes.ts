@@ -37,7 +37,7 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
  * 변경관리 단계 목록을 동기화합니다
  * @summary 변경관리 단계 목록을 동기화합니다
  */
-export const engineeringChangeReplaceSteps = (
+export const engineeringChangeSyncSteps = (
     engineeringChangeId: string,
     syncEngineeringChangeStepsRequest: BodyType<SyncEngineeringChangeStepsRequest>,
  options?: SecondParameter<typeof customInstance<EngineeringChangeResponse | void>>,) => {
@@ -369,7 +369,7 @@ export const engineeringChangeDeleteFile = (
     },
       options);
     }
-  export type EngineeringChangeReplaceStepsResult = NonNullable<Awaited<ReturnType<typeof engineeringChangeReplaceSteps>>>
+  export type EngineeringChangeSyncStepsResult = NonNullable<Awaited<ReturnType<typeof engineeringChangeSyncSteps>>>
 export type EngineeringChangeSyncIssuesResult = NonNullable<Awaited<ReturnType<typeof engineeringChangeSyncIssues>>>
 export type EngineeringChangeSyncAffectedItemsResult = NonNullable<Awaited<ReturnType<typeof engineeringChangeSyncAffectedItems>>>
 export type EngineeringChangeListResult = NonNullable<Awaited<ReturnType<typeof engineeringChangeList>>>

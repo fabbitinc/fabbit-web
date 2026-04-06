@@ -11,6 +11,7 @@ import {
   Loader2,
   MessageSquare,
   Pencil,
+  X,
   XCircle,
 } from "lucide-react";
 import {
@@ -20,6 +21,11 @@ import {
   Button,
   ConfirmDialog,
   Input,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
   TiptapEditor,
   type TiptapEditorProps,
   type TiptapMentionFetcher,
@@ -34,6 +40,7 @@ import {
 } from "./engineering-change-sidebar";
 import { TimelineEventItem, type TimelineEventData } from "./timeline-event";
 import type {
+  EngineeringChangeCompletionPolicy,
   EngineeringChangeWorkflowData,
   EngineeringChangeWorkflowStage,
   EngineeringChangeWorkflowAssignee,
@@ -97,14 +104,7 @@ export interface EngineeringChangeDetailScreenProps {
   headerAccessory?: ReactNode;
   isAttachingFiles?: boolean;
   workflowData?: EngineeringChangeWorkflowData;
-  workflowStagePicker?: {
-    availableMembers: { id: string; name: string; email: string }[];
-    onRequest: () => void;
-    onSearchChange: (search: string) => void;
-    onSync: (stageType: string, userIds: string[]) => void;
-    isSearching?: boolean;
-    isUpdating?: boolean;
-  };
+  workflowStagePicker?: WorkflowStagePickerProps;
   isCreatingComment?: boolean;
   isError?: boolean;
   isLoading?: boolean;
@@ -376,32 +376,104 @@ function WorkflowSummaryBar({ stages, ecState }: { stages: EngineeringChangeWork
   );
 }
 
+const COMPLETION_POLICY_LABELS: Record<EngineeringChangeCompletionPolicy, string> = {
+  ALL_MUST_APPROVE: "전원 승인",
+  ANY_ONE_APPROVES: "1인 승인",
+  MIN_N_APPROVES: "최소 N인 승인",
+};
+
+const STAGE_ASSIGNEE_LABEL: Record<string, string> = {
+  REVIEW: "검토자",
+  APPROVAL: "승인자",
+  RELEASE: "배포자",
+};
+
+interface WorkflowStagePickerProps {
+  availableMembers: { id: string; name: string; email: string }[];
+  onRequest: () => void;
+  onSearchChange: (search: string) => void;
+  onSyncStages: (stages: {
+    stageType: string;
+    stageId?: string | null;
+    completionPolicy: EngineeringChangeCompletionPolicy;
+    minApprovals?: number | null;
+    deadline?: string | null;
+    assignees: { id: string; type: "USER" | "TEAM" }[];
+  }[]) => void;
+  isSearching?: boolean;
+  isUpdating?: boolean;
+}
+
 function WorkflowStepRailAccordion({
   stages,
   stagePicker,
 }: {
   stages: EngineeringChangeWorkflowStage[];
-  stagePicker?: {
-    availableMembers: { id: string; name: string; email: string }[];
-    onRequest: () => void;
-    onSearchChange: (search: string) => void;
-    onSync: (stageType: string, userIds: string[]) => void;
-    isSearching?: boolean;
-    isUpdating?: boolean;
-  };
+  stagePicker?: WorkflowStagePickerProps;
 }) {
   const [expanded, setExpanded] = useState(false);
   const currentIndex = stages.findIndex((s) => s.status === "active");
 
-  const STAGE_LABEL: Record<string, string> = {
-    REVIEW: "검토자",
-    APPROVAL: "승인자",
-    RELEASE: "배포자",
-  };
+  function handleRemoveAssignee(stage: EngineeringChangeWorkflowStage, assigneeId: string) {
+    if (!stagePicker) return;
+    const updatedStages = stages.map((s) => ({
+      stageType: s.type,
+      stageId: s.stageId,
+      completionPolicy: s.completionPolicy ?? ("ALL_MUST_APPROVE" as EngineeringChangeCompletionPolicy),
+      minApprovals: s.minApprovals,
+      deadline: s.deadline,
+      assignees: s.type === stage.type
+        ? s.assignees.filter((a) => a.assigneeId !== assigneeId).map((a) => ({ id: a.assigneeId, type: a.type }))
+        : s.assignees.map((a) => ({ id: a.assigneeId, type: a.type })),
+    }));
+    stagePicker.onSyncStages(updatedStages);
+  }
+
+  function handleAddAssignees(stage: EngineeringChangeWorkflowStage, userIds: string[]) {
+    if (!stagePicker) return;
+    const existingIds = new Set(stage.assignees.map((a) => a.assigneeId));
+    const newAssignees = userIds.filter((id) => !existingIds.has(id)).map((id) => ({ id, type: "USER" as const }));
+    const updatedStages = stages.map((s) => ({
+      stageType: s.type,
+      stageId: s.stageId,
+      completionPolicy: s.completionPolicy ?? ("ALL_MUST_APPROVE" as EngineeringChangeCompletionPolicy),
+      minApprovals: s.minApprovals,
+      deadline: s.deadline,
+      assignees: s.type === stage.type
+        ? [...s.assignees.map((a) => ({ id: a.assigneeId, type: a.type })), ...newAssignees]
+        : s.assignees.map((a) => ({ id: a.assigneeId, type: a.type })),
+    }));
+    stagePicker.onSyncStages(updatedStages);
+  }
+
+  function handlePolicyChange(stage: EngineeringChangeWorkflowStage, policy: EngineeringChangeCompletionPolicy) {
+    if (!stagePicker) return;
+    const updatedStages = stages.map((s) => ({
+      stageType: s.type,
+      stageId: s.stageId,
+      completionPolicy: s.type === stage.type ? policy : (s.completionPolicy ?? "ALL_MUST_APPROVE" as EngineeringChangeCompletionPolicy),
+      minApprovals: s.type === stage.type && policy === "MIN_N_APPROVES" ? (s.minApprovals ?? 1) : s.minApprovals,
+      deadline: s.deadline,
+      assignees: s.assignees.map((a) => ({ id: a.assigneeId, type: a.type })),
+    }));
+    stagePicker.onSyncStages(updatedStages);
+  }
+
+  function handleMinApprovalsChange(stage: EngineeringChangeWorkflowStage, value: number) {
+    if (!stagePicker) return;
+    const updatedStages = stages.map((s) => ({
+      stageType: s.type,
+      stageId: s.stageId,
+      completionPolicy: s.completionPolicy ?? ("ALL_MUST_APPROVE" as EngineeringChangeCompletionPolicy),
+      minApprovals: s.type === stage.type ? value : s.minApprovals,
+      deadline: s.deadline,
+      assignees: s.assignees.map((a) => ({ id: a.assigneeId, type: a.type })),
+    }));
+    stagePicker.onSyncStages(updatedStages);
+  }
 
   return (
     <div className="space-y-3">
-      {/* 스텝 레일 (클릭하면 아코디언 토글) */}
       <div
         role="button"
         tabIndex={0}
@@ -436,11 +508,7 @@ function WorkflowStepRailAccordion({
                         {isCompleted ? <Check className="h-4 w-4" /> : index + 1}
                       </div>
                       <div className="min-w-0">
-                        <p
-                          className={`truncate text-sm font-medium ${
-                            isCurrent || isCompleted ? "text-foreground" : "text-muted-foreground"
-                          }`}
-                        >
+                        <p className={`truncate text-sm font-medium ${isCurrent || isCompleted ? "text-foreground" : "text-muted-foreground"}`}>
                           {stage.label}
                         </p>
                         {stage.description ? (
@@ -448,7 +516,6 @@ function WorkflowStepRailAccordion({
                         ) : null}
                       </div>
                     </div>
-
                     {index < stages.length - 1 ? (
                       <div className="mx-4 h-px flex-1 bg-muted-foreground/30">
                         <div className={`h-full ${isCompleted ? "bg-primary" : "bg-transparent"}`} />
@@ -459,7 +526,6 @@ function WorkflowStepRailAccordion({
               })}
             </div>
           </div>
-
           {expanded ? (
             <ChevronUp className="h-4 w-4 shrink-0 text-muted-foreground" />
           ) : (
@@ -468,52 +534,108 @@ function WorkflowStepRailAccordion({
         </div>
       </div>
 
-      {/* 아코디언 펼침: 단계별 담당자 할당 */}
       {expanded ? (
         <div className="grid gap-3">
           {stages.map((stage) => {
-            const label = STAGE_LABEL[stage.type] ?? "담당자";
+            const label = STAGE_ASSIGNEE_LABEL[stage.type] ?? "담당자";
+            const canEdit = stagePicker && stage.status !== "completed";
+
             return (
               <div key={stage.id} className="rounded-xl border bg-card">
-                <div className="grid gap-0 xl:grid-cols-[180px_1fr]">
-                  <div className="border-b px-4 py-4 xl:border-b-0 xl:border-r">
-                    <p className="text-sm font-semibold text-foreground">{stage.label}</p>
-                    {stage.description ? (
-                      <p className="mt-1 text-[11px] text-muted-foreground">{stage.description}</p>
-                    ) : null}
-                  </div>
-                  <div className="px-4 py-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-medium text-muted-foreground">{label}</span>
-                      {stagePicker ? (
-                        <MemberPickerSection
-                          label=""
-                          applyLabel={`${label} 적용`}
-                          availableMembers={stagePicker.availableMembers}
-                          selectedIds={stage.assignees.map((a) => a.id)}
-                          displayItems={[]}
-                          onSync={(userIds) => stagePicker.onSync(stage.type, userIds)}
-                          onRequestMembers={stagePicker.onRequest}
-                          onSearchChange={stagePicker.onSearchChange}
-                          isSearching={stagePicker.isSearching}
-                          isUpdating={stagePicker.isUpdating}
-                        />
+                <div className="px-4 py-3 border-b">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">{stage.label}</p>
+                      {stage.description ? (
+                        <p className="mt-0.5 text-[11px] text-muted-foreground">{stage.description}</p>
                       ) : null}
                     </div>
-                    {stage.assignees.length > 0 ? (
-                      stage.assignees.map((assignee) => (
-                        <div key={assignee.id} className="flex items-center gap-2 py-2">
-                          <UserAvatar name={assignee.name} imageUrl={assignee.profileImageUrl} className="h-6 w-6 text-[10px]" />
-                          <span className="text-sm font-medium text-foreground">{assignee.name}</span>
-                          {assignee.subtitle ? (
-                            <span className="text-xs text-muted-foreground">{assignee.subtitle}</span>
+                    {canEdit ? (
+                      <div className="flex items-center gap-1.5">
+                        {stage.completionPolicy === "MIN_N_APPROVES" ? (
+                          <>
+                            <span className="text-xs text-muted-foreground">최소</span>
+                            <Input
+                              type="number"
+                              min={1}
+                              max={stage.assignees.length || 10}
+                              value={stage.minApprovals ?? 1}
+                              onChange={(e) => handleMinApprovalsChange(stage, Number(e.target.value) || 1)}
+                              className="h-7 w-14 text-center text-xs"
+                            />
+                            <span className="text-xs text-muted-foreground">인</span>
+                          </>
+                        ) : null}
+                        <Select
+                          value={stage.completionPolicy ?? "ALL_MUST_APPROVE"}
+                          onValueChange={(value) => handlePolicyChange(stage, value as EngineeringChangeCompletionPolicy)}
+                        >
+                          <SelectTrigger className="h-7 w-28 text-xs">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {Object.entries(COMPLETION_POLICY_LABELS).map(([value, policyLabel]) => (
+                              <SelectItem key={value} value={value}>{policyLabel}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    ) : stage.completionPolicy ? (
+                      <span className="text-xs text-muted-foreground">
+                        {stage.completionPolicy === "MIN_N_APPROVES" && stage.minApprovals
+                          ? `최소 ${stage.minApprovals}인 승인`
+                          : COMPLETION_POLICY_LABELS[stage.completionPolicy] ?? stage.completionPolicy}
+                      </span>
+                    ) : null}
+                  </div>
+                </div>
+                <div className="px-4 py-3">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-medium text-muted-foreground">{label}</span>
+                    {canEdit ? (
+                      <MemberPickerSection
+                        label=""
+                        applyLabel={`${label} 추가`}
+                        availableMembers={stagePicker.availableMembers}
+                        selectedIds={stage.assignees.map((a) => a.assigneeId)}
+                        displayItems={[]}
+                        onSync={(userIds) => handleAddAssignees(stage, userIds)}
+                        onRequestMembers={stagePicker.onRequest}
+                        onSearchChange={stagePicker.onSearchChange}
+                        isSearching={stagePicker.isSearching}
+                        isUpdating={stagePicker.isUpdating}
+                      />
+                    ) : null}
+                  </div>
+                  {stage.assignees.length > 0 ? (
+                    <div className="divide-y divide-border/50">
+                      {stage.assignees.map((assignee) => (
+                        <div key={assignee.id} className="flex items-center justify-between gap-2 py-2">
+                          <div className="flex items-center gap-2">
+                            <UserAvatar name={assignee.name} imageUrl={assignee.profileImageUrl} className="h-6 w-6 text-[10px]" />
+                            <span className="text-sm font-medium text-foreground">{assignee.name}</span>
+                            {assignee.actedAt ? (
+                              <span className="text-xs text-muted-foreground">
+                                {assignee.status === "APPROVED" ? "승인" : assignee.status === "CHANGES_REQUESTED" ? "수정 요청" : ""}
+                              </span>
+                            ) : null}
+                          </div>
+                          {canEdit && assignee.status === "PENDING" ? (
+                            <button
+                              type="button"
+                              className="cursor-pointer rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+                              onClick={() => handleRemoveAssignee(stage, assignee.assigneeId)}
+                              aria-label={`${assignee.name} 제거`}
+                            >
+                              <X className="h-3.5 w-3.5" />
+                            </button>
                           ) : null}
                         </div>
-                      ))
-                    ) : (
-                      <p className="py-2 text-xs text-muted-foreground">{label}가 아직 지정되지 않았습니다.</p>
-                    )}
-                  </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="py-2 text-xs text-muted-foreground">{label}가 아직 지정되지 않았습니다.</p>
+                  )}
                 </div>
               </div>
             );
@@ -1098,10 +1220,22 @@ export function EngineeringChangeDetailScreen({
                       onStepResubmit={onStepResubmit}
                       picker={workflowStagePicker ? {
                         availableMembers: workflowStagePicker.availableMembers,
-                        selectedIds: activeStage.assignees.map((a) => a.id),
+                        selectedIds: activeStage.assignees.map((a) => a.assigneeId ?? a.id),
                         onRequest: workflowStagePicker.onRequest,
                         onSearchChange: workflowStagePicker.onSearchChange,
-                        onSync: (userIds) => workflowStagePicker.onSync(activeStage.type, userIds),
+                        onSync: (userIds) => {
+                          const stages = (workflowData?.stages ?? []).map((s) => ({
+                            stageType: s.type,
+                            stageId: s.stageId,
+                            completionPolicy: s.completionPolicy ?? ("ALL_MUST_APPROVE" as EngineeringChangeCompletionPolicy),
+                            minApprovals: s.minApprovals,
+                            deadline: s.deadline,
+                            assignees: s.type === activeStage.type
+                              ? userIds.map((id) => ({ id, type: "USER" as const }))
+                              : s.assignees.map((a) => ({ id: a.assigneeId ?? a.id, type: a.type })),
+                          }));
+                          workflowStagePicker.onSyncStages(stages);
+                        },
                         isSearching: workflowStagePicker.isSearching,
                         isUpdating: workflowStagePicker.isUpdating,
                       } : undefined}

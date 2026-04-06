@@ -179,12 +179,10 @@ export { PartHeaderCard } from "./part-header-card";
 export type { PartHeaderCardPart, PartHeaderCardProps } from "./part-header-card";
 export { PartHistoryTab } from "./part-history-tab";
 export type {
-  PartHistoryDraft,
   PartHistoryEntry,
+  PartHistoryEvent,
   PartHistoryRevision,
   PartHistoryRevisionChangeSummary,
-  PartHistoryRevisionEvent,
-  PartHistoryRevisionEventType,
   PartHistoryRevisionStatus,
   PartHistoryTabProps,
 } from "./part-history-tab";

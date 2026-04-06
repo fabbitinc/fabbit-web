@@ -12,6 +12,8 @@ import type { EngineeringChangeStepRequestStepType } from './engineeringChangeSt
  * 변경관리 단계(Stage) 지정 요청
  */
 export interface EngineeringChangeStepRequest {
+  /** 기존 Stage ID. 기존 단계를 수정할 때 전달하고, 새 단계 추가 시 생략합니다 */
+  step_stage_id?: string;
   /** 단계 타입 */
   step_type: EngineeringChangeStepRequestStepType;
   /**

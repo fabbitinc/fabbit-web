@@ -296,7 +296,7 @@ export interface paths {
          * 변경관리 단계 목록을 동기화합니다
          * @description 변경관리 단계 목록을 동기화합니다
          */
-        put: operations["engineeringChangeReplaceSteps"];
+        put: operations["engineeringChangeSyncSteps"];
         post?: never;
         delete?: never;
         options?: never;
@@ -2804,8 +2804,8 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * Part 변경 이력을 조회합니다
-         * @description 공식 리비전 카드와 초안 시도 이력을 함께 조회합니다
+         * Part 리비전 타임라인을 조회합니다
+         * @description 공식 리비전 카드별 상태와 시간순 이벤트를 함께 조회합니다
          */
         get: operations["partRevisionGetHistory"];
         put?: never;
@@ -4015,6 +4015,11 @@ export interface components {
         /** @description 변경관리 단계(Stage) 지정 요청 */
         EngineeringChangeStepRequest: {
             /**
+             * Format: uuid
+             * @description 기존 Stage ID. 기존 단계를 수정할 때 전달하고, 새 단계 추가 시 생략합니다
+             */
+            step_stage_id?: string;
+            /**
              * @description 단계 타입
              * @example REVIEW
              * @enum {string}
@@ -4196,17 +4201,16 @@ export interface components {
             float?: boolean;
             array?: boolean;
             empty?: boolean;
-            integral_number?: boolean;
-            floating_point_number?: boolean;
             pojo?: boolean;
             int?: boolean;
             long?: boolean;
-            /** @enum {string} */
-            node_type?: "ARRAY" | "BINARY" | "BOOLEAN" | "MISSING" | "NULL" | "NUMBER" | "OBJECT" | "POJO" | "STRING";
-            string?: boolean;
+            container?: boolean;
             value_node?: boolean;
             missing_node?: boolean;
             object?: boolean;
+            /** @enum {string} */
+            node_type?: "ARRAY" | "BINARY" | "BOOLEAN" | "MISSING" | "NULL" | "NUMBER" | "OBJECT" | "POJO" | "STRING";
+            string?: boolean;
             short?: boolean;
             double?: boolean;
             big_decimal?: boolean;
@@ -4216,7 +4220,8 @@ export interface components {
             boolean?: boolean;
             binary?: boolean;
             number?: boolean;
-            container?: boolean;
+            integral_number?: boolean;
+            floating_point_number?: boolean;
             embedded_value?: boolean;
         };
         /** @description 연결 이슈 요약 */
@@ -7909,23 +7914,28 @@ export interface components {
             /** @description 영향 분석 요약 */
             summary?: components["schemas"]["SummaryResponse"];
         };
-        /** @description 공식 리비전에서 파생된 초안 이력 응답 */
-        PartRevisionHistoryDraftResponse: {
-            /** Format: uuid */
-            revision_id?: string;
-            name?: string;
+        /** @description 리비전 카드 내부의 시간순 이벤트 응답 */
+        PartRevisionHistoryEventResponse: {
             /** @enum {string} */
-            status?: "DRAFT" | "RELEASED" | "SUPERSEDED" | "CANCELED";
+            event_type?: "CREATED" | "DRAFT_CREATED" | "DRAFT_RELEASED" | "DRAFT_CANCELED";
             /** Format: date-time */
-            created_at?: string;
-            created_by?: components["schemas"]["PartUserSummaryResponse"];
+            occurred_at?: string;
+            actor?: components["schemas"]["PartUserSummaryResponse"];
+            reason?: string;
             /** @enum {string} */
             creation_source_type?: "USER" | "SYNTHESIS";
-            /** Format: date-time */
-            completed_at?: string;
-            completed_by?: components["schemas"]["PartUserSummaryResponse"];
-            released_revision_code?: string;
-            reason?: string;
+            /** @enum {string} */
+            release_workflow_type?: "DIRECT" | "ENGINEERING_CHANGE";
+            /** Format: uuid */
+            draft_revision_id?: string;
+            /** Format: uuid */
+            target_revision_id?: string;
+            target_revision_code?: string;
+            /** Format: uuid */
+            source_ref_id?: string;
+            /** Format: int32 */
+            source_ref_number?: number;
+            source_ref_title?: string;
         };
         /** @description 리비전 이력 항목 응답 */
         PartRevisionHistoryItemResponse: {
@@ -7935,19 +7945,8 @@ export interface components {
             /** @enum {string} */
             status?: "DRAFT" | "RELEASED" | "SUPERSEDED" | "CANCELED";
             name?: string;
-            /** Format: date-time */
-            released_at?: string;
-            released_by?: components["schemas"]["PartUserSummaryResponse"];
-            release_reason?: string;
-            /** @enum {string} */
-            release_workflow_type?: "DIRECT" | "ENGINEERING_CHANGE";
-            /** Format: uuid */
-            release_source_id?: string;
-            /** Format: int32 */
-            release_source_number?: number;
-            release_source_title?: string;
             summary?: components["schemas"]["PartRevisionDiffSummaryResponse"];
-            drafts?: components["schemas"]["PartRevisionHistoryDraftResponse"][];
+            events?: components["schemas"]["PartRevisionHistoryEventResponse"][];
         };
         /** @description 리비전 이력 목록 응답 */
         PartRevisionHistoryResponse: {
@@ -10300,7 +10299,7 @@ export interface operations {
             };
         };
     };
-    engineeringChangeReplaceSteps: {
+    engineeringChangeSyncSteps: {
         parameters: {
             query?: never;
             header?: never;

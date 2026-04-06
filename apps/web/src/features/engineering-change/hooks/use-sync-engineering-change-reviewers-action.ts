@@ -13,12 +13,17 @@ export function useSyncEngineeringChangeReviewersAction(engineeringChangeId: str
     mutationKey: ["engineering-change", engineeringChangeId, "sync-engineering-change-reviewers-action"],
     mutationFn: (userIds: string[]) =>
       replaceEngineeringChangeSteps(engineeringChangeId, {
-        steps: userIds.map((userId, index) => ({
-          assignee_id: userId,
-          assignee_type: AssigneeRequestAssigneeType.USER,
-          sequence: index + 1,
-          step_type: EngineeringChangeStepRequestStepType.REVIEW,
-        })),
+        steps: userIds.length > 0
+          ? [{
+              step_type: EngineeringChangeStepRequestStepType.REVIEW,
+              sequence: 1,
+              completion_policy: "ALL_MUST_APPROVE" as const,
+              assignees: userIds.map((userId) => ({
+                assignee_type: AssigneeRequestAssigneeType.USER,
+                assignee_id: userId,
+              })),
+            }]
+          : [],
       }),
     onSuccess: async () => {
       toast.success("검토자를 갱신했습니다.");

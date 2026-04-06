@@ -5,10 +5,8 @@
  * OpenAPI spec version: v0
  */
 import type { PartRevisionDiffSummaryResponse } from './partRevisionDiffSummaryResponse';
-import type { PartRevisionHistoryDraftResponse } from './partRevisionHistoryDraftResponse';
-import type { PartRevisionHistoryItemResponseReleaseWorkflowType } from './partRevisionHistoryItemResponseReleaseWorkflowType';
+import type { PartRevisionHistoryEventResponse } from './partRevisionHistoryEventResponse';
 import type { PartRevisionHistoryItemResponseStatus } from './partRevisionHistoryItemResponseStatus';
-import type { PartUserSummaryResponse } from './partUserSummaryResponse';
 
 /**
  * 리비전 이력 항목 응답
@@ -18,13 +16,6 @@ export interface PartRevisionHistoryItemResponse {
   revision_code?: string;
   status?: PartRevisionHistoryItemResponseStatus;
   name?: string;
-  released_at?: string;
-  released_by?: PartUserSummaryResponse;
-  release_reason?: string;
-  release_workflow_type?: PartRevisionHistoryItemResponseReleaseWorkflowType;
-  release_source_id?: string;
-  release_source_number?: number;
-  release_source_title?: string;
   summary?: PartRevisionDiffSummaryResponse;
-  drafts?: PartRevisionHistoryDraftResponse[];
+  events?: PartRevisionHistoryEventResponse[];
 }

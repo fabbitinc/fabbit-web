@@ -1535,7 +1535,7 @@
                 ],
                 "summary": "\ubcc0\uacbd\uad00\ub9ac \ub2e8\uacc4 \ubaa9\ub85d\uc744 \ub3d9\uae30\ud654\ud569\ub2c8\ub2e4",
                 "description": "\ubcc0\uacbd\uad00\ub9ac \ub2e8\uacc4 \ubaa9\ub85d\uc744 \ub3d9\uae30\ud654\ud569\ub2c8\ub2e4",
-                "operationId": "engineeringChangeReplaceSteps",
+                "operationId": "engineeringChangeSyncSteps",
                 "parameters": [
                     {
                         "name": "engineeringChangeId",
@@ -14680,8 +14680,8 @@
                 "tags": [
                     "part-revisions"
                 ],
-                "summary": "Part \ubcc0\uacbd \uc774\ub825\uc744 \uc870\ud68c\ud569\ub2c8\ub2e4",
-                "description": "\uacf5\uc2dd \ub9ac\ube44\uc804 \uce74\ub4dc\uc640 \ucd08\uc548 \uc2dc\ub3c4 \uc774\ub825\uc744 \ud568\uaed8 \uc870\ud68c\ud569\ub2c8\ub2e4",
+                "summary": "Part \ub9ac\ube44\uc804 \ud0c0\uc784\ub77c\uc778\uc744 \uc870\ud68c\ud569\ub2c8\ub2e4",
+                "description": "\uacf5\uc2dd \ub9ac\ube44\uc804 \uce74\ub4dc\ubcc4 \uc0c1\ud0dc\uc640 \uc2dc\uac04\uc21c \uc774\ubca4\ud2b8\ub97c \ud568\uaed8 \uc870\ud68c\ud569\ub2c8\ub2e4",
                 "operationId": "partRevisionGetHistory",
                 "parameters": [
                     {
@@ -18981,6 +18981,11 @@
                 "type": "object",
                 "description": "\ubcc0\uacbd\uad00\ub9ac \ub2e8\uacc4(Stage) \uc9c0\uc815 \uc694\uccad",
                 "properties": {
+                    "step_stage_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "\uae30\uc874 Stage ID. \uae30\uc874 \ub2e8\uacc4\ub97c \uc218\uc815\ud560 \ub54c \uc804\ub2ec\ud558\uace0, \uc0c8 \ub2e8\uacc4 \ucd94\uac00 \uc2dc \uc0dd\ub7b5\ud569\ub2c8\ub2e4"
+                    },
                     "step_type": {
                         "type": "string",
                         "description": "\ub2e8\uacc4 \ud0c0\uc785",
@@ -19312,12 +19317,6 @@
                     "empty": {
                         "type": "boolean"
                     },
-                    "integral_number": {
-                        "type": "boolean"
-                    },
-                    "floating_point_number": {
-                        "type": "boolean"
-                    },
                     "pojo": {
                         "type": "boolean"
                     },
@@ -19325,6 +19324,18 @@
                         "type": "boolean"
                     },
                     "long": {
+                        "type": "boolean"
+                    },
+                    "container": {
+                        "type": "boolean"
+                    },
+                    "value_node": {
+                        "type": "boolean"
+                    },
+                    "missing_node": {
+                        "type": "boolean"
+                    },
+                    "object": {
                         "type": "boolean"
                     },
                     "node_type": {
@@ -19342,15 +19353,6 @@
                         ]
                     },
                     "string": {
-                        "type": "boolean"
-                    },
-                    "value_node": {
-                        "type": "boolean"
-                    },
-                    "missing_node": {
-                        "type": "boolean"
-                    },
-                    "object": {
                         "type": "boolean"
                     },
                     "short": {
@@ -19378,7 +19380,10 @@
                     "number": {
                         "type": "boolean"
                     },
-                    "container": {
+                    "integral_number": {
+                        "type": "boolean"
+                    },
+                    "floating_point_number": {
                         "type": "boolean"
                     },
                     "embedded_value": {
@@ -25688,32 +25693,28 @@
                     }
                 }
             },
-            "PartRevisionHistoryDraftResponse": {
+            "PartRevisionHistoryEventResponse": {
                 "type": "object",
-                "description": "\uacf5\uc2dd \ub9ac\ube44\uc804\uc5d0\uc11c \ud30c\uc0dd\ub41c \ucd08\uc548 \uc774\ub825 \uc751\ub2f5",
+                "description": "\ub9ac\ube44\uc804 \uce74\ub4dc \ub0b4\ubd80\uc758 \uc2dc\uac04\uc21c \uc774\ubca4\ud2b8 \uc751\ub2f5",
                 "properties": {
-                    "revision_id": {
-                        "type": "string",
-                        "format": "uuid"
-                    },
-                    "name": {
-                        "type": "string"
-                    },
-                    "status": {
+                    "event_type": {
                         "type": "string",
                         "enum": [
-                            "DRAFT",
-                            "RELEASED",
-                            "SUPERSEDED",
-                            "CANCELED"
+                            "CREATED",
+                            "DRAFT_CREATED",
+                            "DRAFT_RELEASED",
+                            "DRAFT_CANCELED"
                         ]
                     },
-                    "created_at": {
+                    "occurred_at": {
                         "type": "string",
                         "format": "date-time"
                     },
-                    "created_by": {
+                    "actor": {
                         "$ref": "#/components/schemas/PartUserSummaryResponse"
+                    },
+                    "reason": {
+                        "type": "string"
                     },
                     "creation_source_type": {
                         "type": "string",
@@ -25722,17 +25723,33 @@
                             "SYNTHESIS"
                         ]
                     },
-                    "completed_at": {
+                    "release_workflow_type": {
                         "type": "string",
-                        "format": "date-time"
+                        "enum": [
+                            "DIRECT",
+                            "ENGINEERING_CHANGE"
+                        ]
                     },
-                    "completed_by": {
-                        "$ref": "#/components/schemas/PartUserSummaryResponse"
+                    "draft_revision_id": {
+                        "type": "string",
+                        "format": "uuid"
                     },
-                    "released_revision_code": {
+                    "target_revision_id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "target_revision_code": {
                         "type": "string"
                     },
-                    "reason": {
+                    "source_ref_id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "source_ref_number": {
+                        "type": "integer",
+                        "format": "int32"
+                    },
+                    "source_ref_title": {
                         "type": "string"
                     }
                 }
@@ -25760,41 +25777,13 @@
                     "name": {
                         "type": "string"
                     },
-                    "released_at": {
-                        "type": "string",
-                        "format": "date-time"
-                    },
-                    "released_by": {
-                        "$ref": "#/components/schemas/PartUserSummaryResponse"
-                    },
-                    "release_reason": {
-                        "type": "string"
-                    },
-                    "release_workflow_type": {
-                        "type": "string",
-                        "enum": [
-                            "DIRECT",
-                            "ENGINEERING_CHANGE"
-                        ]
-                    },
-                    "release_source_id": {
-                        "type": "string",
-                        "format": "uuid"
-                    },
-                    "release_source_number": {
-                        "type": "integer",
-                        "format": "int32"
-                    },
-                    "release_source_title": {
-                        "type": "string"
-                    },
                     "summary": {
                         "$ref": "#/components/schemas/PartRevisionDiffSummaryResponse"
                     },
-                    "drafts": {
+                    "events": {
                         "type": "array",
                         "items": {
-                            "$ref": "#/components/schemas/PartRevisionHistoryDraftResponse"
+                            "$ref": "#/components/schemas/PartRevisionHistoryEventResponse"
                         }
                     }
                 }

@@ -67,14 +67,18 @@ export interface EngineeringChangePartRevisionModel {
   status: string | null;
 }
 
+export type EngineeringChangeCompletionPolicy = "ALL_MUST_APPROVE" | "ANY_ONE_APPROVES" | "MIN_N_APPROVES";
+
 export interface EngineeringChangeWorkflowStageModel {
   id: string;
+  stageId: string | null;
   label: string;
   type: "REVIEW" | "APPROVAL" | "RELEASE";
   status: "completed" | "active" | "pending";
   description: string;
-  completionPolicy?: "ALL_MUST_APPROVE" | "ANY_ONE_APPROVES" | "MIN_N_APPROVES";
-  deadline?: string | null;
+  completionPolicy: EngineeringChangeCompletionPolicy;
+  minApprovals: number | null;
+  deadline: string | null;
   assignees: EngineeringChangeWorkflowAssigneeModel[];
 }
 

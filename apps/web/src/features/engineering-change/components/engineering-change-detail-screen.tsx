@@ -250,12 +250,17 @@ export function EngineeringChangeDetailScreen({
       workflowData={engineeringChange?.workflow ? {
         stages: engineeringChange.workflow.stages.map((stage) => ({
           id: stage.id,
+          stageId: stage.stageId,
           label: stage.label,
           type: stage.type,
           status: stage.status,
           description: stage.description,
+          completionPolicy: stage.completionPolicy,
+          minApprovals: stage.minApprovals,
+          deadline: stage.deadline,
           assignees: stage.assignees.map((assignee) => ({
             id: assignee.id,
+            assigneeId: assignee.assigneeId,
             name: assignee.name,
             type: assignee.type,
             status: assignee.status,
@@ -274,13 +279,8 @@ export function EngineeringChangeDetailScreen({
         })),
         onRequest: () => setStepsEnabled(true),
         onSearchChange: setStepsSearch,
-        onSync: (stageType, userIds) => {
-          if (!engineeringChange.workflow) return;
-          syncStepsAction.mutate({
-            stageType: stageType as "REVIEW" | "APPROVAL" | "RELEASE",
-            userIds,
-            currentWorkflow: engineeringChange.workflow,
-          });
+        onSyncStages: (stages) => {
+          syncStepsAction.mutate({ stages });
         },
         isSearching: memberLookup.isFetching,
         isUpdating: syncStepsAction.isPending,
@@ -371,8 +371,8 @@ export function EngineeringChangeDetailScreen({
       }}
       onNavigateToIssueMention={navigateToIssueMention}
       onReopenEngineeringChange={() => {
-        if (engineeringChange?.state !== "CANCELED") {
-          reopenEngineeringChangeAction.mutate();
+        if (engineeringChange?.state !== "CANCELED" && currentUserStepId) {
+          reopenEngineeringChangeAction.mutate({ stepId: currentUserStepId });
         }
       }}
       onRetry={() => {

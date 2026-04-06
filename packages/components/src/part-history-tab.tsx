@@ -1,6 +1,8 @@
-import { type ReactNode, useState } from "react";
-import { ArrowRight, ChevronDown, Circle, GitCommit, Loader2 } from "lucide-react";
+import type { ReactNode } from "react";
+import { ArrowRight, Circle, Loader2 } from "lucide-react";
 import { cn } from "@fabbit/ui";
+
+// ── 타입 ────────────────────────────────────────────────
 
 export interface PartHistoryEntry {
   id: string;
@@ -11,10 +13,7 @@ export interface PartHistoryEntry {
 
 export type PartHistoryRevisionStatus = "draft" | "released" | "superseded" | "canceled";
 
-export type PartHistoryRevisionActivityCategory =
-  | "property"
-  | "bom"
-  | "file";
+export type PartHistoryRevisionActivityCategory = "property" | "bom" | "file";
 
 export interface PartHistoryRevisionActivity {
   id: string;
@@ -25,48 +24,32 @@ export interface PartHistoryRevisionActivity {
   toValue?: string | null;
 }
 
-export type PartHistoryRevisionEventType = "released" | "superseded" | "canceled";
-
-export interface PartHistoryRevisionEvent {
-  type: PartHistoryRevisionEventType;
-  author: string;
-  reason?: string;
-  timestamp?: string;
-}
-
-export interface PartHistoryDraft {
-  id: string;
-  creationSourceType?: "USER" | "SYNTHESIS";
-  status: PartHistoryRevisionStatus;
-  createdAt?: string;
-  createdBy?: string;
-  completedAt?: string;
-  completedBy?: string;
-  releasedRevisionLabel?: string;
-  reason?: string;
-}
-
 export interface PartHistoryRevisionChangeSummary {
   property?: number;
   file?: number;
   bom?: number;
 }
 
+export interface PartHistoryEvent {
+  eventType: "CREATED" | "DRAFT_CREATED" | "DRAFT_RELEASED" | "DRAFT_CANCELED";
+  occurredAt?: string;
+  actorName?: string;
+  reason?: string;
+  creationSourceType?: "USER" | "SYNTHESIS";
+  releaseWorkflowType?: "DIRECT" | "ENGINEERING_CHANGE";
+  targetRevisionCode?: string;
+  sourceRefNumber?: number;
+  sourceRefTitle?: string;
+}
+
 export interface PartHistoryRevision {
   id: string;
   revisionLabel: string;
   revisionTitle: string;
-  author?: string;
-  timestamp?: string;
   status: PartHistoryRevisionStatus;
-  releaseReason?: string;
-  releaseWorkflowType?: "DIRECT" | "ENGINEERING_CHANGE";
-  releaseSourceNumber?: number;
-  releaseSourceTitle?: string;
   activities?: PartHistoryRevisionActivity[];
   changeSummary?: PartHistoryRevisionChangeSummary;
-  drafts?: PartHistoryDraft[];
-  events?: PartHistoryRevisionEvent[];
+  events?: PartHistoryEvent[];
 }
 
 export interface PartHistoryTabProps {
@@ -96,8 +79,6 @@ function toLegacyRevisions(entries: PartHistoryEntry[]): PartHistoryRevision[] {
       id: "legacy-revision",
       revisionLabel: "A",
       revisionTitle: "Rev A",
-      author: "시스템",
-      timestamp: entries[0]?.timestamp ?? new Date().toISOString(),
       status: "draft",
       changeSummary: { property: entries.length },
       activities: entries.map((entry) => ({
@@ -141,6 +122,34 @@ const CATEGORY_LABELS: Record<PartHistoryRevisionActivityCategory, string> = {
   file: "파일",
   bom: "BOM",
 };
+
+// ── 이벤트 라벨 ─────────────────────────────────────────
+
+function getEventLabel(event: PartHistoryEvent): string {
+  switch (event.eventType) {
+    case "CREATED":
+      return "생성됨";
+    case "DRAFT_CREATED":
+      return event.creationSourceType === "SYNTHESIS" ? "EC 합성 초안" : "초안";
+    case "DRAFT_RELEASED":
+      return event.targetRevisionCode ? `배포 (Rev ${event.targetRevisionCode})` : "배포";
+    case "DRAFT_CANCELED":
+      return "초안 폐기";
+    default:
+      return "";
+  }
+}
+
+function getEventDotClass(event: PartHistoryEvent): string {
+  switch (event.eventType) {
+    case "DRAFT_RELEASED":
+      return "text-[var(--status-success)] fill-[var(--status-success)]";
+    case "DRAFT_CANCELED":
+      return "text-[var(--status-danger)] fill-[var(--status-danger)]";
+    default:
+      return "text-muted-foreground fill-muted-foreground";
+  }
+}
 
 // ── 변경 내역 ───────────────────────────────────────────
 
@@ -231,46 +240,33 @@ function ActivitiesByCategory({ activities }: { activities: PartHistoryRevisionA
   );
 }
 
-function ChangeSummaryBadges({
+function ChangeSummary({
   isLoading = false,
-  isOpenDiff = false,
   onClick,
   summary,
-  expanded,
-  hasActivities,
 }: {
   isLoading?: boolean;
-  isOpenDiff?: boolean;
   onClick?: () => void;
   summary: PartHistoryRevisionChangeSummary;
-  expanded: boolean;
-  hasActivities: boolean;
 }) {
-  const entries = (Object.entries(summary) as [PartHistoryRevisionActivityCategory, number | undefined][])
-    .filter(([, count]) => count != null && count > 0);
+  const parts: string[] = [];
+  if (summary.property) parts.push(`속성 ${summary.property}건`);
+  if (summary.bom) parts.push(`BOM ${summary.bom}건`);
+  if (summary.file) parts.push(`파일 ${summary.file}건`);
 
-  if (entries.length === 0) return null;
+  if (parts.length === 0) return null;
 
   return (
     <button
       type="button"
-      className={cn("flex flex-wrap items-center gap-1.5", onClick && "cursor-pointer")}
+      className={cn("flex items-center gap-1.5 text-xs text-muted-foreground", onClick && "cursor-pointer hover:text-foreground")}
       onClick={onClick}
     >
-      {entries.map(([category, count]) => (
-        <span
-          key={category}
-          className="inline-flex items-center rounded-md bg-muted px-2 py-0.5 text-xs font-medium text-muted-foreground"
-        >
-          {CATEGORY_LABELS[category]} {count}건
-        </span>
-      ))}
+      <span>{parts.join(", ")} 변경</span>
       {isLoading ? (
-        <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
-      ) : isOpenDiff ? (
-        <ArrowRight className="h-3.5 w-3.5 text-muted-foreground" />
-      ) : hasActivities ? (
-        <ChevronDown className={cn("h-3.5 w-3.5 text-muted-foreground transition-transform", expanded && "rotate-180")} />
+        <Loader2 className="h-3 w-3 animate-spin" />
+      ) : onClick ? (
+        <ArrowRight className="h-3 w-3" />
       ) : null}
     </button>
   );
@@ -299,62 +295,44 @@ function TimelineNode({
 function SubTimelineNode({
   children,
   isLast,
+  dotClassName,
 }: {
   children: ReactNode;
   isLast: boolean;
+  dotClassName?: string;
 }) {
   return (
-    <div className={cn("relative pl-5", !isLast && "pb-3")}>
-      {!isLast ? <div className="absolute left-[5px] top-3 bottom-0 w-px bg-border/50" /> : null}
-      <GitCommit className="absolute left-0 top-0.5 h-2.5 w-2.5 text-muted-foreground/40" />
+    <div className={cn("relative pl-6", !isLast && "pb-3")}>
+      {!isLast ? <div className="absolute left-[5.5px] top-3.5 bottom-0 w-px bg-border/50" /> : null}
+      <Circle className={cn("absolute left-0.5 top-1 h-2 w-2", dotClassName ?? "text-muted-foreground fill-muted-foreground")} />
       {children}
     </div>
   );
 }
 
-// ── Draft 행 ────────────────────────────────────────────
+// ── 이벤트 행 ───────────────────────────────────────────
 
-function getDraftLabel(draft: PartHistoryDraft, isFirst: boolean) {
-  if (isFirst) return "생성됨";
-  if (draft.creationSourceType === "SYNTHESIS") return "EC 합성 초안";
-  return "초안";
-}
-
-function getDraftStatusSuffix(draft: PartHistoryDraft) {
-  if (draft.status === "released") {
-    return draft.releasedRevisionLabel ? `→ 배포 (Rev ${draft.releasedRevisionLabel})` : "→ 배포";
-  }
-  if (draft.status === "canceled") return "→ 폐기";
-  if (draft.status === "superseded") return "→ 대체됨";
-  return "";
-}
-
-function getDraftStatusClassName(status: PartHistoryDraft["status"]) {
-  if (status === "released") return "text-[var(--status-success)]";
-  if (status === "canceled") return "text-[var(--status-danger)]";
-  if (status === "superseded") return "text-muted-foreground";
-  return "text-[var(--status-info)]";
-}
-
-function DraftTimelineItem({ draft, isFirst, isLast }: { draft: PartHistoryDraft; isFirst: boolean; isLast: boolean }) {
-  const label = getDraftLabel(draft, isFirst);
-  const suffix = getDraftStatusSuffix(draft);
-  const meta = [draft.createdBy, draft.createdAt ? formatDate(draft.createdAt) : null]
+function EventTimelineItem({ event, isLast }: { event: PartHistoryEvent; isLast: boolean }) {
+  const label = getEventLabel(event);
+  const dotClass = getEventDotClass(event);
+  const meta = [event.actorName, event.occurredAt ? formatDate(event.occurredAt) : null]
     .filter(Boolean)
     .join(" · ");
 
   return (
-    <SubTimelineNode isLast={isLast}>
+    <SubTimelineNode isLast={isLast} dotClassName={dotClass}>
       <div className="space-y-0.5">
         <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
           <span className="text-sm text-foreground">{label}</span>
-          {suffix ? (
-            <span className={cn("text-xs font-medium", getDraftStatusClassName(draft.status))}>{suffix}</span>
+          {event.releaseWorkflowType === "ENGINEERING_CHANGE" && event.sourceRefNumber ? (
+            <span className="rounded-md border border-border bg-muted/50 px-1.5 py-px text-xs text-muted-foreground">
+              EC-{event.sourceRefNumber}
+            </span>
           ) : null}
         </div>
         {meta ? <p className="text-xs text-muted-foreground">{meta}</p> : null}
-        {draft.reason ? (
-          <p className="mt-1 rounded bg-muted/50 px-2 py-1 text-xs text-muted-foreground">{draft.reason}</p>
+        {event.reason ? (
+          <p className="mt-1 rounded bg-muted/50 px-2 py-1 text-xs text-muted-foreground">{event.reason}</p>
         ) : null}
       </div>
     </SubTimelineNode>
@@ -374,65 +352,40 @@ function RevisionNode({
   onOpenDiff?: (revision: PartHistoryRevision) => void;
   revision: PartHistoryRevision;
 }) {
-  const [expanded, setExpanded] = useState(false);
-  const drafts = revision.drafts ?? [];
-  const activities = revision.activities ?? [];
+  const events = revision.events ?? [];
   const hasSummary = hasMeaningfulSummary(revision.changeSummary);
   const canOpenDiff = hasSummary && onOpenDiff != null;
   const isDiffLoading = diffLoadingRevisionId === revision.id;
-  const meta = [revision.author, revision.timestamp ? formatDate(revision.timestamp) : null]
-    .filter(Boolean)
-    .join(" · ");
 
   return (
     <TimelineNode isLast={isLast} dotClassName={STATUS_DOT_CLASS[revision.status]}>
       <div className="space-y-3">
         {/* 헤더 */}
-        <div>
-          <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
-            <span className="text-sm font-semibold text-foreground">{revision.revisionTitle}</span>
-            <span className={cn("rounded-md border px-1.5 py-px text-xs font-medium", STATUS_BADGE_CLASS[revision.status])}>
-              {STATUS_LABEL[revision.status]}
-            </span>
-            {revision.releaseWorkflowType === "ENGINEERING_CHANGE" && revision.releaseSourceNumber ? (
-              <span className="rounded-md border border-border bg-muted/50 px-1.5 py-px text-xs text-muted-foreground">
-                EC-{revision.releaseSourceNumber}
-              </span>
-            ) : null}
-            {meta ? <span className="text-xs text-muted-foreground">{meta}</span> : null}
-          </div>
+        <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1">
+          <span className="text-sm font-semibold text-foreground">{revision.revisionTitle}</span>
+          <span className={cn("rounded-md border px-1.5 py-px text-xs font-medium", STATUS_BADGE_CLASS[revision.status])}>
+            {STATUS_LABEL[revision.status]}
+          </span>
         </div>
 
         {/* 변경 요약 */}
         {revision.changeSummary && hasSummary ? (
-          <div>
-            <ChangeSummaryBadges
-              isLoading={isDiffLoading}
-              isOpenDiff={canOpenDiff}
-              summary={revision.changeSummary}
-              expanded={expanded}
-              onClick={
-                canOpenDiff
-                  ? () => onOpenDiff(revision)
-                  : activities.length > 0
-                    ? () => setExpanded((prev) => !prev)
-                    : undefined
-              }
-              hasActivities={activities.length > 0}
-            />
-            {expanded && activities.length > 0 ? (
-              <div className="mt-2 rounded-md border bg-muted/20 p-3">
-                <ActivitiesByCategory activities={activities} />
-              </div>
-            ) : null}
-          </div>
+          <ChangeSummary
+            isLoading={isDiffLoading}
+            summary={revision.changeSummary}
+            onClick={canOpenDiff ? () => onOpenDiff(revision) : undefined}
+          />
         ) : null}
 
-        {/* Draft 서브 타임라인 */}
-        {drafts.length > 0 ? (
+        {/* 이벤트 서브 타임라인 */}
+        {events.length > 0 ? (
           <div className="pt-1">
-            {drafts.map((draft, index) => (
-              <DraftTimelineItem key={draft.id} draft={draft} isFirst={index === drafts.length - 1} isLast={index === drafts.length - 1} />
+            {events.map((event, index) => (
+              <EventTimelineItem
+                key={`${event.eventType}-${index}`}
+                event={event}
+                isLast={index === events.length - 1}
+              />
             ))}
           </div>
         ) : null}

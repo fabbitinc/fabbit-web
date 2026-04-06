@@ -11,7 +11,7 @@ import {
   engineeringChangeGetTimeline as getEngineeringChangeTimelineApi,
   engineeringChangeReject as rejectEngineeringChangeApi,
   engineeringChangeRelease as releaseEngineeringChangeApi,
-  engineeringChangeReplaceSteps as replaceEngineeringChangeStepsApi,
+  engineeringChangeSyncSteps as replaceEngineeringChangeStepsApi,
   engineeringChangeRequestChanges as requestChangesEngineeringChangeApi,
   engineeringChangeResubmit as resubmitEngineeringChangeApi,
   engineeringChangeSubmit as submitEngineeringChangeApi,
@@ -19,6 +19,8 @@ import {
   engineeringChangeSyncIssues as syncEngineeringChangeIssuesApi,
   engineeringChangeUpdateComment as updateEngineeringChangeCommentApi,
   engineeringChangeUpdate as updateEngineeringChangeApi,
+  engineeringChangePopulateWhereUsed as populateWhereUsedApi,
+  engineeringChangeCreateEcFromIssue as createEcFromIssueApi,
 } from "@/api/generated/orval/engineering-changes/engineering-changes";
 import type {
   AddEngineeringChangeFilesRequestDto,
@@ -214,6 +216,19 @@ export async function addEngineeringChangeFiles(
 
 export async function deleteEngineeringChangeFile(engineeringChangeId: string, fileId: string) {
   await deleteEngineeringChangeFileApi(engineeringChangeId, fileId);
+}
+
+export async function populateWhereUsed(engineeringChangeId: string): Promise<EngineeringChangeDetailModel> {
+  const response = await populateWhereUsedApi(engineeringChangeId);
+  return toEngineeringChangeDetailModel(response as EngineeringChangeDetailResponseDto);
+}
+
+export async function createEcFromIssue(
+  issueId: string,
+  request: { title?: string; body?: unknown; reviewer_ids?: string[]; approver_ids?: string[] },
+): Promise<EngineeringChangeDetailModel> {
+  const response = await createEcFromIssueApi(issueId, request);
+  return toEngineeringChangeDetailModel(response as EngineeringChangeDetailResponseDto);
 }
 
 function toEngineeringChangeDetailModel(change: EngineeringChangeDetailResponseDto): EngineeringChangeDetailModel {
@@ -486,11 +501,13 @@ function deriveWorkflowModel(
 
     return {
       id: config.type.toLowerCase(),
+      stageId: firstStep?.step_stage_id ?? null,
       label: config.label,
       type: config.type,
       status: stateMap[config.type] ?? "pending",
       description: config.description,
-      completionPolicy: (firstStep?.completion_policy as EngineeringChangeWorkflowStageModel["completionPolicy"]) ?? undefined,
+      completionPolicy: (firstStep?.completion_policy as EngineeringChangeWorkflowStageModel["completionPolicy"]) ?? "ALL_MUST_APPROVE",
+      minApprovals: firstStep?.min_approvals ?? null,
       deadline: firstStep?.deadline ?? null,
       assignees: stageSteps.map(toWorkflowAssigneeModel),
     };

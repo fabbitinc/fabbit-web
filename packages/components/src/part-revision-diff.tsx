@@ -209,7 +209,7 @@ export function PartRevisionDiff({
           <SelectContent>
             {revisions.map((rev) => (
               <SelectItem key={rev.value} value={rev.value} disabled={rev.value === toRevision}>
-                {rev.label}{rev.status ? ` · ${rev.status}` : ""}
+                {rev.label}
               </SelectItem>
             ))}
           </SelectContent>
@@ -224,7 +224,7 @@ export function PartRevisionDiff({
           <SelectContent>
             {revisions.map((rev) => (
               <SelectItem key={rev.value} value={rev.value} disabled={rev.value === fromRevision}>
-                {rev.label}{rev.status ? ` · ${rev.status}` : ""}
+                {rev.label}
               </SelectItem>
             ))}
           </SelectContent>

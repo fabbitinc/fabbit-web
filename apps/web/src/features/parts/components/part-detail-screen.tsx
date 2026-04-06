@@ -8,7 +8,6 @@ import {
   PartPropertiesTab,
   PartRevisionDiff,
   type PartDrawingPreviewDrawing,
-  type PartHistoryDraft,
   type PartHistoryRevision,
   type PartHistoryRevisionStatus,
   type PartRevisionDiffData,
@@ -46,7 +45,6 @@ import type {
   PartDrawingProcessingModel,
   PartDrawingWebViewRequirementModel,
   PartRevisionDiffModel,
-  PartRevisionHistoryDraftModel,
   PartRevisionHistoryItemModel,
 } from "@/features/parts/types/parts-model";
 import { usePropertyMetaQuery } from "@/features/properties/hooks/use-property-meta-query";
@@ -70,32 +68,12 @@ const REVISION_STATUS_MAP: Record<string, PartHistoryRevisionStatus> = {
   CANCELED: "canceled",
 };
 
-function toHistoryDraft(draft: PartRevisionHistoryDraftModel): PartHistoryDraft {
-  return {
-    id: draft.revisionId,
-    creationSourceType: draft.creationSourceType ?? undefined,
-    status: REVISION_STATUS_MAP[draft.status] ?? "draft",
-    createdAt: draft.createdAt ?? undefined,
-    createdBy: draft.createdByName ?? undefined,
-    completedAt: draft.completedAt ?? undefined,
-    completedBy: draft.completedByName ?? undefined,
-    releasedRevisionLabel: draft.releasedRevisionCode ?? undefined,
-    reason: draft.reason ?? undefined,
-  };
-}
-
 function toHistoryRevisions(items: PartRevisionHistoryItemModel[]): PartHistoryRevision[] {
   return items.map((item) => ({
     id: item.revisionId,
     revisionLabel: item.revisionCode,
     revisionTitle: `Rev ${item.revisionCode}`,
-    author: item.releasedByName ?? undefined,
-    timestamp: item.releasedAt ?? undefined,
     status: REVISION_STATUS_MAP[item.status] ?? "draft",
-    releaseReason: item.releaseReason ?? undefined,
-    releaseWorkflowType: item.releaseWorkflowType ?? undefined,
-    releaseSourceNumber: item.releaseSourceNumber ?? undefined,
-    releaseSourceTitle: item.releaseSourceTitle ?? undefined,
     changeSummary: item.summary
       ? {
           property: item.summary.attributeChanges,
@@ -103,7 +81,17 @@ function toHistoryRevisions(items: PartRevisionHistoryItemModel[]): PartHistoryR
           bom: item.summary.bomChanges,
         }
       : undefined,
-    drafts: item.drafts.map(toHistoryDraft),
+    events: item.events.map((event) => ({
+      eventType: event.eventType,
+      occurredAt: event.occurredAt ?? undefined,
+      actorName: event.actorName ?? undefined,
+      reason: event.reason ?? undefined,
+      creationSourceType: event.creationSourceType ?? undefined,
+      releaseWorkflowType: event.releaseWorkflowType ?? undefined,
+      targetRevisionCode: event.targetRevisionCode ?? undefined,
+      sourceRefNumber: event.sourceRefNumber ?? undefined,
+      sourceRefTitle: event.sourceRefTitle ?? undefined,
+    })),
   }));
 }
 

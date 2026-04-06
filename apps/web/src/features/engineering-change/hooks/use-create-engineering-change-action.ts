@@ -39,19 +39,25 @@ function toCreateEngineeringChangeRequest(
   input: ChangeCreateFormSubmitInput,
   fileIds: string[],
 ): CreateEngineeringChangeDto {
+  const steps: CreateEngineeringChangeDto["steps"] = [];
+
+  if (input.reviewerIds.length > 0) {
+    steps.push({
+      step_type: EngineeringChangeStepRequestStepType.REVIEW,
+      sequence: 1,
+      completion_policy: "ALL_MUST_APPROVE",
+      assignees: input.reviewerIds.map((id) => ({
+        assignee_type: AssigneeRequestAssigneeType.USER,
+        assignee_id: id,
+      })),
+    });
+  }
+
   return {
     title: input.title,
     body: input.body ?? undefined,
     source_issue_id: input.linkedIssueId ?? undefined,
     file_ids: fileIds.length > 0 ? fileIds : undefined,
-    steps:
-      input.reviewerIds.length > 0
-        ? input.reviewerIds.map((reviewerId, index) => ({
-            assignee_id: reviewerId,
-            assignee_type: AssigneeRequestAssigneeType.USER,
-            sequence: index + 1,
-            step_type: EngineeringChangeStepRequestStepType.REVIEW,
-          }))
-        : undefined,
+    steps: steps.length > 0 ? steps : undefined,
   };
 }

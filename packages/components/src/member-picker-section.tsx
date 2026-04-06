@@ -57,7 +57,9 @@ export function MemberPickerSection({
     [onSearchChange],
   );
 
+  const selectedSet = new Set(selectedIds);
   const filtered = availableMembers.filter((m) => {
+    if (selectedSet.has(m.id)) return false;
     if (!query.trim()) return true;
     const q = query.toLowerCase();
     return m.name.toLowerCase().includes(q) || m.email.toLowerCase().includes(q);

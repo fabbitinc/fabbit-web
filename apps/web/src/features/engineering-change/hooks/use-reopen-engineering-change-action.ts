@@ -9,7 +9,8 @@ export function useReopenEngineeringChangeAction(engineeringChangeId: string) {
 
   return useMutation({
     mutationKey: ["engineering-change", engineeringChangeId, "reopen-engineering-change-action"],
-    mutationFn: () => rejectEngineeringChange(engineeringChangeId),
+    mutationFn: ({ stepId, comment }: { stepId: string; comment?: string }) =>
+      rejectEngineeringChange(engineeringChangeId, { step_id: stepId, comment }),
     onSuccess: async () => {
       toast.success("변경관리를 초안으로 되돌렸습니다.");
       await invalidateEngineeringChangeQueries(queryClient, engineeringChangeId, { includeList: true });

@@ -4,9 +4,11 @@ export type EngineeringChangeWorkflowStageStatus = "completed" | "active" | "pen
 export type EngineeringChangeWorkflowAssigneeStatus = "PENDING" | "APPROVED" | "CHANGES_REQUESTED" | "REJECTED" | "CANCELED";
 export type EngineeringChangeWorkflowAssigneeType = "USER" | "TEAM";
 export type EngineeringChangeWorkflowStageType = "REVIEW" | "APPROVAL" | "RELEASE";
+export type EngineeringChangeCompletionPolicy = "ALL_MUST_APPROVE" | "ANY_ONE_APPROVES" | "MIN_N_APPROVES";
 
 export interface EngineeringChangeWorkflowAssignee {
   id: string;
+  assigneeId: string;
   name: string;
   type: EngineeringChangeWorkflowAssigneeType;
   status: EngineeringChangeWorkflowAssigneeStatus;
@@ -18,10 +20,14 @@ export interface EngineeringChangeWorkflowAssignee {
 
 export interface EngineeringChangeWorkflowStage {
   id: string;
+  stageId?: string | null;
   label: string;
   type: EngineeringChangeWorkflowStageType;
   status: EngineeringChangeWorkflowStageStatus;
   description?: string;
+  completionPolicy: EngineeringChangeCompletionPolicy;
+  minApprovals?: number | null;
+  deadline?: string | null;
   assignees: EngineeringChangeWorkflowAssignee[];
 }
 
