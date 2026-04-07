@@ -131,7 +131,6 @@ export interface EngineeringChangeDetailScreenProps {
   onDeleteComment: (commentId: string) => Promise<void>;
   onDeleteFile: (fileId: string) => Promise<void>;
   onEditIssues?: () => void;
-  onEditLabels?: () => void;
   onMergeEngineeringChange: () => Promise<void> | void;
   onStepApprove?: (stepId: string, comment?: string) => void;
   onStepReject?: (stepId: string, comment?: string) => void;
@@ -927,7 +926,6 @@ export function EngineeringChangeDetailScreen({
   onDeleteComment: _onDeleteComment,
   onDeleteFile,
   onEditIssues,
-  onEditLabels,
   onMergeEngineeringChange,
   onStepApprove,
   onStepReject,
@@ -1345,7 +1343,6 @@ export function EngineeringChangeDetailScreen({
                 onAttachFiles={onAttachFiles}
                 onDeleteFile={onDeleteFile}
                 onEditIssues={onEditIssues}
-                onEditLabels={onEditLabels}
                 onNavigateToIssue={onNavigateToIssue}
               />
             </div>

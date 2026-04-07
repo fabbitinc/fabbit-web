@@ -233,7 +233,7 @@ export async function populateWhereUsed(engineeringChangeId: string): Promise<En
 
 export async function createEcFromIssue(
   issueId: string,
-  request: { title?: string; body?: unknown; reviewer_ids?: string[]; approver_ids?: string[] },
+  request: { title?: string; body?: Record<string, unknown>; reviewer_ids?: string[]; approver_ids?: string[] },
 ): Promise<EngineeringChangeDetailModel> {
   const response = await createEcFromIssueApi(issueId, request);
   return toEngineeringChangeDetailModel(response as EngineeringChangeDetailResponseDto);
@@ -519,7 +519,7 @@ function deriveWorkflowModel(
       status: stateMap[config.type] ?? "pending",
       description: config.description,
       completionPolicy: (firstStep?.completion_policy as EngineeringChangeWorkflowStageModel["completionPolicy"]) ?? "ALL_MUST_APPROVE",
-      minApprovals: firstStep?.min_approvals ?? null,
+      minApprovals: null,
       deadline: firstStep?.deadline ?? null,
       assignees: stageSteps.map(toWorkflowAssigneeModel),
     };

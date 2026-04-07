@@ -10,7 +10,6 @@ import {
   Checkbox,
   ConfirmDialog,
   Input,
-  LabelBadge,
   Popover,
   PopoverContent,
   PopoverTrigger,
@@ -104,7 +103,6 @@ export interface EngineeringChangeSidebarProps {
     isUpdating?: boolean;
   };
   onEditIssues?: () => void;
-  onEditLabels?: () => void;
   onNavigateToIssue: (issueNumber: number) => void;
 }
 
@@ -145,7 +143,6 @@ export function EngineeringChangeSidebar({
   labelPicker,
   linkedIssuePicker,
   onEditIssues,
-  onEditLabels,
   onNavigateToIssue,
 }: EngineeringChangeSidebarProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);

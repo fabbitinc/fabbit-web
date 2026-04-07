@@ -307,7 +307,12 @@ export function EngineeringChangeDetailScreen({
         onRequest: () => setStepsEnabled(true),
         onSearchChange: setStepsSearch,
         onSyncStages: (stages) => {
-          syncStepsAction.mutate({ stages });
+          syncStepsAction.mutate({
+            stages: stages.map((s) => ({
+              ...s,
+              stageType: s.stageType as import("@/api/generated/orval/model/engineeringChangeStepRequestStepType").EngineeringChangeStepRequestStepType,
+            })),
+          });
         },
         isSearching: memberLookup.isFetching,
         isUpdating: syncStepsAction.isPending,

@@ -5,7 +5,7 @@ import { changeManagementKeys } from "@/features/change-management/api/change-ma
 import { issueMutations } from "@/features/issue/api/issue.queries";
 import type { CreateIssueRequestDto } from "@/features/issue/api/issue.types";
 import { extractApiError } from "@/lib/api-error";
-import { normalizeRichTextDocument, type RichTextDocument } from "@/lib/rich-text";
+import { normalizeRichTextDocument } from "@/lib/rich-text";
 import type { TiptapEditorProps } from "@fabbit/ui";
 
 export interface IssueCreateInput {

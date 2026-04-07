@@ -21,7 +21,7 @@ import { FileIcon } from "./file-icon";
 import { LabelPickerSection } from "./label-picker-section";
 import { MemberPickerSection } from "./member-picker-section";
 import { PartPickerSection } from "./part-picker-section";
-import { getIssueStatusConfig, IssueStatusIcon } from "./work-item-status";
+import { getIssueStatusConfig } from "./work-item-status";
 
 export interface IssueCreateScreenMemberOption {
   email: string;

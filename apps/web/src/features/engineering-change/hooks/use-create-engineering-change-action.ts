@@ -65,7 +65,7 @@ function toCreateEngineeringChangeRequest(
     steps.push({
       step_type: stage.stageType as EngineeringChangeStepRequestStepType,
       sequence: index + 1,
-      completion_policy: stage.completionPolicy,
+      completion_policy: stage.completionPolicy as "ALL_MUST_APPROVE" | "ANY_ONE_APPROVES" | "MIN_N_APPROVES",
       min_approvals: stage.completionPolicy === "MIN_N_APPROVES" ? (stage.minApprovals ?? 1) : undefined,
       assignees: stage.assigneeIds.map((id) => ({
         assignee_type: AssigneeRequestAssigneeType.USER,

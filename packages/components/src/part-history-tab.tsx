@@ -117,12 +117,6 @@ const STATUS_BADGE_CLASS: Record<PartHistoryRevisionStatus, string> = {
   canceled: "border-[var(--status-danger-border)] bg-[var(--status-danger-bg)] text-[var(--status-danger)]",
 };
 
-const CATEGORY_LABELS: Record<PartHistoryRevisionActivityCategory, string> = {
-  property: "속성",
-  file: "파일",
-  bom: "BOM",
-};
-
 // ── 이벤트 라벨 ─────────────────────────────────────────
 
 function getEventLabel(event: PartHistoryEvent): string {
@@ -149,95 +143,6 @@ function getEventDotClass(event: PartHistoryEvent): string {
     default:
       return "text-muted-foreground fill-muted-foreground";
   }
-}
-
-// ── 변경 내역 ───────────────────────────────────────────
-
-function ActivityRow({ activity }: { activity: PartHistoryRevisionActivity }) {
-  if (activity.category === "file" && activity.fileName) {
-    const isAdded = activity.toValue === "added";
-    return (
-      <div className="flex items-baseline gap-1.5 py-0.5 text-sm">
-        <span className={cn(
-          isAdded ? "text-emerald-700 dark:text-emerald-400" : "text-red-600/80 line-through dark:text-red-400/80",
-        )}>
-          {activity.fileName}
-        </span>
-        <span className="text-xs text-muted-foreground">{isAdded ? "추가" : "삭제"}</span>
-      </div>
-    );
-  }
-
-  if (activity.field) {
-    const isAdded = !activity.fromValue || activity.fromValue === "added";
-    const isRemoved = activity.fromValue === "removed" || (!activity.toValue && activity.fromValue);
-
-    if (isAdded && activity.toValue && activity.toValue !== "added") {
-      return (
-        <div className="flex items-baseline gap-1.5 py-0.5 text-sm">
-          <span className="text-muted-foreground">{activity.field}</span>
-          <span className="font-medium text-foreground">{activity.toValue}</span>
-        </div>
-      );
-    }
-
-    if (isRemoved || activity.fromValue === "removed") {
-      return (
-        <div className="flex items-baseline gap-1.5 py-0.5 text-sm">
-          <span className="text-red-600/80 line-through dark:text-red-400/80">{activity.field}</span>
-          <span className="text-xs text-muted-foreground">삭제</span>
-        </div>
-      );
-    }
-
-    if (activity.toValue === "added") {
-      return (
-        <div className="flex items-baseline gap-1.5 py-0.5 text-sm">
-          <span className="text-emerald-700 dark:text-emerald-400">{activity.field}</span>
-          <span className="text-xs text-muted-foreground">추가</span>
-        </div>
-      );
-    }
-
-    return (
-      <div className="flex items-baseline gap-1.5 py-0.5 text-sm">
-        <span className="text-muted-foreground">{activity.field}</span>
-        <span className="text-red-600/70 line-through dark:text-red-400/70">{activity.fromValue}</span>
-        <ArrowRight className="inline h-3 w-3 shrink-0 text-muted-foreground/40" />
-        <span className="font-medium text-foreground">{activity.toValue}</span>
-      </div>
-    );
-  }
-
-  return null;
-}
-
-function ActivitiesByCategory({ activities }: { activities: PartHistoryRevisionActivity[] }) {
-  const grouped = new Map<PartHistoryRevisionActivityCategory, PartHistoryRevisionActivity[]>();
-  for (const activity of activities) {
-    const list = grouped.get(activity.category) ?? [];
-    list.push(activity);
-    grouped.set(activity.category, list);
-  }
-
-  return (
-    <div className="space-y-3">
-      {(["property", "bom", "file"] as const).map((category) => {
-        const items = grouped.get(category);
-        if (!items || items.length === 0) return null;
-        return (
-          <div key={category}>
-            <p className="mb-1 text-xs font-medium text-muted-foreground">{CATEGORY_LABELS[category]}</p>
-            <div className="space-y-0.5">
-              {items.map((activity) => (
-                <ActivityRow key={activity.id} activity={activity} />
-              ))}
-            </div>
-          </div>
-        );
-      })}
-    </div>
-  );
 }
 
 function ChangeSummary({
