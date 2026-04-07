@@ -1,3 +1,5 @@
+export { AffectedItemPickerSection } from "./affected-item-picker-section";
+export type { AffectedItemPickerSectionProps, AffectedItemSearchItem, AffectedItemType } from "./affected-item-picker-section";
 export { ActivityList } from "./activity-list";
 export { SortableList } from "./sortable-list";
 export type { SortableListColumn, SortableListProps } from "./sortable-list";
@@ -50,14 +52,27 @@ export type {
   EngineeringChangeDiffItemType,
   EngineeringChangeDiffTabProps,
 } from "./engineering-change-diff-tab";
-export { ChangeCreateScreen } from "./change-create-screen";
+export { EngineeringChangeCreateScreen } from "./engineering-change-create-screen";
 export type {
-  ChangeCreateScreenLabelOption,
-  ChangeCreateScreenMemberOption,
-  ChangeCreateScreenPartOption,
-  ChangeCreateScreenProps,
-  ChangeCreateScreenSubmitInput,
-} from "./change-create-screen";
+  EcCreateAffectedItemInput,
+  EcCreateCompletionPolicy,
+  EcCreateIssueOption,
+  EcCreateLabelOption,
+  EcCreateMemberOption,
+  EcCreateStageInput,
+  EcCreateStageType,
+  EcCreateSubmitInput,
+  EngineeringChangeCreateScreenProps,
+} from "./engineering-change-create-screen";
+export { IssueCreateScreen } from "./issue-create-screen";
+export type {
+  IssueCreateScreenChangeOption,
+  IssueCreateScreenLabelOption,
+  IssueCreateScreenMemberOption,
+  IssueCreateScreenPartOption,
+  IssueCreateScreenProps,
+  IssueCreateScreenSubmitInput,
+} from "./issue-create-screen";
 export { EngineeringChangeSidebar } from "./engineering-change-sidebar";
 export { EngineeringChangeWorkflowHeader } from "./engineering-change-workflow-header";
 export type {
@@ -76,7 +91,6 @@ export type {
   EngineeringChangeSidebarFile,
   EngineeringChangeSidebarLabel,
   EngineeringChangeSidebarLinkedIssue,
-  EngineeringChangeSidebarPart,
   EngineeringChangeSidebarProps,
   EngineeringChangeSidebarReviewer,
   EngineeringChangeSidebarUser,

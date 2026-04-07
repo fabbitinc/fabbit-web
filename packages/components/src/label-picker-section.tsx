@@ -149,11 +149,15 @@ export function LabelPickerSection({
           </Popover>
         )}
       </div>
-      <div className="mt-2 flex flex-wrap gap-1.5">
-        {displayLabels.map((l) => (
-          <LabelBadge key={l.id ?? l.name} label={l.name} colorHex={l.colorHex} size="md" />
-        ))}
-      </div>
+      {displayLabels.length > 0 ? (
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          {displayLabels.map((l) => (
+            <LabelBadge key={l.id ?? l.name} label={l.name} colorHex={l.colorHex} size="md" />
+          ))}
+        </div>
+      ) : (
+        <p className="mt-2 text-xs text-muted-foreground/50">연결된 라벨 없음</p>
+      )}
     </div>
   );
 }

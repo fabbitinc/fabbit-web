@@ -86,8 +86,8 @@ export const partGetImpactAnalysis = (
       options);
     }
   /**
- * 현재 사용자가 만든 변경관리 연결 가능한 DRAFT 리비전 목록을 조회합니다
- * @summary 변경관리 연결 가능한 리비전 목록을 조회합니다
+ * 상태와 작성자 필터를 적용해 리비전 lookup 목록을 조회합니다. 기본값은 status=DRAFT, mine_only=true 입니다
+ * @summary 리비전 lookup 목록을 조회합니다
  */
 export const partLookupRevisions = (
     params?: PartLookupRevisionsParams,

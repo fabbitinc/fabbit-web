@@ -13,8 +13,18 @@ export interface LookupLabelModel {
 
 export interface LookupPartModel {
   id: string;
+  revisionId: string | null;
   partNumber: string;
   name: string | null;
+}
+
+export interface LookupPartRevisionModel {
+  revisionId: string;
+  partId: string;
+  partNumber: string;
+  baseRevisionCode: string | null;
+  name: string | null;
+  status: string | null;
 }
 
 export interface LookupIssueModel {

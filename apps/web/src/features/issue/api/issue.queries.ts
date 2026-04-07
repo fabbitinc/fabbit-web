@@ -22,7 +22,6 @@ import type {
   CreateIssueRequestDto,
   SyncIssueAssigneesRequestDto,
   SyncIssueChangesRequestDto,
-  SyncIssueLabelsRequestDto,
   SyncIssuePartsRequestDto,
   UpdateIssueCommentRequestDto,
   UpdateIssueRequestDto,
@@ -68,7 +67,7 @@ export const issueMutations = {
   syncLabels: (issueId: string) =>
     mutationOptions({
       mutationKey: ["issue", issueId, "sync-labels"],
-      mutationFn: (request: SyncIssueLabelsRequestDto) => syncIssueLabels(issueId, request),
+      mutationFn: (labelIds: string[]) => syncIssueLabels(issueId, labelIds),
     }),
   syncParts: (issueId: string) =>
     mutationOptions({

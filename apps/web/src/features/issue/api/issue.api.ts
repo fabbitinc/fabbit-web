@@ -26,7 +26,6 @@ import type {
   SyncIssueAssigneesResponseDto,
   SyncIssueChangesRequestDto,
   SyncIssueChangesResponseDto,
-  SyncIssueLabelsRequestDto,
   SyncIssueLabelsResponseDto,
   SyncIssuePartsRequestDto,
   SyncIssuePartsResponseDto,
@@ -80,9 +79,9 @@ export async function syncIssueChanges(
 
 export async function syncIssueLabels(
   issueId: string,
-  request: SyncIssueLabelsRequestDto,
+  labelIds: string[],
 ): Promise<SyncIssueLabelsResponseDto> {
-  return syncIssueLabelsApi(issueId, request);
+  return syncIssueLabelsApi(issueId, { label_ids: labelIds });
 }
 
 export async function syncIssueParts(
@@ -203,6 +202,7 @@ function toIssueLabelModel(label: NonNullable<NonNullable<IssueDetailResponseDto
 function toIssuePartModel(part: NonNullable<NonNullable<IssueDetailResponseDto["parts"]>[number]>): IssuePartModel {
   return {
     id: part.id ?? "",
+    revisionId: part.revision_id ?? null,
     partNumber: part.part_number ?? "",
     name: part.name ?? null,
   };

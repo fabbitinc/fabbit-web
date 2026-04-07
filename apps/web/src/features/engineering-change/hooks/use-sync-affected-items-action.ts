@@ -13,11 +13,11 @@ export function useSyncAffectedItemsAction(engineeringChangeId: string) {
     mutationFn: (request: SyncAffectedItemsRequestDto) =>
       syncAffectedItems(engineeringChangeId, request),
     onSuccess: async () => {
-      toast.success("영향 항목을 갱신했습니다.");
+      toast.success("변경 대상 부품을 갱신했습니다.");
       await invalidateEngineeringChangeQueries(queryClient, engineeringChangeId);
     },
     onError: (error) => {
-      toast.error(extractApiError(error, "영향 항목 갱신에 실패했습니다."));
+      toast.error(extractApiError(error, "변경 대상 부품 갱신에 실패했습니다."));
     },
   });
 }

@@ -304,6 +304,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/engineering-changes/{engineeringChangeId}/labels": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /**
+         * 변경관리 라벨 목록을 동기화합니다
+         * @description 변경관리 라벨 목록을 동기화합니다
+         */
+        put: operations["engineeringChangeSyncLabels"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/engineering-changes/{engineeringChangeId}/issues": {
         parameters: {
             query?: never;
@@ -2824,8 +2844,8 @@ export interface paths {
             cookie?: never;
         };
         /**
-         * 변경관리 연결 가능한 리비전 목록을 조회합니다
-         * @description 현재 사용자가 만든 변경관리 연결 가능한 DRAFT 리비전 목록을 조회합니다
+         * 리비전 lookup 목록을 조회합니다
+         * @description 상태와 작성자 필터를 적용해 리비전 lookup 목록을 조회합니다. 기본값은 status=DRAFT, mine_only=true 입니다
          */
         get: operations["partLookupRevisions"];
         put?: never;
@@ -4120,6 +4140,7 @@ export interface components {
             is_modified?: boolean;
             created_by?: components["schemas"]["UserSummaryResponse"];
             source_issue?: components["schemas"]["LinkedIssueSummaryResponse"];
+            labels?: components["schemas"]["LabelBadgeResponse"][];
             steps?: components["schemas"]["EngineeringChangeStepResponse"][];
             affected_items?: components["schemas"]["EngineeringChangeAffectedItemResponse"][];
             files?: components["schemas"]["FileItemResponse"][];
@@ -4201,16 +4222,17 @@ export interface components {
             float?: boolean;
             array?: boolean;
             empty?: boolean;
+            integral_number?: boolean;
+            floating_point_number?: boolean;
             pojo?: boolean;
             int?: boolean;
             long?: boolean;
-            container?: boolean;
-            value_node?: boolean;
-            missing_node?: boolean;
-            object?: boolean;
             /** @enum {string} */
             node_type?: "ARRAY" | "BINARY" | "BOOLEAN" | "MISSING" | "NULL" | "NUMBER" | "OBJECT" | "POJO" | "STRING";
             string?: boolean;
+            value_node?: boolean;
+            missing_node?: boolean;
+            object?: boolean;
             short?: boolean;
             double?: boolean;
             big_decimal?: boolean;
@@ -4219,10 +4241,16 @@ export interface components {
             textual?: boolean;
             boolean?: boolean;
             binary?: boolean;
+            container?: boolean;
             number?: boolean;
-            integral_number?: boolean;
-            floating_point_number?: boolean;
             embedded_value?: boolean;
+        };
+        /** @description 변경관리 라벨 배지 */
+        LabelBadgeResponse: {
+            /** Format: uuid */
+            id?: string;
+            name?: string;
+            color?: string;
         };
         /** @description 연결 이슈 요약 */
         LinkedIssueSummaryResponse: {
@@ -5879,6 +5907,8 @@ export interface components {
             team_assignee_ids?: string[];
             /** @description 라벨 ID 목록 */
             label_ids?: string[];
+            /** @description 연결 변경관리 ID 목록 */
+            linked_engineering_change_ids?: string[];
             /** @description 첨부 파일 ID 목록(최대 20) */
             file_ids?: string[];
         };
@@ -5909,13 +5939,6 @@ export interface components {
             comments_count?: number;
             linked_engineering_changes?: components["schemas"]["LinkedEngineeringChangeSummaryResponse"][];
         };
-        /** @description 라벨 배지 */
-        LabelBadgeResponse: {
-            /** Format: uuid */
-            id?: string;
-            name?: string;
-            color?: string;
-        };
         /** @description 연결 변경관리 요약 */
         LinkedEngineeringChangeSummaryResponse: {
             /** Format: uuid */
@@ -5930,6 +5953,8 @@ export interface components {
         PartBadgeResponse: {
             /** Format: uuid */
             id?: string;
+            /** Format: uuid */
+            revision_id?: string;
             part_number?: string;
             name?: string;
         };
@@ -6030,8 +6055,12 @@ export interface components {
              * @description 연결할 원본 이슈 ID
              */
             source_issue_id?: string;
+            /** @description 연결 이슈 ID 목록 */
+            linked_issue_ids?: string[];
             /** @description 영향 항목 목록 */
             affected_items?: components["schemas"]["EngineeringChangeAffectedItemTargetRequest"][];
+            /** @description 라벨 ID 목록 */
+            label_ids?: string[];
             /** @description 첨부 파일 ID 목록(최대 20) */
             file_ids?: string[];
             /** @description 변경관리 단계 목록 */
@@ -7478,7 +7507,7 @@ export interface components {
             /** Format: uuid */
             id?: string;
             /** @enum {string} */
-            action?: "issue:created" | "issue:state_changed" | "issue:assignee_changed" | "issue:reviewer_changed" | "issue:label_changed" | "issue:part_changed" | "issue:file_attached" | "issue:file_detached" | "issue:engineering_change_changed" | "issue:mentioned" | "engineering_change:state_changed" | "engineering_change:issue_changed" | "engineering_change:step_changed" | "engineering_change:file_attached" | "engineering_change:file_detached" | "engineering_change:mentioned" | "engineering_change:part_revision_changed" | "engineering_change:step_approved" | "engineering_change:step_rejected" | "engineering_change:step_changes_requested" | "engineering_change:step_resubmitted";
+            action?: "issue:created" | "issue:state_changed" | "issue:assignee_changed" | "issue:reviewer_changed" | "issue:label_changed" | "issue:part_changed" | "issue:file_attached" | "issue:file_detached" | "issue:engineering_change_changed" | "issue:mentioned" | "engineering_change:state_changed" | "engineering_change:label_changed" | "engineering_change:issue_changed" | "engineering_change:step_changed" | "engineering_change:file_attached" | "engineering_change:file_detached" | "engineering_change:mentioned" | "engineering_change:part_revision_changed" | "engineering_change:step_approved" | "engineering_change:step_rejected" | "engineering_change:step_changes_requested" | "engineering_change:step_resubmitted";
             /** @enum {string} */
             scope?: "issue" | "engineering_change" | "project" | "organization";
             /** Format: uuid */
@@ -7528,6 +7557,7 @@ export interface components {
             /** Format: date-time */
             updated_at?: string;
             created_by?: components["schemas"]["UserSummaryResponse"];
+            labels?: components["schemas"]["LabelBadgeResponse"][];
             steps?: components["schemas"]["EngineeringChangeStepResponse"][];
             files?: components["schemas"]["FileItemResponse"][];
             /** Format: int32 */
@@ -8417,7 +8447,7 @@ export interface components {
             /** Format: uuid */
             id?: string;
             /** @enum {string} */
-            action?: "issue:created" | "issue:state_changed" | "issue:assignee_changed" | "issue:reviewer_changed" | "issue:label_changed" | "issue:part_changed" | "issue:file_attached" | "issue:file_detached" | "issue:engineering_change_changed" | "issue:mentioned" | "engineering_change:state_changed" | "engineering_change:issue_changed" | "engineering_change:step_changed" | "engineering_change:file_attached" | "engineering_change:file_detached" | "engineering_change:mentioned" | "engineering_change:part_revision_changed" | "engineering_change:step_approved" | "engineering_change:step_rejected" | "engineering_change:step_changes_requested" | "engineering_change:step_resubmitted";
+            action?: "issue:created" | "issue:state_changed" | "issue:assignee_changed" | "issue:reviewer_changed" | "issue:label_changed" | "issue:part_changed" | "issue:file_attached" | "issue:file_detached" | "issue:engineering_change_changed" | "issue:mentioned" | "engineering_change:state_changed" | "engineering_change:label_changed" | "engineering_change:issue_changed" | "engineering_change:step_changed" | "engineering_change:file_attached" | "engineering_change:file_detached" | "engineering_change:mentioned" | "engineering_change:part_revision_changed" | "engineering_change:step_approved" | "engineering_change:step_rejected" | "engineering_change:step_changes_requested" | "engineering_change:step_resubmitted";
             /** @enum {string} */
             scope?: "issue" | "engineering_change" | "project" | "organization";
             actor?: components["schemas"]["UserSummaryResponse"];
@@ -10330,6 +10360,84 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["EngineeringChangeResponse"];
+                };
+            };
+            /** @description 삭제 성공 */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    engineeringChangeSyncLabels: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                engineeringChangeId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SyncLabelsRequest"];
+            };
+        };
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SyncDiffResponse"];
+                };
+            };
+            /** @description 생성 성공 */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SyncDiffResponse"];
                 };
             };
             /** @description 삭제 성공 */
@@ -21006,6 +21114,8 @@ export interface operations {
         parameters: {
             query?: {
                 search?: string;
+                status?: "DRAFT" | "RELEASED" | "SUPERSEDED" | "CANCELED";
+                mine_only?: boolean;
                 limit?: number;
             };
             header?: never;

@@ -117,6 +117,7 @@ export interface EngineeringChangeDetailScreenProps {
   currentUserStepId?: string | null;
   isEcCreator?: boolean;
   isTimelineLoading?: boolean;
+  affectedItemPicker?: EngineeringChangeSidebarProps["affectedItemPicker"];
   labelPicker?: EngineeringChangeSidebarProps["labelPicker"];
   linkedIssuePicker?: EngineeringChangeSidebarProps["linkedIssuePicker"];
   mentionFetchers?: {
@@ -131,7 +132,6 @@ export interface EngineeringChangeDetailScreenProps {
   onDeleteFile: (fileId: string) => Promise<void>;
   onEditIssues?: () => void;
   onEditLabels?: () => void;
-  onEditParts?: () => void;
   onMergeEngineeringChange: () => Promise<void> | void;
   onStepApprove?: (stepId: string, comment?: string) => void;
   onStepReject?: (stepId: string, comment?: string) => void;
@@ -145,7 +145,6 @@ export interface EngineeringChangeDetailScreenProps {
   onSubmitEngineeringChange: () => Promise<void> | void;
   onTabChange: (tab: string) => void;
   onUpdateComment: (commentId: string, body: TiptapEditorProps["content"] | null) => Promise<void>;
-  partPicker?: EngineeringChangeSidebarProps["partPicker"];
   tabs: readonly EngineeringChangeDetailTabItem[];
   timelineItems: EngineeringChangeDetailScreenTimelineItem[];
 }
@@ -917,6 +916,7 @@ export function EngineeringChangeDetailScreen({
   currentUserStepId,
   isEcCreator = false,
   isTimelineLoading = false,
+  affectedItemPicker,
   labelPicker,
   linkedIssuePicker,
   mentionFetchers,
@@ -928,7 +928,6 @@ export function EngineeringChangeDetailScreen({
   onDeleteFile,
   onEditIssues,
   onEditLabels,
-  onEditParts,
   onMergeEngineeringChange,
   onStepApprove,
   onStepReject,
@@ -942,7 +941,6 @@ export function EngineeringChangeDetailScreen({
   onSubmitEngineeringChange,
   onTabChange,
   onUpdateComment,
-  partPicker,
   tabs,
   timelineItems,
 }: EngineeringChangeDetailScreenProps) {
@@ -1012,7 +1010,7 @@ export function EngineeringChangeDetailScreen({
   const canRelease = ecState === "RELEASE_PENDING";
   const canAdvance = canApproveReview || canApprove || canRelease;
   const canClose = ecState !== "RELEASED" && ecState !== "CANCELED";
-  const canReopen = ecState === "CANCELED";
+  const canReopen = false;
   const isEditable = ecState !== "RELEASED" && ecState !== "CANCELED";
 
   const advanceLabel = canApprove ? "승인" : canRelease ? "반영" : "검토 승인";
@@ -1340,15 +1338,14 @@ export function EngineeringChangeDetailScreen({
             <div className="hidden w-70 shrink-0 lg:block">
               <EngineeringChangeSidebar
                 engineeringChange={engineeringChange}
+                affectedItemPicker={affectedItemPicker}
                 labelPicker={labelPicker}
-                partPicker={partPicker}
                 linkedIssuePicker={linkedIssuePicker}
                 isAttachingFiles={isAttachingFiles}
                 onAttachFiles={onAttachFiles}
                 onDeleteFile={onDeleteFile}
                 onEditIssues={onEditIssues}
                 onEditLabels={onEditLabels}
-                onEditParts={onEditParts}
                 onNavigateToIssue={onNavigateToIssue}
               />
             </div>

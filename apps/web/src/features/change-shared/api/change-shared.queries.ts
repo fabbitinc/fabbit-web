@@ -4,6 +4,7 @@ import {
   lookupIssues,
   lookupLabels,
   lookupMembers,
+  lookupPartRevisions,
   lookupParts,
 } from "@/features/change-shared/api/change-shared.api";
 import type {
@@ -12,6 +13,7 @@ import type {
   LabelLookupQueryDto,
   MemberLookupQueryDto,
   PartLookupQueryDto,
+  PartRevisionLookupQueryDto,
 } from "@/features/change-shared/api/change-shared.types";
 
 export const changeSharedQueries = {
@@ -31,6 +33,12 @@ export const changeSharedQueries = {
     queryOptions({
       queryKey: ["change-shared", "parts", query],
       queryFn: () => lookupParts(query),
+      staleTime: 10_000,
+    }),
+  partRevisions: (query: PartRevisionLookupQueryDto) =>
+    queryOptions({
+      queryKey: ["change-shared", "part-revisions", query],
+      queryFn: () => lookupPartRevisions(query),
       staleTime: 10_000,
     }),
   issues: (query: IssueLookupQueryDto) =>

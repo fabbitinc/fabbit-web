@@ -2,88 +2,92 @@
 
 ## Goal
 
-- 부품 목록 화면의 필터 UX/동작을 안정화한다.
-- 부품 상세 화면의 대표 도면 구조를 `DWG`, `SLDPRT`, `SLDASM`까지 수용할 수 있게 재설계한다.
+- EC(Engineering Change) 변경관리 화면의 백엔드 API 스펙 변경에 맞춰 프론트엔드 코드를 리팩토링하고 QA한다.
+- EC step 구조 변경 (flat → assignees[] 배열 + completion_policy), 라벨 동기화 API 추가, 워크플로우 UI 개선.
 
 ## Current Progress
 
-- 부품 목록 화면 데이터 흐름을 확인했다.
-  - `카테고리`, `상태` 드롭다운은 `GET /api/v1/parts/filter-options` 응답을 사용한다.
-  - `속성` 드롭다운은 화면에서 직접 정의된 정적 옵션이다.
-- 부품 목록 화면의 빈 드롭다운 상태를 처리했다.
-  - `packages/components/src/parts-list-screen.tsx`
-  - 카테고리 옵션이 없을 때 `표시할 카테고리가 없습니다.`
-  - 상태 옵션이 없을 때 `표시할 상태 옵션이 없습니다.`
-- 부품 목록 화면의 검색 버튼 버그를 수정했다.
-  - 기존에는 검색 버튼에서 `setSearchParams`를 여러 번 연속 호출해서 마지막 변경만 남을 수 있었다.
-  - 현재는 `onFiltersApply`를 통해 필터 상태 전체를 한 번에 전달하고, `apps/web/src/pages/parts/parts-page.tsx`에서 URL 파라미터를 원자적으로 갱신한다.
-  - 관련 파일:
-    - `packages/components/src/parts-list-screen.tsx`
-    - `apps/web/src/features/parts/components/parts-list-screen.tsx`
-    - `apps/web/src/pages/parts/parts-page.tsx`
-- 부품 상세 화면 도면 설계 방향을 사용자와 합의했다.
-  - part당 대표 도면은 하나만 둔다.
-  - 추가 자료는 첨부파일로 둔다.
-  - `DWG`, `SLDPRT`, `SLDASM` 같은 원본은 보관하되, 웹에서 보이기 위한 별도 자산이 필요하다.
-  - viewer가 없어도 상세 화면은 열려야 하며, placeholder 또는 업로드 안내를 보여준다.
-- 현재 프론트 구조의 한계도 확인했다.
-  - `apps/web/src/features/parts/types/parts-model.ts` 의 `PartDrawingModel`은 `viewerType: "PDF" | "GLB"`만 가진다.
-  - `apps/web/src/api/generated/orval/model/relatedDrawingResponse.ts`도 `original_file_url`, `viewer_url`, `preview_url` 단일 세트만 가진다.
-  - `apps/web/src/features/parts/components/part-detail-screen.tsx`는 현재 viewer 자산이 이미 준비되어 있다는 가정이 강하다.
+### 1. EC Step 구조 변환 완료
+- flat `assignee_id`/`assignee_type` → `assignees[]` 배열 + `completion_policy` required로 전환
+- 영향 받은 hook 3개 모두 수정 완료:
+  - `use-create-engineering-change-action.ts`: `AssigneeRequestAssigneeType` import, `completion_policy: "ALL_MUST_APPROVE"` 기본값
+  - `use-sync-engineering-change-steps-action.ts`: 전면 재작성. `SyncStepsStageInput` 인터페이스, `buildSyncStagesFromWorkflow` 헬퍼
+  - `use-sync-engineering-change-reviewers-action.ts`: 동일 패턴 적용
+
+### 2. API 이름 변경 반영 완료
+- `engineeringChangeReplaceSteps` → `engineeringChangeSyncSteps` (orval 재생성으로 변경)
+- `engineering-change.api.ts`에서 import alias 수정
+
+### 3. Reopen hook 런타임 에러 수정
+- `rejectEngineeringChange(id)` → `rejectEngineeringChange(id, { step_id, comment })` 필수 인자 추가
+- `use-reopen-engineering-change-action.ts` mutationFn에 `{ stepId, comment }` 인자 추가
+
+### 4. EC 라벨 기능 추가 완료
+- `syncEngineeringChangeLabels` API 래퍼 추가 (`engineering-change.api.ts`)
+- `use-sync-engineering-change-labels-action.ts` 신규 생성
+- `toEngineeringChangeDetailModel`에서 `labels: []` 하드코딩 → API 응답 매핑
+- `engineeringChangeViewModel`에서도 `labels: []` 하드코딩 → 실제 labels 매핑 (두 곳 모두 수정!)
+- 사이드바에 `LabelPickerSection` 복원
+- 타임라인에 `engineering_change:label_changed` 이벤트 처리 추가
+
+### 5. 워크플로우 UI 개선 완료
+- `WorkflowStepRailAccordion` 전면 재작성:
+  - completion_policy Select (ALL_MUST_APPROVE / ANY_ONE_APPROVES / MIN_N_APPROVES)
+  - MIN_N_APPROVES 선택 시 "최소 N인" Input 표시
+  - 담당자 제거 X 버튼 (PENDING 상태만)
+  - MemberPickerSection에 assigneeId 기반 selectedIds 전달
+  - completed stage는 읽기 전용
+
+### 6. 담당자 필터링 수정 완료
+- `MemberPickerSection`: selectedIds에 포함된 멤버를 availableMembers에서 필터링
+- component 타입에 `assigneeId` 정식 추가, 모든 변환 경로에 반영
+
+### 7. 이슈/EC 라벨 패턴 통일 완료
+- `issue.api.ts`: `syncIssueLabels(id, labelIds)` — 내부에서 `{ label_ids }` 래핑
+- `use-sync-issue-labels-action.ts`: hook은 직접 array 전달
+- `issue.queries.ts`: `SyncIssueLabelsRequestDto` → `string[]` 타입 변경
 
 ## What Worked
 
-- 드롭다운 빈 상태를 비활성 안내 항목으로 노출하는 방식은 기존 `DropdownMenu` 구조와 잘 맞았다.
-- 검색 버튼 문제는 개별 필터 콜백을 연속 호출하는 대신, 필터 전체를 한 번에 적용하는 방식으로 해결됐다.
-- 대표 도면 1개 + 첨부파일 보조 구조는 사용자의 운영 방식과 맞는다.
-- 도면 자산을 `원본 / 뷰어용 입력 / 뷰어 / 프리뷰`로 분리하는 설계가 `DWG`, `SolidWorks` 요구사항을 가장 자연스럽게 수용한다.
+- EC step 구조 전환 시 생성/sync steps/sync reviewers 3개 hook을 일관되게 변경하는 접근
+- 이슈 라벨 패턴을 먼저 분석하고 EC에 동일 패턴 적용
+- `assigneeId` 필드를 component 타입에 정식 추가하여 근본적 해결
 
 ## What Didn't Work
 
-- 검색 버튼에서 `onQueryChange`, `onCategoryChange`, `onLifecycleStateChange`, `onHasDrawingChange`, `onHasChildrenChange`, `onPageChange`를 순차 호출하는 구조는 안전하지 않았다.
-  - React Router `setSearchParams`가 각각 독립적으로 적용되면서 마지막 변경만 남을 수 있었다.
-- 현재의 단일 `drawing` 모델은 `DWG`, `SLDPRT`, `SLDASM` 같은 원본과 별도 viewer 자산을 동시에 표현하기에 부족하다.
-- 전체 프로젝트 기준 검증은 기존 저장소 오류 때문에 신뢰할 수 없었다.
-  - `pnpm --filter @fabbit/web lint` 실패:
-    - `apps/web/src/api/generated/orval/model/streamingResponseBody.ts`
-  - `pnpm --filter @fabbit/web build` 실패:
-    - `apps/web/src/pages/registration/signup-page.tsx`
-    - `packages/components/src/file-icon.tsx`
-    - `packages/components/src/gltf-viewer-canvas.tsx`
-    - `packages/components/src/timeline-event.tsx`
+- EC 라벨 미표시 버그: `toEngineeringChangeDetailModel`만 수정하고 `engineeringChangeViewModel`의 `labels: []` 하드코딩을 놓침 → 두 곳 모두 수정 필요했음
+- 담당자 필터링: step ID를 selectedIds로 전달했으나 availableMembers는 user ID 사용 → ID 불일치. 우회 대신 `assigneeId` 정식 추가로 해결
+- `MemberPickerSection` selectedIds 필터링 추가만으로는 부족 — 타입 체계부터 수정해야 했음
+
+## 수정된 주요 파일
+
+### apps/web
+- `features/engineering-change/api/engineering-change.api.ts`
+- `features/engineering-change/hooks/use-create-engineering-change-action.ts`
+- `features/engineering-change/hooks/use-sync-engineering-change-steps-action.ts`
+- `features/engineering-change/hooks/use-sync-engineering-change-reviewers-action.ts`
+- `features/engineering-change/hooks/use-reopen-engineering-change-action.ts`
+- `features/engineering-change/hooks/use-step-reject-action.ts`
+- `features/engineering-change/hooks/use-sync-engineering-change-labels-action.ts` (신규)
+- `features/engineering-change/types/engineering-change-model.ts`
+- `features/engineering-change/components/engineering-change-detail-screen.tsx`
+- `features/change-shared/lib/timeline-event.ts`
+- `features/issue/api/issue.api.ts`
+- `features/issue/hooks/use-sync-issue-labels-action.ts`
+- `features/issue/api/issue.queries.ts`
+
+### packages/components
+- `engineering-change-detail-screen.tsx`
+- `engineering-change-workflow-section.tsx`
+- `engineering-change-sidebar.tsx`
+- `member-picker-section.tsx`
+- `label-picker-section.tsx`
 
 ## Next Steps
 
-1. 도면 capability matrix를 확정한다.
-   - `PDF`: 원본 그대로 viewer 가능, preview 자동 생성
-   - `DXF`: 원본 보관, PDF viewer 생성 대상
-   - `STEP/STP`: 원본 보관, GLB viewer 생성 대상
-   - `DWG`: 원본 보관, `DXF` 우선 또는 `PDF` fallback 업로드 필요
-   - `SLDPRT/SLDASM`: 원본 보관, `STEP` 우선 또는 `GLB` fallback 업로드 필요
-2. API 계약을 재설계한다.
-   - 현재 단일 `drawing` 응답 대신 대표 도면 아래에 자산 역할을 분리한다.
-   - 최소 후보:
-     - `originalAsset`
-     - `viewerSourceAsset`
-     - `viewerAsset`
-     - `previewAsset`
-   - 상태도 단일 `conversionStatus` 대신 분리한다.
-     - `viewerStatus`
-     - `previewStatus`
-     - `actionRequiredReason`
-3. UI/업로드 플로우를 재설계한다.
-   - viewer가 없으면 상세 화면에서 placeholder와 CTA를 노출한다.
-   - `DWG`, `SLDPRT`, `SLDASM` 업로드 시 추가 업로드 요구를 명확히 안내한다.
-   - 우선순위는 `DXF/STEP` 업로드 권장, `PDF/GLB` 직접 업로드는 fallback으로 두는 쪽이 합리적이다.
-4. `SLDASM` 정책을 문서화한다.
-   - 현재 사용자 답변 기준으로는 조립품 참조 파일을 시스템이 자동으로 해석하지 않는다.
-   - 당장은 본파일을 대표 원본으로 보관하고, 참조 파일은 첨부파일로 올리게 하는 방향이 맞다.
-   - 추후 필요하면 `zip package` 지원을 검토한다.
-5. 실제 구현에 들어갈 때 우선 확인할 파일
-   - `apps/web/src/features/parts/types/parts-model.ts`
-   - `apps/web/src/features/parts/api/parts.api.ts`
-   - `apps/web/src/features/parts/api/parts.types.ts`
-   - `apps/web/src/features/parts/components/part-detail-screen.tsx`
-   - `apps/web/src/features/parts/components/part-attachments-tab.tsx`
-   - Orval 생성 모델 및 OpenAPI 스펙
-
+1. **EC 화면 전체 QA 계속** — 워크플로우 설정, 라벨, 담당자 등 변경된 기능 실제 동작 확인
+2. **미구현 기능들**:
+   - 이슈 → EC 생성 UI (`createEcFromIssue` API 래퍼만 있음, hook/UI 없음)
+   - `populateWhereUsed` 버튼 UI
+   - EC 생성 화면 워크플로우 설정 확장 (현재 reviewer만 가능 → 승인자/배포자/정책 추가)
+   - EC deadline 설정 UI (DatePicker) — 모델 준비됨, UI 미구현

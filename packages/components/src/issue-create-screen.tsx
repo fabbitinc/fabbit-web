@@ -1,15 +1,19 @@
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import {
-  AlertCircle,
   ArrowLeft,
   Loader2,
   Plus,
+  Settings,
   X,
 } from "lucide-react";
 import {
   Button,
+  Checkbox,
   Input,
   Label,
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
   TiptapEditor,
   type TiptapEditorProps,
 } from "@fabbit/ui";
@@ -17,67 +21,65 @@ import { FileIcon } from "./file-icon";
 import { LabelPickerSection } from "./label-picker-section";
 import { MemberPickerSection } from "./member-picker-section";
 import { PartPickerSection } from "./part-picker-section";
+import { getIssueStatusConfig, IssueStatusIcon } from "./work-item-status";
 
-export interface ChangeCreateScreenMemberOption {
+export interface IssueCreateScreenMemberOption {
   email: string;
   id: string;
   name: string;
   profileImageUrl?: string | null;
 }
 
-export interface ChangeCreateScreenLabelOption {
+export interface IssueCreateScreenLabelOption {
   colorHex: string;
   id: string;
   name: string;
 }
 
-export interface ChangeCreateScreenPartOption {
+export interface IssueCreateScreenPartOption {
   id: string;
   name: string | null;
   partNumber: string;
 }
 
-export interface ChangeCreateScreenSubmitInput {
+export interface IssueCreateScreenChangeOption {
+  id: string;
+  number: number;
+  title: string;
+  state: string;
+}
+
+export interface IssueCreateScreenSubmitInput {
   assigneeIds: string[];
   body: TiptapEditorProps["content"] | null;
   files: File[];
   labelIds: string[];
-  linkedIssueNumber: number | null;
+  linkedEngineeringChangeIds: string[];
   partIds: string[];
-  reviewerIds: string[];
   title: string;
 }
 
-export interface ChangeCreateScreenProps {
-  assigneeOptions?: ChangeCreateScreenMemberOption[];
-  backLabel: string;
-  description: string;
-  editorPlaceholder: string;
-  heading: string;
-  includeReviewers?: boolean;
+export interface IssueCreateScreenProps {
+  assigneeOptions?: IssueCreateScreenMemberOption[];
+  changeOptions?: IssueCreateScreenChangeOption[];
   isAssigneeSearching?: boolean;
+  isChangeSearching?: boolean;
   isLabelSearching?: boolean;
   isPartSearching?: boolean;
   isPending?: boolean;
-  isReviewerSearching?: boolean;
-  labelOptions?: ChangeCreateScreenLabelOption[];
-  linkedIssueNumber?: number | null;
-  linkedIssueTitle?: string | null;
+  labelOptions?: IssueCreateScreenLabelOption[];
   onAssigneeSearchChange?: (search: string) => void;
   onBack: () => void;
   onCancel?: () => void;
+  onChangeSearchChange?: (search: string) => void;
   onLabelSearchChange?: (search: string) => void;
   onRequestAssignees?: () => void;
+  onRequestChanges?: () => void;
   onRequestLabels?: () => void;
   onRequestParts?: () => void;
-  onRequestReviewers?: () => void;
   onPartSearchChange?: (search: string) => void;
-  onReviewerSearchChange?: (search: string) => void;
-  onSubmit: (input: ChangeCreateScreenSubmitInput) => Promise<void>;
-  partOptions?: ChangeCreateScreenPartOption[];
-  reviewerOptions?: ChangeCreateScreenMemberOption[];
-  submitLabel: string;
-  titlePlaceholder: string;
+  onSubmit: (input: IssueCreateScreenSubmitInput) => Promise<void>;
+  partOptions?: IssueCreateScreenPartOption[];
 }
 
 function formatFileSize(bytes: number): string {
@@ -86,52 +88,42 @@ function formatFileSize(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-export function ChangeCreateScreen({
+export function IssueCreateScreen({
   assigneeOptions = [],
-  backLabel,
-  description,
-  editorPlaceholder,
-  heading,
-  includeReviewers = false,
+  changeOptions = [],
   isAssigneeSearching = false,
+  isChangeSearching = false,
   isLabelSearching = false,
   isPartSearching = false,
   isPending = false,
-  isReviewerSearching = false,
   labelOptions = [],
-  linkedIssueNumber: initialLinkedIssueNumber,
-  linkedIssueTitle,
   onAssigneeSearchChange,
   onBack,
   onCancel,
+  onChangeSearchChange,
   onLabelSearchChange,
   onRequestAssignees,
+  onRequestChanges,
   onRequestLabels,
   onRequestParts,
-  onRequestReviewers,
   onPartSearchChange,
-  onReviewerSearchChange,
   onSubmit,
   partOptions = [],
-  reviewerOptions = [],
-  submitLabel,
-  titlePlaceholder,
-}: ChangeCreateScreenProps) {
+}: IssueCreateScreenProps) {
   const [title, setTitle] = useState("");
   const [descriptionJson, setDescriptionJson] = useState<TiptapEditorProps["content"] | null>(null);
   const [descriptionText, setDescriptionText] = useState("");
-  const [linkedIssueNumber, setLinkedIssueNumber] = useState<number | null>(initialLinkedIssueNumber ?? null);
   const [assigneeIds, setAssigneeIds] = useState<string[]>([]);
-  const [reviewerIds, setReviewerIds] = useState<string[]>([]);
+  const [linkedChangeIds, setLinkedChangeIds] = useState<string[]>([]);
   const [labelIds, setLabelIds] = useState<string[]>([]);
   const [partIds, setPartIds] = useState<string[]>([]);
   const [files, setFiles] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const memberCacheRef = useRef<Map<string, ChangeCreateScreenMemberOption>>(new Map());
-  const labelCacheRef = useRef<Map<string, ChangeCreateScreenLabelOption>>(new Map());
-  const partCacheRef = useRef<Map<string, ChangeCreateScreenPartOption>>(new Map());
+  const memberCacheRef = useRef<Map<string, IssueCreateScreenMemberOption>>(new Map());
+  const labelCacheRef = useRef<Map<string, IssueCreateScreenLabelOption>>(new Map());
+  const partCacheRef = useRef<Map<string, IssueCreateScreenPartOption>>(new Map());
 
-  for (const member of [...assigneeOptions, ...reviewerOptions]) {
+  for (const member of assigneeOptions) {
     memberCacheRef.current.set(member.id, member);
   }
 
@@ -151,14 +143,14 @@ export function ChangeCreateScreen({
         className="inline-flex items-center gap-1.5 text-sm text-muted-foreground transition-colors hover:text-foreground"
       >
         <ArrowLeft className="h-4 w-4" />
-        {backLabel}
+        이슈 목록
       </button>
 
       <div className="flex gap-6">
         <div className="min-w-0 flex-1 rounded-lg border bg-card">
           <div className="border-b px-5 py-4">
-            <h2 className="text-sm font-semibold text-foreground">{heading}</h2>
-            <p className="mt-1 text-xs text-muted-foreground">{description}</p>
+            <h2 className="text-sm font-semibold text-foreground">새 이슈</h2>
+            <p className="mt-1 text-xs text-muted-foreground">추적할 작업 또는 문제를 등록합니다.</p>
           </div>
 
           <form
@@ -175,42 +167,20 @@ export function ChangeCreateScreen({
                 title: trimmedTitle,
                 body: descriptionText.trim().length > 0 ? descriptionJson : null,
                 assigneeIds,
-                reviewerIds,
                 labelIds,
+                linkedEngineeringChangeIds: linkedChangeIds,
                 partIds,
                 files,
-                linkedIssueNumber,
               });
             }}
           >
-            {linkedIssueNumber != null ? (
-              <div className="flex items-start justify-between rounded-md border border-border bg-muted/30 px-4 py-3">
-                <div className="min-w-0 flex-1">
-                  <p className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-                    <AlertCircle className="h-3.5 w-3.5" />
-                    참조 이슈
-                  </p>
-                  <p className="mt-1 truncate text-sm font-medium text-foreground">
-                    #{linkedIssueNumber} {linkedIssueTitle ?? ""}
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  className="shrink-0 rounded-sm p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                  onClick={() => setLinkedIssueNumber(null)}
-                >
-                  <X className="h-3.5 w-3.5" />
-                </button>
-              </div>
-            ) : null}
-
             <div className="space-y-2">
-              <Label htmlFor="change-create-screen-title">제목</Label>
+              <Label htmlFor="issue-create-screen-title">제목</Label>
               <Input
-                id="change-create-screen-title"
+                id="issue-create-screen-title"
                 value={title}
                 onChange={(event) => setTitle(event.target.value)}
-                placeholder={titlePlaceholder}
+                placeholder="이슈 제목을 입력하세요"
                 maxLength={500}
                 required
               />
@@ -222,7 +192,7 @@ export function ChangeCreateScreen({
                 content={descriptionJson ?? ""}
                 onChangeJson={(content) => setDescriptionJson(content)}
                 onChangeText={setDescriptionText}
-                placeholder={editorPlaceholder}
+                placeholder="이슈 설명을 입력하세요"
                 minHeight={220}
               />
             </div>
@@ -233,7 +203,7 @@ export function ChangeCreateScreen({
               </Button>
               <Button type="submit" disabled={!title.trim() || isPending}>
                 {isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : null}
-                {submitLabel}
+                이슈 생성
               </Button>
             </div>
           </form>
@@ -241,31 +211,6 @@ export function ChangeCreateScreen({
 
         <div className="hidden w-[280px] shrink-0 lg:block">
           <div className="space-y-5">
-            {includeReviewers ? (
-              <MemberPickerSection
-                label="검토자"
-                applyLabel="검토자 적용"
-                availableMembers={reviewerOptions.map((member) => ({
-                  id: member.id,
-                  name: member.name,
-                  email: member.email,
-                }))}
-                selectedIds={reviewerIds}
-                displayItems={reviewerIds
-                  .map((id) => memberCacheRef.current.get(id))
-                  .filter((member): member is ChangeCreateScreenMemberOption => Boolean(member))
-                  .map((member) => ({
-                    id: member.id,
-                    name: member.name,
-                    profileImageUrl: member.profileImageUrl,
-                  }))}
-                onSync={setReviewerIds}
-                onRequestMembers={onRequestReviewers}
-                onSearchChange={onReviewerSearchChange}
-                isSearching={isReviewerSearching}
-              />
-            ) : null}
-
             <MemberPickerSection
               label="담당자"
               applyLabel="담당자 적용"
@@ -277,7 +222,7 @@ export function ChangeCreateScreen({
               selectedIds={assigneeIds}
               displayItems={assigneeIds
                 .map((id) => memberCacheRef.current.get(id))
-                .filter((member): member is ChangeCreateScreenMemberOption => Boolean(member))
+                .filter((member): member is IssueCreateScreenMemberOption => Boolean(member))
                 .map((member) => ({
                   id: member.id,
                   name: member.name,
@@ -294,7 +239,7 @@ export function ChangeCreateScreen({
               selectedIds={labelIds}
               displayLabels={labelIds
                 .map((id) => labelCacheRef.current.get(id))
-                .filter((label): label is ChangeCreateScreenLabelOption => Boolean(label))}
+                .filter((label): label is IssueCreateScreenLabelOption => Boolean(label))}
               onSync={setLabelIds}
               onRequestLabels={onRequestLabels}
               onSearchChange={onLabelSearchChange}
@@ -306,7 +251,7 @@ export function ChangeCreateScreen({
               selectedIds={partIds}
               displayParts={partIds
                 .map((id) => partCacheRef.current.get(id))
-                .filter((part): part is ChangeCreateScreenPartOption => Boolean(part))
+                .filter((part): part is IssueCreateScreenPartOption => Boolean(part))
                 .map((part) => ({
                   id: part.id,
                   partNumber: part.partNumber,
@@ -316,6 +261,15 @@ export function ChangeCreateScreen({
               onRequestParts={onRequestParts}
               onSearchChange={onPartSearchChange}
               isSearching={isPartSearching}
+            />
+
+            <LinkedChangePickerSection
+              changeOptions={changeOptions}
+              selectedIds={linkedChangeIds}
+              onSync={setLinkedChangeIds}
+              onRequest={onRequestChanges}
+              onSearchChange={onChangeSearchChange}
+              isSearching={isChangeSearching}
             />
 
             <div>
@@ -382,6 +336,155 @@ export function ChangeCreateScreen({
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+/* ── 연결된 변경관리 피커 ── */
+
+function LinkedChangePickerSection({
+  changeOptions,
+  selectedIds,
+  onSync,
+  onRequest,
+  onSearchChange,
+  isSearching,
+}: {
+  changeOptions: IssueCreateScreenChangeOption[];
+  selectedIds: string[];
+  onSync: (ids: string[]) => void;
+  onRequest?: () => void;
+  onSearchChange?: (search: string) => void;
+  isSearching?: boolean;
+}) {
+  const [popoverOpen, setPopoverOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const [draftIds, setDraftIds] = useState<string[]>([]);
+  const changeCacheRef = useRef<Map<string, IssueCreateScreenChangeOption>>(new Map());
+
+  for (const change of changeOptions) {
+    changeCacheRef.current.set(change.id, change);
+  }
+
+  const filteredChanges = useMemo(() => {
+    if (!query.trim()) return changeOptions;
+    const q = query.toLowerCase();
+    return changeOptions.filter(
+      (c) => c.title.toLowerCase().includes(q) || String(c.number).includes(q),
+    );
+  }, [query, changeOptions]);
+
+  return (
+    <div>
+      <div className="flex items-center justify-between">
+        <h3 className="text-xs font-medium text-muted-foreground">연결된 변경관리</h3>
+        <Popover
+          open={popoverOpen}
+          onOpenChange={(open) => {
+            setPopoverOpen(open);
+            if (open) {
+              onRequest?.();
+              onSearchChange?.("");
+              setDraftIds(selectedIds);
+              setQuery("");
+            } else {
+              setQuery("");
+            }
+          }}
+        >
+          <PopoverTrigger asChild>
+            <button
+              type="button"
+              className="inline-flex h-5 w-5 cursor-pointer items-center justify-center rounded text-muted-foreground/50 transition-colors hover:bg-muted hover:text-foreground"
+            >
+              <Settings className="h-3 w-3" />
+            </button>
+          </PopoverTrigger>
+          <PopoverContent className="w-80 p-3" align="end">
+            <div className="space-y-2">
+              <p className="text-xs font-medium text-foreground">변경관리 연결</p>
+              <div className="relative">
+                <Input
+                  value={query}
+                  onChange={(e) => {
+                    setQuery(e.target.value);
+                    onSearchChange?.(e.target.value);
+                  }}
+                  placeholder="번호 또는 제목으로 검색"
+                />
+                {isSearching ? (
+                  <div className="absolute right-2 top-1/2 -translate-y-1/2">
+                    <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />
+                  </div>
+                ) : null}
+              </div>
+              <div className="max-h-48 space-y-1 overflow-auto">
+                {filteredChanges.length === 0 ? (
+                  <p className="px-1 py-2 text-xs text-muted-foreground">
+                    {query.trim() ? "검색 결과가 없습니다." : "연결 가능한 변경관리가 없습니다."}
+                  </p>
+                ) : (
+                  filteredChanges.map((change) => (
+                    <label
+                      key={change.id}
+                      className="flex w-full cursor-pointer items-center gap-2 rounded-md px-1 py-1.5 hover:bg-muted"
+                    >
+                      <Checkbox
+                        checked={draftIds.includes(change.id)}
+                        onCheckedChange={(checked) => {
+                          setDraftIds((prev) =>
+                            checked ? [...prev, change.id] : prev.filter((id) => id !== change.id),
+                          );
+                        }}
+                      />
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-xs font-medium text-foreground">
+                          #{change.number} {change.title}
+                        </p>
+                        <p className="text-[11px] text-muted-foreground">
+                          {getIssueStatusConfig(change.state).label}
+                        </p>
+                      </div>
+                    </label>
+                  ))
+                )}
+              </div>
+              <Button
+                type="button"
+                size="sm"
+                className="w-full"
+                onClick={() => {
+                  onSync(draftIds);
+                  setPopoverOpen(false);
+                  setQuery("");
+                }}
+              >
+                변경관리 적용
+              </Button>
+            </div>
+          </PopoverContent>
+        </Popover>
+      </div>
+      {selectedIds.length > 0 ? (
+        <div className="mt-2 space-y-1.5">
+          {selectedIds.map((id) => {
+            const change = changeCacheRef.current.get(id);
+            if (!change) return null;
+            return (
+              <div key={id} className="rounded-md px-2 py-1.5">
+                <p className="truncate text-xs font-medium text-foreground">
+                  #{change.number} {change.title}
+                </p>
+                <p className="text-[11px] text-muted-foreground">
+                  {getIssueStatusConfig(change.state).label}
+                </p>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <p className="mt-2 text-xs text-muted-foreground/50">연결된 변경관리 없음</p>
+      )}
     </div>
   );
 }

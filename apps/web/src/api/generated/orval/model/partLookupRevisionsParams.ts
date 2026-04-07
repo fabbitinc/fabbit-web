@@ -4,9 +4,12 @@
  * OpenAPI definition
  * OpenAPI spec version: v0
  */
+import type { PartLookupRevisionsStatus } from './partLookupRevisionsStatus';
 
 export type PartLookupRevisionsParams = {
 search?: string;
+status?: PartLookupRevisionsStatus;
+mine_only?: boolean;
 /**
  * @minimum 1
  * @maximum 50

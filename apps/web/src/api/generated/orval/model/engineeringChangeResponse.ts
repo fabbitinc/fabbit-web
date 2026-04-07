@@ -9,6 +9,7 @@ import type { EngineeringChangeResponseState } from './engineeringChangeResponse
 import type { EngineeringChangeStepResponse } from './engineeringChangeStepResponse';
 import type { FileItemResponse } from './fileItemResponse';
 import type { JsonNode } from './jsonNode';
+import type { LabelBadgeResponse } from './labelBadgeResponse';
 import type { LinkedIssueSummaryResponse } from './linkedIssueSummaryResponse';
 import type { UserSummaryResponse } from './userSummaryResponse';
 
@@ -27,6 +28,7 @@ export interface EngineeringChangeResponse {
   is_modified?: boolean;
   created_by?: UserSummaryResponse;
   source_issue?: LinkedIssueSummaryResponse;
+  labels?: LabelBadgeResponse[];
   steps?: EngineeringChangeStepResponse[];
   affected_items?: EngineeringChangeAffectedItemResponse[];
   files?: FileItemResponse[];

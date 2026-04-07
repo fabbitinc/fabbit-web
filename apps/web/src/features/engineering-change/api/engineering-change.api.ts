@@ -17,6 +17,7 @@ import {
   engineeringChangeSubmit as submitEngineeringChangeApi,
   engineeringChangeSyncAffectedItems as syncAffectedItemsApi,
   engineeringChangeSyncIssues as syncEngineeringChangeIssuesApi,
+  engineeringChangeSyncLabels as syncEngineeringChangeLabelsApi,
   engineeringChangeUpdateComment as updateEngineeringChangeCommentApi,
   engineeringChangeUpdate as updateEngineeringChangeApi,
   engineeringChangePopulateWhereUsed as populateWhereUsedApi,
@@ -218,6 +219,13 @@ export async function deleteEngineeringChangeFile(engineeringChangeId: string, f
   await deleteEngineeringChangeFileApi(engineeringChangeId, fileId);
 }
 
+export async function syncEngineeringChangeLabels(
+  engineeringChangeId: string,
+  labelIds: string[],
+) {
+  await syncEngineeringChangeLabelsApi(engineeringChangeId, { label_ids: labelIds });
+}
+
 export async function populateWhereUsed(engineeringChangeId: string): Promise<EngineeringChangeDetailModel> {
   const response = await populateWhereUsedApi(engineeringChangeId);
   return toEngineeringChangeDetailModel(response as EngineeringChangeDetailResponseDto);
@@ -258,7 +266,11 @@ function toEngineeringChangeDetailModel(change: EngineeringChangeDetailResponseD
     updatedAt: change.updated_at ?? "",
     isModified: change.is_modified ?? false,
     createdBy: change.created_by ? toEngineeringChangeUserModel(change.created_by) : null,
-    labels: [],
+    labels: (change.labels ?? []).map((label) => ({
+      id: label.id ?? "",
+      name: label.name ?? "",
+      color: label.color ?? "",
+    })),
     assignees: [],
     reviewers: reviewSteps.map(toEngineeringChangeReviewerModel),
     reviewerTeams: [],

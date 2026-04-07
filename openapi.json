@@ -1624,6 +1624,102 @@
                 }
             }
         },
+        "/api/v1/engineering-changes/{engineeringChangeId}/labels": {
+            "put": {
+                "tags": [
+                    "engineering-changes"
+                ],
+                "summary": "\ubcc0\uacbd\uad00\ub9ac \ub77c\ubca8 \ubaa9\ub85d\uc744 \ub3d9\uae30\ud654\ud569\ub2c8\ub2e4",
+                "description": "\ubcc0\uacbd\uad00\ub9ac \ub77c\ubca8 \ubaa9\ub85d\uc744 \ub3d9\uae30\ud654\ud569\ub2c8\ub2e4",
+                "operationId": "engineeringChangeSyncLabels",
+                "parameters": [
+                    {
+                        "name": "engineeringChangeId",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/SyncLabelsRequest"
+                            }
+                        }
+                    },
+                    "required": true
+                },
+                "responses": {
+                    "200": {
+                        "description": "\uc694\uccad \uc131\uacf5",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SyncDiffResponse"
+                                }
+                            }
+                        }
+                    },
+                    "201": {
+                        "description": "\uc0dd\uc131 \uc131\uacf5",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/SyncDiffResponse"
+                                }
+                            }
+                        }
+                    },
+                    "204": {
+                        "description": "\uc0ad\uc81c \uc131\uacf5"
+                    },
+                    "400": {
+                        "description": "\uc798\ubabb\ub41c \uc694\uccad",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "\uc778\uc99d \ud544\uc694",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "\uad8c\ud55c \uc5c6\uc74c",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "\ub9ac\uc18c\uc2a4\ub97c \ucc3e\uc744 \uc218 \uc5c6\uc74c",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ApiErrorResponse"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/engineering-changes/{engineeringChangeId}/issues": {
             "put": {
                 "tags": [
@@ -14753,8 +14849,8 @@
                 "tags": [
                     "parts"
                 ],
-                "summary": "\ubcc0\uacbd\uad00\ub9ac \uc5f0\uacb0 \uac00\ub2a5\ud55c \ub9ac\ube44\uc804 \ubaa9\ub85d\uc744 \uc870\ud68c\ud569\ub2c8\ub2e4",
-                "description": "\ud604\uc7ac \uc0ac\uc6a9\uc790\uac00 \ub9cc\ub4e0 \ubcc0\uacbd\uad00\ub9ac \uc5f0\uacb0 \uac00\ub2a5\ud55c DRAFT \ub9ac\ube44\uc804 \ubaa9\ub85d\uc744 \uc870\ud68c\ud569\ub2c8\ub2e4",
+                "summary": "\ub9ac\ube44\uc804 lookup \ubaa9\ub85d\uc744 \uc870\ud68c\ud569\ub2c8\ub2e4",
+                "description": "\uc0c1\ud0dc\uc640 \uc791\uc131\uc790 \ud544\ud130\ub97c \uc801\uc6a9\ud574 \ub9ac\ube44\uc804 lookup \ubaa9\ub85d\uc744 \uc870\ud68c\ud569\ub2c8\ub2e4. \uae30\ubcf8\uac12\uc740 status=DRAFT, mine_only=true \uc785\ub2c8\ub2e4",
                 "operationId": "partLookupRevisions",
                 "parameters": [
                     {
@@ -14763,6 +14859,30 @@
                         "required": false,
                         "schema": {
                             "type": "string"
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": "DRAFT",
+                            "enum": [
+                                "DRAFT",
+                                "RELEASED",
+                                "SUPERSEDED",
+                                "CANCELED"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "mine_only",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean",
+                            "default": true
                         }
                     },
                     {
@@ -19158,6 +19278,12 @@
                     "source_issue": {
                         "$ref": "#/components/schemas/LinkedIssueSummaryResponse"
                     },
+                    "labels": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/LabelBadgeResponse"
+                        }
+                    },
                     "steps": {
                         "type": "array",
                         "items": {
@@ -19317,6 +19443,12 @@
                     "empty": {
                         "type": "boolean"
                     },
+                    "integral_number": {
+                        "type": "boolean"
+                    },
+                    "floating_point_number": {
+                        "type": "boolean"
+                    },
                     "pojo": {
                         "type": "boolean"
                     },
@@ -19324,18 +19456,6 @@
                         "type": "boolean"
                     },
                     "long": {
-                        "type": "boolean"
-                    },
-                    "container": {
-                        "type": "boolean"
-                    },
-                    "value_node": {
-                        "type": "boolean"
-                    },
-                    "missing_node": {
-                        "type": "boolean"
-                    },
-                    "object": {
                         "type": "boolean"
                     },
                     "node_type": {
@@ -19353,6 +19473,15 @@
                         ]
                     },
                     "string": {
+                        "type": "boolean"
+                    },
+                    "value_node": {
+                        "type": "boolean"
+                    },
+                    "missing_node": {
+                        "type": "boolean"
+                    },
+                    "object": {
                         "type": "boolean"
                     },
                     "short": {
@@ -19377,17 +19506,30 @@
                     "binary": {
                         "type": "boolean"
                     },
+                    "container": {
+                        "type": "boolean"
+                    },
                     "number": {
-                        "type": "boolean"
-                    },
-                    "integral_number": {
-                        "type": "boolean"
-                    },
-                    "floating_point_number": {
                         "type": "boolean"
                     },
                     "embedded_value": {
                         "type": "boolean"
+                    }
+                }
+            },
+            "LabelBadgeResponse": {
+                "type": "object",
+                "description": "\ubcc0\uacbd\uad00\ub9ac \ub77c\ubca8 \ubc30\uc9c0",
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "color": {
+                        "type": "string"
                     }
                 }
             },
@@ -22152,6 +22294,14 @@
                             "format": "uuid"
                         }
                     },
+                    "linked_engineering_change_ids": {
+                        "type": "array",
+                        "description": "\uc5f0\uacb0 \ubcc0\uacbd\uad00\ub9ac ID \ubaa9\ub85d",
+                        "items": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
                     "file_ids": {
                         "type": "array",
                         "description": "\ucca8\ubd80 \ud30c\uc77c ID \ubaa9\ub85d(\ucd5c\ub300 20)",
@@ -22252,22 +22402,6 @@
                     }
                 }
             },
-            "LabelBadgeResponse": {
-                "type": "object",
-                "description": "\ub77c\ubca8 \ubc30\uc9c0",
-                "properties": {
-                    "id": {
-                        "type": "string",
-                        "format": "uuid"
-                    },
-                    "name": {
-                        "type": "string"
-                    },
-                    "color": {
-                        "type": "string"
-                    }
-                }
-            },
             "LinkedEngineeringChangeSummaryResponse": {
                 "type": "object",
                 "description": "\uc5f0\uacb0 \ubcc0\uacbd\uad00\ub9ac \uc694\uc57d",
@@ -22301,6 +22435,10 @@
                 "description": "\ubd80\ud488 \ubc30\uc9c0",
                 "properties": {
                     "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "revision_id": {
                         "type": "string",
                         "format": "uuid"
                     },
@@ -22540,11 +22678,27 @@
                         "format": "uuid",
                         "description": "\uc5f0\uacb0\ud560 \uc6d0\ubcf8 \uc774\uc288 ID"
                     },
+                    "linked_issue_ids": {
+                        "type": "array",
+                        "description": "\uc5f0\uacb0 \uc774\uc288 ID \ubaa9\ub85d",
+                        "items": {
+                            "type": "string",
+                            "format": "uuid"
+                        }
+                    },
                     "affected_items": {
                         "type": "array",
                         "description": "\uc601\ud5a5 \ud56d\ubaa9 \ubaa9\ub85d",
                         "items": {
                             "$ref": "#/components/schemas/EngineeringChangeAffectedItemTargetRequest"
+                        }
+                    },
+                    "label_ids": {
+                        "type": "array",
+                        "description": "\ub77c\ubca8 ID \ubaa9\ub85d",
+                        "items": {
+                            "type": "string",
+                            "format": "uuid"
                         }
                     },
                     "file_ids": {
@@ -24821,6 +24975,7 @@
                             "issue:engineering_change_changed",
                             "issue:mentioned",
                             "engineering_change:state_changed",
+                            "engineering_change:label_changed",
                             "engineering_change:issue_changed",
                             "engineering_change:step_changed",
                             "engineering_change:file_attached",
@@ -24934,6 +25089,12 @@
                     },
                     "created_by": {
                         "$ref": "#/components/schemas/UserSummaryResponse"
+                    },
+                    "labels": {
+                        "type": "array",
+                        "items": {
+                            "$ref": "#/components/schemas/LabelBadgeResponse"
+                        }
                     },
                     "steps": {
                         "type": "array",
@@ -26684,6 +26845,7 @@
                             "issue:engineering_change_changed",
                             "issue:mentioned",
                             "engineering_change:state_changed",
+                            "engineering_change:label_changed",
                             "engineering_change:issue_changed",
                             "engineering_change:step_changed",
                             "engineering_change:file_attached",

@@ -16,6 +16,7 @@ export interface IssueLabelModel {
 
 export interface IssuePartModel {
   id: string;
+  revisionId: string | null;
   partNumber: string;
   name: string | null;
 }

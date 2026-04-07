@@ -14,6 +14,9 @@ export type LabelLookupResponseDto = ResponseOf<"/api/v1/labels/lookup", "get">;
 export type PartLookupQueryDto = NonNullable<ApiParameters<"/api/v1/parts/lookup", "get">["query"]>;
 export type PartLookupResponseDto = ResponseOf<"/api/v1/parts/lookup", "get">;
 
+export type PartRevisionLookupQueryDto = NonNullable<ApiParameters<"/api/v1/parts/revisions/lookup", "get">["query"]>;
+export type PartRevisionLookupResponseDto = ResponseOf<"/api/v1/parts/revisions/lookup", "get">;
+
 export type IssueLookupQueryDto = NonNullable<ApiParameters<"/api/v1/issues/lookup", "get">["query"]>;
 export type IssueLookupResponseDto = ResponseOf<"/api/v1/issues/lookup", "get">;
 

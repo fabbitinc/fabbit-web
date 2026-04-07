@@ -10,9 +10,7 @@ export function useSyncIssueLabelsAction(issueId: string) {
   return useMutation({
     mutationKey: ["issue", issueId, "sync-issue-labels-action"],
     mutationFn: (labelIds: string[]) =>
-      syncIssueLabels(issueId, {
-        label_ids: labelIds,
-      }),
+      syncIssueLabels(issueId, labelIds),
     onSuccess: async () => {
       toast.success("라벨을 갱신했습니다.");
       await invalidateIssueQueries(queryClient, issueId);

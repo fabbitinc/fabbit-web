@@ -22,8 +22,12 @@ export interface CreateEngineeringChangeRequest {
   body?: JsonNode;
   /** 연결할 원본 이슈 ID */
   source_issue_id?: string;
+  /** 연결 이슈 ID 목록 */
+  linked_issue_ids?: string[];
   /** 영향 항목 목록 */
   affected_items?: EngineeringChangeAffectedItemTargetRequest[];
+  /** 라벨 ID 목록 */
+  label_ids?: string[];
   /**
    * 첨부 파일 ID 목록(최대 20)
    * @minItems 0

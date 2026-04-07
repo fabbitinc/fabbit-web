@@ -79,7 +79,7 @@ function toIssueType(raw?: string): "engineering_change" | "issue" | undefined {
 
   const upper = raw.toUpperCase();
 
-  if (upper === "CHANGE_REQUEST" || upper === "CR") {
+  if (upper === "CHANGE_REQUEST" || upper === "CR" || upper === "ENGINEERING_CHANGE") {
     return "engineering_change";
   }
 
@@ -264,7 +264,7 @@ export function mapTimelineActivityToEvent(item: TimelineActivitySource): Timeli
     };
   }
 
-  if (action === "issue:label_changed") {
+  if (action === "issue:label_changed" || action === "engineering_change:label_changed") {
     const addedRefs = extractRefs(detail.added);
     const removedRefs = extractRefs(detail.removed);
     const legacyAddedFromList = (detail.added as { color: string; name: string }[] | undefined) ?? [];
@@ -353,7 +353,7 @@ export function mapTimelineActivityToEvent(item: TimelineActivitySource): Timeli
     };
   }
 
-  if (action === "issue:cr_changed") {
+  if (action === "issue:cr_changed" || action === "issue:engineering_change_changed") {
     const addedRefs = extractRefs(detail.added);
     const removedRefs = extractRefs(detail.removed);
     const addedItems = toLinkedItems(addedRefs);

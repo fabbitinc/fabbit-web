@@ -1,13 +1,32 @@
 import { type MutationFunctionContext, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import type { TiptapEditorProps } from "@fabbit/ui";
 import { uploadFiles } from "@/api/file.api";
-import type { ChangeCreateFormSubmitInput } from "@/features/change-shared";
 import { changeManagementKeys } from "@/features/change-management/api/change-management.queries";
 import { engineeringChangeMutations } from "@/features/engineering-change/api/engineering-change.queries";
 import type { CreateEngineeringChangeDto } from "@/features/engineering-change/api/engineering-change.types";
 import { AssigneeRequestAssigneeType } from "@/api/generated/orval/model/assigneeRequestAssigneeType";
-import { EngineeringChangeStepRequestStepType } from "@/api/generated/orval/model/engineeringChangeStepRequestStepType";
+import type { EngineeringChangeStepRequestStepType } from "@/api/generated/orval/model/engineeringChangeStepRequestStepType";
 import { extractApiError } from "@/lib/api-error";
+import { normalizeRichTextDocument } from "@/lib/rich-text";
+
+export interface EcCreateActionInput {
+  title: string;
+  body: TiptapEditorProps["content"] | null;
+  labelIds: string[];
+  linkedIssueIds: string[];
+  files: File[];
+  stages: {
+    stageType: "REVIEW" | "APPROVAL" | "RELEASE";
+    completionPolicy: string;
+    minApprovals?: number | null;
+    assigneeIds: string[];
+  }[];
+  affectedItems: {
+    targetId: string;
+    itemType: string;
+  }[];
+}
 
 export function useCreateEngineeringChangeAction() {
   const queryClient = useQueryClient();
@@ -15,7 +34,7 @@ export function useCreateEngineeringChangeAction() {
 
   return useMutation({
     mutationKey: createEngineeringChangeMutation.mutationKey,
-    mutationFn: async (input: ChangeCreateFormSubmitInput, context: MutationFunctionContext) => {
+    mutationFn: async (input: EcCreateActionInput, context: MutationFunctionContext) => {
       const mutationFn = createEngineeringChangeMutation.mutationFn;
 
       if (!mutationFn) {
@@ -36,28 +55,39 @@ export function useCreateEngineeringChangeAction() {
 }
 
 function toCreateEngineeringChangeRequest(
-  input: ChangeCreateFormSubmitInput,
+  input: EcCreateActionInput,
   fileIds: string[],
 ): CreateEngineeringChangeDto {
   const steps: CreateEngineeringChangeDto["steps"] = [];
 
-  if (input.reviewerIds.length > 0) {
+  for (const [index, stage] of input.stages.entries()) {
+    if (stage.assigneeIds.length === 0) continue;
     steps.push({
-      step_type: EngineeringChangeStepRequestStepType.REVIEW,
-      sequence: 1,
-      completion_policy: "ALL_MUST_APPROVE",
-      assignees: input.reviewerIds.map((id) => ({
+      step_type: stage.stageType as EngineeringChangeStepRequestStepType,
+      sequence: index + 1,
+      completion_policy: stage.completionPolicy,
+      min_approvals: stage.completionPolicy === "MIN_N_APPROVES" ? (stage.minApprovals ?? 1) : undefined,
+      assignees: stage.assigneeIds.map((id) => ({
         assignee_type: AssigneeRequestAssigneeType.USER,
         assignee_id: id,
       })),
     });
   }
 
+  const affectedItems = input.affectedItems.length > 0
+    ? input.affectedItems.map((item) => ({
+        item_type: item.itemType as "REVISION_RELEASE" | "LIFECYCLE_CHANGE",
+        target_id: item.targetId,
+      }))
+    : undefined;
+
   return {
     title: input.title,
-    body: input.body ?? undefined,
-    source_issue_id: input.linkedIssueId ?? undefined,
+    body: normalizeRichTextDocument(input.body) ?? undefined,
+    label_ids: input.labelIds.length > 0 ? input.labelIds : undefined,
+    linked_issue_ids: input.linkedIssueIds.length > 0 ? input.linkedIssueIds : undefined,
     file_ids: fileIds.length > 0 ? fileIds : undefined,
     steps: steps.length > 0 ? steps : undefined,
+    affected_items: affectedItems,
   };
 }

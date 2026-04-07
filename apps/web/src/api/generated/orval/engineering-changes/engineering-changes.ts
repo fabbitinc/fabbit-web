@@ -21,6 +21,7 @@ import type {
   SyncDiffResponse,
   SyncEngineeringChangeStepsRequest,
   SyncIssuesRequest,
+  SyncLabelsRequest,
   TimelineResponse,
   UpdateCommentRequest,
   UpdateEngineeringChangeRequest
@@ -45,6 +46,21 @@ export const engineeringChangeSyncSteps = (
       {url: `/api/v1/engineering-changes/${engineeringChangeId}/steps`, method: 'PUT',
       headers: {'Content-Type': 'application/json', },
       data: syncEngineeringChangeStepsRequest
+    },
+      options);
+    }
+  /**
+ * 변경관리 라벨 목록을 동기화합니다
+ * @summary 변경관리 라벨 목록을 동기화합니다
+ */
+export const engineeringChangeSyncLabels = (
+    engineeringChangeId: string,
+    syncLabelsRequest: BodyType<SyncLabelsRequest>,
+ options?: SecondParameter<typeof customInstance<SyncDiffResponse | void>>,) => {
+      return customInstance<SyncDiffResponse | void>(
+      {url: `/api/v1/engineering-changes/${engineeringChangeId}/labels`, method: 'PUT',
+      headers: {'Content-Type': 'application/json', },
+      data: syncLabelsRequest
     },
       options);
     }
@@ -370,6 +386,7 @@ export const engineeringChangeDeleteFile = (
       options);
     }
   export type EngineeringChangeSyncStepsResult = NonNullable<Awaited<ReturnType<typeof engineeringChangeSyncSteps>>>
+export type EngineeringChangeSyncLabelsResult = NonNullable<Awaited<ReturnType<typeof engineeringChangeSyncLabels>>>
 export type EngineeringChangeSyncIssuesResult = NonNullable<Awaited<ReturnType<typeof engineeringChangeSyncIssues>>>
 export type EngineeringChangeSyncAffectedItemsResult = NonNullable<Awaited<ReturnType<typeof engineeringChangeSyncAffectedItems>>>
 export type EngineeringChangeListResult = NonNullable<Awaited<ReturnType<typeof engineeringChangeList>>>

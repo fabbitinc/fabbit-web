@@ -20,6 +20,7 @@ export const ActivityResponseAction = {
   'issue:engineering_change_changed': 'issue:engineering_change_changed',
   'issue:mentioned': 'issue:mentioned',
   'engineering_change:state_changed': 'engineering_change:state_changed',
+  'engineering_change:label_changed': 'engineering_change:label_changed',
   'engineering_change:issue_changed': 'engineering_change:issue_changed',
   'engineering_change:step_changed': 'engineering_change:step_changed',
   'engineering_change:file_attached': 'engineering_change:file_attached',

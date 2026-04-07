@@ -19,6 +19,7 @@ import { useChangeLookupQuery } from "@/features/change-shared/hooks/use-change-
 import { useLabelLookupQuery } from "@/features/change-shared/hooks/use-label-lookup-query";
 import { useMemberLookupQuery } from "@/features/change-shared/hooks/use-member-lookup-query";
 import { usePartLookupQuery } from "@/features/change-shared/hooks/use-part-lookup-query";
+import { buildPartDetailPath } from "@/features/parts/lib/part-route";
 import { useAddIssueFilesAction } from "@/features/issue/hooks/use-add-issue-files-action";
 import { useCloseIssueAction } from "@/features/issue/hooks/use-close-issue-action";
 import { useCreateIssueCommentAction } from "@/features/issue/hooks/use-create-issue-comment-action";
@@ -390,6 +391,12 @@ export function IssueDetailScreen({ issueId }: IssueDetailScreenProps) {
           commentId,
           body: normalizedBody,
         });
+      }}
+      onNavigateToPart={(partId: string) => {
+        const part = issue?.parts.find((p) => p.id === partId);
+        if (part?.revisionId) {
+          navigate(buildPartDetailPath(partId, part.revisionId));
+        }
       }}
       searchedParts={(partLookup.data ?? []).map((part: LookupPartModel) => ({
         id: part.id,

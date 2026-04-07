@@ -6,7 +6,7 @@
  */
 
 /**
- * 라벨 배지
+ * 변경관리 라벨 배지
  */
 export interface LabelBadgeResponse {
   id?: string;

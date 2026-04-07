@@ -7,6 +7,7 @@
 import type { EngineeringChangeStepResponse } from './engineeringChangeStepResponse';
 import type { EngineeringChangeSummaryResponseState } from './engineeringChangeSummaryResponseState';
 import type { FileItemResponse } from './fileItemResponse';
+import type { LabelBadgeResponse } from './labelBadgeResponse';
 import type { UserSummaryResponse } from './userSummaryResponse';
 
 /**
@@ -21,6 +22,7 @@ export interface EngineeringChangeSummaryResponse {
   created_at?: string;
   updated_at?: string;
   created_by?: UserSummaryResponse;
+  labels?: LabelBadgeResponse[];
   steps?: EngineeringChangeStepResponse[];
   files?: FileItemResponse[];
   comments_count?: number;

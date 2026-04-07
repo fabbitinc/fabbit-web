@@ -278,6 +278,7 @@ export * from './partLookupItemResponse';
 export * from './partLookupParams';
 export * from './partLookupResponse';
 export * from './partLookupRevisionsParams';
+export * from './partLookupRevisionsStatus';
 export * from './partNumberAvailabilityResponse';
 export * from './partNumberPreviewResponse';
 export * from './partPreviewProcessingResponse';

@@ -26,6 +26,8 @@ export interface CreateIssueRequest {
   team_assignee_ids?: string[];
   /** 라벨 ID 목록 */
   label_ids?: string[];
+  /** 연결 변경관리 ID 목록 */
+  linked_engineering_change_ids?: string[];
   /**
    * 첨부 파일 ID 목록(최대 20)
    * @minItems 0

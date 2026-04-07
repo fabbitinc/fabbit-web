@@ -15,9 +15,9 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@fabbit/ui";
+import { AffectedItemPickerSection, type AffectedItemPickerSectionProps } from "./affected-item-picker-section";
 import { FileIcon } from "./file-icon";
 import { LabelPickerSection } from "./label-picker-section";
-import { PartPickerSection } from "./part-picker-section";
 import { IssueStatusIcon, getIssueStatusConfig } from "./work-item-status";
 
 export interface EngineeringChangeSidebarUser {
@@ -37,12 +37,6 @@ export interface EngineeringChangeSidebarLabel {
   id: string;
   name: string;
   color: string;
-}
-
-export interface EngineeringChangeSidebarPart {
-  id: string;
-  partNumber: string;
-  name: string | null;
 }
 
 export interface EngineeringChangeSidebarFile {
@@ -71,7 +65,6 @@ export interface EngineeringChangeSidebarEngineeringChange {
   assignees: EngineeringChangeSidebarUser[];
   reviewers: EngineeringChangeSidebarReviewer[];
   labels: EngineeringChangeSidebarLabel[];
-  parts: EngineeringChangeSidebarPart[];
   files: EngineeringChangeSidebarFile[];
   linkedIssues: EngineeringChangeSidebarLinkedIssue[];
 }
@@ -90,10 +83,12 @@ export interface EngineeringChangeSidebarProps {
     isSearching?: boolean;
     isUpdating?: boolean;
   };
-  partPicker?: {
-    searchedParts: { id: string; partNumber: string; name: string | null }[];
-    selectedIds: string[];
-    onSync: (partIds: string[]) => void;
+  affectedItemPicker?: {
+    searchedItems: AffectedItemPickerSectionProps["searchedItems"];
+    displayItems: AffectedItemPickerSectionProps["displayItems"];
+    onSync: NonNullable<AffectedItemPickerSectionProps["onSync"]>;
+    onItemTypeChange?: AffectedItemPickerSectionProps["onItemTypeChange"];
+    onNavigateToItem?: AffectedItemPickerSectionProps["onNavigateToItem"];
     onRequest: () => void;
     onSearchChange?: (search: string) => void;
     isSearching?: boolean;
@@ -110,7 +105,6 @@ export interface EngineeringChangeSidebarProps {
   };
   onEditIssues?: () => void;
   onEditLabels?: () => void;
-  onEditParts?: () => void;
   onNavigateToIssue: (issueNumber: number) => void;
 }
 
@@ -144,15 +138,14 @@ function formatFileSize(size: number) {
 
 export function EngineeringChangeSidebar({
   engineeringChange,
+  affectedItemPicker,
   isAttachingFiles,
   onAttachFiles,
   onDeleteFile,
   labelPicker,
-  partPicker,
   linkedIssuePicker,
   onEditIssues,
   onEditLabels,
-  onEditParts,
   onNavigateToIssue,
 }: EngineeringChangeSidebarProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -176,6 +169,22 @@ export function EngineeringChangeSidebar({
 
   return (
     <div className="space-y-5">
+      {labelPicker ? (
+        <LabelPickerSection
+          availableLabels={labelPicker.availableLabels}
+          selectedIds={labelPicker.selectedIds}
+          displayLabels={engineeringChange.labels.map((label) => ({
+            id: label.id,
+            name: label.name,
+            colorHex: label.color,
+          }))}
+          onSync={labelPicker.onSync}
+          onRequestLabels={labelPicker.onRequest}
+          onSearchChange={labelPicker.onSearchChange}
+          isSearching={labelPicker.isSearching}
+          isUpdating={labelPicker.isUpdating}
+        />
+      ) : null}
 
       <div>
         <div className="flex items-center justify-between">
@@ -323,43 +332,19 @@ export function EngineeringChangeSidebar({
         )}
       </div>
 
-      <div>
-        {partPicker ? (
-          <PartPickerSection
-            searchedParts={partPicker.searchedParts}
-            selectedIds={partPicker.selectedIds}
-            displayParts={engineeringChange.parts.map((part) => ({
-              id: part.id,
-              partNumber: part.partNumber,
-              name: part.name ?? "이름 없음",
-            }))}
-            onSync={partPicker.onSync}
-            onRequestParts={partPicker.onRequest}
-            onSearchChange={partPicker.onSearchChange}
-            isSearching={partPicker.isSearching}
-            isUpdating={partPicker.isUpdating}
-          />
-        ) : (
-          <div>
-            <div className="flex items-center justify-between">
-              <h3 className="text-xs font-medium text-muted-foreground">관련 부품</h3>
-              <SectionSettingsButton onClick={onEditParts} />
-            </div>
-            {engineeringChange.parts.length > 0 ? (
-              <div className="mt-2 space-y-1.5">
-                {engineeringChange.parts.map((part) => (
-                  <div key={part.id} className="rounded-md px-2 py-1.5">
-                    <p className="truncate text-xs font-medium text-foreground">{part.partNumber}</p>
-                    <p className="truncate text-[11px] text-muted-foreground">{part.name ?? "이름 없음"}</p>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="mt-2 text-xs text-muted-foreground/50">연결된 부품 없음</p>
-            )}
-          </div>
-        )}
-      </div>
+      {affectedItemPicker ? (
+        <AffectedItemPickerSection
+          searchedItems={affectedItemPicker.searchedItems}
+          displayItems={affectedItemPicker.displayItems}
+          onSync={affectedItemPicker.onSync}
+          onItemTypeChange={affectedItemPicker.onItemTypeChange}
+          onNavigateToItem={affectedItemPicker.onNavigateToItem}
+          onRequest={affectedItemPicker.onRequest}
+          onSearchChange={affectedItemPicker.onSearchChange}
+          isSearching={affectedItemPicker.isSearching}
+          isUpdating={affectedItemPicker.isUpdating}
+        />
+      ) : null}
 
       <div>
         <div className="flex items-center justify-between">

@@ -21,13 +21,19 @@ import { useCloseEngineeringChangeAction } from "@/features/engineering-change/h
 import { useCreateEngineeringChangeCommentAction } from "@/features/engineering-change/hooks/use-create-engineering-change-comment-action";
 import { useDeleteEngineeringChangeCommentAction } from "@/features/engineering-change/hooks/use-delete-engineering-change-comment-action";
 import { useDeleteEngineeringChangeFileAction } from "@/features/engineering-change/hooks/use-delete-engineering-change-file-action";
-import { useReopenEngineeringChangeAction } from "@/features/engineering-change/hooks/use-reopen-engineering-change-action";
 import { useStepApproveAction } from "@/features/engineering-change/hooks/use-step-approve-action";
 import { useStepRejectAction } from "@/features/engineering-change/hooks/use-step-reject-action";
 import { useStepRequestChangesAction } from "@/features/engineering-change/hooks/use-step-request-changes-action";
 import { useStepResubmitAction } from "@/features/engineering-change/hooks/use-step-resubmit-action";
 import { useSubmitEngineeringChangeAction } from "@/features/engineering-change/hooks/use-submit-engineering-change-action";
 import { useSyncEngineeringChangeIssuesAction } from "@/features/engineering-change/hooks/use-sync-engineering-change-issues-action";
+import { useSyncEngineeringChangeLabelsAction } from "@/features/engineering-change/hooks/use-sync-engineering-change-labels-action";
+import { useLabelLookupQuery } from "@/features/change-shared/hooks/use-label-lookup-query";
+import { usePartLookupQuery } from "@/features/change-shared/hooks/use-part-lookup-query";
+import { buildPartDetailPath } from "@/features/parts/lib/part-route";
+import { usePartRevisionLookupQuery } from "@/features/change-shared/hooks/use-part-revision-lookup-query";
+import { usePopulateWhereUsedAction } from "@/features/engineering-change/hooks/use-populate-where-used-action";
+import { useSyncAffectedItemsAction } from "@/features/engineering-change/hooks/use-sync-affected-items-action";
 import { useUpdateEngineeringChangeAction } from "@/features/engineering-change/hooks/use-update-engineering-change-action";
 import { useUpdateEngineeringChangeCommentAction } from "@/features/engineering-change/hooks/use-update-engineering-change-comment-action";
 import { useSyncEngineeringChangeStepsAction } from "@/features/engineering-change/hooks/use-sync-engineering-change-steps-action";
@@ -64,6 +70,7 @@ export function EngineeringChangeDetailScreen({
   const timelineQuery = useEngineeringChangeTimelineQuery(engineeringChangeId, activeTab === "conversation");
   const updateEngineeringChangeAction = useUpdateEngineeringChangeAction(engineeringChangeId);
   const syncIssuesAction = useSyncEngineeringChangeIssuesAction(engineeringChangeId);
+  const syncLabelsAction = useSyncEngineeringChangeLabelsAction(engineeringChangeId);
   const createCommentAction = useCreateEngineeringChangeCommentAction(engineeringChangeId);
   const updateCommentAction = useUpdateEngineeringChangeCommentAction(engineeringChangeId);
   const deleteCommentAction = useDeleteEngineeringChangeCommentAction(engineeringChangeId);
@@ -75,16 +82,22 @@ export function EngineeringChangeDetailScreen({
   const stepRequestChangesAction = useStepRequestChangesAction(engineeringChangeId);
   const stepResubmitAction = useStepResubmitAction(engineeringChangeId);
   const closeEngineeringChangeAction = useCloseEngineeringChangeAction(engineeringChangeId);
-  const reopenEngineeringChangeAction = useReopenEngineeringChangeAction(engineeringChangeId);
 
   const syncStepsAction = useSyncEngineeringChangeStepsAction(engineeringChangeId);
+  const syncAffectedItemsAction = useSyncAffectedItemsAction(engineeringChangeId);
+  const populateWhereUsedAction = usePopulateWhereUsedAction(engineeringChangeId);
 
   const engineeringChange = engineeringChangeQuery.data;
 
   const [issuesEnabled, setIssuesEnabled] = useState(false);
   const [issuesSearch, setIssuesSearch] = useState("");
+  const [labelsEnabled, setLabelsEnabled] = useState(false);
+  const [labelsSearch, setLabelsSearch] = useState("");
   const [stepsEnabled, setStepsEnabled] = useState(false);
   const [stepsSearch, setStepsSearch] = useState("");
+  const [affectedItemsEnabled, setAffectedItemsEnabled] = useState(false);
+  const [affectedItemsSearch, setAffectedItemsSearch] = useState("");
+  const [affectedItemsType, setAffectedItemsType] = useState<"REVISION_RELEASE" | "LIFECYCLE_CHANGE">("REVISION_RELEASE");
 
   const deferredIssuesSearch = useDeferredValue(issuesSearch.trim());
 
@@ -95,9 +108,24 @@ export function EngineeringChangeDetailScreen({
     issuesEnabled,
   );
 
+  const labelLookup = useLabelLookupQuery(
+    { search: labelsSearch.trim() || undefined },
+    labelsEnabled,
+  );
+
   const memberLookup = useMemberLookupQuery(
     { search: deferredStepsSearch || undefined },
     stepsEnabled,
+  );
+
+  const deferredAffectedItemsSearch = useDeferredValue(affectedItemsSearch.trim());
+  const affectedItemsRevisionLookup = usePartRevisionLookupQuery(
+    { search: deferredAffectedItemsSearch || undefined },
+    affectedItemsEnabled && affectedItemsType === "REVISION_RELEASE",
+  );
+  const affectedItemsPartLookup = usePartLookupQuery(
+    { search: deferredAffectedItemsSearch || undefined },
+    affectedItemsEnabled && affectedItemsType === "LIFECYCLE_CHANGE",
   );
 
   const sortedTimeline = useMemo(() => {
@@ -213,11 +241,10 @@ export function EngineeringChangeDetailScreen({
           reviewStatus: reviewer.reviewStatus,
           reviewedAt: reviewer.reviewedAt,
         })),
-        labels: [],
-        parts: engineeringChange.parts.map((part) => ({
-          id: part.id,
-          partNumber: part.partNumber,
-          name: part.name,
+        labels: engineeringChange.labels.map((label) => ({
+          id: label.id,
+          name: label.name,
+          color: label.color,
         })),
         files: engineeringChange.files.map((file) => ({
           fileId: file.fileId,
@@ -296,7 +323,7 @@ export function EngineeringChangeDetailScreen({
       isLoading={engineeringChangeQuery.isLoading}
       isMergingEngineeringChange={false}
       isNotFound={!engineeringChangeQuery.isLoading && !engineeringChangeQuery.isError && !engineeringChange}
-      isReopeningEngineeringChange={reopenEngineeringChangeAction.isPending}
+      isReopeningEngineeringChange={false}
       isSavingEngineeringChange={updateEngineeringChangeAction.isPending}
       isStepActionPending={stepApproveAction.isPending || stepRejectAction.isPending || stepRequestChangesAction.isPending || stepResubmitAction.isPending}
       isSubmittingEngineeringChange={submitEngineeringChangeAction.isPending}
@@ -306,6 +333,71 @@ export function EngineeringChangeDetailScreen({
       mentionFetchers={{
         user: userMentionFetcher,
         issue: issueMentionFetcher,
+      }}
+      affectedItemPicker={{
+        searchedItems: affectedItemsType === "REVISION_RELEASE"
+          ? (affectedItemsRevisionLookup.data ?? []).map((rev) => ({
+              id: rev.revisionId,
+              partNumber: rev.partNumber,
+              name: rev.name,
+              revisionCode: rev.baseRevisionCode,
+            }))
+          : (affectedItemsPartLookup.data ?? []).map((part) => ({
+              id: part.id,
+              partNumber: part.partNumber,
+              name: part.name,
+            })),
+        displayItems: (engineeringChange?.affectedItems ?? []).map((item) => ({
+          id: item.id,
+          itemType: item.itemType,
+          targetId: item.targetId,
+          partId: item.partId,
+          partNumber: item.partNumber,
+          revisionCode: item.revisionCode,
+          name: item.name,
+        })),
+        onSync: (items) => {
+          syncAffectedItemsAction.mutate(
+            {
+              items: items.map((item) => ({
+                item_type: item.itemType,
+                target_id: item.targetId,
+              })),
+            },
+            {
+              onSuccess: () => {
+                populateWhereUsedAction.mutate();
+              },
+            },
+          );
+        },
+        onItemTypeChange: (type) => {
+          setAffectedItemsType(type);
+        },
+        onNavigateToItem: ({ partId, revisionId }) => {
+          navigate(buildPartDetailPath(partId, revisionId));
+        },
+        onRequest: () => setAffectedItemsEnabled(true),
+        onSearchChange: setAffectedItemsSearch,
+        isSearching: affectedItemsType === "REVISION_RELEASE"
+          ? affectedItemsRevisionLookup.isFetching
+          : affectedItemsPartLookup.isFetching,
+        isUpdating: syncAffectedItemsAction.isPending,
+      }}
+      labelPicker={{
+        availableLabels: (labelLookup.data ?? []).map((label) => ({
+          id: label.id,
+          name: label.name,
+          colorHex: label.color,
+        })),
+        selectedIds: engineeringChange?.labels.map((label) => label.id) ?? [],
+        onRequest: () => setLabelsEnabled(true),
+        onSearchChange: setLabelsSearch,
+        onSync: async (labelIds: string[]) => {
+          await syncLabelsAction.mutateAsync(labelIds);
+        },
+        isSearching: labelLookup.isFetching,
+        isUpdating: syncLabelsAction.isPending,
       }}
       linkedIssuePicker={{
         availableIssues: (issueLookup.data ?? []).map((item: LookupIssueModel) => ({
@@ -370,11 +462,7 @@ export function EngineeringChangeDetailScreen({
         }
       }}
       onNavigateToIssueMention={navigateToIssueMention}
-      onReopenEngineeringChange={() => {
-        if (engineeringChange?.state !== "CANCELED" && currentUserStepId) {
-          reopenEngineeringChangeAction.mutate({ stepId: currentUserStepId });
-        }
-      }}
+      onReopenEngineeringChange={() => {}}
       onRetry={() => {
         void engineeringChangeQuery.refetch();
         void timelineQuery.refetch();

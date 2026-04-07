@@ -2,13 +2,17 @@ import { engineeringChangeLookup as lookupEngineeringChangesApiV1EngineeringChan
 import { issueLookup as lookupIssuesApiV1IssuesLookupGet } from "@/api/generated/orval/issues/issues";
 import { labelLookup as lookupLabelsApiV1LabelsLookupGet } from "@/api/generated/orval/labels/labels";
 import { memberLookup as lookupMembersApiV1MembersLookupGet } from "@/api/generated/orval/members/members";
-import { partLookup as lookupPartsApiV1PartsLookupGet } from "@/api/generated/orval/parts/parts";
+import {
+  partLookup as lookupPartsApiV1PartsLookupGet,
+  partLookupRevisions as lookupPartRevisionsApi,
+} from "@/api/generated/orval/parts/parts";
 import type {
   ChangeLookupQueryDto,
   IssueLookupQueryDto,
   LabelLookupQueryDto,
   MemberLookupQueryDto,
   PartLookupQueryDto,
+  PartRevisionLookupQueryDto,
 } from "@/features/change-shared/api/change-shared.types";
 import type {
   LookupChangeModel,
@@ -16,6 +20,7 @@ import type {
   LookupLabelModel,
   LookupMemberModel,
   LookupPartModel,
+  LookupPartRevisionModel,
 } from "@/features/change-shared/types/change-shared-model";
 
 const DEFAULT_LOOKUP_LIMIT = 5;
@@ -53,8 +58,26 @@ export async function lookupParts(query: PartLookupQueryDto): Promise<LookupPart
 
   return response.items.map((part) => ({
     id: part.id,
+    revisionId: part.revision_id ?? null,
     partNumber: part.part_number,
     name: part.name ?? null,
+  }));
+}
+
+export async function lookupPartRevisions(query: PartRevisionLookupQueryDto): Promise<LookupPartRevisionModel[]> {
+  const response = await lookupPartRevisionsApi(withDefaultLookupLimit(query));
+
+  if (!response) {
+    return [];
+  }
+
+  return (response.items ?? []).map((revision) => ({
+    revisionId: revision.revision_id ?? "",
+    partId: revision.part_id ?? "",
+    partNumber: revision.part_number ?? "",
+    baseRevisionCode: revision.base_revision_code ?? null,
+    name: revision.name ?? null,
+    status: revision.status ?? null,
   }));
 }
 
