@@ -18,7 +18,7 @@ on:
 jobs:
   deploy-web:
     name: Deploy fabbit-web
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     timeout-minutes: 20
     permissions:
       contents: read
