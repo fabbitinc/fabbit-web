@@ -1,114 +1,135 @@
-# fabbit Web Workspace
+# Fabbit Web
 
-`fabbit/web`는 `pnpm` workspace와 Turborepo 위에서 운영되는 프론트엔드 모노레포다. 메인 제품 앱인 `@fabbit/web`, 랜딩 페이지인 `@fabbit/landing`, UI 검증용 `@fabbit/storybook`, 그리고 공유 패키지(`@fabbit/ui`, `@fabbit/components`, `@fabbit/theme`)를 함께 관리한다.
+Fabbit SaaS 플랫폼의 프론트엔드입니다. **Turborepo 모노레포** 위에서 제품 앱, 랜딩 페이지, 공유 패키지를 함께 관리합니다.
 
-## Workspace 구성
+> 이 포트폴리오의 주된 초점은 백엔드이며, 프론트엔드는 제품 완성도 참고용으로 포함합니다.
 
-```text
+---
+
+## 기술 스택
+
+| 분류 | 기술 |
+|---|---|
+| 프레임워크 | React 19, TypeScript, Vite 7 |
+| 상태 관리 | Zustand (클라이언트), TanStack Query (서버) |
+| 스타일링 | Tailwind CSS 4, CSS 변수 기반 디자인 토큰 (OKLCH) |
+| UI 기반 | Radix UI, Tiptap (리치 에디터), Recharts, Three.js (3D) |
+| API 연동 | OpenAPI 코드젠 (openapi-typescript + Orval), Axios |
+| 빌드 | Turborepo, pnpm workspace |
+| 기타 | i18next (다국어), React Router 7, dnd-kit (드래그앤드롭) |
+
+---
+
+## 모노레포 구조
+
+```
 apps/
-  web/         메인 제품 앱 (Vite + React + React Router + TanStack Query)
-  landing/     랜딩 페이지
+  web/         메인 제품 앱 — 25개 페이지, 16개 feature slice
+  landing/     마케팅 랜딩 페이지
   storybook/   공유 UI/컴포넌트 검증
 packages/
-  ui/          도메인 무관 UI 프리미티브
-  components/  도메인 조합 컴포넌트
-  theme/       디자인 토큰과 공통 스타일
+  ui/          도메인 무관 프리미티브 (45개 컴포넌트)
+  components/  도메인 조합 컴포넌트 (108개 컴포넌트)
+  theme/       디자인 토큰, 테마, 공통 스타일
 ```
 
-## 필수 환경
+### 패키지를 분리한 이유
 
-- Node.js
-- `pnpm@10.15.0`
-- 루트 `openapi.json`
+초기에는 단일 패키지로 관리했으나, 랜딩 페이지와 제품 앱의 스타일이 같은 서비스임에도 달라지고, 화면마다 컴포넌트가 제각각이 되는 문제가 발생했습니다. 브랜드 UI/UX 일관성이 깨지는 것을 방지하기 위해 3개 패키지로 분리했습니다.
 
-`apps/web`에서 현재 확인되는 주요 환경 변수는 아래와 같다.
+- **`ui`** — 버튼, 다이얼로그 등 도메인 무관 프리미티브. 이 계층을 건드리면 전체 앱에 영향이 가므로 독립 패키지로 격리
+- **`components`** — 부품 카드, BOM 트리 등 도메인 의미를 가지는 조합 컴포넌트. `ui`만 import 가능
+- **`theme`** — CSS 변수와 디자인 토큰. `ui`와 `components`가 모두 참조하는 단일 진실 공급원(SSOT)
 
-- `VITE_API_BASE_URL`
-- `VITE_APP_DOMAIN`
-- `VITE_TURNSTILE_SITE_KEY`
+백엔드의 ArchUnit처럼 테스트로 강제하지는 못하지만, 패키지 경계 자체가 의존성 방향을 구조적으로 제한합니다.
 
-## 루트 명령
+---
 
-루트 `package.json`은 workspace 실행 진입점 역할을 한다.
+## Feature Slices 아키텍처
+
+`apps/web/src/features/` 하위에 도메인별 수직 슬라이스로 구성합니다. 각 feature는 자체 API, 컴포넌트, 훅, 타입을 캡슐화합니다.
+
+```
+features/{feature}/
+├── api/          queryOptions, mutationOptions, API 함수
+├── components/   도메인 컴포넌트
+├── hooks/        action / query / logic / listener 훅
+├── stores/       Zustand 스토어
+├── types/        DTO, Model, Props
+└── index.ts      공개 API
+```
+
+| Feature | 설명 |
+|---|---|
+| auth | 로그인, 회원가입, 토큰 관리, 워크스페이스 생성 |
+| parts | 부품 CRUD, BOM, 템플릿 매핑, 도면 뷰어 |
+| chat | AI 채팅 (SSE 스트리밍, 마크다운 렌더링) |
+| issue | 이슈 생성/수정, 타임라인, 파일 첨부 |
+| engineering-change | 엔지니어링 변경 워크플로우 |
+| billing | 구독/결제 |
+| dashboard | 메인 대시보드 |
+| registration | 가입/온보딩 (이메일 인증 → 워크스페이스 설정 → 플랜 선택) |
+
+---
+
+## OpenAPI 기반 타입 안전 API 연동
+
+백엔드의 OpenAPI 스펙(`openapi.json`, 27,855줄)을 단일 진실 공급원으로 사용합니다. 타입과 API 클라이언트를 자동 생성하여 백엔드-프론트엔드 간 계약을 코드 수준에서 보장합니다.
+
+```bash
+pnpm --filter @fabbit/web generate:api
+```
+
+1. `openapi-typescript` → TypeScript 스키마 타입 생성
+2. `Orval` → 38개 도메인별 API 함수 + TanStack Query 옵션 생성
+3. 생성된 코드는 공통 Axios 인스턴스를 통해 토큰 관리, 401 자동 갱신을 처리
+
+---
+
+## 디자인 시스템
+
+`DESIGN.md`에 완전히 문서화된 디자인 시스템을 운영합니다.
+
+- **테마**: Cobalt Trust (산업/신뢰감) 기본, 4개 산업 테마 지원
+- **색상**: OKLCH 기반, 다크모드 지원
+- **타이포그래피**: Outfit (헤딩) + DM Sans (본문), 7단계 스케일
+- **토큰**: 8단계 간격 체계 (4px base unit), 모션 4단계 (50ms~300ms)
+
+---
+
+## 주요 화면
+
+| 영역 | 페이지 |
+|---|---|
+| 온보딩 | 로그인, 회원가입, 워크스페이스 설정, 플랜 선택 |
+| 부품 | 목록, 생성/수정, 상세(BOM/도면/리비전), BOM 탐색, 도면 뷰어 |
+| 변경관리 | 이슈 생성/상세, 엔지니어링 변경 생성/상세 |
+| 템플릿 매핑 | BOM 엑셀 분석 → LLM 매핑 제안 → 사용자 확인/커스터마이징 |
+| 프로젝트 | 목록, 상세 |
+| 설정 | 조직 설정, 사용자 설정 |
+| 대시보드 | 메인 대시보드 |
+
+---
+
+## 로컬 실행
 
 ```bash
 pnpm install
-pnpm dev
-pnpm build
-pnpm lint
-pnpm storybook
-pnpm build-storybook
-pnpm dev:landing
-pnpm build:landing
-pnpm --filter @fabbit/web generate:api
+pnpm dev            # 제품 앱
+pnpm dev:landing    # 랜딩 페이지
+pnpm storybook      # Storybook
 ```
 
-## 앱별 역할
-
-### `@fabbit/web`
-
-메인 제품 앱이다. 현재 라우트 축은 아래와 같다.
-
-- 인증/가입: `/login`, `/signup`, `/workspace`, `/plan`, `/invite/accept`
-- 대시보드: `/`
-- 부품: `/parts`, `/parts/new`, `/parts/:partId/revisions/:revisionId`, 템플릿/가공/도면/BOM 관련 하위 경로
-- 변경관리: `/changes/*`, `/changes/issues/*`, `/changes/engineering-changes/*`
-- 프로젝트: `/projects`, `/projects/:projectId/*`
-- 설정: `/organization/settings`, `/user/settings`
-
-`apps/web/src`의 주요 폴더는 다음과 같다.
-
-```text
-app/         앱 엔트리, 라우터, 레이아웃, provider
-pages/       라우트 진입점
-features/    도메인별 수직 슬라이스
-api/         공통 API 클라이언트, 파일 업로드, 생성 코드
-components/  web 전용 공유 컴포넌트
-hooks/       web 전용 공유 훅
-lib/         유틸리티
-types/       공용 타입
-```
-
-### `@fabbit/landing`
-
-마케팅/소개용 랜딩 앱이다. 별도 Vite 앱으로 동작하며 루트에서 `pnpm dev:landing`으로 실행한다.
-
-### `@fabbit/storybook`
-
-`@fabbit/ui`와 `@fabbit/components`를 검증하는 Storybook 앱이다. 앱 구현보다 앞선 컴포넌트 확인과 비교 작업에 사용한다.
-
-## 패키지 역할
-
-### `@fabbit/ui`
-
-버튼, 입력, 다이얼로그 같은 도메인 무관 프리미티브를 제공한다.
-
-### `@fabbit/components`
-
-부품 화면, 프로젝트 화면처럼 도메인 의미를 가지지만 props만으로 동작하는 조합 컴포넌트를 제공한다.
-
-### `@fabbit/theme`
-
-공통 CSS 변수와 테마 토큰을 제공한다.
-
-## API 생성 흐름
-
-메인 앱은 루트 `openapi.json`을 기준으로 타입과 API 클라이언트를 생성한다.
+**API 코드 생성:**
 
 ```bash
 pnpm --filter @fabbit/web generate:api
 ```
 
-이 명령은 아래 순서로 실행된다.
+**환경 변수:**
 
-1. `openapi-typescript`로 `apps/web/src/api/generated/schema.ts` 생성
-2. `orval`로 `apps/web/src/api/generated/orval/**` 생성
-3. 생성 코드는 `apps/web/src/api/orval/custom-instance.ts`와 `apps/web/src/api/client.ts`를 통해 Axios 인스턴스를 공유
-
-자세한 규칙은 [API.md](./API.md)를 참고한다.
-
-## 관련 문서
-
-- [API.md](./API.md): API 생성/구성/운영 기준
-- [HANDOFF.md](./HANDOFF.md): 루트 handoff 기록 문서
-- [`handoff/`](./handoff): 설계 기록 및 작업 handoff 문서 모음
+| 변수 | 설명 |
+|---|---|
+| `VITE_API_BASE_URL` | 백엔드 API 주소 |
+| `VITE_APP_DOMAIN` | 앱 도메인 |
+| `VITE_TURNSTILE_SITE_KEY` | Cloudflare Turnstile CAPTCHA |
