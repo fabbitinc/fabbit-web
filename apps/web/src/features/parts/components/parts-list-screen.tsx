@@ -203,7 +203,6 @@ export function PartsListScreen({
           lifecycle_state: queryState.lifecycleState || undefined,
           has_drawing: queryState.hasDrawing ?? undefined,
           has_children: queryState.hasChildren ?? undefined,
-          has_stale_child_reference: queryState.hasStaleChildReference ?? undefined,
         })
       }
       onHasChildrenChange={onHasChildrenChange}

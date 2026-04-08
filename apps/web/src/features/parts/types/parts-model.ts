@@ -15,6 +15,7 @@ export interface PartsListQueryState {
   lifecycleState: PartLifecycleState | null;
   hasDrawing: boolean | null;
   hasChildren: boolean | null;
+  hasStaleChildReference: boolean | null;
   sortKey: PartListSortKey;
   sortOrder: PartListSortOrder;
 }
@@ -140,7 +141,6 @@ export interface PartBomItemModel {
 
 export interface PartBomModel {
   children: PartBomItemModel[];
-  parents: PartBomItemModel[];
 }
 
 export type PartBomDirection = "forward" | "reverse";

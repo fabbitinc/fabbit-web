@@ -15,7 +15,6 @@ function toBomModel(response: unknown): PartBomModel {
   const bom = response as PartBomResponseDto;
   return {
     children: (bom.children ?? []).map(toPartBomItemModel),
-    parents: (bom.parents ?? []).map(toPartBomItemModel),
   };
 }
 

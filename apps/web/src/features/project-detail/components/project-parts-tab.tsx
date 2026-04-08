@@ -34,6 +34,7 @@ const defaultQueryState: PartsListQueryState = {
   lifecycleState: null,
   hasDrawing: null,
   hasChildren: null,
+  hasStaleChildReference: null,
   pageSize: 15,
   sortKey: "partNumber",
   sortOrder: "asc",
@@ -236,6 +237,16 @@ export function ProjectPartsTab({ isReadonly, projectId }: ProjectPartsTabProps)
           setQueryState((previous) => ({
             ...previous,
             hasChildren,
+            hasStaleChildReference: hasChildren !== null ? null : previous.hasStaleChildReference,
+            cursor: null,
+            cursorDirection: null,
+          }))
+        }
+        onHasStaleChildReferenceChange={(hasStaleChildReference) =>
+          setQueryState((previous) => ({
+            ...previous,
+            hasStaleChildReference,
+            hasChildren: hasStaleChildReference !== null ? null : previous.hasChildren,
             cursor: null,
             cursorDirection: null,
           }))

@@ -223,7 +223,6 @@ export async function fetchPartBom(partId: string, revisionId: string): Promise<
 
   return {
     children: (bom.children ?? []).map(toPartBomItemModel),
-    parents: (bom.parents ?? []).map(toPartBomItemModel),
   };
 }
 
@@ -558,7 +557,7 @@ function toRegisteredDrawingModel(drawing: RegisterPartDrawingResponseDto): Part
 }
 
 export function toPartBomItemModel(
-  item: PartBomResponseDto["children"][number] | PartBomResponseDto["parents"][number],
+  item: PartBomResponseDto["children"][number],
 ): PartBomItemModel {
   return {
     id: item.bom_item_id ?? `${item.revision_id ?? item.part_id ?? ""}_${item.line_number ?? ""}`,
