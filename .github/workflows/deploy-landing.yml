@@ -1,7 +1,6 @@
 name: Deploy Landing
 
 on:
-  workflow_dispatch:
   push:
     branches:
       - release
