@@ -15,6 +15,7 @@ const defaultQueryState: PartsListQueryState = {
   lifecycleState: null,
   hasDrawing: null,
   hasChildren: null,
+  hasStaleChildReference: null,
   pageSize: 15,
   sortKey: "partNumber",
   sortOrder: "asc",
@@ -89,6 +90,7 @@ export function PartsPage() {
     lifecycleState: parseLifecycleState(searchParams.get("lifecycle")),
     hasDrawing: parseTriState(searchParams.get("drawing")),
     hasChildren: parseTriState(searchParams.get("children")),
+    hasStaleChildReference: searchParams.get("staleRef") === "1" ? true : null,
     pageSize: validPageSizes.has(pageSizeParam) ? pageSizeParam : defaultQueryState.pageSize,
     sortKey: sortKeyParam && validSortKeys.has(sortKeyParam as PartListSortKey)
       ? (sortKeyParam as PartListSortKey)
@@ -153,6 +155,21 @@ export function PartsPage() {
             next.delete("children");
           } else {
             next.set("children", hasChildren ? "with" : "without");
+            next.delete("staleRef");
+          }
+          next.delete("cursor");
+          next.delete("cursorDir");
+          return next;
+        });
+      }}
+      onHasStaleChildReferenceChange={(hasStaleChildReference) => {
+        setSearchParams((previous) => {
+          const next = new URLSearchParams(previous);
+          if (hasStaleChildReference == null) {
+            next.delete("staleRef");
+          } else {
+            next.set("staleRef", "1");
+            next.delete("children");
           }
           next.delete("cursor");
           next.delete("cursorDir");

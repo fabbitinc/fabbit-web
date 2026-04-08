@@ -17,12 +17,18 @@ export interface PartRevisionLookupItemResponse {
   part_id?: string;
   /** 품번 */
   part_number?: string;
+  /** 리비전 코드 */
+  revision_code?: string;
   /** 기준 공식 리비전 코드 */
   base_revision_code?: string;
   /** 리비전 이름 */
   name?: string;
   /** 리비전 상태 */
   status?: PartRevisionLookupItemResponseStatus;
+  /** 리비전 생성 시각 */
+  created_at?: string;
+  /** 현재 공식 리비전 여부 */
+  current_released?: boolean;
   /** 리비전 작성자 */
   created_by?: PartUserSummaryResponse;
 }

@@ -173,7 +173,7 @@ export type {
 } from "./part-attachments-tab";
 export { PartBomTab } from "./part-bom-tab";
 export type {
-  PartBomTabDirection,
+  PartBomRevisionStatus,
   PartBomTabItem,
   PartBomTabProps,
 } from "./part-bom-tab";
@@ -190,7 +190,7 @@ export type {
   PartEditorScreenSystemFieldKey,
 } from "./part-editor-screen";
 export { PartHeaderCard } from "./part-header-card";
-export type { PartHeaderCardPart, PartHeaderCardProps } from "./part-header-card";
+export type { PartHeaderCardPart, PartHeaderCardProps, PartRevisionOption, PartRevisionStatus } from "./part-header-card";
 export { PartHistoryTab } from "./part-history-tab";
 export type {
   PartHistoryEntry,

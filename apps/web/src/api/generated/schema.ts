@@ -1512,26 +1512,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/engineering-changes/{engineeringChangeId}/affected-items/populate-where-used": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /**
-         * 변경 영향 항목을 where-used 기반으로 자동 도출합니다
-         * @description EC에 연결된 리비전의 상위 어셈블리를 자동으로 영향 항목에 추가합니다
-         */
-        post: operations["engineeringChangePopulateWhereUsed"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/engineering-changes/from-issue/{issueId}": {
         parameters: {
             query?: never;
@@ -2788,6 +2768,26 @@ export interface paths {
          * @description BOM 가져오기에 사용할 엑셀 템플릿 파일을 다운로드합니다. 헤더 행만 포함된 .xlsx 파일을 반환합니다
          */
         get: operations["bomImportDownloadTemplate"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/parts/{partId}/revisions/lookup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * 특정 부품의 리비전 selector 목록을 조회합니다
+         * @description 부품 상세에서 리비전 선택 UI에 사용할 경량 목록을 조회합니다
+         */
+        get: operations["partRevisionLookupByPart"];
         put?: never;
         post?: never;
         delete?: never;
@@ -4222,11 +4222,7 @@ export interface components {
             float?: boolean;
             array?: boolean;
             empty?: boolean;
-            integral_number?: boolean;
-            floating_point_number?: boolean;
-            pojo?: boolean;
-            int?: boolean;
-            long?: boolean;
+            container?: boolean;
             /** @enum {string} */
             node_type?: "ARRAY" | "BINARY" | "BOOLEAN" | "MISSING" | "NULL" | "NUMBER" | "OBJECT" | "POJO" | "STRING";
             string?: boolean;
@@ -4241,8 +4237,12 @@ export interface components {
             textual?: boolean;
             boolean?: boolean;
             binary?: boolean;
-            container?: boolean;
             number?: boolean;
+            pojo?: boolean;
+            int?: boolean;
+            long?: boolean;
+            integral_number?: boolean;
+            floating_point_number?: boolean;
             embedded_value?: boolean;
         };
         /** @description 변경관리 라벨 배지 */
@@ -5254,28 +5254,8 @@ export interface components {
             };
         };
         /** @description 응답 DTO */
-        BomParentResponse: {
-            /** Format: uuid */
-            bom_item_id?: string;
-            /** Format: uuid */
-            part_id?: string;
-            /** Format: uuid */
-            revision_id?: string;
-            part_number?: string;
-            name?: string;
-            revision_code?: string;
-            /** @enum {string} */
-            revision_status?: "DRAFT" | "RELEASED" | "SUPERSEDED" | "CANCELED";
-            line_number?: string;
-            quantity?: number;
-            extended_properties?: {
-                [key: string]: unknown;
-            };
-        };
-        /** @description 응답 DTO */
         PartBomResponse: {
             children?: components["schemas"]["BomChildResponse"][];
-            parents?: components["schemas"]["BomParentResponse"][];
         };
         /** @description BOM 가져오기 미리보기 요청 */
         PreviewBomImportRequest: {
@@ -7589,6 +7569,7 @@ export interface components {
             has_drawing?: boolean;
             /** Format: int64 */
             children_count?: number;
+            has_stale_child_reference?: boolean;
         };
         /** @description 응답 DTO */
         PartSuppliersResponse: {
@@ -7891,6 +7872,62 @@ export interface components {
             /** Format: int32 */
             total_count?: number;
         };
+        /** @description 부품 리비전 lookup 항목 */
+        PartRevisionLookupItemResponse: {
+            /**
+             * Format: uuid
+             * @description 리비전 ID
+             */
+            revision_id?: string;
+            /**
+             * Format: uuid
+             * @description 부품 ID
+             */
+            part_id?: string;
+            /**
+             * @description 품번
+             * @example AES-100
+             */
+            part_number?: string;
+            /**
+             * @description 리비전 코드
+             * @example 2
+             */
+            revision_code?: string;
+            /**
+             * @description 기준 공식 리비전 코드
+             * @example 1
+             */
+            base_revision_code?: string;
+            /**
+             * @description 리비전 이름
+             * @example 메인 하우징
+             */
+            name?: string;
+            /**
+             * @description 리비전 상태
+             * @example DRAFT
+             * @enum {string}
+             */
+            status?: "DRAFT" | "RELEASED" | "SUPERSEDED" | "CANCELED";
+            /**
+             * Format: date-time
+             * @description 리비전 생성 시각
+             */
+            created_at?: string;
+            /**
+             * @description 현재 공식 리비전 여부
+             * @example false
+             */
+            current_released?: boolean;
+            /** @description 리비전 작성자 */
+            created_by?: components["schemas"]["PartUserSummaryResponse"];
+        };
+        /** @description 부품 리비전 lookup 응답 */
+        PartRevisionLookupResponse: {
+            /** @description 리비전 목록 */
+            items?: components["schemas"]["PartRevisionLookupItemResponse"][];
+        };
         /** @description 영향받는 BOM 항목 */
         AffectedBomItemResponse: {
             /**
@@ -7981,47 +8018,6 @@ export interface components {
         /** @description 리비전 이력 목록 응답 */
         PartRevisionHistoryResponse: {
             items?: components["schemas"]["PartRevisionHistoryItemResponse"][];
-        };
-        /** @description 부품 리비전 lookup 항목 */
-        PartRevisionLookupItemResponse: {
-            /**
-             * Format: uuid
-             * @description 리비전 ID
-             */
-            revision_id?: string;
-            /**
-             * Format: uuid
-             * @description 부품 ID
-             */
-            part_id?: string;
-            /**
-             * @description 품번
-             * @example AES-100
-             */
-            part_number?: string;
-            /**
-             * @description 기준 공식 리비전 코드
-             * @example 1
-             */
-            base_revision_code?: string;
-            /**
-             * @description 리비전 이름
-             * @example 메인 하우징
-             */
-            name?: string;
-            /**
-             * @description 리비전 상태
-             * @example DRAFT
-             * @enum {string}
-             */
-            status?: "DRAFT" | "RELEASED" | "SUPERSEDED" | "CANCELED";
-            /** @description 리비전 작성자 */
-            created_by?: components["schemas"]["PartUserSummaryResponse"];
-        };
-        /** @description 부품 리비전 lookup 응답 */
-        PartRevisionLookupResponse: {
-            /** @description 리비전 목록 */
-            items?: components["schemas"]["PartRevisionLookupItemResponse"][];
         };
         /** @description 응답 DTO */
         PartLookupItemResponse: {
@@ -12128,6 +12124,7 @@ export interface operations {
                 lifecycle_state?: string;
                 has_drawing?: boolean;
                 has_children?: boolean;
+                has_stale_child_reference?: boolean;
                 project_id?: string;
                 next_cursor?: string;
                 prev_cursor?: string;
@@ -15670,81 +15667,6 @@ export interface operations {
                 "application/json": components["schemas"]["StepActionRequest"];
             };
         };
-        responses: {
-            /** @description 요청 성공 */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["EngineeringChangeResponse"];
-                };
-            };
-            /** @description 생성 성공 */
-            201: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["EngineeringChangeResponse"];
-                };
-            };
-            /** @description 삭제 성공 */
-            204: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content?: never;
-            };
-            /** @description 잘못된 요청 */
-            400: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiErrorResponse"];
-                };
-            };
-            /** @description 인증 필요 */
-            401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiErrorResponse"];
-                };
-            };
-            /** @description 권한 없음 */
-            403: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiErrorResponse"];
-                };
-            };
-            /** @description 리소스를 찾을 수 없음 */
-            404: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["ApiErrorResponse"];
-                };
-            };
-        };
-    };
-    engineeringChangePopulateWhereUsed: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path: {
-                /** @description 대상 변경관리 ID */
-                engineeringChangeId: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
         responses: {
             /** @description 요청 성공 */
             200: {
@@ -20938,6 +20860,64 @@ export interface operations {
                 };
                 content: {
                     "application/json": string;
+                };
+            };
+            /** @description 잘못된 요청 */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 인증 필요 */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 권한 없음 */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+            /** @description 리소스를 찾을 수 없음 */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiErrorResponse"];
+                };
+            };
+        };
+    };
+    partRevisionLookupByPart: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                partId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description 요청 성공 */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PartRevisionLookupResponse"];
                 };
             };
             /** @description 잘못된 요청 */

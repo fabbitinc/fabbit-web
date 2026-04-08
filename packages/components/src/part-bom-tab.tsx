@@ -1,25 +1,28 @@
-import { ExternalLink, Loader2, Package, Pencil, Plus, Trash2 } from "lucide-react";
-import { Button } from "@fabbit/ui";
+import { AlertTriangle, ExternalLink, Loader2, Package, Pencil, Plus, Trash2 } from "lucide-react";
+import { Badge, Button } from "@fabbit/ui";
 
-export type PartBomTabDirection = "forward" | "reverse";
+export type PartBomRevisionStatus = "DRAFT" | "RELEASED" | "SUPERSEDED" | "CANCELED";
 
 export interface PartBomTabItem {
   id: string;
   bomItemId: string | null;
+  partId: string | null;
+  revisionId: string | null;
   partNumber: string;
   name: string | null;
   lineNumber: string | null;
   quantity: number;
+  revisionCode: string | null;
+  revisionStatus: PartBomRevisionStatus | null;
 }
 
 export interface PartBomTabProps {
   childrenItems: PartBomTabItem[];
-  parentItems: PartBomTabItem[];
   isLoading?: boolean;
   showLoadingIndicator?: boolean;
   canEdit?: boolean;
-  onExploreDirectionChange?: (direction: PartBomTabDirection) => void;
-  onPartClick?: (partId: string) => void;
+  onExploreBom?: () => void;
+  onPartClick?: (partId: string, revisionId: string) => void;
   onAddItem?: () => void;
   onBatchAddItems?: () => void;
   onEditItem?: (item: PartBomTabItem) => void;
@@ -36,7 +39,7 @@ interface PartBomSectionProps {
   title: string;
   canEdit?: boolean;
   onActionClick?: () => void;
-  onPartClick?: (partId: string) => void;
+  onPartClick?: (partId: string, revisionId: string) => void;
   onAddItem?: () => void;
   onBatchAddItems?: () => void;
   onEditItem?: (item: PartBomTabItem) => void;
@@ -106,11 +109,11 @@ function PartBomSection({
             role="button"
             tabIndex={0}
             className="flex w-full cursor-pointer items-center justify-between rounded-md border border-border/70 bg-card px-4 py-3 text-left"
-            onClick={() => onPartClick?.(item.id)}
+            onClick={() => { if (item.partId && item.revisionId) onPartClick?.(item.partId, item.revisionId); }}
             onKeyDown={(e) => {
               if (e.key === "Enter" || e.key === " ") {
                 e.preventDefault();
-                onPartClick?.(item.id);
+                if (item.partId && item.revisionId) onPartClick?.(item.partId, item.revisionId);
               }
             }}
           >
@@ -119,7 +122,13 @@ function PartBomSection({
                 <Package className="size-4 text-muted-foreground" />
               </div>
               <div>
-                <p className="font-mono text-xs font-medium text-foreground">{item.partNumber}</p>
+                <div className="flex items-center gap-1.5">
+                  <p className="font-mono text-xs font-medium text-foreground">{item.partNumber}</p>
+                  {item.revisionCode ? (
+                    <span className="text-[11px] text-muted-foreground">Rev {item.revisionCode}</span>
+                  ) : null}
+                  <BomRevisionStatusBadge status={item.revisionStatus} />
+                </div>
                 <p className="text-sm text-muted-foreground">{item.name ?? "이름 없음"}</p>
               </div>
             </div>
@@ -161,13 +170,43 @@ function PartBomSection({
   );
 }
 
+function BomRevisionStatusBadge({ status }: { status: PartBomRevisionStatus | null }) {
+  if (!status || status === "RELEASED") return null;
+
+  if (status === "SUPERSEDED") {
+    return (
+      <Badge variant="outline" className="gap-0.5 border-amber-300 bg-amber-50 px-1.5 py-0 text-[10px] font-medium text-amber-700 dark:border-amber-700 dark:bg-amber-950 dark:text-amber-400">
+        <AlertTriangle className="size-2.5" />
+        대체됨
+      </Badge>
+    );
+  }
+
+  if (status === "DRAFT") {
+    return (
+      <Badge variant="outline" className="px-1.5 py-0 text-[10px] font-medium text-blue-600 border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-950 dark:text-blue-400">
+        초안
+      </Badge>
+    );
+  }
+
+  if (status === "CANCELED") {
+    return (
+      <Badge variant="outline" className="px-1.5 py-0 text-[10px] font-medium text-destructive border-destructive/30 bg-destructive/5">
+        폐기됨
+      </Badge>
+    );
+  }
+
+  return null;
+}
+
 export function PartBomTab({
   childrenItems,
-  parentItems,
   isLoading = false,
   showLoadingIndicator = false,
   canEdit = false,
-  onExploreDirectionChange,
+  onExploreBom,
   onPartClick,
   onAddItem,
   onBatchAddItems,
@@ -175,35 +214,21 @@ export function PartBomTab({
   onDeleteItem,
 }: PartBomTabProps) {
   return (
-    <div className="space-y-8">
-      <PartBomSection
-        actionLabel="BOM 전체 보기"
-        description={`${childrenItems.length}개의 하위 부품이 연결되어 있습니다.`}
-        emptyLabel="하위 부품이 없습니다."
-        isLoading={isLoading}
-        showLoadingIndicator={showLoadingIndicator}
-        items={childrenItems}
-        title="하위 부품"
-        canEdit={canEdit}
-        onActionClick={onExploreDirectionChange ? () => onExploreDirectionChange("forward") : undefined}
-        onPartClick={onPartClick}
-        onAddItem={onAddItem}
-        onBatchAddItems={onBatchAddItems}
-        onEditItem={onEditItem}
-        onDeleteItem={onDeleteItem}
-      />
-
-      <PartBomSection
-        actionLabel="역전개 보기"
-        description={`${parentItems.length}개의 상위 부품이 이 부품을 사용합니다.`}
-        emptyLabel="상위 부품이 없습니다."
-        isLoading={isLoading}
-        showLoadingIndicator={showLoadingIndicator}
-        items={parentItems}
-        title="상위 부품"
-        onActionClick={onExploreDirectionChange ? () => onExploreDirectionChange("reverse") : undefined}
-        onPartClick={onPartClick}
-      />
-    </div>
+    <PartBomSection
+      actionLabel="BOM 전체 보기"
+      description={`${childrenItems.length}개의 하위 부품이 연결되어 있습니다.`}
+      emptyLabel="하위 부품이 없습니다."
+      isLoading={isLoading}
+      showLoadingIndicator={showLoadingIndicator}
+      items={childrenItems}
+      title="BOM"
+      canEdit={canEdit}
+      onActionClick={onExploreBom}
+      onPartClick={onPartClick}
+      onAddItem={onAddItem}
+      onBatchAddItems={onBatchAddItems}
+      onEditItem={onEditItem}
+      onDeleteItem={onDeleteItem}
+    />
   );
 }

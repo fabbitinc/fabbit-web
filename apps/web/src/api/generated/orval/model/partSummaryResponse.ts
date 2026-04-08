@@ -21,4 +21,5 @@ export interface PartSummaryResponse {
   lifecycle_state?: PartSummaryResponseLifecycleState;
   has_drawing?: boolean;
   children_count?: number;
+  has_stale_child_reference?: boolean;
 }

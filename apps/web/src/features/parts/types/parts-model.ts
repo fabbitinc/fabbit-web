@@ -33,6 +33,7 @@ export interface PartListItemModel {
   lifecycleState: PartLifecycleState | null;
   drawingId: string | null;
   childrenCount: number;
+  hasStaleChildReference: boolean;
   workStatus: PartSummaryResponseRevisionStatus | null;
 }
 
@@ -130,6 +131,8 @@ export interface PartBomItemModel {
   revisionId: string | null;
   partNumber: string;
   name: string | null;
+  revisionCode: string | null;
+  revisionStatus: string | null;
   lineNumber: string | null;
   quantity: number;
   extendedProperties: Record<string, unknown>;
@@ -326,4 +329,13 @@ export interface PartRevisionDiffModel {
   attributes: PartRevisionDiffAttributeModel[];
   files: PartRevisionDiffFileModel[];
   bom: PartRevisionDiffBomModel[];
+}
+
+// ── 리비전 선택기 ──────────────────────────────────────
+
+export interface PartRevisionOptionModel {
+  revisionId: string;
+  revisionCode: string;
+  status: string;
+  currentReleased: boolean;
 }

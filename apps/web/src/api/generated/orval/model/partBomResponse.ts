@@ -5,12 +5,10 @@
  * OpenAPI spec version: v0
  */
 import type { BomChildResponse } from './bomChildResponse';
-import type { BomParentResponse } from './bomParentResponse';
 
 /**
  * 응답 DTO
  */
 export interface PartBomResponse {
   children?: BomChildResponse[];
-  parents?: BomParentResponse[];
 }

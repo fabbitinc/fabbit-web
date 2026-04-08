@@ -11,6 +11,7 @@ category?: string;
 lifecycle_state?: string;
 has_drawing?: boolean;
 has_children?: boolean;
+has_stale_child_reference?: boolean;
 project_id?: string;
 next_cursor?: string;
 prev_cursor?: string;

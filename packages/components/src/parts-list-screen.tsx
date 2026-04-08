@@ -45,6 +45,7 @@ export interface PartsListScreenQueryState {
   lifecycleState: string | null;
   hasDrawing: boolean | null;
   hasChildren: boolean | null;
+  hasStaleChildReference: boolean | null;
   sortKey: PartsListTableSortKey;
   sortOrder: "asc" | "desc";
 }
@@ -87,6 +88,7 @@ export interface PartsListScreenProps {
   onFilteredExportClick: () => void;
   onHasChildrenChange: (hasChildren: boolean | null) => void;
   onHasDrawingChange: (hasDrawing: boolean | null) => void;
+  onHasStaleChildReferenceChange: (hasStaleChildReference: boolean | null) => void;
   onLifecycleStateChange: (lifecycleState: string | null) => void;
   onLinkClick: () => void;
   onMineOnlyChange: (mineOnly: boolean) => void;
@@ -137,6 +139,7 @@ export function PartsListScreen({
   onFilteredExportClick,
   onHasChildrenChange,
   onHasDrawingChange,
+  onHasStaleChildReferenceChange,
   onLifecycleStateChange,
   onLinkClick,
   onMineOnlyChange,
@@ -198,6 +201,14 @@ export function PartsListScreen({
       });
     }
 
+    if (queryState.hasStaleChildReference !== null) {
+      chips.push({
+        key: "hasStaleChildReference",
+        label: "대체된 리비전 참조",
+        onRemove: () => onHasStaleChildReferenceChange(null),
+      });
+    }
+
     if (isWorkbench && queryState.mineOnly) {
       chips.push({
         key: "mineOnly",
@@ -212,6 +223,7 @@ export function PartsListScreen({
     onCategoryChange,
     onHasChildrenChange,
     onHasDrawingChange,
+    onHasStaleChildReferenceChange,
     onLifecycleStateChange,
     onMineOnlyChange,
     queryState.category,
@@ -468,6 +480,13 @@ export function PartsListScreen({
                   onSelect={(event) => event.preventDefault()}
                 >
                   하위 부품 없음
+                </DropdownMenuCheckboxItem>
+                <DropdownMenuCheckboxItem
+                  checked={queryState.hasStaleChildReference === true}
+                  onCheckedChange={() => onHasStaleChildReferenceChange(queryState.hasStaleChildReference === true ? null : true)}
+                  onSelect={(event) => event.preventDefault()}
+                >
+                  대체된 리비전 참조
                 </DropdownMenuCheckboxItem>
               </DropdownMenuContent>
               </DropdownMenu>

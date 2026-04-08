@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import {
@@ -15,7 +15,7 @@ import {
   type PartPropertiesTableRow,
 } from "@fabbit/components";
 import { Button, Dialog, DialogContent, DialogHeader, DialogTitle } from "@fabbit/ui";
-import { partsKeys } from "@/features/parts/api/parts.queries";
+import { partsKeys, partsQueries } from "@/features/parts/api/parts.queries";
 import { PartAttachmentsTab } from "@/features/parts/components/part-attachments-tab";
 import { PartBomTab } from "@/features/parts/components/part-bom-tab";
 import { PartDirectWorkflowActions } from "@/features/parts/components/part-direct-workflow-actions";
@@ -89,6 +89,7 @@ function toHistoryRevisions(items: PartRevisionHistoryItemModel[]): PartHistoryR
       creationSourceType: event.creationSourceType ?? undefined,
       releaseWorkflowType: event.releaseWorkflowType ?? undefined,
       targetRevisionCode: event.targetRevisionCode ?? undefined,
+      sourceRefId: event.sourceRefId,
       sourceRefNumber: event.sourceRefNumber ?? undefined,
       sourceRefTitle: event.sourceRefTitle ?? undefined,
     })),
@@ -193,6 +194,7 @@ export function PartDetailScreen({
   const [selectedBaseRevisionId, setSelectedBaseRevisionId] = useState<string | null>(null);
   const [selectedTargetRevisionId, setSelectedTargetRevisionId] = useState<string | null>(null);
   const historyQuery = usePartHistoryQuery(partId, activeTab === "history" || isRevisionDiffOpen);
+  const revisionOptionsQuery = useQuery(partsQueries.revisionOptions(partId));
   const shouldQueryDrawingProcessing =
     currentDrawingStatus === "PENDING" ||
     currentDrawingStatus === "PROCESSING" ||
@@ -574,6 +576,7 @@ export function PartDetailScreen({
                 : null
             }
             revisions={historyRevisions}
+            onNavigateToEngineeringChange={(ecId) => navigate(`/changes/engineering-changes/${ecId}`)}
             onOpenDiff={handleOpenRevisionDiff}
           />
         )}
@@ -581,6 +584,16 @@ export function PartDetailScreen({
         isLoading={partQuery.isLoading}
         headerActions={headerActions}
         part={resolvedPart}
+        revisionOptions={(revisionOptionsQuery.data ?? []).map((opt) => ({
+          revisionId: opt.revisionId,
+          revisionCode: opt.revisionCode,
+          status: opt.status as "DRAFT" | "RELEASED" | "SUPERSEDED" | "CANCELED",
+          currentReleased: opt.currentReleased,
+        }))}
+        currentRevisionId={revisionId}
+        onRevisionChange={(nextRevisionId) => {
+          navigate(buildPartDetailPath(partId, nextRevisionId), { replace: true });
+        }}
         projectsContent={<PartProjectsTab partId={partId} revisionId={revisionId} />}
         propertiesContent={resolvedPart ? (
           <PartPropertiesTab

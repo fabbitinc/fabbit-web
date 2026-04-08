@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { ArrowRight, Circle, Loader2 } from "lucide-react";
+import { ArrowRight, Circle, CornerDownRight, Loader2 } from "lucide-react";
 import { cn } from "@fabbit/ui";
 
 // ── 타입 ────────────────────────────────────────────────
@@ -38,6 +38,7 @@ export interface PartHistoryEvent {
   creationSourceType?: "USER" | "SYNTHESIS";
   releaseWorkflowType?: "DIRECT" | "ENGINEERING_CHANGE";
   targetRevisionCode?: string;
+  sourceRefId?: string | null;
   sourceRefNumber?: number;
   sourceRefTitle?: string;
 }
@@ -56,6 +57,7 @@ export interface PartHistoryTabProps {
   diffLoadingRevisionId?: string | null;
   entries?: PartHistoryEntry[];
   notice?: string;
+  onNavigateToEngineeringChange?: (engineeringChangeId: string) => void;
   onOpenDiff?: (revision: PartHistoryRevision) => void;
   revisions?: PartHistoryRevision[];
 }
@@ -217,7 +219,11 @@ function SubTimelineNode({
 
 // ── 이벤트 행 ───────────────────────────────────────────
 
-function EventTimelineItem({ event, isLast }: { event: PartHistoryEvent; isLast: boolean }) {
+function EventTimelineItem({ event, isLast, onNavigateToEngineeringChange }: {
+  event: PartHistoryEvent;
+  isLast: boolean;
+  onNavigateToEngineeringChange?: (id: string) => void;
+}) {
   const label = getEventLabel(event);
   const dotClass = getEventDotClass(event);
   const meta = [event.actorName, event.occurredAt ? formatDate(event.occurredAt) : null]
@@ -227,14 +233,25 @@ function EventTimelineItem({ event, isLast }: { event: PartHistoryEvent; isLast:
   return (
     <SubTimelineNode isLast={isLast} dotClassName={dotClass}>
       <div className="space-y-0.5">
-        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
-          <span className="text-sm text-foreground">{label}</span>
-          {event.releaseWorkflowType === "ENGINEERING_CHANGE" && event.sourceRefNumber ? (
-            <span className="rounded-md border border-border bg-muted/50 px-1.5 py-px text-xs text-muted-foreground">
-              EC-{event.sourceRefNumber}
-            </span>
-          ) : null}
-        </div>
+        <span className="text-sm text-foreground">{label}</span>
+        {event.releaseWorkflowType === "ENGINEERING_CHANGE" && event.sourceRefNumber ? (
+          <div className="flex items-center gap-1 mt-0.5">
+            <CornerDownRight className="h-3 w-3 shrink-0 text-muted-foreground/40" />
+            {onNavigateToEngineeringChange && event.sourceRefId ? (
+              <button
+                type="button"
+                className="cursor-pointer text-xs text-primary hover:underline"
+                onClick={() => onNavigateToEngineeringChange(event.sourceRefId!)}
+              >
+                변경 요청 #{event.sourceRefNumber} {event.sourceRefTitle}
+              </button>
+            ) : (
+              <span className="text-xs text-muted-foreground">
+                변경 요청 #{event.sourceRefNumber} {event.sourceRefTitle}
+              </span>
+            )}
+          </div>
+        ) : null}
         {meta ? <p className="text-xs text-muted-foreground">{meta}</p> : null}
         {event.reason ? (
           <p className="mt-1 rounded bg-muted/50 px-2 py-1 text-xs text-muted-foreground">{event.reason}</p>
@@ -249,11 +266,13 @@ function EventTimelineItem({ event, isLast }: { event: PartHistoryEvent; isLast:
 function RevisionNode({
   diffLoadingRevisionId,
   isLast,
+  onNavigateToEngineeringChange,
   onOpenDiff,
   revision,
 }: {
   diffLoadingRevisionId?: string | null;
   isLast: boolean;
+  onNavigateToEngineeringChange?: (id: string) => void;
   onOpenDiff?: (revision: PartHistoryRevision) => void;
   revision: PartHistoryRevision;
 }) {
@@ -290,6 +309,7 @@ function RevisionNode({
                 key={`${event.eventType}-${index}`}
                 event={event}
                 isLast={index === events.length - 1}
+                onNavigateToEngineeringChange={onNavigateToEngineeringChange}
               />
             ))}
           </div>
@@ -305,6 +325,7 @@ export function PartHistoryTab({
   diffLoadingRevisionId,
   entries,
   notice,
+  onNavigateToEngineeringChange,
   onOpenDiff,
   revisions,
 }: PartHistoryTabProps) {
@@ -330,6 +351,7 @@ export function PartHistoryTab({
               key={revision.id}
               diffLoadingRevisionId={diffLoadingRevisionId}
               isLast={index === resolvedRevisions.length - 1}
+              onNavigateToEngineeringChange={onNavigateToEngineeringChange}
               onOpenDiff={onOpenDiff}
               revision={revision}
             />

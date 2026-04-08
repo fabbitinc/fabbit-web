@@ -11,11 +11,7 @@ export interface JsonNode {
   float?: boolean;
   array?: boolean;
   empty?: boolean;
-  integral_number?: boolean;
-  floating_point_number?: boolean;
-  pojo?: boolean;
-  int?: boolean;
-  long?: boolean;
+  container?: boolean;
   node_type?: JsonNodeNodeType;
   string?: boolean;
   value_node?: boolean;
@@ -29,7 +25,11 @@ export interface JsonNode {
   textual?: boolean;
   boolean?: boolean;
   binary?: boolean;
-  container?: boolean;
   number?: boolean;
+  pojo?: boolean;
+  int?: boolean;
+  long?: boolean;
+  integral_number?: boolean;
+  floating_point_number?: boolean;
   embedded_value?: boolean;
 }

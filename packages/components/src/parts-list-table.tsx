@@ -9,7 +9,7 @@ import {
   Network,
   Search,
 } from "lucide-react";
-import { Badge, Button, Checkbox, Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@fabbit/ui";
+import { Badge, Button, Checkbox, Select, SelectContent, SelectItem, SelectTrigger, SelectValue, Tooltip, TooltipContent, TooltipTrigger } from "@fabbit/ui";
 
 export type PartsListTableSortKey = "partNumber" | "name" | "category" | "revision" | "lifecycleState";
 export type PartsListTableSortOrder = "asc" | "desc";
@@ -24,6 +24,7 @@ export interface PartsListTableItem {
   lifecycleState: string | null;
   drawingId: string | null;
   childrenCount: number;
+  hasStaleChildReference?: boolean;
 }
 
 export interface PartsListTableProps {
@@ -263,10 +264,22 @@ export function PartsListTable({
                 </td>
                 <td className="px-2 py-2 text-center">
                   {item.childrenCount > 0 ? (
-                    <span className="inline-flex items-center gap-1 text-muted-foreground">
-                      <Network className="h-3.5 w-3.5" />
-                      <span className="text-xs">{item.childrenCount}</span>
-                    </span>
+                    item.hasStaleChildReference ? (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="inline-flex items-center gap-1 text-amber-600 dark:text-amber-400">
+                            <Network className="h-3.5 w-3.5" />
+                            <span className="text-xs">{item.childrenCount}</span>
+                          </span>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" sideOffset={4}>대체된 리비전을 참조하고 있습니다</TooltipContent>
+                      </Tooltip>
+                    ) : (
+                      <span className="inline-flex items-center gap-1 text-muted-foreground">
+                        <Network className="h-3.5 w-3.5" />
+                        <span className="text-xs">{item.childrenCount}</span>
+                      </span>
+                    )
                   ) : (
                     <span className="text-muted-foreground/40">—</span>
                   )}

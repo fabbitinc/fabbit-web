@@ -20,7 +20,6 @@ import {
   engineeringChangeSyncLabels as syncEngineeringChangeLabelsApi,
   engineeringChangeUpdateComment as updateEngineeringChangeCommentApi,
   engineeringChangeUpdate as updateEngineeringChangeApi,
-  engineeringChangePopulateWhereUsed as populateWhereUsedApi,
   engineeringChangeCreateEcFromIssue as createEcFromIssueApi,
 } from "@/api/generated/orval/engineering-changes/engineering-changes";
 import type {
@@ -224,11 +223,6 @@ export async function syncEngineeringChangeLabels(
   labelIds: string[],
 ) {
   await syncEngineeringChangeLabelsApi(engineeringChangeId, { label_ids: labelIds });
-}
-
-export async function populateWhereUsed(engineeringChangeId: string): Promise<EngineeringChangeDetailModel> {
-  const response = await populateWhereUsedApi(engineeringChangeId);
-  return toEngineeringChangeDetailModel(response as EngineeringChangeDetailResponseDto);
 }
 
 export async function createEcFromIssue(

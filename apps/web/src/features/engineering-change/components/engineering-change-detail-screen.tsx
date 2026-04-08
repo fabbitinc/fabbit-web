@@ -32,7 +32,6 @@ import { useLabelLookupQuery } from "@/features/change-shared/hooks/use-label-lo
 import { usePartLookupQuery } from "@/features/change-shared/hooks/use-part-lookup-query";
 import { buildPartDetailPath } from "@/features/parts/lib/part-route";
 import { usePartRevisionLookupQuery } from "@/features/change-shared/hooks/use-part-revision-lookup-query";
-import { usePopulateWhereUsedAction } from "@/features/engineering-change/hooks/use-populate-where-used-action";
 import { useSyncAffectedItemsAction } from "@/features/engineering-change/hooks/use-sync-affected-items-action";
 import { useUpdateEngineeringChangeAction } from "@/features/engineering-change/hooks/use-update-engineering-change-action";
 import { useUpdateEngineeringChangeCommentAction } from "@/features/engineering-change/hooks/use-update-engineering-change-comment-action";
@@ -85,7 +84,6 @@ export function EngineeringChangeDetailScreen({
 
   const syncStepsAction = useSyncEngineeringChangeStepsAction(engineeringChangeId);
   const syncAffectedItemsAction = useSyncAffectedItemsAction(engineeringChangeId);
-  const populateWhereUsedAction = usePopulateWhereUsedAction(engineeringChangeId);
 
   const engineeringChange = engineeringChangeQuery.data;
 
@@ -362,19 +360,12 @@ export function EngineeringChangeDetailScreen({
           name: item.name,
         })),
         onSync: (items) => {
-          syncAffectedItemsAction.mutate(
-            {
-              items: items.map((item) => ({
-                item_type: item.itemType,
-                target_id: item.targetId,
-              })),
-            },
-            {
-              onSuccess: () => {
-                populateWhereUsedAction.mutate();
-              },
-            },
-          );
+          syncAffectedItemsAction.mutate({
+            items: items.map((item) => ({
+              item_type: item.itemType,
+              target_id: item.targetId,
+            })),
+          });
         },
         onItemTypeChange: (type) => {
           setAffectedItemsType(type);

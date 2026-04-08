@@ -27,6 +27,7 @@ interface PartsListScreenProps {
   onCategoryChange: (category: string | null) => void;
   onHasChildrenChange: (hasChildren: boolean | null) => void;
   onHasDrawingChange: (hasDrawing: boolean | null) => void;
+  onHasStaleChildReferenceChange: (hasStaleChildReference: boolean | null) => void;
   onLifecycleStateChange: (lifecycleState: string | null) => void;
   onCursorChange: (cursor: string | null, direction: "next" | "prev" | null) => void;
   onMineOnlyChange: (mineOnly: boolean) => void;
@@ -77,6 +78,7 @@ export function PartsListScreen({
   onCategoryChange,
   onHasChildrenChange,
   onHasDrawingChange,
+  onHasStaleChildReferenceChange,
   onLifecycleStateChange,
   onCursorChange,
   onMineOnlyChange,
@@ -139,6 +141,7 @@ export function PartsListScreen({
     mine_only: activePrimaryTab === "workbench" ? queryState.mineOnly : undefined,
     has_drawing: queryState.hasDrawing ?? undefined,
     has_children: queryState.hasChildren ?? undefined,
+    has_stale_child_reference: queryState.hasStaleChildReference ?? undefined,
     next_cursor: queryState.cursorDirection === "next" ? queryState.cursor ?? undefined : undefined,
     prev_cursor: queryState.cursorDirection === "prev" ? queryState.cursor ?? undefined : undefined,
     limit: queryState.pageSize,
@@ -200,10 +203,12 @@ export function PartsListScreen({
           lifecycle_state: queryState.lifecycleState || undefined,
           has_drawing: queryState.hasDrawing ?? undefined,
           has_children: queryState.hasChildren ?? undefined,
+          has_stale_child_reference: queryState.hasStaleChildReference ?? undefined,
         })
       }
       onHasChildrenChange={onHasChildrenChange}
       onHasDrawingChange={onHasDrawingChange}
+      onHasStaleChildReferenceChange={onHasStaleChildReferenceChange}
       onLifecycleStateChange={onLifecycleStateChange}
       onLinkClick={() => setIsLinkDialogOpen(true)}
       onMineOnlyChange={onMineOnlyChange}

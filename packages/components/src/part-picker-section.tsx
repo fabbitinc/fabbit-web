@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback } from "react";
-import { Settings, Package, Loader2 } from "lucide-react";
-import { Button, Badge, Input, Checkbox, Popover, PopoverContent, PopoverTrigger } from "@fabbit/ui";
+import { Settings, Package, Loader2, X } from "lucide-react";
+import { Button, Badge, Input, Checkbox, Popover, PopoverContent, PopoverTrigger, Tooltip, TooltipContent, TooltipTrigger } from "@fabbit/ui";
 
 export interface PartPickerSectionProps {
   searchedParts: { id: string; partNumber: string; name: string | null }[];
@@ -146,45 +146,54 @@ export function PartPickerSection({
       {displayParts.length > 0 ? (
         <div className="mt-2 space-y-1.5">
           {displayParts.map((part) => (
-            onNavigateToPart ? (
-              <button
-                key={part.id}
-                type="button"
-                className="flex w-full cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-left transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                onClick={() => onNavigateToPart(part.id)}
-              >
-                <Package className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-xs font-medium text-foreground">
-                    {part.partNumber}
-                  </p>
-                  <p className="truncate text-[11px] text-muted-foreground">{part.name}</p>
-                </div>
-                {part.category && (
-                  <Badge variant="secondary" className="shrink-0 text-[10px] py-0 px-1.5">
-                    {part.category}
-                  </Badge>
-                )}
-              </button>
-            ) : (
-              <div
-                key={part.id}
-                className="flex w-full items-center gap-2 rounded-md px-2 py-1.5"
-              >
-                <Package className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-xs font-medium text-foreground">
-                    {part.partNumber}
-                  </p>
-                  <p className="truncate text-[11px] text-muted-foreground">{part.name}</p>
-                </div>
-                {part.category && (
-                  <Badge variant="secondary" className="shrink-0 text-[10px] py-0 px-1.5">
-                    {part.category}
-                  </Badge>
-                )}
-              </div>
-            )
+            <div
+              key={part.id}
+              className="group flex w-full items-center gap-2 rounded-md px-2 py-1.5 transition-colors hover:bg-muted"
+            >
+              {onNavigateToPart ? (
+                <button
+                  type="button"
+                  className="flex min-w-0 flex-1 cursor-pointer items-center gap-2 text-left"
+                  onClick={() => onNavigateToPart(part.id)}
+                >
+                  <Package className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-xs font-medium text-foreground">{part.partNumber}</p>
+                    <p className="truncate text-[11px] text-muted-foreground">{part.name}</p>
+                  </div>
+                </button>
+              ) : (
+                <>
+                  <Package className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-xs font-medium text-foreground">{part.partNumber}</p>
+                    <p className="truncate text-[11px] text-muted-foreground">{part.name}</p>
+                  </div>
+                </>
+              )}
+              {part.category ? (
+                <Badge variant="secondary" className="shrink-0 text-[10px] py-0 px-1.5">
+                  {part.category}
+                </Badge>
+              ) : null}
+              {onSync ? (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      type="button"
+                      className="hidden shrink-0 cursor-pointer items-center justify-center rounded transition-colors hover:bg-destructive/10 hover:text-destructive group-hover:inline-flex h-6 w-6 text-muted-foreground/50"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        onSync(selectedIds.filter((id) => id !== part.id));
+                      }}
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" sideOffset={4} hideArrow>연결 해제</TooltipContent>
+                </Tooltip>
+              ) : null}
+            </div>
           ))}
         </div>
       ) : (

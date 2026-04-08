@@ -1,7 +1,7 @@
 import type { ComponentType, ReactNode } from "react";
 import { Building2, Clock, FolderKanban, Network, Package, Paperclip } from "lucide-react";
 import { Button, Skeleton } from "@fabbit/ui";
-import { PartHeaderCard, type PartHeaderCardPart } from "./part-header-card";
+import { PartHeaderCard, type PartHeaderCardPart, type PartRevisionOption } from "./part-header-card";
 
 export type PartDetailScreenTab = "properties" | "bom" | "attachments" | "suppliers" | "projects" | "history";
 
@@ -18,6 +18,9 @@ export interface PartDetailScreenProps {
   isLoading?: boolean;
   part?: PartHeaderCardPart;
   headerActions?: ReactNode;
+  revisionOptions?: PartRevisionOption[];
+  currentRevisionId?: string;
+  onRevisionChange?: (revisionId: string) => void;
   onBackClick: () => void;
   onRetry?: () => void;
   onTabChange: (tab: PartDetailScreenTab) => void;
@@ -30,7 +33,7 @@ const detailTabs: Array<{
   count?: (part: PartHeaderCardPart) => number;
 }> = [
   { id: "properties", label: "속성", icon: Package },
-  { id: "bom", label: "BOM", icon: Network, count: (part) => part.childrenCount + part.parentsCount },
+  { id: "bom", label: "BOM", icon: Network, count: (part) => part.childrenCount },
   { id: "attachments", label: "파일", icon: Paperclip, count: (part) => part.filesCount },
   { id: "suppliers", label: "공급사", icon: Building2, count: (part) => part.suppliersCount },
   { id: "projects", label: "프로젝트", icon: FolderKanban, count: (part) => part.projectsCount },
@@ -50,6 +53,9 @@ export function PartDetailScreen({
   isLoading = false,
   part,
   headerActions,
+  revisionOptions,
+  currentRevisionId,
+  onRevisionChange,
   onBackClick,
   onRetry,
   onTabChange,
@@ -137,7 +143,13 @@ export function PartDetailScreen({
       </div>
 
       <div className="mb-5">
-        <PartHeaderCard actions={headerActions} part={part} />
+        <PartHeaderCard
+          actions={headerActions}
+          part={part}
+          revisionOptions={revisionOptions}
+          currentRevisionId={currentRevisionId}
+          onRevisionChange={onRevisionChange}
+        />
       </div>
 
       <div className="mb-5 border-b">

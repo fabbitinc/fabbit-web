@@ -26,6 +26,7 @@ import {
   partRevisionGetBomTree as getBomTreeApiV1PartRevisionBomTreeGet,
   partRevisionGetDiff as getDiffApiV1PartRevisionDiffGet,
   partRevisionGetHistory as getHistoryApiV1PartHistoryGet,
+  partRevisionLookupByPart as lookupRevisionsByPartApi,
   partRevisionGetProjects as getProjectsApiV1PartRevisionProjectsGet,
   partRevisionGetSuppliers as getSuppliersApiV1PartRevisionSuppliersGet,
 } from "@/api/generated/orval/part-revisions/part-revisions";
@@ -98,6 +99,7 @@ import type {
   PartRevisionDiffModel,
   PartRevisionHistoryEventModel,
   PartRevisionHistoryItemModel,
+  PartRevisionOptionModel,
   PartSupplierModel,
 } from "@/features/parts/types/parts-model";
 
@@ -131,6 +133,7 @@ export async function fetchPartsList(query: ListPartsQueryDto): Promise<PartList
     lifecycle_state: query.lifecycle_state,
     has_drawing: query.has_drawing,
     has_children: query.has_children,
+    has_stale_child_reference: query.has_stale_child_reference,
     next_cursor: query.next_cursor,
     prev_cursor: query.prev_cursor,
     limit: query.limit,
@@ -428,6 +431,16 @@ export async function fetchPartHistory(partId: string): Promise<PartRevisionHist
   return (result.items ?? []).map(toPartRevisionHistoryItemModel);
 }
 
+export async function fetchPartRevisionOptions(partId: string): Promise<PartRevisionOptionModel[]> {
+  const response = await lookupRevisionsByPartApi(partId);
+  return (response.items ?? []).map((item) => ({
+    revisionId: item.revision_id ?? "",
+    revisionCode: item.revision_code ?? "",
+    status: item.status ?? "DRAFT",
+    currentReleased: item.current_released ?? false,
+  }));
+}
+
 export async function fetchPartRevisionDiff(
   partId: string,
   revisionId: string,
@@ -453,6 +466,7 @@ function toPartListItemModel(part: PartListResponseDto["items"][number]): PartLi
     lifecycleState: part.lifecycle_state ?? null,
     drawingId: part.has_drawing ? (part.revision_id ?? partId) : null,
     childrenCount: part.children_count ?? 0,
+    hasStaleChildReference: part.has_stale_child_reference ?? false,
     workStatus: part.revision_status ?? null,
   };
 }
@@ -474,6 +488,7 @@ function toPartInProgressListItemModel(
     lifecycleState: part.lifecycle_state ?? null,
     drawingId: part.has_drawing ? (revisionId ?? partId) : null,
     childrenCount: part.children_count ?? 0,
+    hasStaleChildReference: false,
     workStatus: (part.status as PartListStatusDto | undefined) ?? null,
   };
 }
@@ -552,6 +567,8 @@ export function toPartBomItemModel(
     revisionId: item.revision_id ?? null,
     partNumber: item.part_number ?? "",
     name: item.name ?? null,
+    revisionCode: item.revision_code ?? null,
+    revisionStatus: item.revision_status ?? null,
     lineNumber: item.line_number ?? null,
     quantity: item.quantity ?? 0,
     extendedProperties: item.extended_properties ?? {},

@@ -265,18 +265,6 @@ export const engineeringChangeApprove = (
       options);
     }
   /**
- * EC에 연결된 리비전의 상위 어셈블리를 자동으로 영향 항목에 추가합니다
- * @summary 변경 영향 항목을 where-used 기반으로 자동 도출합니다
- */
-export const engineeringChangePopulateWhereUsed = (
-    engineeringChangeId: string,
- options?: SecondParameter<typeof customInstance<EngineeringChangeResponse | void>>,) => {
-      return customInstance<EngineeringChangeResponse | void>(
-      {url: `/api/v1/engineering-changes/${engineeringChangeId}/affected-items/populate-where-used`, method: 'POST'
-    },
-      options);
-    }
-  /**
  * 이슈에 연결된 부품의 DRAFT 리비전을 영향 항목으로 자동 등록하고, 영향 분석 요약을 본문에 포함하여 설계변경을 생성합니다
  * @summary 이슈로부터 설계변경을 생성합니다
  */
@@ -401,7 +389,6 @@ export type EngineeringChangeAddFilesResult = NonNullable<Awaited<ReturnType<typ
 export type EngineeringChangeCreateCommentResult = NonNullable<Awaited<ReturnType<typeof engineeringChangeCreateComment>>>
 export type EngineeringChangeCancelResult = NonNullable<Awaited<ReturnType<typeof engineeringChangeCancel>>>
 export type EngineeringChangeApproveResult = NonNullable<Awaited<ReturnType<typeof engineeringChangeApprove>>>
-export type EngineeringChangePopulateWhereUsedResult = NonNullable<Awaited<ReturnType<typeof engineeringChangePopulateWhereUsed>>>
 export type EngineeringChangeCreateEcFromIssueResult = NonNullable<Awaited<ReturnType<typeof engineeringChangeCreateEcFromIssue>>>
 export type EngineeringChangeGetResult = NonNullable<Awaited<ReturnType<typeof engineeringChangeGet>>>
 export type EngineeringChangeUpdateResult = NonNullable<Awaited<ReturnType<typeof engineeringChangeUpdate>>>

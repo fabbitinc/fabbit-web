@@ -158,7 +158,7 @@ export function ChangeManagementScreen({
           type="button"
           onClick={() => onViewChange("engineering-changes")}
         >
-          변경관리
+          변경 요청
           {queryState.view === "engineering-changes" ? (
             <span className="absolute inset-x-0 bottom-0 h-0.5 rounded-full bg-foreground" />
           ) : null}
@@ -203,7 +203,7 @@ export function ChangeManagementScreen({
           </div>
           <Button size="sm" type="button" onClick={onCreateClick}>
             <Plus className="size-3.5" />
-            {queryState.view === "issues" ? "새 이슈" : "새 변경관리"}
+            {queryState.view === "issues" ? "새 이슈" : "새 변경 요청"}
           </Button>
         </div>
 
@@ -237,8 +237,8 @@ export function ChangeManagementScreen({
                   ? "열린 이슈가 없습니다"
                   : "닫힌 이슈가 없습니다"
                 : queryState.state === "open"
-                  ? "열린 변경관리가 없습니다"
-                  : "닫힌 변경관리가 없습니다"}
+                  ? "열린 변경 요청이 없습니다"
+                  : "닫힌 변경 요청이 없습니다"}
             </p>
           </div>
         ) : null}

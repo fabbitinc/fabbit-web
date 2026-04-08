@@ -29,6 +29,7 @@ import {
   fetchPartPreviewSources,
   fetchPartProjects,
   fetchPartRevisionDiff,
+  fetchPartRevisionOptions,
   fetchPartsList,
   fetchPartSuppliers,
   fetchTeamLookup,
@@ -78,6 +79,7 @@ export const partsKeys = {
   projects: (partId: string, revisionId: string) =>
     ["parts", partId, "revisions", revisionId, "projects"] as const,
   history: (partId: string) => ["parts", partId, "history"] as const,
+  revisionOptions: (partId: string) => ["parts", partId, "revision-options"] as const,
   revisionDiff: (partId: string, revisionId: string, baseRevisionId: string) =>
     ["parts", partId, "revisions", revisionId, "diff", baseRevisionId] as const,
   availableProjects: (query: ListProjectsQueryDto) => ["parts", "available-projects", query] as const,
@@ -150,6 +152,12 @@ export const partsQueries = {
     queryOptions({
       queryKey: partsKeys.history(partId),
       queryFn: () => fetchPartHistory(partId),
+      staleTime: 30_000,
+    }),
+  revisionOptions: (partId: string) =>
+    queryOptions({
+      queryKey: partsKeys.revisionOptions(partId),
+      queryFn: () => fetchPartRevisionOptions(partId),
       staleTime: 30_000,
     }),
   revisionDiff: (partId: string, revisionId: string, baseRevisionId: string) =>

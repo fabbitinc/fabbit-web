@@ -14,6 +14,7 @@ import type {
   PartRevisionGetBomTreeParams,
   PartRevisionGetDiffParams,
   PartRevisionHistoryResponse,
+  PartRevisionLookupResponse,
   PartSuppliersResponse
 } from '../model';
 
@@ -122,6 +123,18 @@ export const partRevisionExportBomTree = (
       options);
     }
   /**
+ * 부품 상세에서 리비전 선택 UI에 사용할 경량 목록을 조회합니다
+ * @summary 특정 부품의 리비전 selector 목록을 조회합니다
+ */
+export const partRevisionLookupByPart = (
+    partId: string,
+ options?: SecondParameter<typeof customInstance<PartRevisionLookupResponse>>,) => {
+      return customInstance<PartRevisionLookupResponse>(
+      {url: `/api/v1/parts/${partId}/revisions/lookup`, method: 'GET'
+    },
+      options);
+    }
+  /**
  * 공식 리비전 카드별 상태와 시간순 이벤트를 함께 조회합니다
  * @summary Part 리비전 타임라인을 조회합니다
  */
@@ -140,4 +153,5 @@ export type PartRevisionGetDiffResult = NonNullable<Awaited<ReturnType<typeof pa
 export type PartRevisionGetBomResult = NonNullable<Awaited<ReturnType<typeof partRevisionGetBom>>>
 export type PartRevisionGetBomTreeResult = NonNullable<Awaited<ReturnType<typeof partRevisionGetBomTree>>>
 export type PartRevisionExportBomTreeResult = NonNullable<Awaited<ReturnType<typeof partRevisionExportBomTree>>>
+export type PartRevisionLookupByPartResult = NonNullable<Awaited<ReturnType<typeof partRevisionLookupByPart>>>
 export type PartRevisionGetHistoryResult = NonNullable<Awaited<ReturnType<typeof partRevisionGetHistory>>>

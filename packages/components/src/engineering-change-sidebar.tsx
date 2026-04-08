@@ -1,5 +1,7 @@
 import { useMemo, useRef, useState } from "react";
 import {
+  Download,
+  ExternalLink,
   Loader2,
   Plus,
   Settings,
@@ -11,6 +13,9 @@ import {
   ConfirmDialog,
   Input,
   Popover,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
   PopoverContent,
   PopoverTrigger,
 } from "@fabbit/ui";
@@ -308,18 +313,23 @@ export function EngineeringChangeSidebar({
                   </p>
                 </button>
                 {linkedIssuePicker ? (
-                  <button
-                    type="button"
-                    className="hidden shrink-0 rounded p-0.5 text-muted-foreground/50 hover:bg-destructive/10 hover:text-destructive group-hover:inline-flex"
-                    onClick={(event) => {
-                      event.stopPropagation();
-                      linkedIssuePicker.onSync(
-                        linkedIssuePicker.selectedIds.filter((linkedIssueId) => linkedIssueId !== issue.id),
-                      );
-                    }}
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        type="button"
+                        className="hidden shrink-0 cursor-pointer items-center justify-center rounded transition-colors hover:bg-destructive/10 hover:text-destructive group-hover:inline-flex h-6 w-6 text-muted-foreground/50"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          linkedIssuePicker.onSync(
+                            linkedIssuePicker.selectedIds.filter((linkedIssueId) => linkedIssueId !== issue.id),
+                          );
+                        }}
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" sideOffset={4} hideArrow>연결 해제</TooltipContent>
+                  </Tooltip>
                 ) : null}
               </div>
             ))}
@@ -389,13 +399,51 @@ export function EngineeringChangeSidebar({
                   <p className="truncate text-xs text-foreground">{file.originalName}</p>
                   <p className="text-[11px] text-muted-foreground">{formatFileSize(file.fileSize)}</p>
                 </div>
-                <button
-                  type="button"
-                  className="hidden shrink-0 rounded p-0.5 text-muted-foreground/50 hover:bg-destructive/10 hover:text-destructive group-hover:inline-flex"
-                  onClick={() => setDeletingFileId(file.fileId)}
-                >
-                  <X className="h-3 w-3" />
-                </button>
+                <div className="hidden shrink-0 items-center gap-0.5 group-hover:inline-flex">
+                  {file.fileUrl ? (
+                    <>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <a
+                            href={file.fileUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex h-6 w-6 items-center justify-center rounded text-muted-foreground/50 transition-colors hover:bg-accent hover:text-foreground"
+                            aria-label={`${file.originalName} 새 탭에서 열기`}
+                          >
+                            <ExternalLink className="h-3.5 w-3.5" />
+                          </a>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" sideOffset={4} hideArrow>열기</TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <a
+                            href={file.fileUrl}
+                            download={file.originalName}
+                            className="inline-flex h-6 w-6 items-center justify-center rounded text-muted-foreground/50 transition-colors hover:bg-accent hover:text-foreground"
+                            aria-label={`${file.originalName} 다운로드`}
+                          >
+                            <Download className="h-3.5 w-3.5" />
+                          </a>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" sideOffset={4} hideArrow>다운로드</TooltipContent>
+                      </Tooltip>
+                    </>
+                  ) : null}
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        type="button"
+                        className="inline-flex h-6 w-6 items-center justify-center rounded text-muted-foreground/50 transition-colors hover:bg-destructive/10 hover:text-destructive"
+                        onClick={() => setDeletingFileId(file.fileId)}
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" sideOffset={4} hideArrow>삭제</TooltipContent>
+                  </Tooltip>
+                </div>
               </div>
             ))}
           </div>

@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { PartBomTab as PartBomTabView } from "@fabbit/components";
-import type { PartBomTabItem } from "@fabbit/components";
+import type { PartBomRevisionStatus, PartBomTabItem } from "@fabbit/components";
 import { useNavigate } from "react-router-dom";
 import { usePartBomQuery } from "@/features/parts/hooks/use-part-bom-query";
-import { buildPartBomPath } from "@/features/parts/lib/part-route";
+import { buildPartBomPath, buildPartDetailPath } from "@/features/parts/lib/part-route";
 import { useDelayedVisibilityLogic } from "@/hooks/use-delayed-visibility-logic";
 import { BomItemAddDialog } from "@/features/parts/components/bom-item-add-dialog";
 import { BomItemBatchAddDialog } from "@/features/parts/components/bom-item-batch-add-dialog";
@@ -22,6 +22,15 @@ export function PartBomTab({ partId, revisionId, canEditDraft = false }: PartBom
   const isBomTabLoading = !bomQuery.isFetched && bomQuery.fetchStatus === "fetching";
   const showLoadingIndicator = useDelayedVisibilityLogic(isBomTabLoading);
 
+  const childrenItems = useMemo<PartBomTabItem[]>(
+    () => (bomQuery.data?.children ?? []).map((item) => ({
+      ...item,
+      revisionCode: item.revisionCode ?? null,
+      revisionStatus: (item.revisionStatus as PartBomRevisionStatus) ?? null,
+    })),
+    [bomQuery.data?.children],
+  );
+
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [batchAddDialogOpen, setBatchAddDialogOpen] = useState(false);
   const [editItem, setEditItem] = useState<PartBomTabItem | null>(null);
@@ -30,18 +39,12 @@ export function PartBomTab({ partId, revisionId, canEditDraft = false }: PartBom
   return (
     <>
       <PartBomTabView
-        childrenItems={bomQuery.data?.children ?? []}
-        parentItems={bomQuery.data?.parents ?? []}
+        childrenItems={childrenItems}
         isLoading={isBomTabLoading}
         showLoadingIndicator={showLoadingIndicator}
         canEdit={canEditDraft}
-        onExploreDirectionChange={(direction) => {
-          if (direction === "forward") {
-            navigate(buildPartBomPath(partId, revisionId));
-            return;
-          }
-          navigate(`${buildPartBomPath(partId, revisionId)}?direction=reverse`);
-        }}
+        onPartClick={(clickedPartId, clickedRevisionId) => navigate(buildPartDetailPath(clickedPartId, clickedRevisionId))}
+        onExploreBom={() => navigate(buildPartBomPath(partId, revisionId))}
         onAddItem={() => setAddDialogOpen(true)}
         onBatchAddItems={() => setBatchAddDialogOpen(true)}
         onEditItem={(item) => setEditItem(item)}

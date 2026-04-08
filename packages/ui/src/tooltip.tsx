@@ -34,7 +34,7 @@ function TooltipContent({
   className,
   sideOffset = 0,
   children,
-  hideArrow = false,
+  hideArrow = true,
   ...props
 }: React.ComponentProps<typeof TooltipPrimitive.Content> & {
   hideArrow?: boolean;

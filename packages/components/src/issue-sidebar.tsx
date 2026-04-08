@@ -1,5 +1,7 @@
 import { useRef, useState } from "react";
 import {
+  Download,
+  ExternalLink,
   Loader2,
   Plus,
   Settings,
@@ -13,6 +15,9 @@ import {
   Popover,
   PopoverContent,
   PopoverTrigger,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
 } from "@fabbit/ui";
 import { FileIcon, type FileIconKind } from "./file-icon";
 import { LabelPickerSection } from "./label-picker-section";
@@ -129,36 +134,6 @@ export interface IssueSidebarProps {
   isAttachingFiles?: boolean;
 }
 
-async function downloadAttachment(file: IssueSidebarFile) {
-  if (!file.url) {
-    return;
-  }
-
-  try {
-    const pathname = new URL(file.url, window.location.origin).pathname;
-    const filename = decodeURIComponent(pathname.split("/").pop() || file.name);
-    const response = await fetch(file.url);
-
-    if (!response.ok) {
-      throw new Error("첨부파일 다운로드에 실패했습니다.");
-    }
-
-    const blob = await response.blob();
-    const blobUrl = URL.createObjectURL(blob);
-    const anchor = document.createElement("a");
-    anchor.href = blobUrl;
-    anchor.download = filename;
-    anchor.click();
-    window.setTimeout(() => URL.revokeObjectURL(blobUrl), 1000);
-  } catch {
-    const anchor = document.createElement("a");
-    anchor.href = file.url;
-    anchor.download = file.name;
-    anchor.target = "_blank";
-    anchor.rel = "noopener noreferrer";
-    anchor.click();
-  }
-}
 
 function SectionSettingsButton({ onClick }: { onClick?: () => void }) {
   if (!onClick) {
@@ -331,16 +306,21 @@ function LinkedChangesSection({
                 </p>
               </button>
               {picker ? (
-                <button
-                  type="button"
-                  className="hidden shrink-0 cursor-pointer rounded p-0.5 text-muted-foreground/50 transition-colors hover:bg-destructive/10 hover:text-destructive group-hover:inline-flex"
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    picker.onSync((picker.selectedIds ?? linkedChanges.map((item) => item.id)).filter((id) => id !== change.id));
-                  }}
-                >
-                  <X className="h-3 w-3" />
-                </button>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      type="button"
+                      className="hidden shrink-0 cursor-pointer items-center justify-center rounded transition-colors hover:bg-destructive/10 hover:text-destructive group-hover:inline-flex h-6 w-6 text-muted-foreground/50"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        picker.onSync((picker.selectedIds ?? linkedChanges.map((item) => item.id)).filter((id) => id !== change.id));
+                      }}
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" sideOffset={4} hideArrow>연결 해제</TooltipContent>
+                </Tooltip>
               ) : null}
             </div>
           ))}
@@ -349,7 +329,7 @@ function LinkedChangesSection({
         <p className="mt-2 text-xs text-muted-foreground/50">연결된 변경관리 없음</p>
       )}
 
-      {onCreateLinkedChange ? (
+      {onCreateLinkedChange && linkedChanges.length === 0 ? (
         <button
           type="button"
           className="mt-2 cursor-pointer text-xs text-primary hover:underline"
@@ -511,39 +491,58 @@ export function IssueSidebar({
                 key={file.id}
                 className="group flex w-full items-center gap-2 rounded-md px-2 py-1.5 transition-colors hover:bg-muted"
               >
-                {file.url ? (
-                  <button
-                    type="button"
-                    className="flex min-w-0 flex-1 cursor-pointer items-center gap-2 rounded-sm text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                    aria-label={`${file.name} 다운로드`}
-                    onClick={() => {
-                      void downloadAttachment(file);
-                    }}
-                  >
-                    <FileIcon kind={file.type} />
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-xs text-foreground">{file.name}</p>
-                      <p className="text-[11px] text-muted-foreground">{file.size}</p>
-                    </div>
-                  </button>
-                ) : (
-                  <>
-                    <FileIcon kind={file.type} />
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-xs text-foreground">{file.name}</p>
-                      <p className="text-[11px] text-muted-foreground">{file.size}</p>
-                    </div>
-                  </>
-                )}
-                {onDeleteFile ? (
-                  <button
-                    type="button"
-                    className="hidden shrink-0 cursor-pointer rounded p-0.5 text-muted-foreground/50 transition-colors hover:bg-destructive/10 hover:text-destructive group-hover:inline-flex"
-                    onClick={() => setDeletingFileId(file.id)}
-                  >
-                    <X className="h-3 w-3" />
-                  </button>
-                ) : null}
+                <FileIcon kind={file.type} />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-xs text-foreground">{file.name}</p>
+                  <p className="text-[11px] text-muted-foreground">{file.size}</p>
+                </div>
+                <div className="hidden shrink-0 items-center gap-0.5 group-hover:inline-flex">
+                  {file.url ? (
+                    <>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <a
+                            href={file.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex h-6 w-6 items-center justify-center rounded text-muted-foreground/50 transition-colors hover:bg-accent hover:text-foreground"
+                            aria-label={`${file.name} 새 탭에서 열기`}
+                          >
+                            <ExternalLink className="h-3.5 w-3.5" />
+                          </a>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" sideOffset={4} hideArrow>열기</TooltipContent>
+                      </Tooltip>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <a
+                            href={file.url}
+                            download={file.name}
+                            className="inline-flex h-6 w-6 items-center justify-center rounded text-muted-foreground/50 transition-colors hover:bg-accent hover:text-foreground"
+                            aria-label={`${file.name} 다운로드`}
+                          >
+                            <Download className="h-3.5 w-3.5" />
+                          </a>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" sideOffset={4} hideArrow>다운로드</TooltipContent>
+                      </Tooltip>
+                    </>
+                  ) : null}
+                  {onDeleteFile ? (
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          type="button"
+                          className="inline-flex h-6 w-6 items-center justify-center rounded text-muted-foreground/50 transition-colors hover:bg-destructive/10 hover:text-destructive"
+                          onClick={() => setDeletingFileId(file.id)}
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" sideOffset={4} hideArrow>삭제</TooltipContent>
+                    </Tooltip>
+                  ) : null}
+                </div>
               </div>
             ))}
           </div>
