@@ -1,167 +1,95 @@
-import { motion, useInView } from "framer-motion";
-import { useRef } from "react";
-import {
-  FileSpreadsheet,
-  Brain,
-  Shield,
-  GitBranch,
-  Search,
-  Users,
-} from "lucide-react";
+import { Sparkles, GitBranch, Users, ShoppingCart } from "lucide-react";
 
-const features = [
-  {
-    icon: FileSpreadsheet,
-    title: "엑셀 양식 그대로",
-    description:
-      "기존에 사용하던 BOM 엑셀의 속성명과 구조를 바꾸지 않아도 됩니다. 업로드만 하면 AI가 알아서 해석합니다.",
-    color: "text-[var(--lp-brand)]",
-    bg: "bg-[var(--lp-brand)]/10",
-    borderColor: "hover:border-[var(--lp-brand)]/20",
-    size: "large" as const,
-  },
-  {
-    icon: Brain,
-    title: "AI 자동 매핑",
-    description:
-      "LLM이 헤더와 샘플 데이터를 분석해 시스템 필드와의 매핑 규칙을 생성합니다. 고객별 고유 속성명도 정확하게 연결합니다.",
-    color: "text-[var(--lp-accent)]",
-    bg: "bg-[var(--lp-accent)]/10",
-    borderColor: "hover:border-[var(--lp-accent)]/20",
-    size: "large" as const,
-  },
-  {
-    icon: Shield,
-    title: "최신본 관리",
-    description:
-      "도면의 최신 버전을 자동으로 식별하고 관리합니다. 구버전 도면으로 인한 생산 사고를 방지합니다.",
-    color: "text-emerald-400",
-    bg: "bg-emerald-400/10",
-    borderColor: "hover:border-emerald-400/20",
-    size: "small" as const,
-  },
-  {
-    icon: GitBranch,
-    title: "변경 이력 추적",
-    description:
-      "검토, 승인, 배포의 모든 이력을 기록합니다. 누가 언제 무엇을 변경했는지 즉시 파악할 수 있습니다.",
-    color: "text-amber-400",
-    bg: "bg-amber-400/10",
-    borderColor: "hover:border-amber-400/20",
-    size: "small" as const,
-  },
-  {
-    icon: Search,
-    title: "도면-BOM 연결",
-    description:
-      "도면과 BOM 데이터를 하나의 시스템에서 연결해 관리합니다. 부품 변경 시 영향 범위를 빠르게 파악합니다.",
-    color: "text-[var(--lp-gradient-from)]",
-    bg: "bg-[var(--lp-gradient-from)]/10",
-    borderColor: "hover:border-[var(--lp-gradient-from)]/20",
-    size: "small" as const,
-  },
-  {
-    icon: Users,
-    title: "부서 간 협업",
-    description:
-      "설계, 생산, 구매, 품질 부서가 같은 데이터를 보며 협업합니다. 메일과 메신저로 파일을 주고받을 필요가 없습니다.",
-    color: "text-pink-400",
-    bg: "bg-pink-400/10",
-    borderColor: "hover:border-pink-400/20",
-    size: "small" as const,
-  },
+const mappingRows = [
+  { from: '"PART NO."', to: "품번", conf: "99%" },
+  { from: '"품명 (KOR)"', to: "품명", conf: "100%" },
+  { from: '"MATERIAL SPEC"', to: "규격", conf: "94%" },
+  { from: '"Q\'TY (EA)"', to: "수량", conf: "98%" },
+  { from: '"비고"', to: "메모", conf: "86%" },
+];
+
+const revisions = [
+  { tag: "REV-03", text: "리어 커버 — 두께 변경", meta: "2025.04.18 김설계", current: true },
+  { tag: "REV-02", text: "홀 위치 보정", meta: "2025.03.04 박엔지" },
+  { tag: "REV-01", text: "최초 릴리스", meta: "2025.02.11 김설계" },
 ];
 
 export function FeaturesSection() {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px" });
-
   return (
-    <section
-      id="features"
-      className="section-padding relative"
-      ref={ref}
-    >
-      <div className="mx-auto max-w-7xl px-6">
-        {/* Section header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6 }}
-          className="mx-auto max-w-3xl text-center"
-        >
-          <p className="mb-3 text-sm font-medium uppercase tracking-widest text-[var(--lp-text-muted)]">Features</p>
-          <h2 className="section-heading font-[Outfit,sans-serif] text-3xl font-semibold tracking-tight md:text-4xl lg:text-[2.75rem]">
-            제조 현장을 위해
-            <br />
-            <span className="text-[var(--lp-brand)]">설계된 기능들</span>
-          </h2>
-          <p className="mt-6 text-base leading-relaxed text-[var(--lp-text-tertiary)] md:text-lg">
-            엑셀/NAS 단계에서 정식 운영 시스템으로 넘어가는
-            <br className="hidden md:block" />
-            가장 부담 없는 진입 경로를 제공합니다.
-          </p>
-        </motion.div>
+    <section className="lp2-section" id="features">
+      <div className="wrap">
+        <div className="lp2-eyebrow">FEATURES</div>
+        <h2 className="lp2-title">
+          엑셀처럼 가볍게,
+          <br />
+          PLM처럼 정확하게
+        </h2>
+        <p className="lp2-lead">현장에서 정말 필요한 것만 골라 담았습니다. 도입 첫날부터 효과가 보이도록.</p>
 
-        {/* Bento grid */}
-        <div className="mt-16 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {features.map((feature, i) => (
-            <motion.div
-              key={feature.title}
-              initial={{ opacity: 0, y: 30 }}
-              animate={isInView ? { opacity: 1, y: 0 } : {}}
-              transition={{ duration: 0.4, delay: 0.1 * (i + 1) }}
-              className={`glass-card group rounded-2xl p-6 transition-all duration-300 hover:translate-y-[-2px] md:p-7 ${feature.borderColor} ${
-                feature.size === "large" ? "sm:col-span-2" : ""
-              }`}
-            >
-              <div className="flex items-start gap-4">
-                <div
-                  className={`inline-flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl ${feature.bg} transition-transform duration-300 group-hover:scale-110`}
-                >
-                  <feature.icon size={24} className={feature.color} />
-                </div>
-                <div className="flex-1">
-                  <h3 className="font-[Outfit,sans-serif] text-lg font-semibold text-[var(--lp-text-strong)]">
-                    {feature.title}
-                  </h3>
-                  <p className="mt-2.5 text-[0.9375rem] leading-relaxed text-[var(--lp-text-tertiary)]">
-                    {feature.description}
-                  </p>
-                </div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-
-        {/* Highlight box */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6, delay: 0.8 }}
-          className="mt-12 overflow-hidden rounded-2xl border border-[var(--lp-brand)]/20 bg-gradient-to-r from-[var(--lp-brand)]/[0.06] to-[var(--lp-accent)]/[0.06]"
-        >
-          <div className="flex flex-col items-center gap-6 p-8 md:flex-row md:p-10">
-            <div className="flex-1">
-              <h3 className="font-[Outfit,sans-serif] text-lg font-medium text-[var(--lp-text-strong)] md:text-xl">
-                핵심은 &ldquo;쉬운 시작&rdquo;입니다
-              </h3>
-              <p className="mt-2.5 text-[0.9375rem] leading-relaxed text-[var(--lp-text-tertiary)]">
-                Fabbit은 기존 도면관리 시장 안에서 엑셀/NAS 단계에서 실제 도입으로
-                넘어가는 구간을 공략합니다. 고객의 구매 판단은 &ldquo;더 고급한 기능&rdquo;보다
-                &ldquo;기존 방식에서 무리 없이 넘어갈 수 있는가&rdquo;에 더 가깝습니다.
-              </p>
+        <div className="lp2-features-grid">
+          <div className="lp2-feat lp2-feat-large">
+            <div className="lp2-feat-icon">
+              <Sparkles size={18} />
             </div>
-            <div className="flex flex-shrink-0 flex-col items-center rounded-xl bg-[var(--lp-border)] px-8 py-5">
-              <div className="font-[Outfit,sans-serif] text-4xl font-bold text-[var(--lp-brand)]">
-                10분
-              </div>
-              <div className="mt-1 text-xs text-[var(--lp-text-muted)]">
-                평균 초기 셋업 시간
+            <h3>AI BOM 자동 매핑</h3>
+            <p>
+              "PART NO", "품번", "P/N" — 어떤 컬럼명이든 LLM이 의미를 파악해 자동 정리합니다. 평균 정확도 95%, 검토는 클릭 한 번. 컬럼이 100개여도, 시트가 10개여도 한 번에.
+            </p>
+            <div className="lp2-feat-visual">
+              <div className="lp2-mapping-demo">
+                {mappingRows.map((r) => (
+                  <div key={r.from} className="md-row">
+                    <span className="md-from">{r.from}</span>
+                    <span className="md-arrow">→</span>
+                    <span className="md-to">{r.to}</span>
+                    <span className="md-conf">{r.conf}</span>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
-        </motion.div>
+
+          <div className="lp2-feat lp2-feat-side">
+            <div className="lp2-feat-icon">
+              <GitBranch size={18} />
+            </div>
+            <h3>도면 리비전이 한 줄로 보입니다</h3>
+            <p>
+              최신 리비전을 시스템이 보장합니다. 누가 언제 무엇을 승인했는지 자동 기록되어, 현장이 옛 도면을 잡을 일이 없습니다.
+            </p>
+            <div className="lp2-rev-tree">
+              {revisions.map((r) => (
+                <div key={r.tag} className={`lp2-rev-item ${r.current ? "current" : ""}`}>
+                  <span className="rev-tag">{r.tag}</span>
+                  <span>{r.text}</span>
+                  <span className="rev-meta">{r.meta}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="lp2-feat lp2-feat-third">
+            <div className="lp2-feat-icon">
+              <GitBranch size={18} />
+            </div>
+            <h3>설계 변경 (ECO)</h3>
+            <p>요청, 검토, 승인, 배포까지 단일 워크플로우. 누가 언제 무엇을 승인했는지 감사 추적이 자동으로 남습니다.</p>
+          </div>
+          <div className="lp2-feat lp2-feat-third">
+            <div className="lp2-feat-icon">
+              <Users size={18} />
+            </div>
+            <h3>실무 부서별 권한</h3>
+            <p>설계, 생산, 구매, 품질 — 각 부서가 같은 데이터를 보되, 필요한 만큼만. Viewer/Collaborator/Full 3단계 권한.</p>
+          </div>
+          <div className="lp2-feat lp2-feat-third">
+            <div className="lp2-feat-icon">
+              <ShoppingCart size={18} />
+            </div>
+            <h3>발주 자동 연동</h3>
+            <p>BOM 한 번이면 거래처별 발주서가 자동 생성됩니다. 재고 임계치 알림으로 결품을 미리 방지합니다.</p>
+          </div>
+        </div>
       </div>
     </section>
   );
