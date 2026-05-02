@@ -41,7 +41,7 @@ jobs:
       - name: Build landing
         run: pnpm --filter @fabbit/landing build
         env:
-          VITE_APP_BASE_URL: https://fabbitinc.com
+          VITE_APP_BASE_URL: https://fabbit.app
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4

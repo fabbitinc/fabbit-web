@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { APP_LOGIN_URL, APP_SIGNUP_URL } from "@/constants/urls";
+import { APP_SIGNUP_URL } from "@/constants/urls";
 
 const navLinks = [
   { label: "제품", href: "/#features" },
@@ -53,9 +53,6 @@ export function Header() {
           )}
         </nav>
         <div className="lp2-nav-right">
-          <a className="lp2-btn ghost" href={APP_LOGIN_URL}>
-            로그인
-          </a>
           <a className="lp2-btn primary" href={APP_SIGNUP_URL}>
             무료로 시작
           </a>
