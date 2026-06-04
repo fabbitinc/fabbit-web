@@ -76,7 +76,7 @@ function clamp(value: number, min: number, max: number) {
 }
 
 const MIN_SCALE = 0.5;
-const MAX_SCALE = 4.0;
+const MAX_SCALE = 8.0;
 const SCALE_STEP = 0.25;
 
 export const PdfViewerCanvas = forwardRef<
