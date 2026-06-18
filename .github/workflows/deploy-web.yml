@@ -46,7 +46,7 @@ jobs:
           VITE_TURNSTILE_SITE_KEY: 0x4AAAAAACaBL2Qxq2neEHgx
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           aws-region: ap-northeast-2
